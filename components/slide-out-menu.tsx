@@ -1,0 +1,356 @@
+"use client"
+import { motion, AnimatePresence } from "motion/react"
+import { X, ExternalLink, MessageCircle } from "lucide-react"
+import { useState } from "react"
+import { GlowingEffect } from "./glowing-effect"
+
+interface SlideOutMenuProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+interface TechCommunity {
+  id: string
+  name: string
+  logo: string
+  description: string
+  website?: string
+  discord?: string
+  instagram?: string
+  twitter?: string
+  meetup?: string
+}
+
+interface CommunityModalProps {
+  community: TechCommunity | null
+  isOpen: boolean
+  onClose: () => void
+}
+
+function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
+  if (!community) return null
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-70 flex items-center justify-center p-4"
+          >
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-white">{community.name}</h3>
+                <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <img
+                  src={community.logo || "/placeholder.svg"}
+                  alt={community.name}
+                  className="w-16 h-16 object-contain bg-white/10 rounded-lg p-2"
+                />
+              </div>
+
+              <p className="text-gray-300 mb-6 leading-relaxed">{community.description}</p>
+
+              <div className="space-y-3">
+                {community.website && (
+                  <a
+                    href={community.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Website
+                  </a>
+                )}
+                {community.discord && (
+                  <a
+                    href={community.discord}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Discord
+                  </a>
+                )}
+                {community.instagram && (
+                  <a
+                    href={community.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Instagram
+                  </a>
+                )}
+                {community.twitter && (
+                  <a
+                    href={community.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Twitter
+                  </a>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
+export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
+  const [selectedCommunity, setSelectedCommunity] = useState<TechCommunity | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const techCommunities: TechCommunity[] = [
+    {
+      id: "alamo-python",
+      name: "Alamo Python",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/alamo-py.svg",
+      description:
+        "Alamo Python is part of the PyTexas network of Python user groups. We are focused at providing in person training and social events to help grow the San Antonio Python community. We are proud to be a part of the DEVSA community of San Antonio technology user groups.",
+      meetup: "https://www.meetup.com/alamo-python-learners/",
+    },
+    {
+      id: "acm-sa",
+      name: "ACM SA",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-acm-sa.png",
+      description:
+        "ACM of San Antonio is a vibrant network of passionate individuals ready to connect, collaborate, and push the boundaries of San Antonio's tech scene.",
+      website: "https://acmsa.org/",
+    },
+    {
+      id: "defcon-sa",
+      name: "DEFCON Group San Antonio",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-dcg-satx.png",
+      description:
+        "Inspired by the global DEF CON conference, our mission is to build a vibrant, collaborative community in San Antonio where members can learn, innovate, and advance their skills. We aim to create an inclusive environment that encourages exploration, ethical hacking, and the exchange of ideas to enhance the collective understanding of cybersecurity and technology.",
+      website: "https://dcgsatx.com/",
+    },
+      {
+      id: "greater-gaming-society",
+      name: "Greater Gaming Society",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/ggs.svg",
+      description:
+        "A community for game developers, designers, and gaming enthusiasts in San Antonio. We host game jams, workshops, and networking events.",
+      meetup: "https://www.meetup.com/greater-gaming-society-of-san-antonio/",
+    },
+    {
+      id: "atc",
+      name: "Alamo Tech Collective",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/atc-logo.png",
+      description:
+        "The Alamo Tech Collective is backed by Zelifcam, a local software company deeply committed to creating jobs, developing talent, and building resources right here in San Antonio.",
+      website: "https://alamotechcollective.com/",
+    },
+    {
+      id: "gdg",
+      name: "Google Developer Groups",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg-sa.svg",
+      description:
+        "Google Developer Groups (GDG) are community groups for developers who are interested in Google’s developer technology.",
+      website: "https://gdg.community.dev/gdg-san-antonio/",
+    },
+    {
+      id: "geeks-and-drinks",
+      name: "Geeks and Drinks",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-geeks.png",
+      description:
+        "Our mission is to create a safe and inclusive space for developers and geeks to share ideas, get inspired and build community. We do this by creating and hosting events that are both social and educational.",
+      website: "https://geeksanddrinks.tech/",
+    },
+    {
+      id: "uxsa",
+      name: "UXSA",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-uxsa.png",
+      description:
+        "User Experience San Antonio - connecting UX designers, researchers, and product professionals in the Alamo City.",
+      meetup: "https://www.meetup.com/uxsanantonio-public/",
+    },
+    {
+      id: "aitx",
+      name: "AITX",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-aitx.png",
+      description:
+        "AITX is a community for AI Engineers, Entrepreneurs, and Explorers across Texas. At AITX, we're passionate about fostering a diverse and thriving AI community where like-minded individuals can connect with each other, share ideas, and inspire innovation. Each month, we bring together a dynamic mix of people to explore the latest advancements in AI technology, real-world applications, and the future of this rapidly growing field. Whether you're an AI veteran or a curious newcomer, AITX offers something for everyone.",
+      twitter: "https://x.com/aitxcommunity",
+    },
+    {
+      id: "dotnet-user-group",
+      name: ".NET User Group",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-net.png",
+      description:
+        "The San Antonio .NET User group is for anyone interested in a wide range of .NET topics around the San Antonio, Texas area. We welcome all skill levels and are open to discussion for a wide range of .NET-related topics, including development, cloud, testing, game dev, CI/CD, and more.",
+      meetup: "https://www.meetup.com/sadnug/",
+    },
+    {
+      id: "datanauts",
+      name: "Datanauts",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
+      description:
+        "Welcome Datanauts — San Antonio’s grassroots gang of data scientists, engineers, analysts, and curious humans who think turning chaos into insight is a good time. Whether you’re shipping production models, debugging dashboards at midnight, or just figured out what MLOps actually means (no judgment), you belong here.",
+      meetup: "https://www.meetup.com/datanauts/",
+    },
+    {
+      id: "bitcoin-club",
+      name: "San Antonio Bitcoin Club",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-bitcoin.png",
+      description: "We are a local San Antonio Bitcoin Club for the plebs.   We want to build a space for Bitcoiners in the Count Down City, to make connections, stir up ideas, and to most importantly create a foundation to build a strong community one where we can all draw support from!",
+      website: "https://www.sanantoniobitcoinclub.com/",
+    },
+  ]
+
+  const handleCommunityClick = (community: TechCommunity) => {
+    setSelectedCommunity(community)
+    setIsModalOpen(true)
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setSelectedCommunity(null)
+  }
+
+  return (
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={onClose}
+            />
+
+            {/* Slide-out Menu */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{
+                type: "spring",
+                damping: 25,
+                stiffness: 300,
+              }}
+              className="fixed inset-y-0 right-0 w-full bg-black z-50 overflow-hidden"
+            >
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                className="absolute top-8 right-4 md:right-8 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+
+              {/* Menu Content */}
+              <div className="h-full flex flex-col items-center justify-center p-4 md:p-8 overflow-y-auto mt-10 md:mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-8 md:mb-12 flex flex-row items-center gap-4 md:gap-8 max-w-7xl w-full px-6 md:px-24"
+                >
+                  <div className="flex-shrink-0">
+                    <img
+                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+                      alt="DEVSA - Community"
+                      className="w-16 h-auto md:w-32"
+                    />
+                  </div>
+
+                  <div className="flex-1 text-left">
+                    <h2 className="text-white tracking-tight text-balance text-md md:text-3xl lg:text-4xl xl:text-5xl font-black leading-tight">
+                      YOUR <span className="text-[#FACB11]">DIRECT CONNECTION</span> TO THE TECH COMMUNITY IN SAN ANTONIO
+                    </h2>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="relative max-w-6xl w-full"
+                >
+                  <GlowingEffect
+                    disabled={false}
+                    proximity={50}
+                    spread={30}
+                    blur={2}
+                    movementDuration={1.5}
+                    borderWidth={2}
+                    className="rounded-lg"
+                  />
+                  {/* Grid container with line separators */}
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 relative">
+                    {/* Vertical lines */}
+                    <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 pointer-events-none">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="border-r border-white/10 last:border-r-0" />
+                      ))}
+                    </div>
+
+                    {/* Horizontal lines */}
+                    <div className="absolute inset-0 flex flex-col pointer-events-none">
+                      {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
+                        <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
+                      ))}
+                    </div>
+
+                    {techCommunities.map((community, index) => (
+                      <motion.div
+                        key={community.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 + index * 0.05 }}
+                        className="aspect-square p-4 md:p-6"
+                      >
+                        <button
+                          onClick={() => handleCommunityClick(community)}
+                          className="w-full h-full flex flex-col items-center justify-center hover:bg-white/5 transition-all duration-300 rounded-lg group"
+                        >
+                          <img
+                            src={community.logo || "/placeholder.svg"}
+                            alt={community.name}
+                            className="w-8 h-8 md:w-12 md:h-12 object-contain mb-2 group-hover:scale-110 transition-transform"
+                          />
+                          <span className="text-white text-xs md:text-sm font-medium text-center leading-tight">
+                            {community.name}
+                          </span>
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <CommunityModal community={selectedCommunity} isOpen={isModalOpen} onClose={handleModalClose} />
+    </>
+  )
+}
