@@ -170,8 +170,8 @@ export function CursorTrailImages() {
       {/* Instructions */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center pointer-events-none">
         <p className="text-gray-600 text-sm md:text-base">
-          <span className="hidden md:inline">Move your cursor around to explore San Antonio's tech scene</span>
-          <span className="md:hidden">Touch and drag to explore San Antonio's tech scene</span>
+          <span className="hidden md:inline">Move your cursor around to explore San Antonio&apos;s tech scene</span>
+          <span className="md:hidden">Touch and drag to explore San Antonio&apos;s tech scene</span>
         </p>
       </div>
     </div>

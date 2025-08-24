@@ -63,7 +63,7 @@ export const HeroSATech = ({
     setRandomString(str)
   }, [])
 
-  function onMouseMove({ currentTarget, clientX, clientY }: any) {
+  function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLDivElement>) {
     const { left, top } = currentTarget.getBoundingClientRect()
     mouseX.set(clientX - left)
     mouseY.set(clientY - top)
@@ -98,7 +98,15 @@ export const HeroSATech = ({
   )
 }
 
-export function TechPattern({ mouseX, mouseY, randomString }: any) {
+import type { MotionValue } from "motion"
+
+interface TechPatternProps {
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
+  randomString: string;
+}
+
+export function TechPattern({ mouseX, mouseY, randomString }: TechPatternProps) {
   const maskImage = useMotionTemplate`radial-gradient(500px at ${mouseX}px ${mouseY}px, white, transparent)`
   const style = { maskImage, WebkitMaskImage: maskImage }
 
