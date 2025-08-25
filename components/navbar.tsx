@@ -8,11 +8,13 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-30 bg-white/5 backdrop-blur-md border-b border-neutral-950">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="">
-            Where is the tech community?
-          </h1>
+      <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-white/5 backdrop-blur-md border-b border-neutral-950">
+        <div className="w-full px-4 py-2 flex justify-between items-center">
+          <div>
+            <h1 className="">
+              Where is the tech community?
+            </h1>
+          </div>
           <div className="">
             <button
               onClick={() => setIsMenuOpen(true)}
