@@ -216,6 +216,14 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       meetup: "https://www.meetup.com/sadnug/",
     },
     {
+      id: "aws",
+      name: "AWS User Group",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-aws+(1).png",
+      description:
+        "The AWS User Group is a community of AWS enthusiasts and professionals who come together to share knowledge, best practices, and the latest developments in AWS technologies.",
+      meetup: "https://www.meetup.com/san-antonio-aws-users-group/",
+    },
+    {
       id: "datanauts",
       name: "Datanauts",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
@@ -225,11 +233,67 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
     },
     {
       id: "bitcoin-club",
-      name: "San Antonio Bitcoin Club",
+      name: "Bitcoin Club",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-bitcoin.png",
       description:
         "We are a local San Antonio Bitcoin Club for the plebs.   We want to build a space for Bitcoiners in the Count Down City, to make connections, stir up ideas, and to most importantly create a foundation to build a strong community one where we can all draw support from!",
       website: "https://www.sanantoniobitcoinclub.com/",
+    },
+    {
+      id: "owasp",
+      name: "OWASP San Antonio",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
+      description:
+        "Welcome to OWASP San Antonio Chapter, a regional city chapter within OWASP. Our Chapter serves San Antonio region as a platform to discuss and share topics all around information and application security. Anyone with an interested and enthusiastic about application security is welcome. All meetings are free and open. You do not have to be an OWASP member.",
+      meetup: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
+    },
+    {
+      id: "redhat",
+      name: "Red Hat User Group",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-redhat.png",
+      description:
+        "This group is focused on bringing together the San Antonio Red Hat User Community for technical presentations, conversations, good food and drinks in a very laid-back setting. Membership includes Red Hat Customers, Partners, Employees, and Enthusiasts.",
+      meetup: "https://www.meetup.com/san-antonio-rhug/",
+    },
+    {
+      id: "atlassian",
+      name: "Atlassian User Group",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/logo_atlassian_footer.svg",
+      description:
+        "The Atlassian User Group is a community of users and enthusiasts of Atlassian products who come together to share knowledge, best practices, and the latest developments in the Atlassian ecosystem.",
+      website: "https://ace.atlassian.com/san-antonio/",
+    },
+    {
+      id: "bsides",
+      name: "BSides San Antonio",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
+      description:
+        "Each BSides is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
+      website: "https://www.bsidessatx.com/",
+    },
+    {
+      id: "arda",
+      name: "Alamo Regional Data Alliance",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-arda.png",
+      description:
+        "The Alamo Regional Data Alliance (ARDA) is a vibrant network of data professionals, leaders, and change-makers who share the common belief that individuals and organizations throughout the community should be informed by timely quality data when making decisions that impact their lives or the lives of those they serve.",
+      website: "https://alamodata.org/",
+    },
+    {
+      id: "emergeandrise",
+      name: "Emerge and Rise",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-emerge.png",
+      description:
+        "At Emerge and Rise™, we strengthen our San Antonio community by building up the businesses within it. We work with small and mid-sized companies (SMEs) that are ready to grow but may not know where to start, or even what’s possible. From uncovering funding opportunities and improving digital skills to navigating hiring, mindset, and strategy, we meet business owners where they are.",
+      website: "https://emergeandrise.org/",
+    },
+    {
+      id: "launchsa",
+      name: "LaunchSA",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-launchsa.png",
+      description:
+        "Launch SA is the navigator that connects small businesses and entrepreneurs to the resources they need to help them succeed.",
+      website: "https://www.launchsa.org/",
     },
   ]
 
