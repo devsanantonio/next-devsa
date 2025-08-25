@@ -1,5 +1,5 @@
 "use client"
-import { motion, AnimatePresence } from "motion/react"
+import { motion, AnimatePresence } from "framer-motion"
 import { X, ExternalLink, MessageCircle } from "lucide-react"
 import { useState } from "react"
 import { GlowingEffect } from "./glowing-effect"
@@ -152,8 +152,8 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       website: "https://acmsa.org/",
     },
     {
-      id: "defcon-sa",
-      name: "DEFCON Group San Antonio",
+      id: "defcongroup-sa",
+      name: "DEFCON Group",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-dcg-satx.png",
       description:
         "Inspired by the global DEF CON conference, our mission is to build a vibrant, collaborative community in San Antonio where members can learn, innovate, and advance their skills. We aim to create an inclusive environment that encourages exploration, ethical hacking, and the exchange of ideas to enhance the collective understanding of cybersecurity and technology.",
@@ -384,14 +384,23 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                   <div className="grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative">
                     {/* Vertical lines */}
                     <div className="absolute inset-0 grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 pointer-events-none">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="border-r border-white/10 last:border-r-0" />
-                      ))}
+                      {/* Separator 1 - visible on all breakpoints (3+ cols) */}
+                      <div className="border-r border-white/10" />
+                      {/* Separator 2 - visible on all breakpoints (3+ cols) */}
+                      <div className="border-r border-white/10" />
+                      {/* Separator 3 - visible from md+ (4+ cols) */}
+                      <div className="border-r border-white/10 hidden md:block" />
+                      {/* Separator 4 - visible from lg+ (5+ cols) */}
+                      <div className="border-r border-white/10 hidden lg:block" />
+                      {/* Separator 5 - visible from xl+ (6 cols) */}
+                      <div className="border-r border-white/10 hidden xl:block" />
+                      {/* Last column - no border */}
+                      <div />
                     </div>
 
                     {/* Horizontal lines */}
                     <div className="absolute inset-0 flex flex-col pointer-events-none">
-                      {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
+                      {Array.from({ length: Math.ceil(techCommunities.length / 24) }).map((_, i) => (
                         <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
                       ))}
                     </div>

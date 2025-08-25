@@ -1,11 +1,9 @@
 "use client"
 
-import type React from "react"
-
 import { motion, AnimatePresence } from "motion/react"
 import { X } from "lucide-react"
 import { GlowingEffect } from "./glowing-effect"
-import { LinkedInIcon, InstagramIcon, TwitterIcon, FacebookIcon, TwitchIcon, YouTubeIcon, GitHubIcon, DiscordIcon } from "./icons/social-icons"
+import { LinkedInIcon, InstagramIcon, TwitterIcon, FacebookIcon, GitHubIcon, DiscordIcon } from "./icons/social-icons"
 
 interface SocialMediaMenuProps {
   isOpen: boolean
@@ -53,7 +51,7 @@ const socialMediaLinks = [
     color: "hover:text-gray-800",
     glowColor: "hover:shadow-gray-500/50",
   },
-/*   {
+  /*   {
     name: "Twitch",
     icon: TwitchIcon,
     url: "https://twitch.tv/devsatx",
@@ -144,9 +142,18 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
                 <div className="grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative">
                   {/* Vertical lines */}
                   <div className="absolute inset-0 grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 pointer-events-none">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="border-r border-white/10 last:border-r-0" />
-                    ))}
+                    {/* Separator 1 - visible on all breakpoints (3+ cols) */}
+                    <div className="border-r border-white/10" />
+                    {/* Separator 2 - visible on all breakpoints (3+ cols) */}
+                    <div className="border-r border-white/10" />
+                    {/* Separator 3 - visible from md+ (4+ cols) */}
+                    <div className="border-r border-white/10 hidden md:block" />
+                    {/* Separator 4 - visible from lg+ (5+ cols) */}
+                    <div className="border-r border-white/10 hidden lg:block" />
+                    {/* Separator 5 - visible from xl+ (6 cols) */}
+                    <div className="border-r border-white/10 hidden xl:block" />
+                    {/* Last column - no border */}
+                    <div />
                   </div>
 
                   {/* Horizontal lines */}
