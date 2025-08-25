@@ -45,33 +45,33 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-70 flex items-center justify-center p-4"
+            className="fixed inset-0 z-70 flex items-center justify-center container-responsive"
           >
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-white">{community.name}</h3>
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 xs:p-6 md:p-8 max-w-xs xs:max-w-sm md:max-w-md lg:max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4 md:mb-6">
+                <h3 className="text-lg xs:text-xl md:text-2xl font-bold text-white">{community.name}</h3>
                 <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-4 md:mb-6">
                 <img
                   src={community.logo || "/placeholder.svg"}
                   alt={community.name}
-                  className="w-16 h-16 object-contain bg-white/10 rounded-lg p-2"
+                  className="w-16 h-16 xs:w-20 xs:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain bg-white/10 rounded-lg p-2"
                 />
               </div>
 
-              <p className="text-gray-300 mb-6 leading-relaxed">{community.description}</p>
+              <p className="text-gray-300 mb-4 md:mb-6 leading-relaxed text-sm xs:text-base">{community.description}</p>
 
-              <div className="space-y-3">
+              <div className="space-y-2 xs:space-y-3">
                 {community.website && (
                   <a
                     href={community.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-sm xs:text-base"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Website
@@ -82,7 +82,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.discord}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm xs:text-base"
                   >
                     <MessageCircle className="w-4 h-4" />
                     Discord
@@ -93,7 +93,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors"
+                    className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors text-sm xs:text-base"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Instagram
@@ -104,10 +104,21 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition-colors"
+                    className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition-colors text-sm xs:text-base"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Twitter
+                  </a>
+                )}
+                {community.meetup && (
+                  <a
+                    href={community.meetup}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors text-sm xs:text-base"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Meetup
                   </a>
                 )}
               </div>
@@ -148,7 +159,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
         "Inspired by the global DEF CON conference, our mission is to build a vibrant, collaborative community in San Antonio where members can learn, innovate, and advance their skills. We aim to create an inclusive environment that encourages exploration, ethical hacking, and the exchange of ideas to enhance the collective understanding of cybersecurity and technology.",
       website: "https://dcgsatx.com/",
     },
-      {
+    {
       id: "greater-gaming-society",
       name: "Greater Gaming Society",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/ggs.svg",
@@ -216,7 +227,8 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       id: "bitcoin-club",
       name: "San Antonio Bitcoin Club",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-bitcoin.png",
-      description: "We are a local San Antonio Bitcoin Club for the plebs.   We want to build a space for Bitcoiners in the Count Down City, to make connections, stir up ideas, and to most importantly create a foundation to build a strong community one where we can all draw support from!",
+      description:
+        "We are a local San Antonio Bitcoin Club for the plebs.   We want to build a space for Bitcoiners in the Count Down City, to make connections, stir up ideas, and to most importantly create a foundation to build a strong community one where we can all draw support from!",
       website: "https://www.sanantoniobitcoinclub.com/",
     },
   ]
@@ -260,30 +272,31 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-8 right-4 md:right-8 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+                className="absolute top-4 xs:top-6 md:top-8 right-4 xs:right-6 md:right-8 w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
               </button>
 
               {/* Menu Content */}
-              <div className="h-full flex flex-col items-center justify-center p-4 md:p-8 overflow-y-auto mt-10 md:mt-0">
+              <div className="h-full flex flex-col items-center justify-start container-responsive overflow-y-auto pt-20 xs:pt-24 md:pt-16 pb-8">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-8 md:mb-12 flex flex-row items-center gap-4 md:gap-8 max-w-7xl w-full px-6 md:px-24"
+                  className="mb-8 xs:mb-10 md:mb-12 lg:mb-16 flex flex-row items-center gap-4 xs:gap-6 md:px-10 max-w-7xl w-full"
                 >
                   <div className="flex-shrink-0">
                     <img
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
                       alt="DEVSA - Community"
-                      className="w-16 h-auto md:w-32"
+                      className="w-16 h-auto xs:w-20 md:w-28 lg:w-36 xl:w-44"
                     />
                   </div>
 
-                  <div className="flex-1 text-left">
-                    <h2 className="text-white tracking-tight text-balance text-md md:text-3xl lg:text-4xl xl:text-5xl font-black leading-tight">
-                      YOUR <span className="text-[#FACB11]">DIRECT CONNECTION</span> TO THE TECH COMMUNITY IN SAN ANTONIO
+                  <div className="flex-1 text-center xs:text-left">
+                    <h2 className="text-white tracking-tight text-balance text-base xs:text-lg sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-black leading-tight">
+                      YOUR <span className="text-[#FACB11]">DIRECT CONNECTION</span> TO THE TECH COMMUNITY IN SAN
+                      ANTONIO
                     </h2>
                   </div>
                 </motion.div>
@@ -304,9 +317,9 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                     className="rounded-lg"
                   />
                   {/* Grid container with line separators */}
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 relative">
+                  <div className="grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative">
                     {/* Vertical lines */}
-                    <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 pointer-events-none">
+                    <div className="absolute inset-0 grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 pointer-events-none">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="border-r border-white/10 last:border-r-0" />
                       ))}
@@ -325,7 +338,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 + index * 0.05 }}
-                        className="aspect-square p-4 md:p-6"
+                        className="aspect-square p-2 xs:p-3 md:p-4 lg:p-6"
                       >
                         <button
                           onClick={() => handleCommunityClick(community)}
@@ -334,9 +347,9 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                           <img
                             src={community.logo || "/placeholder.svg"}
                             alt={community.name}
-                            className="w-8 h-8 md:w-12 md:h-12 object-contain mb-2 group-hover:scale-110 transition-transform"
+                            className="w-10 h-10 xs:w-12 xs:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-18 xl:h-18 object-contain mb-1 xs:mb-2 group-hover:scale-110 transition-transform"
                           />
-                          <span className="text-white text-xs md:text-sm font-medium text-center leading-tight">
+                          <span className="text-white text-xs xs:text-xs md:text-sm lg:text-sm font-medium text-center leading-tight">
                             {community.name}
                           </span>
                         </button>

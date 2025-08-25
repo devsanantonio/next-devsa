@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import { SlideOutMenu } from "./slide-out-menu"
+import { SocialMediaMenu } from "./social-media-menu"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false)
 
   return (
     <>
@@ -12,7 +14,10 @@ export function Navbar() {
         <div className="container-responsive">
           <div className="flex justify-between items-center py-3 xs:py-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-responsive-sm md:text-responsive-base lg:text-responsive-lg text-neutral-950 font-medium truncate pr-4">
+              <h1
+                onClick={() => setIsSocialMenuOpen(true)}
+                className="text-responsive-sm md:text-responsive-base lg:text-responsive-lg text-neutral-950 font-black truncate pr-4 cursor-pointer transition-all duration-200 hover:text-neutral-700 active:scale-95"
+              >
                 Where is the tech community?
               </h1>
             </div>
@@ -36,6 +41,8 @@ export function Navbar() {
 
       {/* Slide-out Menu */}
       <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
+      <SocialMediaMenu isOpen={isSocialMenuOpen} onClose={() => setIsSocialMenuOpen(false)} />
     </>
   )
 }
