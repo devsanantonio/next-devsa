@@ -1,5 +1,5 @@
 "use client"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "motion/react"
 import { X, ExternalLink, MessageCircle } from "lucide-react"
 import { useState } from "react"
 import { GlowingEffect } from "./glowing-effect"
@@ -295,6 +295,14 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
         "Launch SA is the navigator that connects small businesses and entrepreneurs to the resources they need to help them succeed.",
       website: "https://www.launchsa.org/",
     },
+    {
+      id: "aicowboys",
+      name: "The AI Cowboys",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cowboys.svg",
+      description:
+        "Founded in 2024 by former Air Force leader Michael J. Pendleton, The AI Cowboys has rapidly become one of Texas' hottest tech startups, currently ranked #6 among AI companies in the state. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
+      website: "https://www.theaicowboys.com/",
+    },
   ]
 
   const handleCommunityClick = (community: TechCommunity) => {
@@ -323,20 +331,20 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
 
             {/* Slide-out Menu */}
             <motion.div
-              initial={{ x: "100%" }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              exit={{ x: "-100%" }}
               transition={{
                 type: "spring",
                 damping: 25,
                 stiffness: 300,
               }}
-              className="fixed inset-y-0 right-0 w-full bg-black z-50 overflow-hidden"
+              className="fixed inset-y-0 left-0 w-full bg-black z-50 overflow-hidden"
             >
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 xs:top-6 md:top-8 right-4 xs:right-6 md:right-8 w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+                className="absolute top-4 xs:top-6 md:top-8 left-4 xs:left-6 md:left-8 w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
               >
                 <X className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
               </button>
@@ -400,7 +408,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
 
                     {/* Horizontal lines */}
                     <div className="absolute inset-0 flex flex-col pointer-events-none">
-                      {Array.from({ length: Math.ceil(techCommunities.length / 24) }).map((_, i) => (
+                      {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
                         <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
                       ))}
                     </div>

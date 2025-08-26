@@ -82,20 +82,19 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
           />
 
           <motion.div
-            initial={{ x: "-100%" }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+            exit={{ x: "100%" }}
             transition={{
               type: "spring",
               damping: 25,
               stiffness: 300,
             }}
-            className="fixed inset-y-0 left-0 w-full bg-black z-50 overflow-hidden"
+            className="fixed inset-y-0 right-0 w-full bg-black z-50 overflow-hidden"
           >
-            {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 xs:top-6 md:top-8 left-4 xs:left-6 md:left-8 w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+              className="absolute top-4 xs:top-6 md:top-8 right-4 xs:right-6 md:right-8 w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
             >
               <X className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
             </button>

@@ -15,7 +15,7 @@ export function Navbar() {
           <div className="flex justify-between items-center py-3 xs:py-4">
             <div className="flex-1 min-w-0">
               <h1
-                onClick={() => setIsSocialMenuOpen(true)}
+                onClick={() => setIsMenuOpen(true)}
                 className="text-responsive-sm md:text-responsive-base lg:text-responsive-lg text-neutral-950 font-black truncate pr-4 cursor-pointer transition-all duration-200 hover:text-neutral-700 active:scale-95"
               >
                 Where is the tech community?
@@ -24,9 +24,9 @@ export function Navbar() {
 
             <div className="flex-shrink-0">
               <button
-                onClick={() => setIsMenuOpen(true)}
+                onClick={() => setIsSocialMenuOpen(true)}
                 className="transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg p-1"
-                aria-label="Open navigation menu"
+                aria-label="Open social media menu"
               >
                 <img
                   src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
