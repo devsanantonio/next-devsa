@@ -295,6 +295,14 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
         "Launch SA is the navigator that connects small businesses and entrepreneurs to the resources they need to help them succeed.",
       website: "https://www.launchsa.org/",
     },
+    {
+      id: "aicowboys",
+      name: "The AI Cowboys",
+      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cowboys.svg",
+      description:
+        "Founded in 2024 by former Air Force leader Michael J. Pendleton, The AI Cowboys has rapidly become one of Texas' hottest tech startups, currently ranked #6 among AI companies in the state. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
+      website: "https://www.theaicowboys.com/",
+    },
   ]
 
   const handleCommunityClick = (community: TechCommunity) => {
