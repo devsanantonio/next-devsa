@@ -111,7 +111,7 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
                   <img
                     src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-community.svg"
                     alt="DEVSA Community"
-                    className="w-52 h-auto xs:w-60 md:w-72 lg:w-80 xl:w-96"
+                    className="w-60 h-auto md:w-72 lg:w-80 xl:w-96"
                   />
                 </div>
 

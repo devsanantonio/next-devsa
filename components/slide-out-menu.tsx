@@ -57,8 +57,8 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                 borderWidth={2}
                 className="rounded-2xl"
               />
-              <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/30 rounded-2xl flex flex-col overflow-hidden h-full">
-                <div className="relative h-32 bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="bg-neutral-900/95 backdrop-blur-xl border border-neutral-700/30 rounded-2xl flex flex-col overflow-hidden h-full">
+                <div className="relative h-32 bg-gradient-to-br from-neutral-800 to-neutral-900">
                   <img
                     src={community.logo || "/placeholder.svg"}
                     alt={community.name}
@@ -73,7 +73,8 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  <p className="text-gray-200 leading-relaxed text-base font-normal">{community.description}</p>
+                  <h3 className="text-white text-xl font-bold">{community.name}</h3>
+                  <p className="text-neutral-200 leading-relaxed text-base font-normal">{community.description}</p>
 
                   <div className="space-y-3 pt-2">
                     {community.website && (
@@ -160,7 +161,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "ACM SA",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-acm-sa.png",
       description:
-        "ACM of San Antonio is a vibrant network of passionate individuals ready to connect, collaborate, and push the boundaries of San Antonio's tech scene.",
+        "ACM is short for the Association for Computing Machinery. ACM National is classified as a non-profit and that makes us one too! ACMs main goal is advancing computing as a science and a profession. Together, sharing and creating technology is the best way towards that goal!",
       website: "https://acmsa.org/",
     },
     {
@@ -176,7 +177,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "Greater Gaming Society",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/ggs.svg",
       description:
-        "A community for game developers, designers, and gaming enthusiasts in San Antonio. We host game jams, workshops, and networking events.",
+        "We provide support, collaboration, and connection for game developers and gamers in San Antonio, hosting monthly meetings, networking, socials and anything to help grow the local game industry.",
       meetup: "https://www.meetup.com/greater-gaming-society-of-san-antonio/",
     },
     {
@@ -192,7 +193,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "Google Developer Groups",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg-sa.svg",
       description:
-        "Google Developer Groups (GDG) are community groups for developers who are interested in Google’s developer technology.",
+        "GDG San Antonio is a group of passionate developers and technologists excited to connect, learn, and grow together. Whether you're a seasoned programmer or just starting your coding journey, GDG San Antonio is a welcoming space for all.",
       website: "https://gdg.community.dev/gdg-san-antonio/",
     },
     {
@@ -208,7 +209,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "UXSA",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-uxsa.png",
       description:
-        "User Experience San Antonio, connecting UX designers, researchers, and product professionals in the Alamo City. Currently hosting hybrid monthly meetups.",
+        "UXSA supports the UX community in San Antonio by creating ways for people to connect, explore, and grow. Our goal is to serve as an active, responsive community for people interested or working in user experience. Support learning and growth for all levels of expertise.",
       meetup: "https://www.meetup.com/uxsanantonio-public/",
     },
     {
@@ -240,7 +241,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "Datanauts",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
       description:
-        "Welcome Datanauts — San Antonio’s grassroots gang of data scientists, engineers, analysts, and curious humans who think turning chaos into insight is a good time. Whether you’re shipping production models, debugging dashboards at midnight, or just figured out what MLOps actually means (no judgment), you belong here.",
+        "Welcome Datanauts — San Antonio's grassroots gang of data scientists, engineers, analysts, and curious humans who think turning chaos into insight is a good time. Whether you’re shipping production models, debugging dashboards at midnight, or just figured out what MLOps actually means (no judgment), you belong here.",
       meetup: "https://www.meetup.com/datanauts/",
     },
     {
@@ -280,7 +281,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "BSides San Antonio",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
       description:
-        "Each BSides is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
+        "Each BSides event is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
       website: "https://www.bsidessatx.com/",
     },
     {
@@ -304,7 +305,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "LaunchSA",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-launchsa.png",
       description:
-        "Launch SA is the navigator that connects small businesses and entrepreneurs to the resources they need to help them succeed.",
+        "Launch SA is San Antonio’s Resource Center for connecting small business owners and entrepreneurs to essential resources for success! Connect with us!",
       website: "https://www.launchsa.org/",
     },
     {
@@ -362,14 +363,14 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
               </button>
 
               {/* Menu Content */}
-              <div className="h-full flex flex-col items-center justify-start container-responsive overflow-y-auto pt-20 xs:pt-24 md:pt-16 pb-8">
+              <div className="h-full flex flex-col items-center justify-start container-responsive overflow-y-auto pt-20 md:pt-16 pb-8">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                   className="mb-2 md:mb-6 lg:mb-8 flex flex-row items-center gap-2 md:gap-8 md:px-10 max-w-7xl w-full"
                 >
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 px-4 md:px-0">
                     <img
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
                       alt="DEVSA - Community"
@@ -401,7 +402,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                     className="rounded-lg"
                   />
                   {/* Grid container with line separators */}
-                  <div className="grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative">
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative">
                     {/* Vertical lines */}
                     <div className="absolute inset-0 grid grid-cols-3 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 pointer-events-none">
                       {/* Separator 1 - visible on all breakpoints (3+ cols) */}
@@ -461,7 +462,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                           <img
                             src={community.logo || "/placeholder.svg"}
                             alt={community.name}
-                            className="w-10 h-10 xs:w-12 xs:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-18 xl:h-18 object-contain mb-1 xs:mb-2 group-hover:scale-110 transition-transform"
+                            className="w-14 h-14 md:w-16 md:h-16 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain mb-1 xs:mb-2 group-hover:scale-110 transition-transform"
                           />
                           <span className="text-white text-xs xs:text-xs md:text-sm lg:text-sm font-medium text-center leading-tight">
                             {community.name}
