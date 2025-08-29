@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "DEVSA - Your Connection to the Tech Community in San Antonio",
+  title: "DEVSA - Activating the Tech Community in San Antonio",
   description:
-    "Where is the tech community in San Antonio? DEVSA is your direct connection to the tech community in San Antonio. Join developers, designers, and tech professionals in SA.",
+    "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects developers, designers, and tech professionals through partnerships with local organizations, providing a platform for growth and innovation.",
   keywords: [
     "San Antonio tech community",
     "DEVSA",
@@ -29,15 +29,17 @@ export const metadata: Metadata = {
     "tech networking",
     "San Antonio startups",
     "coding community",
-    "technology events",
-    "tech community events",
-    "developer events San Antonio",
     "tech events San Antonio",
-    "San Antonio tech events",
-    "San Antonio developer events",
-    "San Antonio programming events",
-    "San Antonio tech community",
-    "San Antonio tech meetups",
+    "tech collaboration",
+    "strategic partnerships",
+    "video content",
+    "innovation San Antonio",
+    "tech groups SA",
+    "developer community",
+    "technology partnerships",
+    "Alamo City tech",
+    "SA tech scene",
+    "tech ecosystem San Antonio",
   ],
   authors: [{ name: "DEVSA Community" }],
   creator: "DEVSA",
@@ -52,9 +54,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "DEVSA - Your Connection to the Tech Community in San Antonio",
+    title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
-      "Where is the tech community in San Antonio? DEVSA is your direct connection to the tech community in San Antonio. Join developers, designers, and tech professionals in SA.",
+      "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects developers, designers, and tech professionals through partnerships with local organizations.",
     url: "/",
     siteName: "DEVSA",
     images: [
@@ -62,7 +64,7 @@ export const metadata: Metadata = {
         url: "/opengraph.png",
         width: 1200,
         height: 630,
-        alt: "DEVSA - San Antonio Tech Community",
+        alt: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
       },
     ],
     locale: "en_US",
@@ -70,12 +72,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DEVSA - Your Connection to the Tech Community in San Antonio",
+    title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
-      "Where is the tech community in San Antonio? DEVSA is your direct connection to the tech community in San Antonio.",
+      "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. Connect with local tech groups and professionals.",
     images: ["/opengraph.png"],
-    creator: "@devsa_community",
-    site: "@devsa_community",
+    creator: "@devsatx",
+    site: "@devsatx",
   },
   robots: {
     index: true,
@@ -88,6 +90,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+  },
   category: "technology",
 }
 
@@ -98,6 +103,55 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "DEVSA",
+              alternateName: "Developer San Antonio",
+              description:
+                "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects people, shares knowledge, and celebrates innovation.",
+              url: "https://devsa.community",
+              logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
+              foundingDate: "2020",
+              areaServed: {
+                "@type": "City",
+                name: "San Antonio",
+                addressRegion: "TX",
+                addressCountry: "US",
+              },
+              knowsAbout: [
+                "Software Development",
+                "Web Development",
+                "Mobile Development",
+                "Data Science",
+                "Artificial Intelligence",
+                "Cybersecurity",
+                "Cloud Computing",
+                "DevOps",
+                "UX/UI Design",
+                "Game Development",
+              ],
+              sameAs: [
+                "https://twitter.com/devsatx",
+                "https://linkedin.com/company/devsa",
+                "https://instagram.com/devsatx",
+                "https://github.com/devsanantonio",
+                "https://discord.gg/cvHHzThrEw",
+                "https://www.facebook.com/p/DEVSA-61558461121201/",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "Community Support",
+                availableLanguage: "English",
+              },
+            }),
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Navbar />
         {children}
