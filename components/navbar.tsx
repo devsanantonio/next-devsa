@@ -12,7 +12,7 @@ export function Navbar() {
     <>
       <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-white/5 backdrop-blur-md border-b border-neutral-950">
         <div className="container-responsive">
-          <div className="flex justify-between items-center py-3 xs:py-4">
+          <div className="flex justify-between items-center py-1.5 md:py-1">
             <div className="flex-1 min-w-0">
               <h1
                 onClick={() => setIsMenuOpen(true)}
@@ -31,7 +31,7 @@ export function Navbar() {
                 <img
                   src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
                   alt="DEVSA - San Antonio Developer Community"
-                  className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16"
+                  className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 xl:w-12 xl:h-12"
                 />
               </button>
             </div>

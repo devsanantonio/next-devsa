@@ -295,14 +295,6 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
         "Launch SA is the navigator that connects small businesses and entrepreneurs to the resources they need to help them succeed.",
       website: "https://www.launchsa.org/",
     },
-    {
-      id: "aicowboys",
-      name: "The AI Cowboys",
-      logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cowboys.svg",
-      description:
-        "Founded in 2024 by former Air Force leader Michael J. Pendleton, The AI Cowboys has rapidly become one of Texas' hottest tech startups, currently ranked #6 among AI companies in the state. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
-      website: "https://www.theaicowboys.com/",
-    },
   ]
 
   const handleCommunityClick = (community: TechCommunity) => {
@@ -355,17 +347,17 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-8 xs:mb-10 md:mb-12 lg:mb-16 flex flex-row items-center gap-4 xs:gap-6 md:px-10 max-w-7xl w-full"
+                  className="mb-2 md:mb-6 lg:mb-8 flex flex-row items-center gap-2 md:gap-8 md:px-10 max-w-7xl w-full"
                 >
                   <div className="flex-shrink-0">
                     <img
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
                       alt="DEVSA - Community"
-                      className="w-16 h-auto xs:w-20 md:w-28 lg:w-36 xl:w-44"
+                      className="w-16 h-auto md:w-28 lg:w-32 xl:w-36"
                     />
                   </div>
 
-                  <div className="flex-1 text-center xs:text-left">
+                  <div className="flex-1 md:text-left text-left">
                     <h2 className="text-white tracking-tight text-balance text-base xs:text-lg sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-black leading-tight">
                       YOUR <span className="text-[#FACB11]">DIRECT CONNECTION</span> TO THE TECH COMMUNITY IN SAN
                       ANTONIO
@@ -408,9 +400,30 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
 
                     {/* Horizontal lines */}
                     <div className="absolute inset-0 flex flex-col pointer-events-none">
-                      {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
-                        <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                      ))}
+                      {/* xs/sm: 3 cols = Math.ceil(21/3) = 7 rows */}
+                      <div className="flex flex-col h-full xs:block md:hidden">
+                        {Array.from({ length: Math.ceil(techCommunities.length / 3) }).map((_, i) => (
+                          <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
+                        ))}
+                      </div>
+                      {/* md: 4 cols = Math.ceil(21/4) = 6 rows */}
+                      <div className="hidden md:flex md:flex-col md:h-full lg:hidden">
+                        {Array.from({ length: Math.ceil(techCommunities.length / 4) }).map((_, i) => (
+                          <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
+                        ))}
+                      </div>
+                      {/* lg: 5 cols = Math.ceil(21/5) = 5 rows */}
+                      <div className="hidden lg:flex lg:flex-col lg:h-full xl:hidden">
+                        {Array.from({ length: Math.ceil(techCommunities.length / 5) }).map((_, i) => (
+                          <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
+                        ))}
+                      </div>
+                      {/* xl: 6 cols = Math.ceil(21/6) = 4 rows */}
+                      <div className="hidden xl:flex xl:flex-col xl:h-full">
+                        {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
+                          <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
+                        ))}
+                      </div>
                     </div>
 
                     {techCommunities.map((community, index) => (

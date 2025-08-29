@@ -157,9 +157,9 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
 
                   {/* Horizontal lines */}
                   <div className="absolute inset-0 flex flex-col pointer-events-none">
-                    {Array.from({ length: Math.ceil(socialMediaLinks.length / 6) }).map((_, i) => (
-                      <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                    ))}
+                    {/* xs/sm: 3 cols = 2 rows, md: 4 cols = 2 rows, lg: 5 cols = 2 rows, xl: 6 cols = 1 row */}
+                    <div className="flex-1 border-b border-white/10 block md:block lg:block xl:hidden" />
+                    <div className="flex-1 border-b border-white/10 hidden md:hidden lg:hidden xl:hidden" />
                   </div>
 
                   {socialMediaLinks.map((social, index) => {
