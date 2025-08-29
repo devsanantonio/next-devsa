@@ -45,82 +45,94 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-70 flex items-center justify-center container-responsive"
+            className="fixed inset-0 z-70 flex items-center justify-center p-4"
           >
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 xs:p-6 md:p-8 max-w-xs xs:max-w-sm md:max-w-md lg:max-w-lg w-full max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-start mb-4 md:mb-6">
-                <h3 className="text-lg xs:text-xl md:text-2xl font-bold text-white">{community.name}</h3>
-                <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-                  <X className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
-              </div>
+            <div className="relative w-80 h-96">
+              <GlowingEffect
+                disabled={false}
+                proximity={100}
+                spread={40}
+                blur={1}
+                movementDuration={2}
+                borderWidth={2}
+                className="rounded-2xl"
+              />
+              <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/30 rounded-2xl flex flex-col overflow-hidden h-full">
+                <div className="relative h-32 bg-gradient-to-br from-gray-800 to-gray-900">
+                  <img
+                    src={community.logo || "/placeholder.svg"}
+                    alt={community.name}
+                    className="w-full h-full object-contain p-4"
+                  />
+                  <button
+                    onClick={onClose}
+                    className="absolute top-3 right-3 text-white/80 hover:text-white transition-colors bg-black/60 hover:bg-black/80 rounded-full p-2 backdrop-blur-sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-              <div className="mb-4 md:mb-6">
-                <img
-                  src={community.logo || "/placeholder.svg"}
-                  alt={community.name}
-                  className="w-16 h-16 xs:w-20 xs:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain bg-white/10 rounded-lg p-2"
-                />
-              </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  <p className="text-gray-200 leading-relaxed text-base font-normal">{community.description}</p>
 
-              <p className="text-gray-300 mb-4 md:mb-6 leading-relaxed text-sm xs:text-base">{community.description}</p>
-
-              <div className="space-y-2 xs:space-y-3">
-                {community.website && (
-                  <a
-                    href={community.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-sm xs:text-base"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Website
-                  </a>
-                )}
-                {community.discord && (
-                  <a
-                    href={community.discord}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm xs:text-base"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Discord
-                  </a>
-                )}
-                {community.instagram && (
-                  <a
-                    href={community.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors text-sm xs:text-base"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Instagram
-                  </a>
-                )}
-                {community.twitter && (
-                  <a
-                    href={community.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition-colors text-sm xs:text-base"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Twitter
-                  </a>
-                )}
-                {community.meetup && (
-                  <a
-                    href={community.meetup}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors text-sm xs:text-base"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Meetup
-                  </a>
-                )}
+                  <div className="space-y-3 pt-2">
+                    {community.website && (
+                      <a
+                        href={community.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-blue-400 hover:text-blue-300 transition-colors text-base font-medium hover:bg-blue-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Website
+                      </a>
+                    )}
+                    {community.discord && (
+                      <a
+                        href={community.discord}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-indigo-400 hover:text-indigo-300 transition-colors text-base font-medium hover:bg-indigo-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        Discord
+                      </a>
+                    )}
+                    {community.instagram && (
+                      <a
+                        href={community.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-pink-400 hover:text-pink-300 transition-colors text-base font-medium hover:bg-pink-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Instagram
+                      </a>
+                    )}
+                    {community.twitter && (
+                      <a
+                        href={community.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-sky-400 hover:text-sky-300 transition-colors text-base font-medium hover:bg-sky-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Twitter
+                      </a>
+                    )}
+                    {community.meetup && (
+                      <a
+                        href={community.meetup}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-orange-400 hover:text-orange-300 transition-colors text-base font-medium hover:bg-orange-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Meetup
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -188,7 +200,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "Geeks and Drinks",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-geeks.png",
       description:
-        "Our mission is to create a safe and inclusive space for developers and geeks to share ideas, get inspired and build community. We do this by creating and hosting events that are both social and educational.",
+        "At Geeks and Drinks, our mission is to create a safe and inclusive space for developers and geeks to share ideas, get inspired and build community. We do this by creating and hosting events that are both social and educational.",
       website: "https://geeksanddrinks.tech/",
     },
     {
@@ -196,7 +208,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "UXSA",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-uxsa.png",
       description:
-        "User Experience San Antonio - connecting UX designers, researchers, and product professionals in the Alamo City.",
+        "User Experience San Antonio, connecting UX designers, researchers, and product professionals in the Alamo City. Currently hosting hybrid monthly meetups.",
       meetup: "https://www.meetup.com/uxsanantonio-public/",
     },
     {
