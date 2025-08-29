@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+
 export const metadata: Metadata = {
   title: "DEVSA - Activating the Tech Community in San Antonio",
   description:
@@ -50,7 +52,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"),
+  metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
   },
@@ -58,11 +60,11 @@ export const metadata: Metadata = {
     title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
       "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects developers, designers, and tech professionals through partnerships with local organizations.",
-    url: "/",
+    url: siteUrl,
     siteName: "DEVSA",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/opengraph.png`,
+        url: `${siteUrl}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
@@ -77,7 +79,7 @@ export const metadata: Metadata = {
     title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
       "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. Connect with local tech groups and professionals.",
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/opengraph.png`],
+    images: [`${siteUrl}/opengraph-image.png`],
     creator: "@devsatx",
     site: "@devsatx",
   },
