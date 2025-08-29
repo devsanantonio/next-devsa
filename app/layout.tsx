@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,10 +62,11 @@ export const metadata: Metadata = {
     siteName: "DEVSA",
     images: [
       {
-        url: "/opengraph.png",
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/opengraph.png`,
         width: 1200,
         height: 630,
         alt: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+        type: "image/png",
       },
     ],
     locale: "en_US",
@@ -75,7 +77,7 @@ export const metadata: Metadata = {
     title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
       "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. Connect with local tech groups and professionals.",
-    images: ["/opengraph.png"],
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/opengraph.png`],
     creator: "@devsatx",
     site: "@devsatx",
   },
@@ -153,9 +155,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Navbar />
-        {children}
-        <Analytics />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Navbar />
+          {children}
+          <Analytics />
+        </Suspense>
       </body>
     </html>
   )
