@@ -1,5 +1,7 @@
 "use client"
+
 import { HeroVideo } from "../components/hero-video"
+import { PySAPopup } from "../components/pysa-popup"
 
 export default function HomePage() {
   return (
@@ -7,8 +9,10 @@ export default function HomePage() {
       <main className="relative w-full">
         <HeroVideo />
 
-       {/*  <section className="container-responsive py-8 md:py-12 lg:py-16 xl:py-20">
+        {/*  <section className="container-responsive py-8 md:py-12 lg:py-16 xl:py-20">
         </section> */}
+
+        <PySAPopup />
       </main>
     </div>
   )
