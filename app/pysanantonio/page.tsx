@@ -331,7 +331,7 @@ export default function PySanAntonioPage() {
           PyTexas is coming <span className="block md:inline">to San Antonio!</span>
         </h2>
         <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-700 mb-10 leading-relaxed">
-          Alamo Python is proud to host a half-day PyTexas conference at Geekdom on Saturday, November 8, starting at 1 PM
+          Alamo Python is hosting a half-day PyTexas conference at Geekdom on Saturday, November 8, starting at 1 PM
         </p>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link
