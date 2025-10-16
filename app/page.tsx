@@ -1,17 +1,13 @@
 "use client"
 
-import { HeroVideo } from "../components/hero-video"
+import { HeroCommunities } from "../components/hero-communities"
 import { PySAPopup } from "../components/pysa-popup"
 
 export default function HomePage() {
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-black">
       <main className="relative w-full">
-        <HeroVideo />
-
-        {/*  <section className="container-responsive py-8 md:py-12 lg:py-16 xl:py-20">
-        </section> */}
-
+        <HeroCommunities />
         <PySAPopup />
       </main>
     </div>
