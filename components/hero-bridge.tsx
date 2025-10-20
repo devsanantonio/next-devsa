@@ -32,7 +32,7 @@ export function HeroBridge() {
           {' '}to the Tech Community in San Antonio
         </h1>
         <p className="text-slate-700 text-lg leading-relaxed max-w-sm mx-auto font-semibold">
-          <strong>You're absolutely right!</strong> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
+          <strong>You&apos;re absolutely right!</strong> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
         </p>
       </motion.div>
 

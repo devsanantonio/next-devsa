@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
 

@@ -355,11 +355,11 @@ export function HeroCommunities() {
             className="text-center max-w-5xl mx-auto mb-20 md:mb-24 z-10"
           >
             <h1 className="text-neutral-900 tracking-tight text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-6">
-              Your direct connection to <span className="text-neutral-600">San Antonio's tech community.</span>
+              Your direct connection to <span className="text-neutral-600">San Antonio&apos;s tech community.</span>
             </h1>
             <p className="text-neutral-600 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl mx-auto">
               DevSA bridges developers, innovators, and communities—connecting you to opportunities, events, and the
-              people shaping San Antonio's tech future.
+              people shaping San Antonio&apos;s tech future.
             </p>
           </motion.div>
 
@@ -496,7 +496,7 @@ export function HeroCommunities() {
               </h2>
               <p className="text-neutral-600 text-lg md:text-xl max-w-2xl mx-auto">
                 Connect with <span className="text-[#FACB11] font-bold">{techCommunities.length} communities</span>{" "}
-                across San Antonio's tech ecosystem
+                across San Antonio&apos;s tech ecosystem
               </p>
             </div>
 
