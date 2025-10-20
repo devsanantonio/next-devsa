@@ -297,8 +297,8 @@ export function HeroBridge() {
                 transition={{ duration: 0.8, delay: 1.2, type: "spring", stiffness: 200 }}
                 className="absolute pointer-events-auto md:hidden"
                 style={{
-                  left: "48%",
-                  top: "53%",
+                  left: "44%",
+                  top: "52%",
                   transform: "translate(-50%, -50%)",
                 }}
               > 
@@ -309,7 +309,7 @@ export function HeroBridge() {
                     alt="DevSA - San Antonio Developer Community"
                     width={80}
                     height={80}
-                    className="w-24 h-24 object-contain relative z-10 drop-shadow-2xl"
+                    className="w-32 h-32 object-contain relative z-10 drop-shadow-2xl"
                     style={{
                       filter: 'drop-shadow(0 0 20px rgba(244, 63, 94, 0.6)) drop-shadow(0 0 40px rgba(147, 51, 234, 0.4))'
                     }}
