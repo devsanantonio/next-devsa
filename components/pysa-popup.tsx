@@ -77,7 +77,7 @@ export function PySAPopup() {
               <button
                 onClick={handleClose}
                 className="absolute -top-2 -right-2 z-10 bg-black text-white rounded-full p-1.5 
-                  hover:bg-red-600 transition-colors shadow-lg"
+                  hover:bg-sky-700 transition-colors shadow-lg"
                 aria-label="Close popup"
               >
                 <X className="w-4 h-4" />
@@ -91,12 +91,6 @@ export function PySAPopup() {
                   sessionStorage.setItem("pysa-popup-dismissed", "true")
                 }}
               >
-                {/* Glow effect on hover */}
-                <div
-                  className="absolute -inset-1 bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 
-                  rounded-lg opacity-0 group-hover:opacity-75 blur transition-opacity duration-300"
-                />
-
                 {/* Card Image */}
                 <div
                   className="relative rounded-lg overflow-hidden
@@ -106,7 +100,7 @@ export function PySAPopup() {
                   <img
                     src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
                     alt="PySanAntonio - Python Conference - Click to learn more"
-                    className="w-full h-auto"
+                    className="w-full h-full"
                   />
 
                   {/* Hover overlay */}

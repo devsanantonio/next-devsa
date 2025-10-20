@@ -26,7 +26,7 @@ export function HeroBridge() {
       >
         <h1 className="text-slate-900 tracking-tight text-balance text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-black leading-[1.05] mb-3 md:mb-4">
           Your {' '}
-          <span className="bg-gradient-to-r from-rose-500 to-rose-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#ef426f] to-rose-500 bg-clip-text text-transparent">
             Direct Connection
           </span>
           {' '}to the Tech Community in San Antonio

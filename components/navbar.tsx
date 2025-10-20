@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { Menu } from "lucide-react"
 import { SlideOutMenu } from "./slide-out-menu"
 import { SocialMediaMenu } from "./social-media-menu"
+import { TerminalDropdown } from "./terminal-dropdown"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -41,39 +42,11 @@ export function Navbar() {
                 <Menu className="w-6 h-6" strokeWidth={2} />
               </button>
 
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <>
-                    {/* Backdrop to close dropdown when clicking outside */}
-                    <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
-
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.15, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-neutral-200 rounded-lg shadow-xl overflow-hidden z-50"
-                    >
-                      <Link
-                        href="/pysanantonio"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="block w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-50 transition-colors duration-150 border-b border-neutral-200 whitespace-nowrap"
-                      >
-                        PySanAntonio
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setIsSocialMenuOpen(true)
-                          setIsDropdownOpen(false)
-                        }}
-                        className="w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-50 transition-colors duration-150 whitespace-nowrap"
-                      >
-                        Stay Connected
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+              <TerminalDropdown 
+                isOpen={isDropdownOpen}
+                onClose={() => setIsDropdownOpen(false)}
+                onSocialMenuOpen={() => setIsSocialMenuOpen(true)}
+              />
             </div>
           </div>
         </div>
