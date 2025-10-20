@@ -1,7 +1,7 @@
 "use client"
 
-import { motion } from "motion/react"
-import { useState } from "react"
+import { motion, useScroll, useTransform } from "motion/react"
+import { useState, useRef } from "react"
 import { X, ExternalLink, MessageCircle } from "lucide-react"
 import { GlowingEffect } from "./glowing-effect"
 
@@ -32,7 +32,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60"
         onClick={onClose}
       />
       <motion.div
@@ -51,8 +51,8 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
             borderWidth={2}
             className="rounded-2xl"
           />
-          <div className="bg-neutral-900/95 backdrop-blur-xl border border-neutral-700/30 rounded-2xl flex flex-col overflow-hidden h-full">
-            <div className="relative h-32 bg-gradient-to-br from-neutral-800 to-neutral-900">
+          <div className="bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-2xl flex flex-col overflow-hidden h-full shadow-2xl">
+            <div className="relative h-32 bg-gradient-to-br from-neutral-50 to-neutral-100">
               <img
                 src={community.logo || "/placeholder.svg"}
                 alt={community.name}
@@ -60,15 +60,15 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
               />
               <button
                 onClick={onClose}
-                className="absolute top-3 right-3 text-white/80 hover:text-white transition-colors bg-black/60 hover:bg-black/80 rounded-full p-2 backdrop-blur-sm"
+                className="absolute top-3 right-3 text-neutral-600 hover:text-neutral-900 transition-colors bg-white/80 hover:bg-white rounded-full p-2 backdrop-blur-sm shadow-md"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              <h3 className="text-white text-xl font-bold">{community.name}</h3>
-              <p className="text-neutral-200 leading-relaxed text-base font-normal">{community.description}</p>
+              <h3 className="text-neutral-900 text-xl font-bold">{community.name}</h3>
+              <p className="text-neutral-700 leading-relaxed text-base font-normal">{community.description}</p>
 
               <div className="space-y-3 pt-2">
                 {community.website && (
@@ -76,7 +76,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-blue-400 hover:text-blue-300 transition-colors text-base font-medium hover:bg-blue-400/10 rounded-lg p-2 -m-2"
+                    className="flex items-center gap-3 text-blue-600 hover:text-blue-700 transition-colors text-base font-medium hover:bg-blue-50 rounded-lg p-2 -m-2"
                   >
                     <ExternalLink className="w-5 h-5" />
                     Website
@@ -87,7 +87,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.discord}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-indigo-400 hover:text-indigo-300 transition-colors text-base font-medium hover:bg-indigo-400/10 rounded-lg p-2 -m-2"
+                    className="flex items-center gap-3 text-indigo-600 hover:text-indigo-700 transition-colors text-base font-medium hover:bg-indigo-50 rounded-lg p-2 -m-2"
                   >
                     <MessageCircle className="w-5 h-5" />
                     Discord
@@ -98,7 +98,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-pink-400 hover:text-pink-300 transition-colors text-base font-medium hover:bg-pink-400/10 rounded-lg p-2 -m-2"
+                    className="flex items-center gap-3 text-pink-600 hover:text-pink-700 transition-colors text-base font-medium hover:bg-pink-50 rounded-lg p-2 -m-2"
                   >
                     <ExternalLink className="w-5 h-5" />
                     Instagram
@@ -109,7 +109,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sky-400 hover:text-sky-300 transition-colors text-base font-medium hover:bg-sky-400/10 rounded-lg p-2 -m-2"
+                    className="flex items-center gap-3 text-sky-600 hover:text-sky-700 transition-colors text-base font-medium hover:bg-sky-50 rounded-lg p-2 -m-2"
                   >
                     <ExternalLink className="w-5 h-5" />
                     Twitter
@@ -120,7 +120,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.meetup}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-orange-400 hover:text-orange-300 transition-colors text-base font-medium hover:bg-orange-400/10 rounded-lg p-2 -m-2"
+                    className="flex items-center gap-3 text-orange-600 hover:text-orange-700 transition-colors text-base font-medium hover:bg-orange-50 rounded-lg p-2 -m-2"
                   >
                     <ExternalLink className="w-5 h-5" />
                     Meetup
@@ -138,6 +138,16 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
 export function HeroCommunities() {
   const [selectedCommunity, setSelectedCommunity] = useState<TechCommunity | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  })
+
+  const lineProgress = useTransform(scrollYProgress, [0, 0.3, 0.6], [0, 1, 1])
+  const extensionLineHeight = useTransform(scrollYProgress, [0.3, 0.8], [0, 400])
 
   const techCommunities: TechCommunity[] = [
     {
@@ -320,118 +330,235 @@ export function HeroCommunities() {
     setSelectedCommunity(null)
   }
 
+  const featuredCommunities = [
+    techCommunities.find((c) => c.id === "gdg"),
+    techCommunities.find((c) => c.id === "alamo-python"),
+    techCommunities.find((c) => c.id === "dotnet-user-group"),
+    techCommunities.find((c) => c.id === "aitx"),
+    techCommunities.find((c) => c.id === "aws"),
+    techCommunities.find((c) => c.id === "geeks-and-drinks"),
+  ].filter(Boolean) as TechCommunity[]
+
+  const lineColors = ["#9CA3AF", "#3B82F6", "#10B981", "#EF4444", "#A855F7", "#F59E0B"]
+
   return (
     <>
-      <section className="min-h-screen flex flex-col items-center justify-center py-24 md:py-32 px-4 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-12 md:mb-16 lg:mb-20 flex flex-col items-center gap-6 md:gap-8 max-w-7xl w-full"
+      <section ref={containerRef} className="min-h-[200vh] bg-white">
+        <div
+          ref={heroRef}
+          className="sticky top-0 min-h-screen flex flex-col items-center justify-start pt-16 md:pt-24 pb-32 px-4 md:px-8 bg-white overflow-hidden"
         >
-          <div className="md:hidden flex-shrink-0 relative">
-            {/* Glowing shadow effect */}
-            <div className="absolute inset-0 blur-2xl bg-[#FACB11]/30 scale-110" />
-            <img
-              src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
-              alt="DEVSA - Community"
-              className="w-32 h-auto md:w-40 lg:w-48 xl:w-56 relative z-10"
-            />
-          </div>
-
-          <div className="flex-1 text-center max-w-5xl mx-auto">
-            <h1 className="text-white tracking-tight text-balance text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight">
-              YOUR <span className="text-[#FACB11]">DIRECT CONNECTION</span> TO THE TECH COMMUNITY IN SAN ANTONIO
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-center max-w-5xl mx-auto mb-20 md:mb-24 z-10"
+          >
+            <h1 className="text-neutral-900 tracking-tight text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-6">
+              Your direct connection to <span className="text-neutral-600">San Antonio's tech community.</span>
             </h1>
-          </div>
-        </motion.div>
+            <p className="text-neutral-600 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl mx-auto">
+              DevSA bridges developers, innovators, and communities—connecting you to opportunities, events, and the
+              people shaping San Antonio's tech future.
+            </p>
+          </motion.div>
 
-        {/* Communities Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          className="relative max-w-7xl w-full"
-        >
-          <GlowingEffect
-            disabled={false}
-            proximity={80}
-            spread={40}
-            blur={2}
-            movementDuration={2}
-            borderWidth={3}
-            className="rounded-2xl"
-          />
-
-          {/* Grid container */}
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 relative bg-black/40 backdrop-blur-sm rounded-2xl overflow-hidden">
-            {/* Vertical lines */}
-            <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 pointer-events-none">
-              <div className="border-r border-white/10" />
-              <div className="border-r border-white/10" />
-              <div className="border-r border-white/10 hidden md:block" />
-              <div className="border-r border-white/10 hidden lg:block" />
-              <div className="border-r border-white/10 hidden xl:block" />
-              <div />
-            </div>
-
-            {/* Horizontal lines */}
-            <div className="absolute inset-0 flex flex-col pointer-events-none">
-              <div className="flex flex-col h-full md:hidden">
-                {Array.from({ length: Math.ceil(techCommunities.length / 3) }).map((_, i) => (
-                  <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                ))}
-              </div>
-              <div className="hidden md:flex md:flex-col md:h-full lg:hidden">
-                {Array.from({ length: Math.ceil(techCommunities.length / 4) }).map((_, i) => (
-                  <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                ))}
-              </div>
-              <div className="hidden lg:flex lg:flex-col lg:h-full xl:hidden">
-                {Array.from({ length: Math.ceil(techCommunities.length / 5) }).map((_, i) => (
-                  <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                ))}
-              </div>
-              <div className="hidden xl:flex xl:flex-col xl:h-full">
-                {Array.from({ length: Math.ceil(techCommunities.length / 6) }).map((_, i) => (
-                  <div key={i} className="flex-1 border-b border-white/10 last:border-b-0" />
-                ))}
-              </div>
-            </div>
-
-            {/* Community Cards */}
-            {techCommunities.map((community, index) => (
-              <motion.div
-                key={community.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.5 + index * 0.05,
-                  ease: "easeOut",
-                }}
-                className="aspect-square p-3 md:p-4 lg:p-6"
-              >
-                <button
+          <div className="relative w-full max-w-7xl mx-auto mb-auto z-10">
+            <div className="flex items-center justify-center gap-6 md:gap-12 lg:gap-16 xl:gap-20 px-4">
+              {featuredCommunities.map((community, index) => (
+                <motion.button
+                  key={community.id}
+                  initial={{ opacity: 0, y: -30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 + index * 0.08 }}
                   onClick={() => handleCommunityClick(community)}
-                  className="w-full h-full flex flex-col items-center justify-center hover:bg-white/10 transition-all duration-300 rounded-xl group cursor-pointer relative overflow-hidden"
+                  className="group relative flex-shrink-0"
                 >
-                  {/* Hover glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FACB11]/0 to-[#FACB11]/0 group-hover:from-[#FACB11]/10 group-hover:to-transparent transition-all duration-500 rounded-xl" />
-
-                  <img
-                    src={community.logo || "/placeholder.svg"}
-                    alt={community.name}
-                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 object-contain mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-300 relative z-10"
-                  />
-                  <span className="text-white text-xs md:text-sm lg:text-base font-semibold text-center leading-tight opacity-90 group-hover:opacity-100 transition-opacity relative z-10 text-balance">
-                    {community.name}
-                  </span>
-                </button>
-              </motion.div>
-            ))}
+                  <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-white rounded-full border border-neutral-200 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-110 transition-all duration-300 hover:border-neutral-300">
+                    <img
+                      src={community.logo || "/placeholder.svg"}
+                      alt={community.name}
+                      className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
+                    />
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </motion.div>
+
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none z-0"
+            style={{ top: 0, left: 0 }}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              {lineColors.map((color, index) => (
+                <linearGradient
+                  key={`gradient-${index}`}
+                  id={`line-gradient-${index}`}
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor={color} stopOpacity="1" />
+                  <stop offset="100%" stopColor={color} stopOpacity="0.6" />
+                </linearGradient>
+              ))}
+            </defs>
+
+            {featuredCommunities.map((_, index) => {
+              const totalItems = featuredCommunities.length
+              const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1200
+
+              // Calculate positions based on viewport
+              const spacing = viewportWidth > 1024 ? 140 : viewportWidth > 768 ? 100 : 70
+              const startOffset = (viewportWidth - (totalItems - 1) * spacing) / 2
+              const startX = startOffset + index * spacing
+              const startY = viewportWidth > 768 ? 280 : 240
+
+              const endX = viewportWidth / 2
+              const endY = viewportWidth > 768 ? 620 : 560
+
+              // Bezier curve control points for smooth convergence
+              const controlY1 = startY + 120
+              const controlY2 = endY - 80
+
+              return (
+                <motion.path
+                  key={`connection-${index}`}
+                  d={`M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`}
+                  fill="none"
+                  stroke={`url(#line-gradient-${index})`}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  style={{
+                    pathLength: lineProgress,
+                  }}
+                  initial={{ pathLength: 0 }}
+                />
+              )
+            })}
+          </svg>
+
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.8, type: "spring", stiffness: 200 }}
+            className="relative z-20 mt-auto"
+          >
+            <div className="relative">
+              <div className="bg-neutral-900 text-white px-10 py-5 rounded-full shadow-2xl flex items-center gap-3 border border-neutral-800">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                  </svg>
+                </div>
+                <span className="text-2xl md:text-3xl font-bold tracking-tight">DevSA</span>
+              </div>
+
+              {/* Pulse animation */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.4, 0, 0.4],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+                className="absolute inset-0 rounded-full border-2 border-neutral-900"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 w-0.5 bg-neutral-900 origin-top z-10"
+            style={{
+              top: "calc(100% - 120px)",
+              height: extensionLineHeight,
+            }}
+          />
+        </div>
+
+        <div className="relative bg-gradient-to-b from-white to-neutral-50 py-20 px-4 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="max-w-7xl mx-auto"
+          >
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-neutral-900 text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                Explore All Communities
+              </h2>
+              <p className="text-neutral-600 text-lg md:text-xl max-w-2xl mx-auto">
+                Connect with <span className="text-[#FACB11] font-bold">{techCommunities.length} communities</span>{" "}
+                across San Antonio's tech ecosystem
+              </p>
+            </div>
+
+            <div className="relative">
+              <GlowingEffect
+                disabled={false}
+                proximity={100}
+                spread={40}
+                blur={2}
+                movementDuration={2}
+                borderWidth={2}
+                className="rounded-3xl"
+              />
+
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden border border-neutral-200 shadow-xl p-6 md:p-8 lg:p-10">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 md:gap-6">
+                  {techCommunities.map((community, index) => (
+                    <motion.div
+                      key={community.id}
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{
+                        duration: 0.5,
+                        delay: index * 0.03,
+                        ease: "easeOut",
+                      }}
+                      className="relative"
+                    >
+                      <button
+                        onClick={() => handleCommunityClick(community)}
+                        className="w-full aspect-square flex flex-col items-center justify-center gap-2 p-3 md:p-4 hover:bg-gradient-to-br hover:from-neutral-50 hover:to-neutral-100 transition-all duration-300 rounded-2xl group cursor-pointer relative overflow-hidden border border-transparent hover:border-neutral-200 hover:shadow-lg"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#FACB11]/0 via-transparent to-[#FACB11]/0 group-hover:from-[#FACB11]/10 group-hover:to-transparent transition-all duration-500 rounded-2xl" />
+
+                        <div className="relative z-10 w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center">
+                          <img
+                            src={community.logo || "/placeholder.svg"}
+                            alt={community.name}
+                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+
+                        <span className="text-neutral-800 text-[10px] md:text-xs font-semibold text-center leading-tight opacity-90 group-hover:opacity-100 transition-opacity relative z-10 text-balance line-clamp-2">
+                          {community.name}
+                        </span>
+
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          whileInView={{ scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.03 }}
+                          className="absolute top-2 right-2 w-2 h-2 bg-[#FACB11] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       <CommunityModal community={selectedCommunity} isOpen={isModalOpen} onClose={handleModalClose} />

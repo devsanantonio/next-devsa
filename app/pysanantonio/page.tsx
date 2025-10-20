@@ -132,20 +132,45 @@ export default function PySanAntonioPage() {
   const cardRotations = [-4, 3, -2, 5]
 
   return (
-    <main className="bg-white min-h-screen">
-      <section className="w-full py-24 lg:py-0">
+    <main className="bg-white overflow-x-hidden">
+      {/* Mobile CTA Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full px-4 sm:px-6 lg:hidden pt-24 pb-8"
+      >
+        <h1 className="text-3xl font-bold text-black mb-4">
+          PyTexas is coming <span className="block">to San Antonio!</span>
+        </h1>
+        <p className="max-w-3xl mx-auto text-base text-gray-700 mb-6 leading-relaxed">
+          Alamo Python is hosting a half-day PyTexas conference at Geekdom on Saturday, November 8, starting at 1 PM
+        </p>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link
+            href="https://www.meetup.com/alamo-python/events/311325578/"
+            className="inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-sky-600 rounded-xl hover:bg-sky-900 transition-all duration-300"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            RSVP Now
+          </Link>
+        </motion.div>
+      </motion.section>
+
+      <section className="w-full pb-8 lg:pb-0">
         {/* Mobile Layout - Hero + Horizontal Scroll */}
         <div className="block lg:hidden max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Mobile Hero Image */}
+          {/* Mobile Hero Image - Compact */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-md mx-auto mb-12"
+            className="w-full max-w-xs mx-auto mb-8"
           >
             <div className="relative w-full aspect-[1080/1350] rounded-xl overflow-hidden">
               <Image
-                src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-10-python.png"
+                src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
                 alt="Python San Antonio Conference"
                 fill
                 className="object-cover"
@@ -154,196 +179,137 @@ export default function PySanAntonioPage() {
             </div>
           </motion.div>
 
-          {/* Mobile Partner Cards - Horizontal Scroll */}
+          {/* Mobile Partner Cards - Compact Grid */}
           <div className="relative">
-            <h2 className="text-4xl font-bold text-black text-center mb-6">Our Partners</h2>
+            <h2 className="text-3xl font-bold text-black mb-4">Our Partners</h2>
 
-            {/* Scroll Indicator */}
-            <div className="flex justify-center gap-2 mb-4">
-              {partners.map((_, index) => (
-                <div key={index} className="w-2 h-2 rounded-full bg-gray-300" />
+            <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+              {partners.map((partner, index) => (
+                <motion.button
+                  key={partner.name}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  onClick={() => openModal(partner)}
+                  className="w-full"
+                >
+                  <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
+                    <Image
+                      src={partner.image || "/placeholder.svg"}
+                      alt={partner.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </motion.button>
               ))}
             </div>
-
-            <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-              <div className="flex gap-4 pb-4 px-4">
-                {partners.map((partner, index) => (
-                  <motion.button
-                    key={partner.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    onClick={() => openModal(partner)}
-                    className="flex-shrink-0 w-64 snap-center"
-                  >
-                    <div className="relative w-full aspect-[1080/1350] rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300">
-                      <Image
-                        src={partner.image || "/placeholder.svg"}
-                        alt={partner.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Scroll Hint Text */}
-            <p className="text-center text-sm text-gray-500 mt-2">← Swipe to see all partners →</p>
           </div>
         </div>
 
-        <div className="hidden lg:flex relative w-screen h-screen overflow-hidden mt-6">
-          {/* Gradient Background - Full Screen */}
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-600 via-teal-500 to-orange-600" />
-
-          {/* Content Container - Full Screen with tighter spacing */}
-          <div className="relative z-10 w-full h-full flex justify-center items-center px-8">
-            {/* Left Column - 2 Partner Cards with Rotations */}
-            <div className="absolute left-60 top-1/2 -translate-y-1/2 flex flex-col gap-8">
-              <motion.button
-                initial={{ opacity: 0, x: -50, rotate: 0 }}
-                animate={{ opacity: 1, x: 0, rotate: cardRotations[0] }}
-                whileHover={{ scale: 1.05, rotate: 0, y: -4 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                onClick={() => openModal(partners[0])}
-                className="w-48 cursor-pointer group"
-              >
-                <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden">
-                  <Image
-                    src={partners[0].image || "/placeholder.svg"}
-                    alt={partners[0].name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 px-3 py-1.5 rounded-lg">
-                      Click to Learn More
-                    </span>
-                  </div>
-                </div>
-              </motion.button>
-
-              <motion.button
-                initial={{ opacity: 0, x: -50, rotate: 0 }}
-                animate={{ opacity: 1, x: 0, rotate: cardRotations[1] }}
-                whileHover={{ scale: 1.05, rotate: 0, y: -4 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                onClick={() => openModal(partners[1])}
-                className="w-48 cursor-pointer group"
-              >
-                <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden">
-                  <Image
-                    src={partners[1].image || "/placeholder.svg"}
-                    alt={partners[1].name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 px-3 py-1.5 rounded-lg">
-                      Click to Learn More
-                    </span>
-                  </div>
-                </div>
-              </motion.button>
-            </div>
-
-            {/* Center - Main Hero Card (No Rotation, Larger) */}
+        {/* Desktop Layout - Left CTA, Right Images */}
+        <div className="hidden lg:flex w-full max-w-7xl mx-auto" style={{ height: 'calc(100vh - 120px)' }}>
+          {/* Left Side - CTA Section */}
+          <div className="w-1/2 flex items-center justify-center bg-white">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              className="relative z-20 w-full max-w-sm p-24"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="w-full px-8 xl:px-12 text-left"
             >
-              <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden">
-                <Image
-                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
-                  alt="Python San Antonio Conference"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
+              <h1 className="text-4xl xl:text-5xl 2xl:text-6xl font-bold text-black mb-6 leading-tight">
+                PyTexas is coming{" "}
+                <span className="block">to San Antonio!</span>
+              </h1>
+              <p className="text-lg xl:text-xl text-gray-700 mb-8 leading-relaxed">
+                Alamo Python is hosting a half-day PyTexas conference at Geekdom on Saturday, November 8, starting at 1 PM
+              </p>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  href="https://www.meetup.com/alamo-python/events/311325578/"
+                  className="inline-flex items-center justify-center px-10 py-4 text-xl font-bold text-white bg-sky-600 rounded-xl hover:bg-sky-900 transition-all duration-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  RSVP Now
+                </Link>
+              </motion.div>
             </motion.div>
+          </div>
 
-            {/* Right Column - 2 Partner Cards with Rotations */}
-            <div className="absolute right-60 top-1/2 -translate-y-1/2 flex flex-col gap-8">
-              <motion.button
-                initial={{ opacity: 0, x: 50, rotate: 0 }}
-                animate={{ opacity: 1, x: 0, rotate: cardRotations[2] }}
-                whileHover={{ scale: 1.05, rotate: 0, y: -4 }}
+          {/* Right Side - Hero Image with Gradient Background */}
+          <div className="w-1/2 relative overflow-hidden">
+
+            {/* Hero Image Container */}
+            <div className="relative z-10 w-full h-full flex justify-center items-center p-8 mt-12">
+              {/* Main Hero Card Only - Larger */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                onClick={() => openModal(partners[2])}
-                className="w-48 cursor-pointer group"
+                className="relative w-80 xl:w-96 2xl:w-[28rem]"
               >
                 <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden">
                   <Image
-                    src={partners[2].image || "/placeholder.svg"}
-                    alt={partners[2].name}
+                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
+                    alt="Python San Antonio Conference"
                     fill
                     className="object-cover"
+                    priority
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 px-3 py-1.5 rounded-lg">
-                      Click to Learn More
-                    </span>
-                  </div>
                 </div>
-              </motion.button>
+              </motion.div>
+            </div>
+          </div>
+        </div>
 
-              <motion.button
-                initial={{ opacity: 0, x: 50, rotate: 0 }}
-                animate={{ opacity: 1, x: 0, rotate: cardRotations[3] }}
-                whileHover={{ scale: 1.05, rotate: 0, y: -4 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                onClick={() => openModal(partners[3])}
-                className="w-48 cursor-pointer group"
-              >
-                <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden">
-                  <Image
-                    src={partners[3].image || "/placeholder.svg"}
-                    alt={partners[3].name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 px-3 py-1.5 rounded-lg">
-                      Click to Learn More
-                    </span>
+        {/* Desktop Partner Cards - Below Hero */}
+        <div className="hidden lg:block w-full bg-white py-16 mt-10">
+          <div className="max-w-7xl mx-auto px-8">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-5xl font-bold text-black mb-12"
+            >
+              Our Partners
+            </motion.h2>
+
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-8 w-full">
+              {partners.map((partner, index) => (
+                <motion.button
+                  key={partner.name}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.05, y: -8 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  onClick={() => openModal(partner)}
+                  className="w-full group cursor-pointer"
+                >
+                  <div className="relative w-full aspect-[1080/1350] rounded-xl overflow-hidden">
+                    <Image
+                      src={partner.image || "/placeholder.svg"}
+                      alt={partner.name}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                      <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 px-4 py-2 rounded-lg">
+                        Learn More
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </motion.button>
+                  <h3 className="text-lg font-semibold text-black mt-4 group-hover:text-teal-600 transition-colors duration-300">
+                    {partner.name}
+                  </h3>
+                </motion.button>
+              ))}
             </div>
           </div>
         </div>
       </section>
-
-      {/* Final CTA */}
-      <motion.section
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 md:mt-32 mb-16 text-center"
-      >
-        <h2 className="text-4xl lg:text-5xl font-bold text-black mb-8">
-          PyTexas is coming <span className="block md:inline">to San Antonio!</span>
-        </h2>
-        <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-700 mb-10 leading-relaxed">
-          Alamo Python is hosting a half-day PyTexas conference at Geekdom on Saturday, November 8, starting at 1 PM
-        </p>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link
-            href="https://www.meetup.com/alamo-python/events/311325578/"
-            className="inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-white bg-black rounded-xl hover:bg-gray-900 transition-all duration-300"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            RSVP Now
-          </Link>
-        </motion.div>
-      </motion.section>
 
       <PartnerModal partner={selectedPartner} isOpen={isModalOpen} onClose={closeModal} />
     </main>

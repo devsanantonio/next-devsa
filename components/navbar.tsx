@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "motion/react"
+import { Menu } from "lucide-react"
 import { SlideOutMenu } from "./slide-out-menu"
 import { SocialMediaMenu } from "./social-media-menu"
 
@@ -13,7 +14,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md border-b border-neutral-950">
+      <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-white/5 backdrop-blur-md border-b border-neutral-950">
         <div className="container-responsive">
           <div className="flex justify-between items-center py-1.5 md:py-1">
             <div className="flex-shrink-0">
@@ -33,14 +34,11 @@ export function Navbar() {
             <div className="flex-1 min-w-0 text-right relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="text-neutral-950 cursor-pointer transition-all duration-200 hover:text-neutral-700 active:scale-95 focus:outline-none p-2"
+                className="text-neutral-950 cursor-pointer transition-all duration-200 hover:text-neutral-700 hover:bg-neutral-100/10 active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-950/20 p-2.5 rounded-lg"
                 aria-label="Toggle menu"
+                aria-expanded={isDropdownOpen}
               >
-                <div className="flex flex-col gap-1.5 w-6 h-6 justify-center">
-                  <span className="block h-0.5 w-full bg-white transition-all" />
-                  <span className="block h-0.5 w-full bg-white transition-all" />
-                  <span className="block h-0.5 w-full bg-white transition-all" />
-                </div>
+                <Menu className="w-6 h-6" strokeWidth={2} />
               </button>
 
               <AnimatePresence>
@@ -59,7 +57,7 @@ export function Navbar() {
                       <Link
                         href="/pysanantonio"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="block w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-100 transition-colors duration-150 border-b border-neutral-200 whitespace-nowrap"
+                        className="block w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-50 transition-colors duration-150 border-b border-neutral-200 whitespace-nowrap"
                       >
                         PySanAntonio
                       </Link>
@@ -68,9 +66,9 @@ export function Navbar() {
                           setIsSocialMenuOpen(true)
                           setIsDropdownOpen(false)
                         }}
-                        className="w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-100 transition-colors duration-150 whitespace-wrap"
+                        className="w-full text-left px-5 py-3.5 text-neutral-900 font-semibold hover:bg-neutral-50 transition-colors duration-150 whitespace-nowrap"
                       >
-                        Where is the tech community?
+                        Stay Connected
                       </button>
                     </motion.div>
                   </>
