@@ -89,7 +89,7 @@ export function SpeakersModal({ isOpen, onClose, speakers }: SpeakersModalProps)
               <div className="max-w-2xl mx-auto text-center">
                 <h3 className="text-lg font-bold text-black mb-2">Interested in speaking?</h3>
                 <p className="text-sm text-gray-700 mb-4">
-                  We're always looking for passionate speakers to share their Python expertise.
+                  We&apos;re always looking for passionate speakers to share their Python expertise.
                 </p>
                 <Link
                   href="https://www.meetup.com/alamo-python/"

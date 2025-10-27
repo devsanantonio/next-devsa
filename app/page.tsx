@@ -3,7 +3,6 @@
 import { HeroCommunities } from "@/components/hero-communities"
 import { HeroBridge } from "../components/hero-bridge"
 import { PySAPopup } from "../components/pysa-popup"
-import { PartnersSection } from "@/components/partner-section"
 
 export default function HomePage() {
   return (

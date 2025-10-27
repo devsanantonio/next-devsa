@@ -338,7 +338,7 @@ export function PartnersSection() {
                     DevSA Community Space
                   </h3>
                   <p className="text-lg md:text-xl text-gray-300 leading-relaxed max-w-2xl mb-6">
-                    A dedicated coworking space for San Antonio's tech community. Connect, collaborate, and build the
+                    A dedicated coworking space for San Antonio&apos;s tech community. Connect, collaborate, and build the
                     future together.
                   </p>
                   <ul className="space-y-3 text-gray-300 mb-8">
