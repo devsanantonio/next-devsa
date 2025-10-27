@@ -24,7 +24,7 @@ export default function CoworkingSpacePage() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight">DevSA Community Space</h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl leading-relaxed">
-              Your home base for building, learning, and connecting with San Antonio's tech community.
+              Your home base for building, learning, and connecting with San Antonio&apos;s tech community.
             </p>
           </motion.div>
         </div>
@@ -94,10 +94,10 @@ export default function CoworkingSpacePage() {
           >
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Ready to Join?</h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Become part of San Antonio's thriving tech community. Contact us to learn more about membership options.
+              Become part of San Antonio&apos;s growing tech community. Contact us to learn more about membership options.
             </p>
             <a
-              href="mailto:hello@devsa.io"
+              href="mailto:hello@devsa.community"
               className="inline-flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105"
             >
               Get in Touch
