@@ -5,6 +5,8 @@ export interface Partner {
   description: string
   website?: string
   color?: string
+  video?: string
+  isEasterEgg?: boolean
 }
 
 export const partners: Partner[] = [
@@ -15,12 +17,14 @@ export const partners: Partner[] = [
     description: "Building San Antonio's technology and innovation ecosystem.",
     website: "https://www.sanantoniotechday.com/",
     color: "#EF4444",
+    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/techday/techbloc-anniversary.mov", // Replace with actual video URL
+    isEasterEgg: true,
   },
   {
     id: "geekdom",
     name: "Geekdom",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/geekdom_logo_full.svg",
-    description: "San Antonio's premier coworking and collaboration space for entrepreneurs and innovators.",
+    description: "Founded by techies and entrepreneurs, we’ve got a thing for startups and know what it takes to grow them. Since our founding, we’ve helped grow the Tech scene in San Antonio into a hub credited with positioning the city as one of the top destinations for entrepreneurs",
     website: "https://geekdom.com/",
     color: "#3B82F6",
   },
@@ -32,21 +36,23 @@ export const partners: Partner[] = [
       "Master Prompt Engineering, Automation, and AI Strategy With Our Hands-On, Outcome-Driven Programs",
     website: "https://www.learn2ai.co/",
     color: "#3B82F6",
+    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/Learn2AI+-+081825+G.mp4", // Replace with actual video URL
+    isEasterEgg: true,
   },
   {
     id: "aicowboys",
     name: "The AI Cowboys",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cowboys.svg",
     description:
-      "Founded in 2024 by former Air Force leader Michael J. Pendleton, The AI Cowboys has rapidly become one of Texas' hottest tech startups, currently ranked #6 among AI companies in the state. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
+      "Founded in 2024, The AI Cowboys have rapidly become one of Texas' hottest tech startups. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
     website: "https://www.theaicowboys.com/",
     color: "#8B5CF6",
   },
   {
     id: "utsa",
-    name: "UTSA",
+    name: "UTSA UC",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/uc-utsa.svg",
-    description: "University of Texas at San Antonio - Driving innovation and research.",
+    description: "The MDST programs not only allow UTSA to incubate new programs, like Artificial Intelligence, Hospitality and Event Management, Game Design, and others, but also orchestrate degree programs that provide interdisciplinary solutions to complex problems. That is, degree programs with classes and disciplines that span multiple colleges at UTSA.",
     website: "https://uc.utsa.edu/",
     color: "#F97316",
   },
@@ -72,7 +78,7 @@ export const partners: Partner[] = [
     id: "project-quest",
     name: "Project Quest",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/project-quest-logo.svg",
-    description: "The annual Python community conference for Texas.",
+    description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
     website: "https://questsa.org/",
     color: "#F59E0B",
   },

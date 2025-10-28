@@ -17,12 +17,12 @@ export function HeroBridge() {
   ]
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white w-full relative h-screen flex flex-col overflow-hidden pt-24 md:pt-36 md:mt-6 md:items-center md:justify-center">
+    <section id="hero-bridge" className="bg-gradient-to-b from-gray-50 to-white w-full relative h-[585px] md:h-screen flex flex-col overflow-hidden pt-24 md:pt-36 md:mt-6 md:items-center md:justify-center" data-bg-type="light">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
-        className="md:text-center max-w-6xl mx-auto mb-0 md:mb-0 z-10 relative px-4 md:px-8"
+        className="md:text-center max-w-6xl mx-auto z-10 relative px-4 md:px-8"
       >
         <h1 className="text-slate-950 tracking-normal md:tracking-tighter text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] mb-4 md:mb-6 text-left md:text-center">
           Your {' '}

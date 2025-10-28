@@ -8,7 +8,7 @@ export default function CoworkingSpacePage() {
   return (
     <div className="w-full min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative w-full bg-black text-white py-20 md:py-32">
+      <section className="relative w-full bg-black text-white py-20 md:py-32" data-bg-type="dark">
         <div className="container mx-auto px-6">
           <Link
             href="/"
@@ -31,7 +31,7 @@ export default function CoworkingSpacePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24" data-bg-type="light">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
@@ -84,7 +84,7 @@ export default function CoworkingSpacePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-black text-white">
+      <section className="py-16 md:py-24 bg-black text-white" data-bg-type="dark">
         <div className="container mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -24,38 +24,11 @@ export const techCommunities: TechCommunity[] = [
   {
     id: "alamo-python",
     name: "Alamo Python",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/alamo-python.svg",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/alamo-py.svg",
     description:
       "Alamo Python is part of the PyTexas network of Python user groups. We are focused at providing in person training and social events to help grow the San Antonio Python community. We are proud to be a part of the DEVSA community of San Antonio technology user groups.",
     meetup: "https://www.meetup.com/alamo-python-learners/",
     color: "#3B82F6",
-  },
-  {
-    id: "bsides",
-    name: "BSides San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
-    description:
-      "Each BSides event is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
-    website: "https://www.bsidessatx.com/",
-    color: "#7C3AED",
-  },
-  {
-    id: "uxsa",
-    name: "UXSA",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-uxsa.png",
-    description:
-      "UXSA supports the UX community in San Antonio by creating ways for people to connect, explore, and grow. Our goal is to serve as an active, responsive community for people interested or working in user experience. Support learning and growth for all levels of expertise.",
-    meetup: "https://www.meetup.com/uxsanantonio-public/",
-    color: "#14B8A6",
-  },
-  {
-    id: "arda",
-    name: "Alamo Regional Data Alliance",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-arda.png",
-    description:
-      "The Alamo Regional Data Alliance (ARDA) is a vibrant network of data professionals, leaders, and change-makers who share the common belief that individuals and organizations throughout the community should be informed by timely quality data when making decisions that impact their lives or the lives of those they serve.",
-    website: "https://alamodata.org/",
-    color: "#059669",
   },
   {
     id: "defcongroup-sa",
@@ -67,6 +40,15 @@ export const techCommunities: TechCommunity[] = [
     color: "#EF4444",
   },
   {
+    id: "bsides",
+    name: "BSides San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
+    description:
+      "Each BSides event is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
+    website: "https://www.bsidessatx.com/",
+    color: "#7C3AED",
+  },
+  {
     id: "greater-gaming-society",
     name: "Greater Gaming Society",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/ggs.svg",
@@ -74,6 +56,15 @@ export const techCommunities: TechCommunity[] = [
       "We provide support, collaboration, and connection for game developers and gamers in San Antonio, hosting monthly meetings, networking, socials and anything to help grow the local game industry.",
     meetup: "https://www.meetup.com/greater-gaming-society-of-san-antonio/",
     color: "#F59E0B",
+  },
+  {
+    id: "uxsa",
+    name: "UXSA",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-uxsa.png",
+    description:
+      "UXSA supports the UX community in San Antonio by creating ways for people to connect, explore, and grow. Our goal is to serve as an active, responsive community for people interested or working in user experience. Support learning and growth for all levels of expertise.",
+    meetup: "https://www.meetup.com/uxsanantonio-public/",
+    color: "#14B8A6",
   },
   {
     id: "atc",
@@ -94,6 +85,15 @@ export const techCommunities: TechCommunity[] = [
     color: "#06B6D4",
   },
   {
+    id: "arda",
+    name: "Alamo Regional Data Alliance",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-arda.png",
+    description:
+      "The Alamo Regional Data Alliance (ARDA) is a vibrant network of data professionals, leaders, and change-makers who share the common belief that individuals and organizations throughout the community should be informed by timely quality data when making decisions that impact their lives or the lives of those they serve.",
+    website: "https://alamodata.org/",
+    color: "#059669",
+  },
+  {
     id: "geeks-and-drinks",
     name: "Geeks and Drinks",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-geeks.png",
@@ -102,15 +102,14 @@ export const techCommunities: TechCommunity[] = [
     website: "https://geeksanddrinks.tech/",
     color: "#EC4899",
   },
-
-  {
-    id: "aitx",
-    name: "AITX",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-aitx.png",
+   {
+    id: "datanauts",
+    name: "Datanauts",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
     description:
-      "AITX is a community for AI Engineers, Entrepreneurs, and Explorers across Texas. At AITX, we're passionate about fostering a diverse and thriving AI community where like-minded individuals can connect with each other, share ideas, and inspire innovation. Each month, we bring together a dynamic mix of people to explore the latest advancements in AI technology, real-world applications, and the future of this rapidly growing field. Whether you're an AI veteran or a curious newcomer, AITX offers something for everyone.",
-    twitter: "https://x.com/aitxcommunity",
-    color: "#A855F7",
+      "Welcome Datanauts — San Antonio's grassroots gang of data scientists, engineers, analysts, and curious humans who think turning chaos into insight is a good time. Whether you're shipping production models, debugging dashboards at midnight, or just figured out what MLOps actually means (no judgment), you belong here.",
+    meetup: "https://www.meetup.com/datanauts/",
+    color: "#0EA5E9",
   },
   {
     id: "dotnet-user-group",
@@ -122,6 +121,24 @@ export const techCommunities: TechCommunity[] = [
     color: "#6366F1",
   },
   {
+    id: "alamo-city-locksport",
+    name: "Alamo City Locksport",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-73-aclocksport.png",
+    description:
+      "All ages welcome and encouraged to come out and experience this sport, we all can learn despite age, orientation, etc... we gather for the sport or science of locksport. (keep in mind only 21+ may consume alcohol in Texas, caffine might be your preference though depending on venue choice for the meetup of course.",
+    meetup: "https://www.meetup.com/alamocitylocksport/",
+    color: "#0EA5E9",
+  },
+  {
+    id: "owasp",
+    name: "OWASP San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
+    description:
+      "Welcome to OWASP San Antonio Chapter, a regional city chapter within OWASP. Our Chapter serves San Antonio region as a platform to discuss and share topics all around information and application security. Anyone with an interested and enthusiastic about application security is welcome. All meetings are free and open. You do not have to be an OWASP member.",
+    meetup: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
+    color: "#EF4444",
+  },
+  {
     id: "aws",
     name: "AWS User Group",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-aws+(1).png",
@@ -129,15 +146,6 @@ export const techCommunities: TechCommunity[] = [
       "The AWS User Group is a community of AWS enthusiasts and professionals who come together to share knowledge, best practices, and the latest developments in AWS technologies.",
     meetup: "https://www.meetup.com/san-antonio-aws-users-group/",
     color: "#F97316",
-  },
-  {
-    id: "datanauts",
-    name: "Datanauts",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
-    description:
-      "Welcome Datanauts — San Antonio's grassroots gang of data scientists, engineers, analysts, and curious humans who think turning chaos into insight is a good time. Whether you're shipping production models, debugging dashboards at midnight, or just figured out what MLOps actually means (no judgment), you belong here.",
-    meetup: "https://www.meetup.com/datanauts/",
-    color: "#0EA5E9",
   },
   {
     id: "bitcoin-club",
@@ -149,13 +157,13 @@ export const techCommunities: TechCommunity[] = [
     color: "#F59E0B",
   },
   {
-    id: "owasp",
-    name: "OWASP San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
+    id: "unreal-engineers-sa",
+    name: "Unreal Engine SA",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/unreal-engine.svg",
     description:
-      "Welcome to OWASP San Antonio Chapter, a regional city chapter within OWASP. Our Chapter serves San Antonio region as a platform to discuss and share topics all around information and application security. Anyone with an interested and enthusiastic about application security is welcome. All meetings are free and open. You do not have to be an OWASP member.",
-    meetup: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-owasp.png",
-    color: "#EF4444",
+      "This group is for anyone interested in developing games or experiences with Unreal Engine 4 or other versions of Unreal, whether you're an artist, programmer, designer, animator, or just interested in learning more about this great engine. Come hang out and chat with fellow Unreal developers. If you have an Unreal project you'd like feedback on, bring it to the event!",
+    meetup: "https://www.meetup.com/unreal-san-antonio/",
+    color: "#4B5563",
   },
   {
     id: "redhat",
@@ -175,6 +183,16 @@ export const techCommunities: TechCommunity[] = [
     website: "https://ace.atlassian.com/san-antonio/",
     color: "#2563EB",
   },
+    {
+    id: "aitx",
+    name: "AITX",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-aitx.png",
+    description:
+      "AITX is a community for AI Engineers, Entrepreneurs, and Explorers across Texas. At AITX, we're passionate about fostering a diverse and thriving AI community where like-minded individuals can connect with each other, share ideas, and inspire innovation. Each month, we bring together a dynamic mix of people to explore the latest advancements in AI technology, real-world applications, and the future of this rapidly growing field. Whether you're an AI veteran or a curious newcomer, AITX offers something for everyone.",
+    twitter: "https://x.com/aitxcommunity",
+    color: "#A855F7",
+  },
+
 
 ]
 
