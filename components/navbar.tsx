@@ -17,7 +17,7 @@ export function Navbar() {
     const observer = new IntersectionObserver(
       (entries) => {
         // Find the entry with the highest intersection ratio
-        let mostVisibleEntry = entries.reduce((prev, current) => 
+        const mostVisibleEntry = entries.reduce((prev, current) => 
           current.intersectionRatio > prev.intersectionRatio ? current : prev
         )
 
