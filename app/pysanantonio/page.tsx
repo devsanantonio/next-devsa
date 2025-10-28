@@ -74,7 +74,7 @@ function PartnerModal({
             transition={{ type: "spring", duration: 0.5 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-2xl max-w-sm w-full relative overflow-hidden">
+            <div className="bg-white rounded-2xl max-w-sm w-full relative overflow-hidden max-h-[85vh] flex flex-col">
               {/* Close Button */}
               <button
                 onClick={onClose}
@@ -84,8 +84,8 @@ function PartnerModal({
                 <X className="w-5 h-5 text-black" />
               </button>
 
-              {/* Partner Image - Smaller */}
-              <div className="relative w-full aspect-[4/3]">
+              {/* Partner Image - Fixed Height */}
+              <div className="relative w-full h-48 flex-shrink-0">
                 <Image
                   src={partner.image || "/placeholder.svg"}
                   alt={partner.name}
@@ -94,8 +94,8 @@ function PartnerModal({
                 />
               </div>
 
-              {/* Partner Info - Compact */}
-              <div className="p-6 space-y-3">
+              {/* Partner Info - Scrollable Content */}
+              <div className="p-6 space-y-3 overflow-y-auto flex-1">
                 <h3 className="text-xl font-bold text-black">{partner.name}</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">{partner.description}</p>
                 <Link
@@ -149,15 +149,15 @@ export default function PySanAntonioPage() {
   const cardRotations = [-4, 3, -2, 5]
 
   return (
-    <main className="bg-white overflow-x-hidden" data-bg-type="light">
-      {/* Mobile CTA Section */}
+    <main className="bg-white overflow-x-hidden" data-bg-type="dark">
+      {/* Mobile CTA Section - Full Viewing Area */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full px-4 sm:px-6 lg:hidden pt-24 pb-8 relative overflow-hidden"
+        className="w-full min-h-screen flex flex-col justify-center px-4 sm:px-6 lg:hidden relative overflow-hidden pt-5"
       >
-        {/* Mobile Metaballs Background */}
+        {/* Mobile Metaballs Background - Full Hero Coverage */}
         <div className="absolute inset-0 w-full h-full">
           <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
             <Metaballs
@@ -174,63 +174,79 @@ export default function PySanAntonioPage() {
           </div>
         </div>
         
-        <div className="relative z-10 space-y-6">
-          <h1 className="text-4xl sm:text-5xl font-black text-white leading-[1.1] tracking-tight text-center">
-            PyTexas is coming{" "}
-            <span className="block bg-gradient-to-r from-[#facb0f] to-[#ff8400] bg-clip-text text-transparent">
-              to San Antonio!
-            </span>
-          </h1>
-          <p className="max-w-md mx-auto text-lg text-white/95 leading-relaxed font-medium text-center">
-            We&apos;re excited to announce some of the talks scheduled for the first Python conference in San Antonio, <strong>PySanAntonio!</strong>
-          </p>
-          <div className="flex justify-center pt-2">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="https://www.meetup.com/alamo-python/events/311325578/"
-                className="group inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-sky-600 to-sky-700 rounded-xl hover:from-sky-700 hover:to-sky-800 transition-all duration-300 shadow-lg"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="mr-2">RSVP Now</span>
-                <svg 
-                  className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
+        {/* Content Container */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen py-8 px-2 space-y-6">
+          {/* Text Content */}
+          <div className="text-center space-y-4 w-full">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[1.15] tracking-tight px-2">
+              PyTexas is coming{" "}
+              <span className="block bg-gradient-to-r from-[#facb0f] to-[#ff8400] bg-clip-text text-transparent">
+                to San Antonio!
+              </span>
+            </h1>
+            <p className="max-w-sm mx-auto text-base sm:text-lg text-white/95 leading-relaxed font-medium px-4">
+              We&apos;re excited to announce some of the talks scheduled for the first Python conference in San Antonio, <strong>PySanAntonio!</strong>
+            </p>
+            <div className="flex justify-center pt-1">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="https://www.meetup.com/alamo-python/events/311325578/"
+                  className="group inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-sky-600 to-sky-700 rounded-xl hover:from-sky-700 hover:to-sky-800 transition-all duration-300 shadow-lg"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </motion.div>
+                  <span className="mr-2">RSVP Now</span>
+                  <svg 
+                    className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </motion.div>
+            </div>
           </div>
+
+          {/* Mobile Hero Image - Smaller with Glare and Gritty Filter */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="w-full max-w-xs group"
+          >
+            <div className="relative w-full aspect-[1080/1350] rounded-xl overflow-hidden  border border-white/20">
+              <img
+                src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
+                alt="Python San Antonio Conference"
+                className="w-full h-full object-cover transition-transform duration-500"
+              />
+              
+              {/* Glare Effects */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-40" />
+              <div className="absolute top-3 left-3 w-6 h-6 bg-white/50 rounded-full blur-md opacity-60" />
+              
+              {/* Scroll-Triggered Glare Animation */}
+              <motion.div 
+                initial={{ x: "-100%" }}
+                whileInView={{ x: "100%" }}
+                viewport={{ once: false, margin: "-50px" }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12"
+              />
+            </div>
+          </motion.div>
         </div>
       </motion.section>
 
       <section className="w-full pb-8 lg:pb-0">
-        {/* Mobile Layout - Hero + Horizontal Scroll */}
-        <div className="block lg:hidden max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Mobile Hero Image - Compact */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="w-full max-w-xs mx-auto mb-8"
-          >
-            <div className="relative w-full aspect-[1080/1350] rounded-xl overflow-hidden">
-              <Image
-                src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-25-pysa+(1).png"
-                alt="Python San Antonio Conference"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          </motion.div>
-
+        {/* Mobile Layout - Partner Cards Only */}
+        <div className="block lg:hidden max-w-7xl mx-auto px-4 sm:px-6 py-16">
           {/* Mobile Partner Cards - Compact Grid */}
           <div className="relative">
-            <h2 className="text-3xl font-bold text-black mb-4">Our Partners</h2>
+            <h2 className="text-3xl font-bold text-black mb-4 text-center">Our Partners</h2>
 
             <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
               {partners.map((partner, index) => (
@@ -240,14 +256,26 @@ export default function PySanAntonioPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   onClick={() => openModal(partner)}
-                  className="w-full"
+                  className="w-full group"
+                  style={{ transformStyle: "preserve-3d" }}
                 >
-                  <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
+                  <div className="relative w-full aspect-[1080/1350] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-white/10">
                     <Image
                       src={partner.image || "/placeholder.svg"}
                       alt={partner.name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-102"
+                    />
+                    
+                    {/* Loteria Card Glare Effects for Mobile */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-transparent opacity-30" />
+                    <div className="absolute top-2 left-2 w-6 h-6 bg-white/40 rounded-full blur-lg opacity-40" />
+                    
+                    {/* Animated Glare Sweep on Hover */}
+                    <div 
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent 
+                      transform -skew-x-12 -translate-x-full group-hover:translate-x-full 
+                      transition-transform duration-800 ease-out opacity-0 group-hover:opacity-100"
                     />
                   </div>
                 </motion.button>
