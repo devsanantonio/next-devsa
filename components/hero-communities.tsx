@@ -44,7 +44,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
             className="rounded-2xl"
           />
           <div className="bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-2xl flex flex-col overflow-hidden h-full shadow-2xl">
-            <div className="relative h-40 md:h-40 bg-[#ef426f] flex items-center justify-center flex-shrink-0">
+            <div className="relative h-40 md:h-40 bg-black/80 flex items-center justify-center flex-shrink-0">
               <img
                 src={community.logo || "/placeholder.svg"}
                 alt={community.name}
@@ -58,19 +58,21 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
               </button>
             </div>
 
-            <div className="overflow-y-auto p-6 space-y-4 flex-1">
-              <h3 className="text-neutral-900 text-3xl md:text-4xl font-black tracking-tight leading-tight">
-                {community.name}
-              </h3>
-              <p className="text-neutral-700 leading-relaxed text-base text-balance tracking-tighter">{community.description}</p>
+            <div className="overflow-y-auto p-6 md:p-8 space-y-6 flex-1">
+              <div className="space-y-4">
+                <h3 className="text-neutral-900 text-2xl md:text-3xl lg:text-4xl font-black tracking-[-0.01em] leading-tight">
+                  {community.name}
+                </h3>
+                <p className="text-neutral-700 leading-relaxed text-base md:text-lg text-balance font-light">{community.description}</p>
+              </div>
 
-              <div className="space-y-1.5 pt-2">
+              <div className="space-y-2 pt-4">
                 {community.website && (
                   <a
                     href={community.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 text-neutral-950 hover:text-neutral-800 transition-colors text-sm font-semibold hover:bg-blue-50 rounded-lg p-2.5"
+                    className="flex items-center gap-3 text-neutral-900 hover:text-neutral-700 transition-colors text-sm md:text-base font-semibold hover:bg-gray-100 rounded-xl p-3 md:p-4"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Website
@@ -81,9 +83,9 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.discord}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-semibold hover:bg-indigo-50 rounded-lg p-2.5"
+                    className="flex items-center gap-3 text-indigo-600 hover:text-indigo-700 transition-colors text-sm md:text-base font-semibold hover:bg-indigo-50 rounded-xl p-3 md:p-4"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />
                     Discord
                   </a>
                 )}
@@ -92,9 +94,9 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 text-pink-600 hover:text-pink-700 transition-colors text-sm font-semibold hover:bg-pink-50 rounded-lg p-2.5"
+                    className="flex items-center gap-3 text-pink-600 hover:text-pink-700 transition-colors text-sm md:text-base font-semibold hover:bg-pink-50 rounded-xl p-3 md:p-4"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
                     Instagram
                   </a>
                 )}
@@ -103,9 +105,9 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 text-sky-600 hover:text-sky-700 transition-colors text-sm font-semibold hover:bg-sky-50 rounded-lg p-2.5"
+                    className="flex items-center gap-3 text-sky-600 hover:text-sky-700 transition-colors text-sm md:text-base font-semibold hover:bg-sky-50 rounded-xl p-3 md:p-4"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
                     Twitter
                   </a>
                 )}
@@ -114,9 +116,9 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                     href={community.meetup}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 text-orange-600 hover:text-orange-700 transition-colors text-sm font-semibold hover:bg-orange-50 rounded-lg p-2.5"
+                    className="flex items-center gap-3 text-orange-600 hover:text-orange-700 transition-colors text-sm md:text-base font-semibold hover:bg-orange-50 rounded-xl p-3 md:p-4"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
                     Meetup
                   </a>
                 )}
@@ -161,7 +163,7 @@ export function HeroCommunities() {
 
   return (
     <>
-      <section id="hero-communities" className="relative py-20 md:py-16 overflow-hidden" data-bg-type="dark">
+      <section id="hero-communities" className="relative min-h-screen flex flex-col justify-center py-16 md:py-20 lg:py-24 overflow-hidden" data-bg-type="dark">
         {/* Grain Gradient Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
@@ -179,34 +181,51 @@ export function HeroCommunities() {
           </div>
         </div>
         
-        <div className="relative z-10 max-w-6xl mx-auto px-3 md:px-6 mb-6 md:mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-white tracking-tight text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] mb-3 md:mb-4 text-left md:text-center"
-          >
-            Our mission started with a simple question:
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto font-bold text-left md:text-center"
-          >
-            <strong className="text-[#facb11]">Where is the tech community?</strong>
-          </motion.p>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mb-12 md:mb-16 lg:mb-20">
+          <div className="space-y-6 md:space-y-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="space-y-4 md:space-y-6"
+            >
+              <h1 className="text-white tracking-[-0.02em] text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
+                Our mission started with a{" "}
+                <span className="text-gray-300 font-light italic">simple question</span>
+              </h1>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="space-y-4 md:space-y-6"
+            >
+              <p className="text-[#facb11] text-lg md:text-4xl font-black tracking-[-0.01em] leading-tight">
+                Where is the tech community?
+              </p>
+            </motion.div>
+          </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-2 md:px-40">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 place-items-center"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-center"
+          >
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="grid grid-cols-7 md:grid-cols-7 gap-3 md:gap-2 place-items-center max-w-5xl mx-auto md:-mt-8"
           >
             {techCommunities.map((community, index) => (
               <motion.button
@@ -216,7 +235,7 @@ export function HeroCommunities() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.03 }}
-                className="group relative w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 bg-slate-950/30 rounded-lg md:rounded-xl border border-slate-800 hover:border-slate-700 shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center overflow-hidden"
+                className="group relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 bg-slate-950/40 rounded-xl md:rounded-2xl border border-slate-700/50 hover:border-slate-600 shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center overflow-hidden backdrop-blur-sm"
                 style={
                   {
                     "--glow-color": community.color || "#3B82F6",
@@ -228,7 +247,7 @@ export function HeroCommunities() {
                 <img
                   src={community.logo || "/placeholder.svg"}
                   alt={community.name}
-                  className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-18 xl:h-18 object-contain relative z-10 group-hover:scale-110 transition-transform duration-300"
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain relative z-10 group-hover:scale-110 transition-transform duration-300 filter brightness-90 group-hover:brightness-110"
                 />
               </motion.button>
             ))}

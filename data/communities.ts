@@ -159,11 +159,20 @@ export const techCommunities: TechCommunity[] = [
   {
     id: "unreal-engineers-sa",
     name: "Unreal Engine SA",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/unreal-engine.svg",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/unreal-engine-light.svg",
     description:
       "This group is for anyone interested in developing games or experiences with Unreal Engine 4 or other versions of Unreal, whether you're an artist, programmer, designer, animator, or just interested in learning more about this great engine. Come hang out and chat with fellow Unreal developers. If you have an Unreal project you'd like feedback on, bring it to the event!",
     meetup: "https://www.meetup.com/unreal-san-antonio/",
     color: "#4B5563",
+  },
+  {
+    id: "dungo-digital",
+    name: "Dungo Digital",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/dungologo.webp",
+    description:
+      "We’re a digital-first innovation studio rooted in civic tech and community empowerment. Our mission is to make next-gen tools accessible to underserved communities while building sustainable business models that give back.",
+    website: "https://dungodigital.io/",
+    color: "#6366F1",
   },
   {
     id: "redhat",
