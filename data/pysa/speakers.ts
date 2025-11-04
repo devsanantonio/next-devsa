@@ -2,37 +2,103 @@ export interface Speaker {
   name: string
   title: string
   company: string
+  companyUrl: string
   image: string
-  bio: string
+  social?: {
+    linkedin?: string
+  }
 }
 
-export const speakers: Speaker[] = [
+// All Speakers in Grid Layout (Based on Vercel Ship 2025 Format)
+export const allSpeakers: Speaker[] = [
   {
-    name: "Sarah Chen",
-    title: "Senior Backend Engineer",
-    company: "Tech Innovations",
-    image: "/professional-woman-developer.png",
-    bio: "10+ years building scalable systems with Python",
+    name: "Joel Grus",
+    title: "Principal Engineer",
+    company: "",
+    companyUrl: "",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-joel-grus.png",
+    social: {
+      linkedin: "https://www.linkedin.com/in/joelgrus/"
+    }
   },
   {
-    name: "Marcus Rodriguez",
-    title: "ML Research Scientist",
-    company: "AI Labs",
-    image: "/professional-data-scientist.png",
-    bio: "Specializing in deep learning and neural networks",
+    name: "Paul Bailey",
+    title: "Principal Engineer",
+    company: "Clarity",
+    companyUrl: "https://www.clarityschools.com/",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul-bailey.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/paul-bailey-a313869/"
+    }
   },
   {
-    name: "Emily Watson",
-    title: "Data Analytics Lead",
-    company: "DataCorp",
-    image: "/professional-woman-analyst.jpg",
-    bio: "Transforming data into actionable insights",
+    name: "Cody Fincher",
+    title: "Staff Technical Solutions Consultant",
+    company: "Google",
+    companyUrl: "https://google.com",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-cody-fincher.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/cofin/"
+    }
   },
   {
-    name: "David Kim",
-    title: "Software Architect",
-    company: "Cloud Systems",
-    image: "/professional-man-architect.jpg",
-    bio: "Expert in distributed systems and async patterns",
+    name: "Mauricio Figueroa",
+    title: "Electrical Engineer",
+    company: "Alt-Bionics",
+    companyUrl: "https://www.altbionics.com/",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-mauricio.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/mauricio-e-figueroa/"
+    }
+  },
+  {
+    name: "Corrina Alcoser",
+    title: "Cybersecurity Specialist",
+    company: "AI Cowboys",
+    companyUrl: "https://theaicowboys.com",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-corrina.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/corrina-alcoser/"
+    }
+  },
+  {
+    name: "Gennaro Maida",
+    title: "MedTech Excecutive",
+    company: "Denovo Innovations Group",
+    companyUrl: "https://www.denovobioinnovations.com/",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-gennaro.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/gennaro-maida/"
+    }
+  },
+  {
+    name: "Sean Roberson",
+    title: "Operations Research Analyst",
+    company: "AETC",
+    companyUrl: "https://www.airuniversity.af.edu/AETC/",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-sean.jpg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/szroberson/"
+    }
+  },
+  {
+    name: "Mayank Gohil",
+    title: "AI Innovation",
+    company: "Learn2AI",
+    companyUrl: "https://learn2ai.co/",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/LTAISASW-13.jpg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/mayank-gohil10/"
+    }
+  },
+  {
+    name: "Michael Pendleton",
+    title: "Chief Executive Officer",
+    company: "AI Cowboys",
+    companyUrl: "https://theaicowboys.com",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-michael.jpeg",
+    social: {
+      linkedin: "https://www.linkedin.com/in/michael-j-pendleton/"
+    }
   },
 ]

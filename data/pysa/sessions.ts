@@ -6,54 +6,49 @@ export interface Session {
   description: string
   category: string
   color: string
-  location?: string
   track?: string
 }
 
 export const featuredSessions: Session[] = [
   {
-    title: "Building Scalable APIs with FastAPI",
-    speaker: "Sarah Chen",
-    speakerImage: "/professional-woman-developer.png",
-    time: "1:30 PM - 2:15 PM",
-    description: "Learn how to build production-ready APIs using FastAPI's modern features and best practices.",
-    category: "WEB DEVELOPMENT",
-    color: "bg-blue-600",
-    location: "Main Stage",
-    track: "main",
-  },
-  {
-    title: "Machine Learning with Python",
-    speaker: "Marcus Rodriguez",
-    speakerImage: "/professional-data-scientist.png",
-    time: "2:30 PM - 3:15 PM",
-    description: "Explore practical machine learning applications using scikit-learn and TensorFlow.",
-    category: "MACHINE LEARNING",
+    title: "Building Your Own AI Coding Assistant with DSPy",
+    speaker: "Joel Grus",
+    speakerImage: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-joel-grus.png",
+    time: "1:15 PM - 2:00 PM",
+    description: "Introducing the Alamo Python community to building your own AI coding assistant using DSPy. Discover how to create intelligent development tools.",
+    category: "MAIN TALK",
     color: "bg-yellow-500",
-    location: "Main Stage",
     track: "main",
   },
   {
-    title: "Python for Data Analysis",
-    speaker: "Emily Watson",
-    speakerImage: "/professional-woman-analyst.jpg",
+    title: "Asynchronous Patterns for Django",
+    speaker: "Paul Bailey",
+    speakerImage: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul-bailey.jpeg",
+    time: "2:30 PM - 3:15 PM",
+    description: "Presenting asynchronous patterns for Django in celebration of Django's 20th anniversary. Learn modern async techniques to improve your Django applications.",
+    category: "MAIN TALK",
+    color: "bg-blue-600",
+    track: "main",
+  },
+  {
+    title: "Advanced Alchemy: Your Companion to SQLAlchemy",
+    speaker: "Cody Fincher",
+    speakerImage: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-cody-fincher.jpeg",
     time: "3:30 PM - 4:15 PM",
-    description: "Master data analysis techniques with pandas, NumPy, and visualization libraries.",
-    category: "DATA SCIENCE",
+    description: "Visiting from Dallas to share advanced SQLAlchemy techniques and patterns. Master database interactions in Python applications.",
+    category: "MAIN TALK",
     color: "bg-blue-500",
-    location: "Workshop Room",
-    track: "workshops",
+    track: "main",
   },
   {
-    title: "Async Python Patterns",
-    speaker: "David Kim",
-    speakerImage: "/professional-man-architect.jpg",
-    time: "4:30 PM - 5:15 PM",
-    description: "Deep dive into asynchronous programming patterns and asyncio best practices.",
-    category: "ADVANCED PYTHON",
+    title: "Lightning Talks Session",
+    speaker: "Community Speakers",
+    speakerImage: "/community-speakers.jpg",
+    time: "1:15 PM - 1:45 PM",
+    description: "Quick-fire presentations covering Python innovation at Alt-Bionics, Charlotte AI sidekick, Graph+Vector AI synergy, flexible AI workflow automation, Math and Python perspectives, and Python in Government/National Security.",
+    category: "LIGHTNING TALKS",
     color: "bg-yellow-600",
-    location: "Main Stage",
-    track: "main",
+    track: "lightning",
   },
 ]
 
