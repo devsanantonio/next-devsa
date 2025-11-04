@@ -197,7 +197,7 @@ export default function SessionsSection() {
               className="border-l-4 border-red-500 pl-6 py-4"
             >
               <h4 className="font-sans text-white text-lg md:text-xl font-semibold mb-2">
-                A Mathematician's Perspective on Math and Python
+                A Mathematician&apos;s Perspective on Math and Python
               </h4>
               <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                 <span className="text-red-400 font-mono font-medium">Sean Roberson</span> bridges mathematical theory and practical Python implementation from an academic viewpoint.

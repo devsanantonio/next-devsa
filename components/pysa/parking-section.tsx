@@ -23,7 +23,7 @@ export default function ParkingSection() {
                 Parking downtown on the weekend is convenient and affordable! City of San Antonio parking garages charge a{" "}
                 <strong className="text-black font-semibold">$5 flat rate on weekends</strong>. We recommend the nearest, short-walk options:{" "}
                 <span className="font-medium text-gray-800">City Tower Garage</span>,{" "}
-                <span className="font-medium text-gray-800">St. Mary's Garage</span>, or the{" "}
+                <span className="font-medium text-gray-800">St. Mary&apos;s Garage</span>, or the{" "}
                 <span className="font-medium text-gray-800">Houston St. Garage</span>.
               </p>
             </div>

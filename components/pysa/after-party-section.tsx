@@ -49,7 +49,7 @@ export default function AfterPartySection() {
                   <h3 className="text-xl md:text-2xl font-bold text-black mb-3">Documentary Screening</h3>
                   <p className="text-gray-600 text-base md:text-lg leading-relaxed">
                     Stick around on the 3rd floor at Geekdom for a 90-minute Python documentary from the Cult-Repo team, 
-                    chronicling Python's rise from an Amsterdam side project to a global programming powerhouse.
+                    chronicling Python&apos;s rise from an Amsterdam side project to a global programming powerhouse.
                   </p>
                 </div>
               </div>

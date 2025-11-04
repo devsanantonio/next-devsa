@@ -77,7 +77,6 @@ export function SpeakersModal({ isOpen, onClose, speakers }: SpeakersModalProps)
                       <h3 className="text-xl font-bold text-black mb-1">{speaker.name}</h3>
                       <p className="text-blue-600 font-semibold text-sm mb-1">{speaker.title}</p>
                       <p className="text-gray-600 text-sm mb-2">{speaker.company}</p>
-                      <p className="text-gray-700 text-sm leading-relaxed">{speaker.bio}</p>
                     </div>
                   </motion.div>
                 ))}
