@@ -211,7 +211,7 @@ export default function SessionsSection() {
                       <div className="relative size-8 md:size-10 lg:size-12 shrink-0 bg-gray-700 rounded-full overflow-hidden">
                         <Image
                           alt="Paul Bailey"
-                          src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul-bailey.jpeg"
+                          src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul.png"
                           fill
                           className="rounded-full object-cover w-full h-full grayscale"
                           sizes="48px"

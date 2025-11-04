@@ -66,7 +66,7 @@ export default function HeroSection() {
           </div>
 
           {/* Hero Image - Takes Center Stage */}
-          <div className="flex-1 flex items-center justify-center py-6 min-h-0">
+          <div className="flex-1 flex items-center justify-center py-0 min-h-0">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, rotateX: 15 }}
               animate={{ opacity: 1, scale: 1, rotateX: 0 }}
@@ -111,7 +111,7 @@ export default function HeroSection() {
           </div>
 
           {/* Bottom Content Section - Mobile */}
-          <div className="pb-10 space-y-6 flex-shrink-0">
+          <div className="mt-6 pb-10 space-y-6 flex-shrink-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -26,7 +26,7 @@ export const allSpeakers: Speaker[] = [
     title: "Principal Engineer",
     company: "Clarity",
     companyUrl: "https://www.clarityschools.com/",
-    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul-bailey.jpeg",
+    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul.png",
     social: {
       linkedin: "https://www.linkedin.com/in/paul-bailey-a313869/"
     }

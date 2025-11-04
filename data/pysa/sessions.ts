@@ -23,7 +23,7 @@ export const featuredSessions: Session[] = [
   {
     title: "Asynchronous Patterns for Django",
     speaker: "Paul Bailey",
-    speakerImage: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul-bailey.jpeg",
+    speakerImage: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-paul.png",
     time: "2:30 PM - 3:15 PM",
     description: "Presenting asynchronous patterns for Django in celebration of Django's 20th anniversary. Learn modern async techniques to improve your Django applications.",
     category: "MAIN TALK",
