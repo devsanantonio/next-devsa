@@ -38,7 +38,7 @@ export function HeroBridge() {
           {/* Enhanced subtitle with better spacing and typography */}
           <div className="space-y-3 md:space-y-4">
             <p className="text-slate-600 text-base sm:text-lg md:text-xl leading-relaxed max-w-sm mx-auto font-light text-left md:text-center">
-              <span className="font-bold text-slate-800">You're absolutely right!</span> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
+              <span className="font-bold text-slate-800">You&apos;re absolutely right!</span> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
             </p>
           </div>
         </div>
