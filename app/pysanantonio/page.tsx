@@ -13,8 +13,8 @@ export default function PySanAntonioPage() {
       <HeroSection />
       <SpeakersSection />
       <SessionsSection />
-      <SponsorsSection />
       <AfterPartySection />
+      <SponsorsSection />
       <ParkingSection />
     </main>
   )
