@@ -235,14 +235,25 @@ export function PartnersSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
+              className="text-center space-y-6"
             >
-              <h2 className="text-white tracking-tight text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] mb-4 md:mb-6 text-left md:text-center">
-                Powering the Tech Ecosystem
-              </h2>
-              <p className="text-neutral-300 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto font-bold text-left md:text-center tracking-tight md:tracking-normal">
-                <strong className="text-[#ef426f]">Thanks to Our Partners</strong> we are able to bridge the gap between
-                passionate builders and our local partners.
-              </p>
+              <div className="space-y-4">
+                <p className="text-sm md:text-base font-semibold text-neutral-400 uppercase tracking-[0.2em]">
+                  Our Strategic Partners
+                </p>
+                <h2 className="text-white tracking-[-0.02em] text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[0.9] max-w-5xl mx-auto">
+                  Connecting Our Ecosystem:{" "}
+                  <span className="text-neutral-400 font-light italic">Meet the Partners</span>
+                </h2>
+              </div>
+              <div className="space-y-4 max-w-4xl mx-auto">
+                <p className="text-lg md:text-xl lg:text-2xl text-neutral-200 leading-[1.4] font-light text-balance">
+                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio.
+                </p>
+                <p className="text-base md:text-lg text-neutral-300 leading-relaxed max-w-3xl mx-auto text-balance">
+                  Connecting passionate builders with key resources and organizations across the San Antonio tech ecosystem.
+                </p>
+              </div>
             </motion.div>
           </div>
 
@@ -309,8 +320,8 @@ export function PartnersSection() {
           </div>
         </div>
 
-        {/* DevSA Community Space Spotlight - Non-Traditional Shape */}
-        <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+        {/* DevSA Community Space Spotlight - Refined Size */}
+        <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -319,10 +330,10 @@ export function PartnersSection() {
             className="relative overflow-hidden"
           >
             {/* Mobile: Regular rounded container */}
-            <div className="md:hidden bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 rounded-2xl relative min-h-[500px]">
-              <div className="grid grid-cols-1 gap-0 h-full">
+            <div className="md:hidden bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 rounded-2xl relative">
+              <div className="grid grid-cols-1 gap-0">
                 {/* Content for mobile */}
-                <div className="relative z-10 p-8 flex flex-col justify-center">
+                <div className="relative z-10 p-6 md:p-8 flex flex-col justify-center">
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -330,18 +341,24 @@ export function PartnersSection() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="space-y-6"
                   >
-                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
-                      Community Driven Coworking Space
-                    </h3>
-                    <p className="text-lg text-neutral-300 leading-relaxed">
-                      Thanks to <strong>Geekdom</strong>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
+                    <div className="space-y-4">
+                      <p className="text-xs font-medium text-neutral-400 uppercase tracking-[0.2em]">
+                        DEVSA Community Space
+                      </p>
+                      <h3 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-[-0.01em]">
+                        Community Driven{" "}
+                        <span className="text-neutral-300 font-light italic">Coworking Space</span>
+                      </h3>
+                    </div>
+                    <p className="text-base text-neutral-300 leading-relaxed font-light">
+                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that's available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
-                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
+                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-6 py-3 rounded-full font-bold text-base hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
                     >
                       Explore the Space
-                      <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </motion.div>
                 </div>
@@ -372,16 +389,13 @@ export function PartnersSection() {
               </div>
             </div>
 
-            {/* Desktop: Non-traditional shape with clip-path */}
+            {/* Desktop: Refined and compact design */}
             <div 
-              className="hidden md:block bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 relative min-h-[400px] lg:min-h-[450px]"
-              style={{
-                clipPath: "polygon(0 8%, 100% 0, 100% 92%, 0 100%)"
-              }}
+              className="hidden md:block bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 relative min-h-[320px] lg:min-h-[360px] rounded-2xl overflow-hidden"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 h-full">
-                {/* Left Content */}
-                <div className="relative z-10 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 h-full">
+                {/* Left Content - Takes more space */}
+                <div className="relative z-10 lg:col-span-3 p-8 md:p-10 lg:p-12 flex flex-col justify-center">
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -389,24 +403,30 @@ export function PartnersSection() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="space-y-6"
                   >
-                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
-                      Community Driven Coworking Space
-                    </h3>
-                    <p className="text-lg md:text-xl text-neutral-300 leading-relaxed">
-                      Thanks to <strong>Geekdom</strong>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
+                    <div className="space-y-4">
+                      <p className="text-sm font-medium text-neutral-400 uppercase tracking-[0.2em]">
+                        DEVSA Community Space
+                      </p>
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight tracking-[-0.01em]">
+                        Community Driven{" "}
+                        <span className="text-neutral-300 font-light italic block">Coworking Space</span>
+                      </h3>
+                    </div>
+                    <p className="text-base md:text-lg text-neutral-300 leading-relaxed font-light max-w-lg text-balance">
+                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that's available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
-                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
+                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-6 py-3 rounded-full font-bold text-base hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
                     >
                       Explore the Space
-                      <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </motion.div>
                 </div>
 
-                {/* Right Video */}
-                <div className="relative lg:h-full min-h-[300px] lg:min-h-[450px]">
+                {/* Right Video - Smaller footprint */}
+                <div className="relative lg:col-span-2 lg:h-full min-h-[300px]">
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -416,7 +436,7 @@ export function PartnersSection() {
                   >
                     <video
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_7916.mov"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-r-2xl"
                       style={{
                         filter: "contrast(1.2) brightness(0.9) saturate(0.8) sepia(0.1) grayscale(0.05)"
                       }}

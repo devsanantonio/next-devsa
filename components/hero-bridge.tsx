@@ -17,28 +17,36 @@ export function HeroBridge() {
   ]
 
   return (
-    <section id="hero-bridge" className="bg-gradient-to-b from-gray-50 to-white w-full relative h-screen flex flex-col overflow-hidden pt-10 md:pt-36 md:mt-6 md:items-center md:justify-center" data-bg-type="light">
+    <section id="hero-bridge" className="bg-gradient-to-t from-gray-50 to-white w-full relative min-h-screen md:h-screen flex flex-col overflow-hidden pt-10 md:pt-36 md:mt-6 md:items-center md:justify-center" data-bg-type="light">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
-        className="md:text-center max-w-6xl mx-auto z-10 relative px-4 md:px-8"
+        className="md:text-center max-w-6xl mx-auto z-10 relative px-6 md:px-8"
       >
-        <h1 className="text-slate-950 tracking-normal md:tracking-tighter text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] mb-4 md:mb-6 text-left md:text-center">
-          Your {' '}
-          <span className="bg-gradient-to-r from-[#ef426f] to-rose-500 bg-clip-text text-transparent">
-            Direct Connection
-          </span>
-          {' '}to the Tech Community in San Antonio
-        </h1>
-        <p className="text-slate-700 text-lg leading-relaxed max-w-sm mx-auto font-semibold">
-          <strong>You&apos;re absolutely right!</strong> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
-        </p>
+        <div className="space-y-6 md:space-y-8">
+          {/* Enhanced heading with better typography hierarchy */}
+          <h1 className="text-slate-950 tracking-[-0.02em] md:tracking-[-0.03em] text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] md:leading-[0.9] text-left md:text-center">
+            Your{" "}
+            <span className="bg-gradient-to-r from-[#ef426f] via-rose-500 to-pink-600 bg-clip-text text-transparent font-black">
+              Direct Connection
+            </span>
+            {" "}to the{" "}
+            <span className="text-slate-700 font-light italic">Tech Community</span>
+          </h1>
+          
+          {/* Enhanced subtitle with better spacing and typography */}
+          <div className="space-y-3 md:space-y-4">
+            <p className="text-slate-600 text-base sm:text-lg md:text-xl leading-relaxed max-w-sm mx-auto font-light text-left md:text-center">
+              <span className="font-bold text-slate-800">You're absolutely right!</span> DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem.
+            </p>
+          </div>
+        </div>
       </motion.div>
 
-      <div className="relative w-full max-w-full mx-auto px-1 md:px-2 flex-1 md:flex md:items-center md:justify-center -mt-6 md:mt-0">
+      <div className="relative w-full max-w-full mx-auto px-1 md:px-2 flex-1 md:flex md:items-center md:justify-center -mt-6 md:mt-0 pb-8 md:pb-0">
         <motion.div 
-          className="relative w-full h-[340px] md:h-[520px]"
+          className="relative w-full h-[280px] md:h-[520px]"
           initial={{ scale: 0.95, opacity: 0.8 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
@@ -46,7 +54,7 @@ export function HeroBridge() {
           {/* SVG Canvas for connection lines - Mobile optimized */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none md:hidden"
-            viewBox="0 0 1400 360"
+            viewBox="0 0 1400 280"
             preserveAspectRatio="xMidYMid meet"
           >
             <defs>
@@ -67,19 +75,19 @@ export function HeroBridge() {
               const spacing = 1200 / (totalLogos + 1)
               const startX = 100 + spacing * (index + 1)
               
-              // Mobile-specific coordinates for longer lines
-              const startY = 30
+              // Mobile-specific coordinates optimized for compact space
+              const startY = 25
               const endX = 700
-              const endY = 310 // Much lower for dramatic mobile lines
+              const endY = 230 // Adjusted for more compact mobile layout
               
               const isLeftSide = index < totalLogos / 2
               const distanceFromCenter = Math.abs(index - (totalLogos - 1) / 2)
               
-              // More horizontal flow pattern like reference image
+              // More horizontal flow pattern optimized for compact mobile space
               const controlX1 = startX + (isLeftSide ? -15 - distanceFromCenter * 15 : 15 + distanceFromCenter * 15)
-              const controlY1 = 80 + distanceFromCenter * 8 // Less dramatic initial curve
+              const controlY1 = 70 + distanceFromCenter * 6 // Adjusted for compact space
               const controlX2 = endX + (isLeftSide ? -40 - distanceFromCenter * 25 : 40 + distanceFromCenter * 25)
-              const controlY2 = 200 + distanceFromCenter * 12 // More horizontal middle section
+              const controlY2 = 160 + distanceFromCenter * 8 // Adjusted for compact space
 
               return (
                 <g key={`mobile-line-${logo.id}`}>
@@ -290,7 +298,7 @@ export function HeroBridge() {
                   </motion.div>
                 )
               })}
-              {/* Bottom center DevSA logo - Mobile optimized */}
+              {/* Bottom center DevSA logo - Mobile optimized for compact space */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -305,7 +313,7 @@ export function HeroBridge() {
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-rose-500/30 via-purple-500/30 to-blue-500/30 rounded-full blur-xl animate-pulse"></div>
                   <Image
-                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-35-globe.png"
+                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-59-turkey.png"
                     alt="DevSA - San Antonio Developer Community"
                     width={80}
                     height={80}
@@ -325,16 +333,16 @@ export function HeroBridge() {
                 transition={{ duration: 0.8, delay: 1.2, type: "spring", stiffness: 200 }}
                 className="absolute pointer-events-auto hidden md:block"
                 style={{
-                  left: "45.5%",
-                  top: "50.2%",
+                  left: "46.5%",
+                  top: "52.2%",
                   transform: "translate(-50%, -50%)",
                 }}
               > 
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/40 via-purple-500/40 to-blue-500/40 rounded-full blur-2xl animate-pulse"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-purple-500/20 to-blue-500/20 rounded-full blur-3xl animate-ping"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/40 via-rose-500/10 to-blue-500/40 rounded-full blur-2xl animate-pulse"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-rose-500/10 to-blue-500/20 rounded-full blur-3xl animate-ping"></div>
                   <Image
-                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-35-globe.png"
+                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-59-turkey.png"
                     alt="DevSA - San Antonio Developer Community"
                     width={140}
                     height={140}

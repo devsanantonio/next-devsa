@@ -6,7 +6,7 @@ import Image from "next/image"
 
 export function GeekdomSection() {
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-gray-900 to-black text-white">
+    <section className="py-20 md:py-32 bg-gradient-to-br from-gray-900 to-black text-white" data-bg-type="dark">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

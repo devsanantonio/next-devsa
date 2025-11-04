@@ -163,7 +163,7 @@ export function HeroCommunities() {
 
   return (
     <>
-      <section id="hero-communities" className="relative min-h-screen flex flex-col justify-center py-16 md:py-20 lg:py-24 overflow-hidden" data-bg-type="dark">
+      <section id="hero-communities" className="relative min-h-screen flex flex-col justify-center py-16 md:py-20 lg:py-24 overflow-hidden" data-bg-type="light">
         {/* Grain Gradient Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
@@ -190,7 +190,7 @@ export function HeroCommunities() {
               transition={{ duration: 0.6 }}
               className="space-y-4 md:space-y-6"
             >
-              <h1 className="text-white tracking-[-0.02em] text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
+              <h1 className="mt-2 md:mt-0 text-white tracking-[-0.02em] text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
                 Our mission started with a{" "}
                 <span className="text-gray-300 font-light italic">simple question</span>
               </h1>
@@ -225,7 +225,7 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-7 md:grid-cols-7 gap-3 md:gap-2 place-items-center max-w-5xl mx-auto md:-mt-8"
+            className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-2 place-items-center max-w-5xl mx-auto md:-mt-8"
           >
             {techCommunities.map((community, index) => (
               <motion.button

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
   keywords: [
-    "n Antonio",
+    "San Antonio",
     "DEVSA community space",
     "downtown San Antonio coworking",
     "free office space SA",
