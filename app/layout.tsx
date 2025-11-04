@@ -10,11 +10,15 @@ import { Footer } from "@/components/footer"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 })
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false, // Only preload if used on initial page load
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
