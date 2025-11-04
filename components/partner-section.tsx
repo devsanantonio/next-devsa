@@ -351,7 +351,7 @@ export function PartnersSection() {
                       </h3>
                     </div>
                     <p className="text-base text-neutral-300 leading-relaxed font-light">
-                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that's available to our growing tech community without the need for a daily pass or monthly membership.
+                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
@@ -413,7 +413,7 @@ export function PartnersSection() {
                       </h3>
                     </div>
                     <p className="text-base md:text-lg text-neutral-300 leading-relaxed font-light max-w-lg text-balance">
-                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that's available to our growing tech community without the need for a daily pass or monthly membership.
+                      Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
