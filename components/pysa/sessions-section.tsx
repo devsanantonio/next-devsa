@@ -69,7 +69,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-sm md:text-base font-mono font-medium text-white mb-2 tracking-wide">
@@ -119,7 +119,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-yellow-600 border border-yellow-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -172,7 +172,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-purple-600 border border-purple-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -225,7 +225,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-sm md:text-base font-mono font-medium text-white mb-2 tracking-wide">
@@ -254,7 +254,7 @@ export default function SessionsSection() {
                     Connect with fellow Python developers, grab refreshments, and prepare for the final session.
                   </p>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-green-600 border border-green-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -307,7 +307,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-sm md:text-base font-mono font-medium text-white mb-2 tracking-wide">
@@ -371,7 +371,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-blue-600 border border-blue-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -424,7 +424,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-green-600 border border-green-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -477,7 +477,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-red-600 border border-red-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
@@ -530,7 +530,7 @@ export default function SessionsSection() {
                     </p>
                   </div>
                 </div>
-                <div className="w-full md:w-48 lg:w-52 shrink-0">
+                <div className="w-48 lg:w-52 shrink-0">
                   <div className="aspect-video relative w-full bg-cyan-600 border border-cyan-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
                     <div className="text-center">
                       <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
