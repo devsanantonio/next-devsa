@@ -344,7 +344,7 @@ export default function SessionsSection() {
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 md:gap-8 items-start">
                 <div className="flex flex-col gap-4 md:gap-6">
                   <p className="font-sans text-white leading-tight text-xl md:text-2xl lg:text-3xl tracking-tight font-medium">
-                    Meet Charlotte: Your Sarcastic Sidekick Against Digital Threats
+                    Meet R-O-D-E-O: Your Sarcastic Sidekick Against Digital Threats
                   </p>
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3 md:gap-4">
@@ -367,7 +367,7 @@ export default function SessionsSection() {
                       </div>
                     </div>
                     <p className="text-sm md:text-base text-gray-300 mt-3 leading-relaxed max-w-prose">
-                      Introducing Charlotte, an AI-powered cybersecurity assistant with attitude, built using Python frameworks.
+                      Introducing R-O-D-E-O, an AI-powered cybersecurity assistant with attitude, built using Python frameworks.
                     </p>
                   </div>
                 </div>
@@ -492,58 +492,6 @@ export default function SessionsSection() {
               </div>
             </motion.div>
 
-            {/* Michael Lightning Talk */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="font-mono focus-visible:outline-offset-2 focus-visible:outline-2 focus-visible:outline-gray-100 hover:opacity-70 motion-safe:transition-opacity motion-safe:duration-200 no-underline block border-t border-gray-700 border-b py-8 lg:py-10"
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 md:gap-8 items-start">
-                <div className="flex flex-col gap-4 md:gap-6">
-                  <p className="font-sans text-white leading-tight text-xl md:text-2xl lg:text-3xl tracking-tight font-medium">
-                    Python Shaping Work in Government and National Security
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className="relative size-8 md:size-10 lg:size-12 shrink-0 bg-gray-700 rounded-full overflow-hidden">
-                        <Image
-                          alt="Michael Pendleton"
-                          src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-michael.jpeg"
-                          fill
-                          className="rounded-full object-cover w-full h-full grayscale"
-                          sizes="48px"
-                        />
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="text-sm md:text-base lg:text-lg text-white tracking-tight font-mono uppercase font-medium">
-                          Michael Pendleton
-                        </div>
-                        <div className="text-xs text-gray-400 font-mono uppercase">
-                          Chief Executive Officer, AI Cowboys
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm md:text-base text-gray-300 mt-3 leading-relaxed max-w-prose">
-                      Revealing how Python drives critical operations in government and defense sectors.
-                    </p>
-                  </div>
-                </div>
-                <div className="w-48 lg:w-52 shrink-0">
-                  <div className="aspect-video relative w-full bg-cyan-600 border border-cyan-500 rounded-lg overflow-hidden flex items-center justify-center p-4">
-                    <div className="text-center">
-                      <div className="text-xs font-mono font-medium text-white mb-1 tracking-wide uppercase">
-                        Lightning Talk
-                      </div>
-                      <div className="text-sm md:text-base font-mono font-medium text-white tracking-wide">
-                        5:00 PM - 5:15 PM
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </motion.div>
       </div>

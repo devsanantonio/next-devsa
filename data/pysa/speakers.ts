@@ -91,14 +91,4 @@ export const allSpeakers: Speaker[] = [
       linkedin: "https://www.linkedin.com/in/mayank-gohil10/"
     }
   },
-  {
-    name: "Michael Pendleton",
-    title: "Chief Executive Officer",
-    company: "AI Cowboys",
-    companyUrl: "https://theaicowboys.com",
-    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-michael.jpeg",
-    social: {
-      linkedin: "https://www.linkedin.com/in/michael-j-pendleton/"
-    }
-  },
 ]
