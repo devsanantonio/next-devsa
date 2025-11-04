@@ -190,7 +190,7 @@ export function HeroCommunities() {
               transition={{ duration: 0.6 }}
               className="space-y-4 md:space-y-6"
             >
-              <h1 className="mt-2 md:mt-0 text-white tracking-[-0.02em] text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
+              <h1 className="text-white tracking-[-0.02em] text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
                 Our mission started with a{" "}
                 <span className="text-gray-300 font-light italic">simple question</span>
               </h1>
