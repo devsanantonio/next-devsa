@@ -17,7 +17,7 @@ export function HeroBridge() {
   ]
 
   return (
-    <section id="hero-bridge" className="bg-gradient-to-t from-gray-50 to-white w-full relative min-h-screen md:h-screen flex flex-col overflow-hidden pt-10 md:pt-36 md:mt-6 md:items-center md:justify-center" data-bg-type="light">
+    <section id="hero-bridge" className="bg-gradient-to-t from-gray-50 to-white w-full relative md:h-screen flex flex-col overflow-hidden pt-10 md:pt-36 md:mt-6 md:items-center md:justify-center" data-bg-type="light">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

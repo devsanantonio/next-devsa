@@ -163,7 +163,7 @@ export function HeroCommunities() {
 
   return (
     <>
-      <section id="hero-communities" className="relative min-h-screen flex flex-col justify-center py-16 md:py-20 lg:py-24 overflow-hidden" data-bg-type="light">
+      <section id="hero-communities" className="relative md:min-h-screen flex flex-col justify-center py-16 md:py-20 overflow-hidden" data-bg-type="light">
         {/* Grain Gradient Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
