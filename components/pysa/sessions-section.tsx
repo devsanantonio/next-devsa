@@ -227,7 +227,7 @@ export default function SessionsSection() {
                       </div>
                     </div>
                     <p className="text-sm md:text-base text-gray-300 mt-3 leading-relaxed max-w-prose">
-                      Presenting asynchronous patterns for Django in celebration of Django's 20th anniversary. Learn modern async techniques to improve your Django applications.
+                      Presenting asynchronous patterns for Django in celebration of Django&apos;s 20th anniversary. Learn modern async techniques to improve your Django applications.
                     </p>
                   </div>
                 </div>
@@ -456,7 +456,7 @@ export default function SessionsSection() {
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 md:gap-8 items-start">
                 <div className="flex flex-col gap-4 md:gap-6">
                   <p className="font-sans text-white leading-tight text-xl md:text-2xl lg:text-3xl tracking-tight font-medium">
-                    A Mathematician's Perspective on Math and Python
+                    A Mathematician&apos;s Perspective on Math and Python
                   </p>
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3 md:gap-4">
