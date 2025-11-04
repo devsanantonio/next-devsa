@@ -17,10 +17,7 @@ export default function SessionsSection() {
           className="flex flex-col gap-4"
         >
           <p className="font-sans text-white leading-tight text-2xl lg:text-4xl xl:text-6xl font-semibold uppercase tracking-tight">
-            Sessions
-          </p>
-          <p className="hidden text-gray-300 text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
-            Join us for compelling talks from industry leaders and community lightning presentations
+            Conference Schedule
           </p>
         </motion.header>
 
@@ -33,9 +30,6 @@ export default function SessionsSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-12"
         >
-          <h3 className="font-sans text-white text-lg md:text-xl lg:text-2xl font-semibold mb-8 uppercase tracking-tight">
-            Conference Schedule
-          </h3>
           <div className="flex flex-col">
             {/* Joel Grus - Main Talk */}
             <motion.div
