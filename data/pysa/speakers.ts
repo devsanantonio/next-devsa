@@ -64,7 +64,7 @@ export const allSpeakers: Speaker[] = [
   {
     name: "Gennaro Maida",
     title: "MedTech Excecutive",
-    company: "Denovo Innovations Group",
+    company: "Denovo Innovations",
     companyUrl: "https://www.denovobioinnovations.com/",
     image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/speakers-gennaro.jpeg",
     social: {
