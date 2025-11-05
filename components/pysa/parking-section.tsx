@@ -23,8 +23,8 @@ export default function ParkingSection() {
               
               <div className="max-w-4xl space-y-4 sm:space-y-6">
                 <p className="text-gray-700 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl leading-[1.6] sm:leading-[1.5] lg:leading-[1.4] font-normal tracking-[-0.005em] sm:tracking-[-0.01em] text-left">
-                  Parking downtown on the weekend is convenient and affordable! City of San Antonio parking garages will be charging a{" "}
-                  <strong className="text-black font-semibold">$5 flat rate day of event</strong>. We recommend the nearest, short-walk options:{" "}
+                  Parking downtown on the weekend is convenient and affordable! City of San Antonio parking garages charge a $10 flat rate.{" "}
+                  <strong className="text-black font-semibold">On the day of the event, The St Mary's Garage will be charging $5</strong>. We recommend the nearest, short-walk options:{" "}
                   <span className="font-medium text-gray-800">City Tower Garage</span>,{" "}
                   <span className="font-medium text-gray-800">St. Mary&apos;s Garage</span>, or the{" "}
                   <span className="font-medium text-gray-800">Houston St. Garage</span>.
@@ -44,7 +44,7 @@ export default function ParkingSection() {
                     className="group inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base lg:text-lg transition-colors duration-200 tracking-[-0.005em]"
                   >
                     <span className="border-b border-blue-600/40 hover:border-blue-700/60 transition-colors duration-200 pb-0.5">
-                      Learn more about city parking options
+                      Learn more about city parking options  
                     </span>
                     <svg 
                       className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" 
