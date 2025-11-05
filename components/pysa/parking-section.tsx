@@ -24,7 +24,7 @@ export default function ParkingSection() {
               <div className="max-w-4xl space-y-4 sm:space-y-6">
                 <p className="text-gray-700 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl leading-[1.6] sm:leading-[1.5] lg:leading-[1.4] font-normal tracking-[-0.005em] sm:tracking-[-0.01em] text-left">
                   Parking downtown on the weekend is convenient and affordable! City of San Antonio parking garages charge a $10 flat rate.{" "}
-                  <strong className="text-black font-semibold">On the day of the event, The St Mary's Garage will be charging $5</strong>. We recommend the nearest, short-walk options:{" "}
+                  <strong className="text-black font-semibold">On the day of the event, The St Mary&apos;s Garage will be charging $5</strong>. We recommend the nearest, short-walk options:{" "}
                   <span className="font-medium text-gray-800">City Tower Garage</span>,{" "}
                   <span className="font-medium text-gray-800">St. Mary&apos;s Garage</span>, or the{" "}
                   <span className="font-medium text-gray-800">Houston St. Garage</span>.
