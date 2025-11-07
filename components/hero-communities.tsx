@@ -8,6 +8,7 @@ import { X, ExternalLink, MessageCircle } from "lucide-react"
 import { GlowingEffect } from "./glowing-effect"
 import { GrainGradient } from '@paper-design/shaders-react'
 import { techCommunities, type TechCommunity } from "@/data/communities"
+import { usePerformanceCapabilities } from "@/lib/performance-detector"
 
 interface CommunityModalProps {
   community: TechCommunity | null
@@ -16,6 +17,8 @@ interface CommunityModalProps {
 }
 
 function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
+  const { capabilities } = usePerformanceCapabilities()
+  
   if (!community || !isOpen) return null
 
   return (
@@ -34,16 +37,18 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
         className="fixed inset-0 z-[70] flex items-center justify-center p-4"
       >
         <div className="relative w-full max-w-md md:max-w-[400px] md:max-h-[500px]" style={{ aspectRatio: "4/5" }}>
-          <GlowingEffect
-            disabled={false}
-            proximity={100}
-            spread={40}
-            blur={1}
-            movementDuration={2}
-            borderWidth={2}
-            className="rounded-2xl"
-          />
-          <div className="bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-2xl flex flex-col overflow-hidden h-full shadow-2xl">
+          {capabilities?.canUseComplexAnimations && (
+            <GlowingEffect
+              disabled={false}
+              proximity={100}
+              spread={40}
+              blur={1}
+              movementDuration={2}
+              borderWidth={2}
+              className="rounded-2xl"
+            />
+          )}
+          <div className={`bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-2xl flex flex-col overflow-hidden h-full ${capabilities?.canUseComplexAnimations ? 'shadow-2xl' : 'shadow-xl border-2'}`}>
             <div className="relative h-40 md:h-40 bg-black/80 flex items-center justify-center flex-shrink-0">
               <img
                 src={community.logo || "/placeholder.svg"}
@@ -135,6 +140,7 @@ export function HeroCommunities() {
   const [selectedCommunity, setSelectedCommunity] = useState<TechCommunity | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 })
+  const { capabilities, isLoading } = usePerformanceCapabilities()
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -151,6 +157,52 @@ export function HeroCommunities() {
     }
   }, [])
 
+  // Render background based on device capabilities
+  const renderBackground = () => {
+    if (isLoading || !capabilities) {
+      // Show simple gradient while detecting capabilities
+      return (
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-black via-neutral-900 to-neutral-800" />
+      )
+    }
+
+    if (capabilities.canUseShaders) {
+      return (
+        <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
+          <GrainGradient
+            width={dimensions.width}
+            height={dimensions.height}
+            colors={["#ff8400", "#ef4371", "#00b3aa"]}
+            colorBack="#000000"
+            softness={0.5}
+            intensity={0.5}
+            noise={0.25}
+            shape="corners"
+            speed={1}
+          />
+        </div>
+      )
+    }
+
+    // Fallback: Static gradient with noise pattern for older devices
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-black via-neutral-900 to-neutral-800">
+        <div 
+          className="w-full h-full"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 20% 80%, rgba(255, 132, 0, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(239, 67, 113, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(0, 179, 170, 0.2) 0%, transparent 70%),
+              repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)
+            `,
+            backgroundBlendMode: 'multiply'
+          }}
+        />
+      </div>
+    )
+  }
+
   const handleCommunityClick = (community: TechCommunity) => {
     setSelectedCommunity(community)
     setIsModalOpen(true)
@@ -163,22 +215,10 @@ export function HeroCommunities() {
 
   return (
     <>
-      <section id="hero-communities" className="relative md:min-h-screen flex flex-col justify-center py-16 md:py-20 overflow-hidden" data-bg-type="light">
-        {/* Grain Gradient Background */}
+      <section id="hero-communities" className="relative md:min-h-screen flex flex-col justify-center py-16 md:py-20 overflow-hidden" data-bg-type="dark">
+        {/* Adaptive Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <div className="w-full h-full min-w-[100vw] min-h-[100vh] flex items-center justify-center">
-            <GrainGradient
-              width={dimensions.width}
-              height={dimensions.height}
-              colors={["#ff8400", "#ef4371", "#00b3aa"]}
-              colorBack="#000000"
-              softness={0.5}
-              intensity={0.5}
-              noise={0.25}
-              shape="corners"
-              speed={1}
-            />
-          </div>
+          {renderBackground()}
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mb-12 md:mb-16 lg:mb-20">
@@ -231,10 +271,13 @@ export function HeroCommunities() {
               <motion.button
                 key={community.id}
                 onClick={() => handleCommunityClick(community)}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={capabilities?.preferReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.9 }}
+                whileInView={capabilities?.preferReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.03 }}
+                transition={capabilities?.preferReducedMotion ? 
+                  { duration: 0 } : 
+                  { duration: 0.4, delay: index * 0.03 }
+                }
                 className="group relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 bg-slate-950/40 rounded-xl md:rounded-2xl border border-slate-700/50 hover:border-slate-600 shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center overflow-hidden backdrop-blur-sm"
                 style={
                   {

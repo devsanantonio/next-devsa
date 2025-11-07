@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Footer } from "@/components/footer"
+import { PerformanceIndicator } from "@/components/performance-indicator"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -167,6 +168,7 @@ export default function RootLayout({
           {children}
           <Footer />
           <Analytics />
+          <PerformanceIndicator />
         </Suspense>
       </body>
     </html>

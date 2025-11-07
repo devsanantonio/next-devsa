@@ -5,9 +5,11 @@ import Link from "next/link"
 import { motion } from "motion/react"
 import { useState, useEffect } from "react"
 import { Metaballs } from '@paper-design/shaders-react'
+import { usePerformanceCapabilities } from '@/lib/performance-detector'
 
 export default function HeroSection() {
   const [dimensions, setDimensions] = useState({ width: 1280, height: 720 })
+  const { capabilities, isLoading } = usePerformanceCapabilities()
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -24,16 +26,17 @@ export default function HeroSection() {
     }
   }, [])
 
-  return (
-    <>
-      {/* Mobile Hero Section - Image-First Design */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full min-h-screen flex flex-col lg:hidden relative overflow-hidden bg-[#2a273f]"
-      >
-        {/* Mobile Metaballs Background - Extended height to cover bottom section */}
+  // Render fallback background for low-performance devices
+  const renderBackground = () => {
+    if (isLoading || !capabilities) {
+      // Show simple gradient while detecting capabilities
+      return (
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#2a273f] via-[#3a3458] to-[#2a273f]" />
+      )
+    }
+
+    if (capabilities.canUseShaders) {
+      return (
         <div className="absolute inset-0 w-full h-full">
           <Metaballs
             width={dimensions.width || window?.innerWidth || 390}
@@ -47,15 +50,49 @@ export default function HeroSection() {
             offsetX={-0.3}
           />
         </div>
+      )
+    }
+
+    // Fallback: Static gradient with subtle pattern for older devices
+    return (
+      <div className="absolute inset-0 w-full h-full">
+        <div 
+          className="w-full h-full bg-gradient-to-br from-[#2a273f] via-[#3a3458] to-[#2a273f]"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 25% 25%, rgba(252, 203, 15, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 75% 75%, rgba(0, 65, 179, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(252, 203, 15, 0.05) 0%, transparent 70%)
+            `
+          }}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {/* Mobile Hero Section - Image-First Design */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full min-h-screen flex flex-col lg:hidden relative overflow-hidden bg-[#2a273f]"
+      >
+        {/* Mobile Background - Adaptive based on device capabilities */}
+        {renderBackground()}
         
         {/* Hero Content - Image Dominant Layout */}
         <div className="relative z-10 flex flex-col min-h-screen container mx-auto px-4 sm:px-6">
           {/* Header Text - Mobile */}
           <div className="pt-20 pb-6 text-center flex-shrink-0">
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={capabilities?.preferReducedMotion ? { opacity: 1 } : { opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={capabilities?.preferReducedMotion ? 
+                { duration: 0 } : 
+                { duration: 0.8, delay: 0.2 }
+              }
               className="space-y-1"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[0.9] tracking-[-0.02em] drop-shadow-lg">
@@ -68,9 +105,15 @@ export default function HeroSection() {
           {/* Hero Image - Takes Center Stage */}
           <div className="flex-1 flex items-center justify-center py-0 min-h-0">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotateX: 15 }}
+              initial={capabilities?.preferReducedMotion ? 
+                { opacity: 1, scale: 1, rotateX: 0 } : 
+                { opacity: 0, scale: 0.9, rotateX: 15 }
+              }
               animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-              transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 100 }}
+              transition={capabilities?.preferReducedMotion ? 
+                { duration: 0 } : 
+                { duration: 1, delay: 0.4, type: "spring", stiffness: 100 }
+              }
               className="w-full max-w-[280px] sm:max-w-[320px] group"
               style={{ transformStyle: "preserve-3d" }}
             >
@@ -87,19 +130,21 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/10 to-transparent opacity-50" />
                 <div className="absolute top-4 left-4 w-8 h-8 bg-white/60 rounded-full blur-lg opacity-70" />
                 
-                {/* Premium Glare Animation */}
-                <motion.div 
-                  initial={{ x: "-120%" }}
-                  animate={{ x: "120%" }}
-                  transition={{ 
-                    duration: 2, 
-                    delay: 1.5, 
-                    ease: [0.4, 0, 0.2, 1],
-                    repeat: Infinity,
-                    repeatDelay: 4
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent transform -skew-x-12"
-                />
+                {/* Premium Glare Animation - Disabled for reduced motion */}
+                {!capabilities?.preferReducedMotion && (
+                  <motion.div 
+                    initial={{ x: "-120%" }}
+                    animate={{ x: "120%" }}
+                    transition={{ 
+                      duration: 2, 
+                      delay: 1.5, 
+                      ease: [0.4, 0, 0.2, 1],
+                      repeat: Infinity,
+                      repeatDelay: 4
+                    }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent transform -skew-x-12"
+                  />
+                )}
                 
                 {/* Depth Shadow */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/10 opacity-60" />
@@ -149,20 +194,8 @@ export default function HeroSection() {
 
       {/* Desktop Hero Section - Wide Image Layout */}
       <div className="hidden lg:flex w-full min-h-screen relative overflow-hidden bg-[#2a273f]">
-        {/* Desktop Metaballs Background - Extended height to cover bottom section */}
-        <div className="absolute inset-0 w-full h-full">
-          <Metaballs
-            width={dimensions.width || window?.innerWidth || 1920}
-            height={(dimensions.height || window?.innerHeight || 1080) + 300}
-            colors={["#facb0f", "#0041b3"]}
-            colorBack="#2a273f"
-            count={13}
-            size={0.81}
-            speed={0.5}
-            scale={4}
-            offsetX={-0.3}
-          />
-        </div>
+        {/* Desktop Background - Adaptive based on device capabilities */}
+        {renderBackground()}
 
         {/* Hero Content - Wide Image Layout */}
         <div className="relative z-10 flex flex-col w-full min-h-screen container mx-auto px-8 xl:px-12 py-8">
@@ -192,19 +225,21 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
                 <div className="absolute top-6 left-6 w-12 h-12 bg-white/50 rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                 
-                {/* Premium Glare Animation - Desktop */}
-                <motion.div 
-                  initial={{ x: "-120%" }}
-                  animate={{ x: "120%" }}
-                  transition={{ 
-                    duration: 2.5, 
-                    delay: 2, 
-                    ease: [0.4, 0, 0.2, 1],
-                    repeat: Infinity,
-                    repeatDelay: 6
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12"
-                />
+                {/* Premium Glare Animation - Desktop - Disabled for reduced motion */}
+                {!capabilities?.preferReducedMotion && (
+                  <motion.div 
+                    initial={{ x: "-120%" }}
+                    animate={{ x: "120%" }}
+                    transition={{ 
+                      duration: 2.5, 
+                      delay: 2, 
+                      ease: [0.4, 0, 0.2, 1],
+                      repeat: Infinity,
+                      repeatDelay: 6
+                    }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12"
+                  />
+                )}
                 
                 {/* Depth and Lighting Effects */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/5 opacity-50" />
