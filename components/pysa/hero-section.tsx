@@ -171,12 +171,10 @@ export default function HeroSection() {
               
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="https://www.meetup.com/alamo-python/events/311325578/"
+                  href="/pysanantonio/resources"
                   className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-to-r from-sky-600 via-sky-700 to-blue-700 rounded-xl hover:from-sky-700 hover:via-sky-800 hover:to-blue-800 transition-all duration-300 shadow-xl border border-sky-400/30 drop-shadow-lg"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
-                  <span className="mr-2 tracking-wide">RSVP Now</span>
+                  <span className="mr-2 tracking-wide">View Resources</span>
                   <svg 
                     className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
                     fill="none" 
@@ -272,12 +270,10 @@ export default function HeroSection() {
               
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="https://www.meetup.com/alamo-python/events/311325578/"
+                  href="/pysanantonio/resources"
                   className="group inline-flex items-center justify-center px-8 py-3.5 text-base lg:text-lg font-bold text-white bg-gradient-to-r from-sky-600 via-sky-700 to-blue-700 rounded-xl hover:from-sky-700 hover:via-sky-800 hover:to-blue-800 transition-all duration-300 shadow-xl border border-sky-400/30 drop-shadow-lg"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
-                  <span className="mr-2 tracking-wide">RSVP Now</span>
+                  <span className="mr-2 tracking-wide">View Resources</span>
                   <svg 
                     className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
                     fill="none" 
