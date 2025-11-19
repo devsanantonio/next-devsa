@@ -215,22 +215,22 @@ export function HeroCommunities() {
 
   return (
     <>
-      <section id="hero-communities" className="relative md:min-h-screen flex flex-col justify-center py-16 md:py-20 overflow-hidden" data-bg-type="dark">
+      <section id="hero-communities" className="relative min-h-screen flex flex-col justify-center py-20 md:py-24 lg:py-28 overflow-hidden" data-bg-type="dark">
         {/* Adaptive Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           {renderBackground()}
         </div>
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mb-12 md:mb-16 lg:mb-20">
-          <div className="space-y-6 md:space-y-6 text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 lg:px-12 mb-10 md:mb-12 lg:mb-14">
+          <div className="space-y-6 md:space-y-7 lg:space-y-8 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="space-y-4 md:space-y-6"
+              className="space-y-6 md:space-y-8"
             >
-              <h1 className="text-white tracking-[-0.02em] text-balance text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black leading-[0.9] max-w-5xl mx-auto">
+              <h1 className="text-white tracking-[-0.03em] text-balance text-[2.75rem] leading-[1.05] sm:text-5xl sm:leading-[1.05] md:text-6xl md:leading-[1.05] lg:text-7xl lg:leading-[1] xl:text-8xl xl:leading-[1] 2xl:text-9xl 2xl:leading-[0.95] font-black max-w-6xl mx-auto">
                 Our mission started with a{" "}
                 <span className="text-gray-300 font-light italic">simple question</span>
               </h1>
@@ -241,16 +241,16 @@ export function HeroCommunities() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="space-y-4 md:space-y-6"
+              className="space-y-4 md:space-y-5 pt-2"
             >
-              <p className="text-[#facb11] text-lg md:text-4xl font-black tracking-[-0.01em] leading-tight">
-                Where is the tech community?
+              <p className="text-[#facb11] text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-[-0.01em] leading-[1.2] mx-auto px-2 whitespace-nowrap">
+                Where is the tech community in San Antonio?
               </p>
             </motion.div>
           </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -265,7 +265,7 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-2 place-items-center max-w-5xl mx-auto md:-mt-8"
+            className="grid grid-cols-5 md:grid-cols-7 gap-3 md:gap-4 lg:gap-5 place-items-center max-w-5xl mx-auto"
           >
             {techCommunities.map((community, index) => (
               <motion.button
