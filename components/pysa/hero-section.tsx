@@ -11,24 +11,27 @@ type MediaItem = {
   src: string
   alt: string
   filter?: "sepia" | "grayscale" | "none"
+  poster?: string // Poster image for videos
+  autoplayInHero?: boolean // Whether video autoplays in hero (default: false for power saving)
 }
 
 const mediaItems: MediaItem[] = [
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.mov", alt: "PySanAntonio Conference", filter: "none" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.jpg", alt: "PySanAntonio Conference Audience", filter: "none" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mov", alt: "PySanAntonio Conference Audience", filter: "none" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa8.jpg", alt: "After Party", filter: "none" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
-  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg", alt: "PySanAntonio Conference Audience", filter: "none" },
-  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.mov", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.mov", alt: "PySanAntonio Conference", filter: "none", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", autoplayInHero: true },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.jpg", autoplayInHero: false },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa8.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa-paul.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference Audience", filter: "none" }, 
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg", autoplayInHero: false },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mov", alt: "PySanAntonio Conference Audience", filter: "none", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", autoplayInHero: true },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
   { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa-joel.png", autoplayInHero: false },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "After Party", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.jpg", autoplayInHero: false },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg", alt: "PySanAntonio Conference Audience", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.mov", alt: "PySanAntonio Conference Audience", filter: "sepia", poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", autoplayInHero: false },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
 ]
 
 export default function HeroSection() {
@@ -36,41 +39,6 @@ export default function HeroSection() {
   const [isMusicOpen, setIsMusicOpen] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null)
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
-  const sectionRef = useRef<HTMLElement>(null)
-
-  // Pause/play videos when section enters/leaves viewport
-  useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Get all video elements
-          Object.values(videoRefs.current).forEach((video) => {
-            if (video) {
-              if (entry.isIntersecting) {
-                video.play().catch(() => {
-                  // Ignore play errors (e.g., if video hasn't loaded yet)
-                })
-              } else {
-                video.pause()
-              }
-            }
-          })
-        })
-      },
-      {
-        threshold: 0.1, // Trigger when at least 10% of section is visible
-      }
-    )
-
-    observer.observe(section)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
 
   // Handle keyboard navigation for gallery
   useEffect(() => {
@@ -107,7 +75,7 @@ export default function HeroSection() {
   const mobileColumn2 = mediaItems.filter((_, idx) => idx % 2 === 1)
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
+    <section className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
       {/* Grid Background - Extended beyond viewport */}
       <div className="absolute inset-0 -top-32 -bottom-32 -left-1 -right-1">
         {/* Mobile 2-column layout */}
@@ -444,11 +412,12 @@ function GridItem({
         <video
           ref={videoRef}
           src={item.src}
-          autoPlay
+          poster={item.poster}
+          autoPlay={item.autoplayInHero ?? false}
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
         />
       ) : (
