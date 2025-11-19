@@ -2,9 +2,8 @@
 
 import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
-import { featuredSessions } from "@/data/pysa/sessions"
 import { useState } from "react"
-import { Play, X, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
+import { Play, X, ExternalLink } from "lucide-react"
 
 const LinkedInIcon = () => (
   <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16" className="w-4 h-4">
@@ -631,9 +630,9 @@ export default function SessionsSection() {
             >
               <button
                 onClick={() => setSelectedSession(null)}
-                className="absolute top-4 right-4 z-10 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+                className="absolute top-1 right-1  md:top-4 md:right-4 z-10 p-1.5 md:p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
               >
-                <X className="h-6 w-6 md:h-7 md:w-7 font-bold" strokeWidth={3} />
+                <X className="h-2 w-2 md:h-7 md:w-7 font-bold" strokeWidth={3} />
               </button>
               <iframe
                 width="100%"
