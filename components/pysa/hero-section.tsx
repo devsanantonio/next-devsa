@@ -36,6 +36,41 @@ export default function HeroSection() {
   const [isMusicOpen, setIsMusicOpen] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null)
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
+  const sectionRef = useRef<HTMLElement>(null)
+
+  // Pause/play videos when section enters/leaves viewport
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Get all video elements
+          Object.values(videoRefs.current).forEach((video) => {
+            if (video) {
+              if (entry.isIntersecting) {
+                video.play().catch(() => {
+                  // Ignore play errors (e.g., if video hasn't loaded yet)
+                })
+              } else {
+                video.pause()
+              }
+            }
+          })
+        })
+      },
+      {
+        threshold: 0.1, // Trigger when at least 10% of section is visible
+      }
+    )
+
+    observer.observe(section)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   // Handle keyboard navigation for gallery
   useEffect(() => {
@@ -72,7 +107,7 @@ export default function HeroSection() {
   const mobileColumn2 = mediaItems.filter((_, idx) => idx % 2 === 1)
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
+    <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
       {/* Grid Background - Extended beyond viewport */}
       <div className="absolute inset-0 -top-32 -bottom-32 -left-1 -right-1">
         {/* Mobile 2-column layout */}
