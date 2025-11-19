@@ -362,7 +362,7 @@ export default function HeroSection() {
                 e.stopPropagation()
                 setGalleryIndex(null)
               }}
-              className="absolute top-4 right-4 z-50 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+              className="absolute top-10 right-2 md:top-8 md:right-60 z-50 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
             >
               <X className="h-6 w-6 md:h-7 md:w-7 font-bold" strokeWidth={3} />
             </button>
@@ -377,17 +377,6 @@ export default function HeroSection() {
               className="relative w-full h-full max-w-6xl max-h-[90vh] p-4 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Additional close button overlay on media for easy access */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setGalleryIndex(null)
-                }}
-                className="absolute top-2 right-2 z-50 p-2 md:p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
-              >
-                <X className="h-5 w-5 md:h-6 md:w-6 font-bold" strokeWidth={3} />
-              </button>
-
               <div className="relative w-full h-full flex items-center justify-center">
                 {mediaItems[galleryIndex].type === "video" ? (
                   <video
