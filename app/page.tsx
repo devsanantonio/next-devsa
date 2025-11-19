@@ -2,7 +2,6 @@
 
 import { HeroCommunities } from "@/components/hero-communities"
 import { HeroBridge } from "../components/hero-bridge"
-import { PySAPopup } from "../components/pysa-popup"
 import { PartnersSection } from "@/components/partner-section"
 
 export default function HomePage() {
@@ -12,8 +11,6 @@ export default function HomePage() {
         <HeroCommunities />
         <PartnersSection />
         <HeroBridge />
-
-        <PySAPopup />
       </main>
     </div>
   )

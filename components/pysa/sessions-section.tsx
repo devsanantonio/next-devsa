@@ -630,7 +630,7 @@ export default function SessionsSection() {
             >
               <button
                 onClick={() => setSelectedSession(null)}
-                className="absolute top-1 right-1  md:top-4 md:right-4 z-10 p-1.5 md:p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+                className="absolute top-1 right-1  md:top-4 md:right-4 z-10 p-2 md:p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
               >
                 <X className="h-2 w-2 md:h-7 md:w-7 font-bold" strokeWidth={3} />
               </button>
