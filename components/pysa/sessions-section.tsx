@@ -21,38 +21,38 @@ const LinkedInIcon = () => (
 // Session data with video URLs and slide deck links
 const sessionData = {
   "joel-grus": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=1740",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=2120",
     slideDeck: "https://docs.google.com/presentation/d/1hirudbqv-OAVXyvJJlHFrvykEwE2loXQo4crb583dks/edit",
     linkedin: "https://www.linkedin.com/in/joelgrus/"
   },
   "paul-bailey": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=5040",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=6130",
     slideDeck: "https://www.neutron.studio/talks/2025-01-06-async-django.html",
     linkedin: "https://www.linkedin.com/in/paul-bailey-a313869/"
   },
   "cody-fincher": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=7740",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=9800",
     slideDeck: "https://docs.google.com/presentation/d/1L9tYaLz5XlWCDqC9rt6OfAAhKft9oyNl93CltXg39wA/edit?usp=sharing",
     linkedin: "https://www.linkedin.com/in/cofin/"
   },
   "mauricio-figueroa": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=4200",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=4130",
     linkedin: "https://www.linkedin.com/in/mauricio-e-figueroa/"
   },
   "mayank-gohil": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=5040",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=5010",
     linkedin: "https://www.linkedin.com/in/mayank-gohil10/"
   },
   "corrina-alcoser": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=9540",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=13266",
     linkedin: "https://www.linkedin.com/in/corrina-alcoser/"
   },
   "gennaro-maida": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=10440",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=14747",
     linkedin: "https://www.linkedin.com/in/gennaro-maida/"
   },
   "sean-roberson": {
-    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=11340",
+    videoUrl: "https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=15910",
     linkedin: "https://www.linkedin.com/in/szroberson/"
   }
 }

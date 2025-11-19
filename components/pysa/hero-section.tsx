@@ -236,7 +236,7 @@ export default function HeroSection() {
               <iframe
                 width="100%"
                 height="100%"
-                src="https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=1740"
+                src="https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=1782"
                 title="PySanAntonio Livestream"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
@@ -424,6 +424,7 @@ function GridItem({
           loop
           muted
           playsInline
+          preload="auto"
           className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
         />
       ) : (
@@ -432,6 +433,7 @@ function GridItem({
           alt={item.alt}
           width={600}
           height={400}
+          priority={index < 6}
           className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
         />
       )}
