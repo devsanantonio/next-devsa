@@ -1,317 +1,440 @@
 "use client"
 
+import { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence } from "motion/react"
+import { Play, X, ChevronLeft, ChevronRight, Maximize2, Music } from 'lucide-react'
 import Image from "next/image"
-import Link from "next/link"
-import { motion } from "motion/react"
-import { useState, useEffect } from "react"
-import { Metaballs } from '@paper-design/shaders-react'
-import { usePerformanceCapabilities } from '@/lib/performance-detector'
+
+// Media data for the grid - shuffled mix of images and videos with filters
+type MediaItem = {
+  type: "image" | "video"
+  src: string
+  alt: string
+  filter?: "sepia" | "grayscale" | "none"
+}
+
+const mediaItems: MediaItem[] = [
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.mov", alt: "PySanAntonio Conference", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.jpg", alt: "PySanAntonio Conference Audience", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mov", alt: "PySanAntonio Conference Audience", filter: "none" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.MOV", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa8.jpg", alt: "After Party", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa4.mov", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg", alt: "PySanAntonio Conference Audience", filter: "none" },
+  { type: "video", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.mov", alt: "PySanAntonio Conference Audience", filter: "sepia" },
+  { type: "image", src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.jpg", alt: "PySanAntonio Conference Audience", filter: "grayscale" },
+]
 
 export default function HeroSection() {
-  const [dimensions, setDimensions] = useState({ width: 1280, height: 720 })
-  const { capabilities, isLoading } = usePerformanceCapabilities()
+  const [isLiveStreamOpen, setIsLiveStreamOpen] = useState(false)
+  const [isMusicOpen, setIsMusicOpen] = useState(false)
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null)
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
 
+  // Handle keyboard navigation for gallery
   useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (galleryIndex === null) return
+
+      if (e.key === "ArrowLeft") {
+        navigateGallery(-1)
+      } else if (e.key === "ArrowRight") {
+        navigateGallery(1)
+      } else if (e.key === "Escape") {
+        setGalleryIndex(null)
+      }
     }
 
-    if (typeof window !== 'undefined') {
-      updateDimensions()
-      window.addEventListener('resize', updateDimensions)
-      return () => window.removeEventListener('resize', updateDimensions)
-    }
-  }, [])
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [galleryIndex])
 
-  // Render fallback background for low-performance devices
-  const renderBackground = () => {
-    if (isLoading || !capabilities) {
-      // Show simple gradient while detecting capabilities
-      return (
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#2a273f] via-[#3a3458] to-[#2a273f]" />
-      )
-    }
+  const navigateGallery = (direction: number) => {
+    if (galleryIndex === null) return
+    const newIndex = (galleryIndex + direction + mediaItems.length) % mediaItems.length
+    setGalleryIndex(newIndex)
+  }
 
-    if (capabilities.canUseShaders) {
-      return (
-        <div className="absolute inset-0 w-full h-full">
-          <Metaballs
-            width={dimensions.width || window?.innerWidth || 390}
-            height={(dimensions.height || window?.innerHeight || 844) + 200}
-            colors={["#facb0f", "#0041b3"]}
-            colorBack="#2a273f"
-            count={13}
-            size={0.81}
-            speed={0.5}
-            scale={4}
-            offsetX={-0.3}
-          />
+  // Distribute items across columns - 2 on mobile, 4 on desktop
+  const column1 = mediaItems.filter((_, idx) => idx % 4 === 0)
+  const column2 = mediaItems.filter((_, idx) => idx % 4 === 1)
+  const column3 = mediaItems.filter((_, idx) => idx % 4 === 2)
+  const column4 = mediaItems.filter((_, idx) => idx % 4 === 3)
+
+  // Mobile: combine columns for 2-column layout
+  const mobileColumn1 = mediaItems.filter((_, idx) => idx % 2 === 0)
+  const mobileColumn2 = mediaItems.filter((_, idx) => idx % 2 === 1)
+
+  return (
+    <section className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
+      {/* Grid Background - Extended beyond viewport */}
+      <div className="absolute inset-0 -top-32 -bottom-32 -left-1 -right-1">
+        {/* Mobile 2-column layout */}
+        <div className="flex md:hidden flex-row gap-1 h-full opacity-90">
+          <div className="flex flex-col gap-1 w-1/2 pt-0">
+            {mobileColumn1.map((item, idx) => {
+              const originalIndex = idx * 2
+              return (
+                <GridItem 
+                  key={idx} 
+                  item={item} 
+                  index={originalIndex} 
+                  onClick={() => setGalleryIndex(originalIndex)}
+                  videoRef={(el) => {
+                    if (el) videoRefs.current[originalIndex] = el
+                  }}
+                />
+              )
+            })}
+          </div>
+          <div className="flex flex-col gap-1 w-1/2 pt-20">
+            {mobileColumn2.map((item, idx) => {
+              const originalIndex = idx * 2 + 1
+              return (
+                <GridItem 
+                  key={idx} 
+                  item={item} 
+                  index={originalIndex} 
+                  onClick={() => setGalleryIndex(originalIndex)}
+                  videoRef={(el) => {
+                    if (el) videoRefs.current[originalIndex] = el
+                  }}
+                />
+              )
+            })}
+          </div>
         </div>
-      )
-    }
 
-    // Fallback: Static gradient with subtle pattern for older devices
-    return (
-      <div className="absolute inset-0 w-full h-full">
-        <div 
-          className="w-full h-full bg-gradient-to-br from-[#2a273f] via-[#3a3458] to-[#2a273f]"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 25% 25%, rgba(252, 203, 15, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 75% 75%, rgba(0, 65, 179, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(252, 203, 15, 0.05) 0%, transparent 70%)
-            `
-          }}
-        />
+        {/* Desktop 4-column layout */}
+        <div className="hidden md:flex flex-row gap-1 h-full opacity-90">
+          {/* Column 1 */}
+          <div className="flex flex-col gap-1 w-1/4 pt-0">
+            {column1.map((item, idx) => (
+              <GridItem 
+                key={idx} 
+                item={item} 
+                index={idx * 4} 
+                onClick={() => setGalleryIndex(idx * 4)}
+                videoRef={(el) => {
+                  if (el) videoRefs.current[idx * 4] = el
+                }}
+              />
+            ))}
+          </div>
+          {/* Column 2 */}
+          <div className="flex flex-col gap-1 w-1/4 pt-24">
+            {column2.map((item, idx) => (
+              <GridItem 
+                key={idx} 
+                item={item} 
+                index={idx * 4 + 1} 
+                onClick={() => setGalleryIndex(idx * 4 + 1)}
+                videoRef={(el) => {
+                  if (el) videoRefs.current[idx * 4 + 1] = el
+                }}
+              />
+            ))}
+          </div>
+          {/* Column 3 */}
+          <div className="flex flex-col gap-1 w-1/4 pt-48">
+            {column3.map((item, idx) => (
+              <GridItem 
+                key={idx} 
+                item={item} 
+                index={idx * 4 + 2} 
+                onClick={() => setGalleryIndex(idx * 4 + 2)}
+                videoRef={(el) => {
+                  if (el) videoRefs.current[idx * 4 + 2] = el
+                }}
+              />
+            ))}
+          </div>
+          {/* Column 4 */}
+          <div className="flex flex-col gap-1 w-1/4 pt-12">
+            {column4.map((item, idx) => (
+              <GridItem 
+                key={idx} 
+                item={item} 
+                index={idx * 4 + 3} 
+                onClick={() => setGalleryIndex(idx * 4 + 3)}
+                videoRef={(el) => {
+                  if (el) videoRefs.current[idx * 4 + 3] = el
+                }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-    )
+
+      {/* Overlay Gradient - Subtle for better media visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/70 pointer-events-none" />
+
+      {/* Centered Content - Compact for media focus */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen pointer-events-none px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="pointer-events-auto text-center max-w-3xl mx-auto p-6 md:p-10 rounded-2xl bg-[#0a0a0a]/60 backdrop-blur-xl border border-[#FFD43B]/20 shadow-2xl"
+        >
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#FFD43B] via-[#4B8BBE] to-[#646464] leading-tight">
+            Thank You!
+          </h1>
+          <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto font-medium leading-relaxed">
+            PySanAntonio 2025 was an incredible experience. <span className="md:block">Relive the memories below.</span>
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
+            <button
+              onClick={() => setIsLiveStreamOpen(true)}
+              className="group relative inline-flex h-11 md:h-12 items-center justify-center overflow-hidden rounded-full bg-[#FFD43B] px-6 md:px-8 font-bold text-sm md:text-base text-[#0a0a0a] transition-all hover:bg-[#FFD43B]/90 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FFD43B] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] shadow-lg shadow-[#FFD43B]/30"
+            >
+              <Play className="mr-2 h-4 w-4 md:h-5 md:w-5 fill-current" />
+              <span>Watch Livestream</span>
+            </button>
+
+            <button
+              onClick={() => setIsMusicOpen(true)}
+              className="group relative inline-flex h-11 md:h-12 items-center justify-center overflow-hidden rounded-full bg-[#4B8BBE] px-6 md:px-8 font-bold text-sm md:text-base text-white transition-all hover:bg-[#4B8BBE]/90 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#4B8BBE] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] shadow-lg shadow-[#4B8BBE]/30"
+            >
+              <Music className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+              <span>Conference Music</span>
+            </button>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Livestream Modal */}
+      <AnimatePresence>
+        {isLiveStreamOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            onClick={() => setIsLiveStreamOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setIsLiveStreamOpen(false)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/3jZ9ktAFGpk?si=ITd6HwHRVcpnrHQk&amp;start=1740"
+                title="PySanAntonio Livestream"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="border-0"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Music Modal */}
+      <AnimatePresence>
+        {isMusicOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            onClick={() => setIsMusicOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-2xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setIsMusicOpen(false)}
+                className="absolute top-4 right-4 z-10 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+              >
+                <X className="h-6 w-6 md:h-7 md:w-7 font-bold" strokeWidth={3} />
+              </button>
+              <div className="mb-4">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  PySanAntonio Conference Playlist
+                </h3>
+                <p className="text-gray-400 text-sm md:text-base">
+                  Music for the first Python conference in San Antonio
+                </p>
+              </div>
+              <iframe
+                allow="autoplay *; encrypted-media *;"
+                className="border-0"
+                height="450"
+                style={{ width: '100%', maxWidth: '660px', overflow: 'hidden', background: 'transparent' }}
+                sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
+                src="https://embed.music.apple.com/us/playlist/music-for-the-first-python-conference-in-san-antonio/pl.u-PJpZILNbDqW3"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Gallery Modal */}
+      <AnimatePresence>
+        {galleryIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md"
+            onClick={() => setGalleryIndex(null)}
+          >
+            {/* Navigation Buttons */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                navigateGallery(-1)
+              }}
+              className="absolute left-4 z-50 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                navigateGallery(1)
+              }}
+              className="absolute right-4 z-50 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              <ChevronRight className="h-8 w-8" />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setGalleryIndex(null)
+              }}
+              className="absolute top-4 right-4 z-50 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+            >
+              <X className="h-6 w-6 md:h-7 md:w-7 font-bold" strokeWidth={3} />
+            </button>
+
+            {/* Main Media */}
+            <motion.div
+              key={galleryIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full h-full max-w-6xl max-h-[90vh] p-4 flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Additional close button overlay on media for easy access */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setGalleryIndex(null)
+                }}
+                className="absolute top-2 right-2 z-50 p-2 md:p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
+              >
+                <X className="h-5 w-5 md:h-6 md:w-6 font-bold" strokeWidth={3} />
+              </button>
+
+              <div className="relative w-full h-full flex items-center justify-center">
+                {mediaItems[galleryIndex].type === "video" ? (
+                  <video
+                    src={mediaItems[galleryIndex].src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="object-contain max-h-full max-w-full rounded-lg shadow-2xl"
+                  />
+                ) : (
+                  <Image
+                    src={mediaItems[galleryIndex].src || "/placeholder.svg"}
+                    alt={mediaItems[galleryIndex].alt || "Gallery Image"}
+                    width={1200}
+                    height={800}
+                    className="object-contain max-h-full max-w-full rounded-lg shadow-2xl"
+                    priority
+                  />
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  )
+}
+
+function GridItem({
+  item,
+  index,
+  onClick,
+  videoRef,
+}: { 
+  item: MediaItem
+  index: number
+  onClick: () => void
+  videoRef?: (el: HTMLVideoElement | null) => void
+}) {
+  const getFilterClass = (filter?: string) => {
+    switch (filter) {
+      case "sepia":
+        return "sepia-[0.7]"
+      case "grayscale":
+        return "grayscale"
+      default:
+        return ""
+    }
   }
 
   return (
-    <>
-      {/* Mobile Hero Section - Image-First Design */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full min-h-screen flex flex-col lg:hidden relative overflow-hidden bg-[#2a273f]"
-      >
-        {/* Mobile Background - Adaptive based on device capabilities */}
-        {renderBackground()}
-        
-        {/* Hero Content - Image Dominant Layout */}
-        <div className="relative z-10 flex flex-col min-h-screen container mx-auto px-4 sm:px-6">
-          {/* Header Text - Mobile */}
-          <div className="pt-20 pb-6 text-center flex-shrink-0">
-            <motion.div
-              initial={capabilities?.preferReducedMotion ? { opacity: 1 } : { opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={capabilities?.preferReducedMotion ? 
-                { duration: 0 } : 
-                { duration: 0.8, delay: 0.2 }
-              }
-              className="space-y-1"
-            >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[0.9] tracking-[-0.02em] drop-shadow-lg">
-                <span className="block font-extralight italic text-white/95 mb-1">Python</span>
-                <span className="block font-black tracking-[-0.03em]">Conference</span>
-              </h1>
-            </motion.div>
-          </div>
-
-          {/* Hero Image - Takes Center Stage */}
-          <div className="flex-1 flex items-center justify-center py-0 min-h-0">
-            <motion.div
-              initial={capabilities?.preferReducedMotion ? 
-                { opacity: 1, scale: 1, rotateX: 0 } : 
-                { opacity: 0, scale: 0.9, rotateX: 15 }
-              }
-              animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-              transition={capabilities?.preferReducedMotion ? 
-                { duration: 0 } : 
-                { duration: 1, delay: 0.4, type: "spring", stiffness: 100 }
-              }
-              className="w-full max-w-[280px] sm:max-w-[320px] group"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-500 border-2 border-white/30 backdrop-blur-sm">
-                <Image
-                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-11-python.png"
-                  alt="Python San Antonio Conference"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                
-                {/* Enhanced Glare Effects */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/10 to-transparent opacity-50" />
-                <div className="absolute top-4 left-4 w-8 h-8 bg-white/60 rounded-full blur-lg opacity-70" />
-                
-                {/* Premium Glare Animation - Disabled for reduced motion */}
-                {!capabilities?.preferReducedMotion && (
-                  <motion.div 
-                    initial={{ x: "-120%" }}
-                    animate={{ x: "120%" }}
-                    transition={{ 
-                      duration: 2, 
-                      delay: 1.5, 
-                      ease: [0.4, 0, 0.2, 1],
-                      repeat: Infinity,
-                      repeatDelay: 4
-                    }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent transform -skew-x-12"
-                  />
-                )}
-                
-                {/* Depth Shadow */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/10 opacity-60" />
-              </div>
-              
-              {/* Enhanced Drop Shadow */}
-              <div className="absolute inset-0 bg-black/30 rounded-2xl blur-3xl transform translate-y-6 scale-95 -z-10" />
-            </motion.div>
-          </div>
-
-          {/* Bottom Content Section - Mobile */}
-          <div className="mt-6 pb-10 space-y-6 flex-shrink-0">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-center space-y-6"
-            >
-              <p className="max-w-md mx-auto text-lg leading-[1.6] font-normal text-white/90 drop-shadow-sm">
-                <span className="font-bold text-yellow-200">Alamo Python</span>, the{" "}
-                <span className="font-bold text-blue-200">PyTexas Foundation</span>, and{" "}
-                <span className="font-bold text-white">DEVSA</span> are excited to activate the first-ever Python conference in San Antonio!
-              </p>
-              
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/pysanantonio/resources"
-                  className="group inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-gradient-to-r from-sky-600 via-sky-700 to-blue-700 rounded-xl hover:from-sky-700 hover:via-sky-800 hover:to-blue-800 transition-all duration-300 shadow-xl border border-sky-400/30 drop-shadow-lg"
-                >
-                  <span className="mr-2 tracking-wide">View Resources</span>
-                  <svg 
-                    className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Desktop Hero Section - Wide Image Layout */}
-      <div className="hidden lg:flex w-full min-h-screen relative overflow-hidden bg-[#2a273f]">
-        {/* Desktop Background - Adaptive based on device capabilities */}
-        {renderBackground()}
-
-        {/* Hero Content - Wide Image Layout */}
-        <div className="relative z-10 flex flex-col w-full min-h-screen container mx-auto px-8 xl:px-12 py-8">
-          {/* Top Spacer - Optimal navbar clearance */}
-          <div className="pt-16 flex-shrink-0"></div>
-
-          {/* Hero Image - Enhanced Desktop Star Treatment */}
-          <div className="flex items-center justify-center py-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotateX: 15 }}
-              animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-              whileHover={{ scale: 1.02, rotateY: 2 }}
-              transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 100 }}
-              className="w-full max-w-4xl xl:max-w-5xl group"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl shadow-2xl transition-all duration-500 border-2 border-white/20 backdrop-blur-sm group-hover:shadow-yellow-500/25 group-hover:border-yellow-400/40">
-                <Image
-                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-9-python.png"
-                  alt="Python San Antonio Conference - Main Event"
-                  fill
-                  className="object-contain filter brightness-110 contrast-105 saturate-110 transition-all duration-300 group-hover:brightness-115 group-hover:contrast-110"
-                  priority
-                />
-                
-                {/* Enhanced Desktop Glare Effects */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
-                <div className="absolute top-6 left-6 w-12 h-12 bg-white/50 rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-                
-                {/* Premium Glare Animation - Desktop - Disabled for reduced motion */}
-                {!capabilities?.preferReducedMotion && (
-                  <motion.div 
-                    initial={{ x: "-120%" }}
-                    animate={{ x: "120%" }}
-                    transition={{ 
-                      duration: 2.5, 
-                      delay: 2, 
-                      ease: [0.4, 0, 0.2, 1],
-                      repeat: Infinity,
-                      repeatDelay: 6
-                    }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12"
-                  />
-                )}
-                
-                {/* Depth and Lighting Effects */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/5 opacity-50" />
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-transparent to-blue-500/10 opacity-60" />
-                
-                {/* Corner Highlights */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-white/30 to-transparent opacity-40" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-radial from-blue-400/20 to-transparent opacity-50" />
-              </div>
-              
-              {/* Enhanced Multi-layer Drop Shadow */}
-              <div className="absolute inset-0 bg-black/20 rounded-3xl blur-2xl transform translate-y-8 scale-95 -z-10 group-hover:bg-yellow-500/20 transition-colors duration-300" />
-              <div className="absolute inset-0 bg-black/10 rounded-3xl blur-3xl transform translate-y-12 scale-90 -z-20" />
-            </motion.div>
-          </div>
-
-          {/* Bottom Content Section - Guaranteed space */}
-          <div className="pt-8 pb-12 space-y-6 flex-shrink-0">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-center space-y-6 max-w-4xl mx-auto"
-            >
-              <p className="text-lg lg:text-xl xl:text-2xl text-balance text-white/90 leading-[1.4] font-normal drop-shadow-sm tracking-[-0.01em]">
-                <span className="font-bold text-yellow-200">Alamo Python</span>, the{" "}
-                <span className="font-bold text-blue-200">PyTexas Foundation</span>, and{" "}
-                <span className="font-bold text-white">DEVSA</span> are excited to activate the first-ever Python conference in San Antonio!
-              </p>
-              
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/pysanantonio/resources"
-                  className="group inline-flex items-center justify-center px-8 py-3.5 text-base lg:text-lg font-bold text-white bg-gradient-to-r from-sky-600 via-sky-700 to-blue-700 rounded-xl hover:from-sky-700 hover:via-sky-800 hover:to-blue-800 transition-all duration-300 shadow-xl border border-sky-400/30 drop-shadow-lg"
-                >
-                  <span className="mr-2 tracking-wide">View Resources</span>
-                  <svg 
-                    className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.5 }}
+      whileHover={{ scale: 1.03, zIndex: 10 }}
+      className="relative group cursor-pointer overflow-hidden rounded-lg md:rounded-xl bg-[#1a1a1a] shadow-lg"
+      onClick={onClick}
+    >
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <Maximize2 className="text-white w-6 h-6 md:w-8 md:h-8 drop-shadow-lg" />
       </div>
-
-      {/* Desktop White Section - Conference Title and Description */}
-      <section className="hidden lg:block w-full bg-white border-t border-gray-200">
-        <div className="container mx-auto px-8 xl:px-12 py-20 lg:py-24">
-          <div className="max-w-5xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="space-y-8 lg:space-y-10"
-            >
-              <h2 className="font-sans text-black leading-[0.9] text-4xl lg:text-6xl xl:text-7xl font-semibold uppercase tracking-[-0.02em]">
-                <span className="font-extralight italic text-black/90 mr-3">Python</span>
-                <span className="font-black tracking-[-0.03em]">Conference</span>
-              </h2>
-              
-              <p className="text-gray-600 text-xl lg:text-2xl xl:text-3xl leading-[1.4] max-w-4xl mx-auto font-normal tracking-[-0.01em]">
-                PySanAntonio brings together developers, data scientists, security specialists, automation engineers, hobbyists, and curious minds across all experience levels. <strong className="text-black font-semibold">This is your opportunity to connect with the local community.</strong>
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-    </>
+      {item.type === "video" ? (
+        <video
+          ref={videoRef}
+          src={item.src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
+        />
+      ) : (
+        <Image
+          src={item.src || "/placeholder.svg"}
+          alt={item.alt}
+          width={600}
+          height={400}
+          className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
+        />
+      )}
+    </motion.div>
   )
 }
