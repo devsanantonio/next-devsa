@@ -242,23 +242,19 @@ export function PartnersSection() {
                   Our Strategic Partners
                 </p>
                 <h2 className="text-white tracking-[-0.02em] text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[0.9] max-w-5xl mx-auto">
-                  Connecting Our Ecosystem:{" "}
-                  <span className="text-neutral-400 font-light italic">Meet the Partners</span>
+                  Connecting Our Ecosystem
                 </h2>
               </div>
               <div className="space-y-4 max-w-4xl mx-auto">
-                <p className="text-lg md:text-xl lg:text-2xl text-neutral-200 leading-[1.4] font-light text-balance">
-                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio.
-                </p>
-                <p className="text-base md:text-lg text-neutral-300 leading-relaxed max-w-3xl mx-auto text-balance">
-                  Connecting passionate builders with key resources and organizations across the San Antonio tech ecosystem.
+                <p className="text-sm md:text-xl lg:text-2xl text-neutral-200 leading-[1.4] font-light text-balance">
+                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio for connecting passionate builders with key resources and organizations across the San Antonio tech ecosystem.
                 </p>
               </div>
             </motion.div>
           </div>
 
           {/* Single Row of Partner Logos - Full Width */}
-          <div className="w-full px-4 md:px-8 mb-12 md:mb-16">
+          <div className="w-full max-w-4xl mx-auto px-4 md:px-8 mb-12 md:mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -321,7 +317,7 @@ export function PartnersSection() {
         </div>
 
         {/* DevSA Community Space Spotlight - Refined Size */}
-        <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 md:px-16 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

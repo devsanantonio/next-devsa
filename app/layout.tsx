@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Footer } from "@/components/footer"
 import { PerformanceIndicator } from "@/components/performance-indicator"
+import { AuthProvider } from "@/lib/auth-context"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +26,8 @@ const geistMono = Geist_Mono({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
 export const metadata: Metadata = {
-  title: "DEVSA - Activating the Tech Community in San Antonio",
-  description:
-    "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects developers, designers, and tech professionals through partnerships with local organizations, providing a platform for growth and innovation.",
+  title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+  description: "You're absolutely right! DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
   keywords: [
     "San Antonio tech community",
     "DEVSA",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
-      "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects developers, designers, and tech professionals through partnerships with local organizations.",
+      "You're absolutely right! DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
     url: siteUrl,
     siteName: "DEVSA",
     images: [
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "DEVSA - Your Direct Connection to the Tech Community",
     description:
-      "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. Connect with local tech groups and professionals.",
+      "You're absolutely right! DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
     images: [`${siteUrl}/opengraph-image.png`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -121,9 +121,9 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "DEVSA",
-              alternateName: "Developer San Antonio",
+              alternateName: "DEV San Antonio",
               description:
-                "Activating the tech community in San Antonio through collaboration, strategic partnerships and video. DEVSA connects people, shares knowledge, and celebrates innovation.",
+                "You're absolutely right! DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
               url: "https://devsa.community",
               logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
               foundingDate: "2020",
@@ -164,11 +164,13 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <Navbar />
-          {children}
-          <Footer />
-          <Analytics />
-          <PerformanceIndicator />
+          <AuthProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <Analytics />
+            <PerformanceIndicator />
+          </AuthProvider>
         </Suspense>
       </body>
     </html>

@@ -179,3 +179,14 @@ body {
 .animate-marquee-slow {
   animation: marquee-slow 30s linear infinite;
 }
+
+/* Added scrollbar-hide utility for clean carousel scrolling */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
