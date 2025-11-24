@@ -4,9 +4,9 @@ import type { Metadata } from "next"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
 export const metadata: Metadata = {
-  title: "PySanAntonio 2025 | PyTexas Conference in San Antonio",
+  title: "PySanAntonio 2025 | Python Conference in San Antonio",
   description:
-    "Join us for PySanAntonio on Saturday, November 8, 2025 at Geekdom. A half-day PyTexas conference hosted by Alamo Python featuring talks, networking, and celebrating the Python community in San Antonio, Texas.",
+    "PySanAntonio, A Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation featuring talks, networking, and celebrating the different industries building with Python from our community in San Antonio, Texas.",
   keywords: [
     "PySanAntonio",
     "PyTexas",
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     canonical: "/pysananantonio",
   },
   openGraph: {
-    title: "PySanAntonio 2025 | PyTexas Conference",
+    title: "PySanAntonio 2025 | Python Conference",
     description:
-      "Join us for a half-day PyTexas conference in San Antonio on November 8, 2025. Hosted by Alamo Python at Geekdom.",
+      "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
     url: `${siteUrl}/pysananantonio`,
     siteName: "DEVSA Community",
     images: [
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
         url: `${siteUrl}/pysananantonio/opengraph-image.png`,
         width: 1200,
         height: 630,
-        alt: "PySanAntonio 2025 - PyTexas Conference in San Antonio",
+        alt: "PySanAntonio 2025 - Python Conference in San Antonio",
         type: "image/png",
       },
     ],
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PySanAntonio 2025 | PyTexas Conference",
+    title: "PySanAntonio 2025 | Python Conference",
     description:
-      "Join us for a half-day PyTexas conference in San Antonio on November 8, 2025. Hosted by Alamo Python at Geekdom.",
+      "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
     images: [`${siteUrl}/pysananantonio/opengraph-image.png`],
     creator: "@devsacommunity",
   },
@@ -73,7 +73,7 @@ export default function PySanAntonioLayout({ children }: { children: React.React
     "@type": "Event",
     name: "PySanAntonio 2025",
     description:
-      "A half-day PyTexas conference hosted by Alamo Python featuring talks, networking, and celebrating the Python community in San Antonio.",
+      "A Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation featuring talks, networking, and celebrating the different industries building with Python from our community in San Antonio.",
     startDate: "2025-11-08T13:00:00-06:00",
     endDate: "2025-11-08T18:00:00-06:00",
     eventStatus: "https://schema.org/EventScheduled",
