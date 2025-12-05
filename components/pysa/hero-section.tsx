@@ -70,17 +70,18 @@ export default function HeroSection() {
   const column3 = mediaItems.filter((_, idx) => idx % 4 === 2)
   const column4 = mediaItems.filter((_, idx) => idx % 4 === 3)
 
-  // Mobile: combine columns for 2-column layout
-  const mobileColumn1 = mediaItems.filter((_, idx) => idx % 2 === 0)
-  const mobileColumn2 = mediaItems.filter((_, idx) => idx % 2 === 1)
+  // Mobile: Show only first 6 items (3 per column) for larger, spotlighted display
+  const mobileItems = mediaItems.slice(0, 6)
+  const mobileColumn1 = mobileItems.filter((_, idx) => idx % 2 === 0)
+  const mobileColumn2 = mobileItems.filter((_, idx) => idx % 2 === 1)
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
+    <section className="relative min-h-screen md:min-h-[140vh] w-full overflow-hidden bg-[#0a0a0a]">
       {/* Grid Background - Extended beyond viewport */}
-      <div className="absolute inset-0 -top-32 -bottom-32 -left-1 -right-1">
+      <div className="absolute inset-0 -top-20 -bottom-20 -left-4 -right-4">
         {/* Mobile 2-column layout */}
         <div className="flex md:hidden flex-row gap-1 h-full opacity-90">
-          <div className="flex flex-col gap-1 w-1/2 pt-0">
+          <div className="flex flex-col gap-1 w-1/2 pt-32">
             {mobileColumn1.map((item, idx) => {
               const originalIndex = idx * 2
               return (
@@ -96,7 +97,7 @@ export default function HeroSection() {
               )
             })}
           </div>
-          <div className="flex flex-col gap-1 w-1/2 pt-20">
+          <div className="flex flex-col gap-1 w-1/2 pt-32">
             {mobileColumn2.map((item, idx) => {
               const originalIndex = idx * 2 + 1
               return (
@@ -117,7 +118,7 @@ export default function HeroSection() {
         {/* Desktop 4-column layout */}
         <div className="hidden md:flex flex-row gap-1 h-full opacity-90">
           {/* Column 1 */}
-          <div className="flex flex-col gap-1 w-1/4 pt-0">
+          <div className="flex flex-col gap-1 w-1/4 pt-20">
             {column1.map((item, idx) => (
               <GridItem 
                 key={idx} 
@@ -131,7 +132,7 @@ export default function HeroSection() {
             ))}
           </div>
           {/* Column 2 */}
-          <div className="flex flex-col gap-1 w-1/4 pt-24">
+          <div className="flex flex-col gap-1 w-1/4 pt-16">
             {column2.map((item, idx) => (
               <GridItem 
                 key={idx} 
@@ -145,7 +146,7 @@ export default function HeroSection() {
             ))}
           </div>
           {/* Column 3 */}
-          <div className="flex flex-col gap-1 w-1/4 pt-48">
+          <div className="flex flex-col gap-1 w-1/4 pt-32">
             {column3.map((item, idx) => (
               <GridItem 
                 key={idx} 
@@ -402,7 +403,7 @@ function GridItem({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
       whileHover={{ scale: 1.03, zIndex: 10 }}
-      className="relative group cursor-pointer overflow-hidden rounded-lg md:rounded-xl bg-[#1a1a1a] shadow-lg"
+      className="relative group cursor-pointer overflow-hidden rounded-lg md:rounded-xl bg-[#1a1a1a] shadow-lg aspect-[4/3]"
       onClick={onClick}
     >
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -418,16 +419,16 @@ function GridItem({
           muted
           playsInline
           preload="metadata"
-          className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
         />
       ) : (
         <Image
           src={item.src || "/placeholder.svg"}
           alt={item.alt}
           width={600}
-          height={400}
+          height={450}
           priority={index < 6}
-          className={`w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${getFilterClass(item.filter)}`}
         />
       )}
     </motion.div>
