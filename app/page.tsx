@@ -9,8 +9,8 @@ export default function HomePage() {
     <div className="w-full min-h-screen bg-white overflow-x-hidden">
       <main className="relative w-full">
         <HeroBridge />
-        <HeroCommunities />
         <PartnersSection />
+        <HeroCommunities />
       </main>
     </div>
   )

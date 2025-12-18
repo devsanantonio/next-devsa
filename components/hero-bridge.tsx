@@ -1,38 +1,10 @@
 "use client"
 
-import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "motion/react"
-import { useEffect } from "react"
+import { motion } from "motion/react"
 
 export function HeroBridge() {
   const words = ["Your", "Direct", "Connection"]
   const subtitleWords = ["to", "the", "Tech", "Community"]
-
-  // Mouse position tracking (0-1 range)
-  const mouseX = useMotionValue(0.5)
-  const mouseY = useMotionValue(0.5)
-
-  // Smooth spring animation for cursor following
-  const smoothX = useSpring(mouseX, { stiffness: 40, damping: 25 })
-  const smoothY = useSpring(mouseY, { stiffness: 40, damping: 25 })
-
-  // Transform to percentage for CSS
-  const xPercent = useTransform(smoothX, [0, 1], [0, 100])
-  const yPercent = useTransform(smoothY, [0, 1], [0, 100])
-
-  // Create the radial gradient background - subtle warm glow
-  const gradientBackground = useMotionTemplate`radial-gradient(800px circle at ${xPercent}% ${yPercent}%, rgba(251, 191, 36, 0.15), rgba(236, 72, 153, 0.08) 40%, transparent 70%)`
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX / window.innerWidth
-      const y = e.clientY / window.innerHeight
-      mouseX.set(x)
-      mouseY.set(y)
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [mouseX, mouseY])
 
   return (
     <section 
@@ -40,17 +12,9 @@ export function HeroBridge() {
       className="w-full relative min-h-dvh flex flex-col overflow-hidden bg-white"
       data-bg-type="light"
     >
-      {/* Base white background with subtle animated gradient that follows cursor */}
-      <motion.div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: gradientBackground,
-        }}
-      />
-
-      {/* Background image - transparent PNG sits on top of gradient */}
+      {/* Background image - responsive sizing */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-1"
+        className="absolute inset-0 bg-contain scale-200 md:scale-100 md:bg-cover bg-center bg-no-repeat z-1"
         style={{
           backgroundImage: "url('https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-8-hero+(1).png')",
         }}
