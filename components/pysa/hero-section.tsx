@@ -180,7 +180,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/70 pointer-events-none" />
 
       {/* Centered Content - Compact for media focus */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen pointer-events-none px-4 py-8">
+      <div className="mt-32 md:mt-0 relative z-10 flex flex-col items-center justify-center min-h-screen pointer-events-none px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
