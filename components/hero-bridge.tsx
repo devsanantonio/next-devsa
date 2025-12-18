@@ -9,12 +9,12 @@ export function HeroBridge() {
   return (
     <section 
       id="hero-bridge" 
-      className="w-full relative min-h-dvh flex flex-col overflow-hidden bg-white"
+      className="w-full relative min-h-[95dvh] md:min-h-dvh flex flex-col overflow-hidden bg-white"
       data-bg-type="light"
     >
       {/* Background image - responsive sizing */}
       <div 
-        className="absolute inset-0 bg-contain scale-200 md:scale-100 md:bg-cover bg-center bg-no-repeat z-1"
+        className="absolute inset-0 bg-contain scale-180 md:scale-100 md:bg-cover bg-center bg-no-repeat z-1"
         style={{
           backgroundImage: "url('https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-8-hero+(1).png')",
         }}

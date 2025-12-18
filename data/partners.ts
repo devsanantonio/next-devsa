@@ -50,12 +50,19 @@ export const partners: Partner[] = [
       "We help businesses in healthcare, finance, energy, and more leverage artificial intelligence and quantum computing to drive innovation and operational efficiency.",
     website: "https://www.theaicowboys.com/",
   },
-  {
+/*   {
     id: "nucleate-san-antonio",
     name: "Nucleate San Antonio",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/nucleate.svg",
     description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
     website: "https://nucleate.org/",
+  }, */
+  {
+    id: "pytexas",
+    name: "PyTexas Foundation",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/pytexas.png",
+    description: "The PyTexas Foundation is a 501(c)3 non-profit run by a Texas-based volunteer group. We are Python enthusiasts that want to share the programming language with the world, starting right here in Texas.",
+    website: "https://www.pytexas.org/",
   },
   {
     id: "digital-canvas",
