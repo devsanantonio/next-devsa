@@ -26,21 +26,18 @@ export const partners: Partner[] = [
     website: "https://geekdom.com/",
   },
   {
+    id: "pytexas",
+    name: "PyTexas Foundation",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/pytexas.png",
+    description: "The PyTexas Foundation is a 501(c)3 non-profit run by a Texas-based volunteer group. We are Python enthusiasts that want to share the programming language with the world, starting right here in Texas.",
+    website: "https://www.pytexas.org/",
+  },
+  {
     id: "434media",
     name: "434 MEDIA",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/434media-light.svg",
     description: "Connecting Enterprises by leveraging networks to connect people, places and things through creative media and smart marketing.",
     website: "https://www.434media.org/",
-  },
-  {
-    id: "learn2ai",
-    name: "Learn2AI",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/Learn2ai.svg",
-    description:
-      "Master Prompt Engineering, Automation, and AI Strategy With Our Hands-On, Outcome-Driven Programs",
-    website: "https://www.learn2ai.co/",
-    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/Learn2AI+-+081825+G.mp4", // Replace with actual video URL
-    isEasterEgg: true,
   },
   {
     id: "aicowboys",
@@ -50,19 +47,12 @@ export const partners: Partner[] = [
       "We help businesses in healthcare, finance, energy, and more leverage artificial intelligence and quantum computing to drive innovation and operational efficiency.",
     website: "https://www.theaicowboys.com/",
   },
-/*   {
-    id: "nucleate-san-antonio",
-    name: "Nucleate San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/nucleate.svg",
-    description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
-    website: "https://nucleate.org/",
-  }, */
   {
-    id: "pytexas",
-    name: "PyTexas Foundation",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/pytexas.png",
-    description: "The PyTexas Foundation is a 501(c)3 non-profit run by a Texas-based volunteer group. We are Python enthusiasts that want to share the programming language with the world, starting right here in Texas.",
-    website: "https://www.pytexas.org/",
+    id: "youth-code-jam",
+    name: "Youth Code Jam",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/youthcode-jam.webp",
+    description: "We make computer science and coding fun, sociable, and equitable for all students and their grown-ups through inclusive programming, Teacher Professional Development, and free community outreach events.",
+    website: "https://www.youthcodejam.org/",
   },
   {
     id: "digital-canvas",
@@ -78,6 +68,23 @@ export const partners: Partner[] = [
     description: "The MDST programs not only allow UTSA to incubate new programs, like Artificial Intelligence, Hospitality and Event Management, Game Design, and others, but also orchestrate degree programs that provide interdisciplinary solutions to complex problems. That is, degree programs with classes and disciplines that span multiple colleges at UTSA.",
     website: "https://uc.utsa.edu/",
   },
+  {
+    id: "learn2ai",
+    name: "Learn2AI",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/Learn2ai.svg",
+    description:
+      "Master Prompt Engineering, Automation, and AI Strategy With Our Hands-On, Outcome-Driven Programs",
+    website: "https://www.learn2ai.co/",
+    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/Learn2AI+-+081825+G.mp4", // Replace with actual video URL
+    isEasterEgg: true,
+  },
+/*   {
+    id: "nucleate-san-antonio",
+    name: "Nucleate San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/nucleate.svg",
+    description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
+    website: "https://nucleate.org/",
+  }, */
   {
     id: "emergeandrise",
     name: "Emerge and Rise",
@@ -100,13 +107,6 @@ export const partners: Partner[] = [
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/project-quest-logo.svg",
     description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
     website: "https://questsa.org/",
-  },
-  {
-    id: "youth-code-jam",
-    name: "Youth Code Jam",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/youthcode-jam.webp",
-    description: "We make computer science and coding fun, sociable, and equitable for all students and their grown-ups through inclusive programming, Teacher Professional Development, and free community outreach events.",
-    website: "https://www.youthcodejam.org/",
   },
 /*   {
     id: "cosa",

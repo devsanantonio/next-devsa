@@ -9,7 +9,7 @@ export function HeroBridge() {
   return (
     <section 
       id="hero-bridge" 
-      className="w-full relative min-h-[95dvh] md:min-h-dvh flex flex-col overflow-hidden bg-white"
+      className="w-full relative min-h-dvh flex flex-col overflow-hidden bg-white"
       data-bg-type="light"
     >
       {/* Background image - responsive sizing */}
