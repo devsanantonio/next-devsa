@@ -289,6 +289,7 @@ export function PartnersSection() {
                         alt={partner.name}
                         width={100}
                         height={100}
+                        unoptimized
                         className={`object-contain w-full h-full transition-all duration-300 ${
                           hoveredPartner === partner.id 
                             ? 'scale-105 brightness-110' 
@@ -330,7 +331,7 @@ export function PartnersSection() {
                       </p>
                       <h3 className="text-xl font-bold text-white leading-tight tracking-tight">
                         Community Driven{" "}
-                        <span className="text-neutral-400 font-normal">Coworking Space</span>
+                        <span className="text-neutral-400 font-normal block">Coworking Space</span>
                       </h3>
                     </div>
                     <p className="text-sm text-neutral-400 leading-relaxed">

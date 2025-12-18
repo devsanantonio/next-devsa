@@ -153,7 +153,7 @@ export function HeroCommunities() {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
             className="mt-10 sm:mt-12 max-w-2xl mx-auto"
           >
-            <p className="text-neutral-600 text-base sm:text-lg leading-relaxed">
+            <p className="text-neutral-600 text-base sm:text-lg leading-relaxed tracking-tight md:tracking-normal">
               We found them scattered across the city, living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 
@@ -230,7 +230,7 @@ export function HeroCommunities() {
             Many of these communities don&apos;t have their own web presence or social media of their own. 
             <span className="text-neutral-900 font-semibold"> DEVSA has become their voice online</span>—sharing 
             their events, amplifying their work, and connecting them with new members. 
-            Follow us to stay in the loop. We&apos;re the bridge for a reason.
+            Follow us to stay in the loop. <span className="text-neutral-900 font-semibold">We&apos;re the bridge for a reason.</span>
           </p>
 
           {/* Social platform grid */}
