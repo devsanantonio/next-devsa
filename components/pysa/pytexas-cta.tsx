@@ -6,7 +6,7 @@ import Image from "next/image"
 
 export default function PyTexasCTA() {
   return (
-    <section className="relative w-full h-[300px] md:h-[810px] flex items-end justify-center overflow-hidden">
+    <section className="relative w-full h-75 md:h-202.5 flex items-end justify-center overflow-hidden">
       {/* Background SVG Image */}
       <div className="absolute inset-0 w-full h-full">
         <Image

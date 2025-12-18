@@ -70,7 +70,7 @@ export default function SessionsSection() {
     }
   }
   return (
-    <section className="relative bg-black text-white" data-testid="pysa-homepage-container-sessions" id="sessions">
+    <section className="relative bg-black text-white" data-testid="pysa-homepage-container-sessions" id="sessions" data-bg-type="dark">
       <div className="flex flex-col gap-10 p-6 md:p-16 lg:p-20 container mx-auto">
         {/* Section Title */}
         <motion.header

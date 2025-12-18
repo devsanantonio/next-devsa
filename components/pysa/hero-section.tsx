@@ -70,18 +70,18 @@ export default function HeroSection() {
   const column3 = mediaItems.filter((_, idx) => idx % 4 === 2)
   const column4 = mediaItems.filter((_, idx) => idx % 4 === 3)
 
-  // Mobile: Show only first 6 items (3 per column) for larger, spotlighted display
-  const mobileItems = mediaItems.slice(0, 6)
+  // Mobile: Show first 10 items (5 per column) to fill the viewport
+  const mobileItems = mediaItems.slice(0, 10)
   const mobileColumn1 = mobileItems.filter((_, idx) => idx % 2 === 0)
   const mobileColumn2 = mobileItems.filter((_, idx) => idx % 2 === 1)
 
   return (
-    <section className="relative min-h-screen md:min-h-[140vh] w-full overflow-hidden bg-[#0a0a0a]">
+    <section className="relative min-h-dvh md:min-h-[140dvh] w-full overflow-hidden bg-[#0a0a0a]" data-bg-type="dark">
       {/* Grid Background - Extended beyond viewport */}
       <div className="absolute inset-0 -top-20 -bottom-20 -left-4 -right-4">
         {/* Mobile 2-column layout */}
         <div className="flex md:hidden flex-row gap-1 h-full opacity-90">
-          <div className="flex flex-col gap-1 w-1/2 pt-32">
+          <div className="flex flex-col gap-1 w-1/2 pt-30">
             {mobileColumn1.map((item, idx) => {
               const originalIndex = idx * 2
               return (
@@ -97,7 +97,7 @@ export default function HeroSection() {
               )
             })}
           </div>
-          <div className="flex flex-col gap-1 w-1/2 pt-32">
+          <div className="flex flex-col gap-1 w-1/2 pt-28">
             {mobileColumn2.map((item, idx) => {
               const originalIndex = idx * 2 + 1
               return (
@@ -146,7 +146,7 @@ export default function HeroSection() {
             ))}
           </div>
           {/* Column 3 */}
-          <div className="flex flex-col gap-1 w-1/4 pt-32">
+          <div className="flex flex-col gap-1 w-1/4 pt-28">
             {column3.map((item, idx) => (
               <GridItem 
                 key={idx} 
@@ -160,7 +160,7 @@ export default function HeroSection() {
             ))}
           </div>
           {/* Column 4 */}
-          <div className="flex flex-col gap-1 w-1/4 pt-12">
+          <div className="flex flex-col gap-1 w-1/4 pt-30">
             {column4.map((item, idx) => (
               <GridItem 
                 key={idx} 
@@ -180,7 +180,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/70 pointer-events-none" />
 
       {/* Centered Content - Compact for media focus */}
-      <div className="mt-32 md:mt-0 relative z-10 flex flex-col items-center justify-center min-h-screen pointer-events-none px-4 py-8">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-dvh pointer-events-none px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
