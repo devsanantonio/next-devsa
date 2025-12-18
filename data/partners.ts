@@ -4,7 +4,6 @@ export interface Partner {
   logo: string
   description: string
   website?: string
-  color?: string
   video?: string
   isEasterEgg?: boolean
 }
@@ -16,7 +15,6 @@ export const partners: Partner[] = [
     logo: "https://ampd-asset.s3.us-east-2.amazonaws.com/techday/10Years_Red.svg",
     description: "Building San Antonio's technology and innovation ecosystem.",
     website: "https://www.sanantoniotechday.com/",
-    color: "#EF4444",
     video: "https://ampd-asset.s3.us-east-2.amazonaws.com/techday/techbloc-anniversary.mov", // Replace with actual video URL
     isEasterEgg: true,
   },
@@ -26,7 +24,13 @@ export const partners: Partner[] = [
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/geekdom_logo_full.svg",
     description: "Founded by techies and entrepreneurs, we’ve got a thing for startups and know what it takes to grow them. Since our founding, we’ve helped grow the Tech scene in San Antonio into a hub credited with positioning the city as one of the top destinations for entrepreneurs",
     website: "https://geekdom.com/",
-    color: "#3B82F6",
+  },
+  {
+    id: "434media",
+    name: "434 MEDIA",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/434media-light.svg",
+    description: "Connecting Enterprises by leveraging networks to connect people, places and things through creative media and smart marketing.",
+    website: "https://www.434media.org/",
   },
   {
     id: "learn2ai",
@@ -35,7 +39,6 @@ export const partners: Partner[] = [
     description:
       "Master Prompt Engineering, Automation, and AI Strategy With Our Hands-On, Outcome-Driven Programs",
     website: "https://www.learn2ai.co/",
-    color: "#3B82F6",
     video: "https://ampd-asset.s3.us-east-2.amazonaws.com/Learn2AI+-+081825+G.mp4", // Replace with actual video URL
     isEasterEgg: true,
   },
@@ -44,17 +47,29 @@ export const partners: Partner[] = [
     name: "The AI Cowboys",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cowboys.svg",
     description:
-      "Founded in 2024, The AI Cowboys have rapidly become one of Texas' hottest tech startups. Headquartered in San Antonio—the nation's 6th largest city and a thriving hub within Texas's vibrant tech corridor. We're uniquely positioned at the intersection of national security, professional sports, healthcare, and academic research.",
+      "We help businesses in healthcare, finance, energy, and more leverage artificial intelligence and quantum computing to drive innovation and operational efficiency.",
     website: "https://www.theaicowboys.com/",
-    color: "#8B5CF6",
+  },
+  {
+    id: "nucleate-san-antonio",
+    name: "Nucleate San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/nucleate.svg",
+    description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
+    website: "https://nucleate.org/",
+  },
+  {
+    id: "digital-canvas",
+    name: "Digital Canvas",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/digital-canvas-ymas.svg",
+    description: "The creative layer of 434 Media - blending creativity with community impact through innovative storytelling and design.",
+    website: "https://www.digitalcanvas.community/",
   },
   {
     id: "utsa",
-    name: "UTSA UC",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/uc-utsa.svg",
+    name: "UTSA University College",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/uc-logo-horz.svg",
     description: "The MDST programs not only allow UTSA to incubate new programs, like Artificial Intelligence, Hospitality and Event Management, Game Design, and others, but also orchestrate degree programs that provide interdisciplinary solutions to complex problems. That is, degree programs with classes and disciplines that span multiple colleges at UTSA.",
     website: "https://uc.utsa.edu/",
-    color: "#F97316",
   },
   {
     id: "emergeandrise",
@@ -63,7 +78,6 @@ export const partners: Partner[] = [
     description:
       "At Emerge and Rise™, we strengthen our San Antonio community by building up the businesses within it. We work with small and mid-sized companies (SMEs) that are ready to grow but may not know where to start, or even what's possible. From uncovering funding opportunities and improving digital skills to navigating hiring, mindset, and strategy, we meet business owners where they are.",
     website: "https://emergeandrise.org/",
-    color: "#10B981",
   },
   {
     id: "launchsa",
@@ -72,7 +86,6 @@ export const partners: Partner[] = [
     description:
       "Launch SA is San Antonio's Resource Center for connecting small business owners and entrepreneurs to essential resources for success! Connect with us!",
     website: "https://www.launchsa.org/",
-    color: "#F59E0B",
   },
   {
     id: "project-quest",
@@ -80,6 +93,19 @@ export const partners: Partner[] = [
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/project-quest-logo.svg",
     description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
     website: "https://questsa.org/",
-    color: "#F59E0B",
   },
+  {
+    id: "youth-code-jam",
+    name: "Youth Code Jam",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/youthcode-jam.webp",
+    description: "We make computer science and coding fun, sociable, and equitable for all students and their grown-ups through inclusive programming, Teacher Professional Development, and free community outreach events.",
+    website: "https://www.youthcodejam.org/",
+  },
+/*   {
+    id: "cosa",
+    name: "City of San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cosa-black.png",
+    description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
+    website: "https://www.sanantonio.gov/Innovation/Home",
+  }, */
 ]

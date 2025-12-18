@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { motion } from "motion/react"
 import { LinkedInIcon, InstagramIcon, TwitterIcon, DiscordIcon } from "./icons/social-icons"
 
@@ -71,14 +70,13 @@ export function Footer() {
                     initial={{ opacity: 0, scale: 0.5 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    whileHover={{ scale: 1.1, y: -2 }}
                     transition={{ 
                       duration: 0.4, 
                       delay: 0.4 + index * 0.1,
                       type: "spring",
                       stiffness: 300 
                     }}
-                    className={`p-2 rounded-lg bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-700/50 hover:bg-neutral-800/50 transition-all duration-300 ${social.color} text-neutral-400`}
+                    className={`p-2 rounded-lg bg-neutral-900/50 border border-neutral-800/50 transition-all duration-300 ${social.color} text-neutral-400`}
                     aria-label={`Follow us on ${social.name}`}
                   >
                     <IconComponent className="w-5 h-5 md:w-6 md:h-6" />

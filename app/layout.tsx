@@ -1,12 +1,11 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Footer } from "@/components/footer"
-import { PerformanceIndicator } from "@/components/performance-indicator"
 import { AuthProvider } from "@/lib/auth-context"
 
 const geistSans = Geist({
@@ -21,6 +20,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   preload: false, // Only preload if used on initial page load
+})
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
@@ -162,14 +168,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <AuthProvider>
             <Navbar />
             {children}
             <Footer />
             <Analytics />
-            <PerformanceIndicator />
           </AuthProvider>
         </Suspense>
       </body>

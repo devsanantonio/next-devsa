@@ -24,7 +24,7 @@ export const techCommunities: TechCommunity[] = [
   {
     id: "alamo-python",
     name: "Alamo Python",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/alamo-py.svg",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/flyers-46-alamo-py-white.png",
     description:
       "Alamo Python is part of the PyTexas network of Python user groups. We are focused at providing in person training and social events to help grow the San Antonio Python community. We are proud to be a part of the DEVSA community of San Antonio technology user groups.",
     meetup: "https://www.meetup.com/alamo-python-learners/",
@@ -38,15 +38,6 @@ export const techCommunities: TechCommunity[] = [
       "Inspired by the global DEF CON conference, our mission is to build a vibrant, collaborative community in San Antonio where members can learn, innovate, and advance their skills. We aim to create an inclusive environment that encourages exploration, ethical hacking, and the exchange of ideas to enhance the collective understanding of cybersecurity and technology.",
     website: "https://dcgsatx.com/",
     color: "#EF4444",
-  },
-  {
-    id: "bsides",
-    name: "BSides San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
-    description:
-      "Each BSides event is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
-    website: "https://www.bsidessatx.com/",
-    color: "#7C3AED",
   },
   {
     id: "greater-gaming-society",
@@ -102,7 +93,25 @@ export const techCommunities: TechCommunity[] = [
     website: "https://geeksanddrinks.tech/",
     color: "#EC4899",
   },
-   {
+  {
+    id: "dungo-digital",
+    name: "Dungo Digital",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/dungologo.webp",
+    description:
+      "We’re a digital-first innovation studio rooted in civic tech and community empowerment. Our mission is to make next-gen tools accessible to underserved communities while building sustainable business models that give back.",
+    website: "https://dungodigital.io/",
+    color: "#6366F1",
+  },
+  {
+    id: "bsides",
+    name: "BSides San Antonio",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-bsides+(1).png",
+    description:
+      "Each BSides event is a community-driven framework for building events for and by information security community members. The goal is to expand the spectrum of conversation beyond the traditional confines of space and time. It creates opportunities for individuals to both present and participate in an intimate atmosphere that encourages collaboration. It is an intense event with discussions, demos, and interaction from participants. It is where conversations for the next-big-thing are happening.",
+    website: "https://www.bsidessatx.com/",
+    color: "#7C3AED",
+  },
+  {
     id: "datanauts",
     name: "Datanauts",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-datanauts.png",
@@ -164,15 +173,6 @@ export const techCommunities: TechCommunity[] = [
       "This group is for anyone interested in developing games or experiences with Unreal Engine 4 or other versions of Unreal, whether you're an artist, programmer, designer, animator, or just interested in learning more about this great engine. Come hang out and chat with fellow Unreal developers. If you have an Unreal project you'd like feedback on, bring it to the event!",
     meetup: "https://www.meetup.com/unreal-san-antonio/",
     color: "#4B5563",
-  },
-  {
-    id: "dungo-digital",
-    name: "Dungo Digital",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/dungologo.webp",
-    description:
-      "We’re a digital-first innovation studio rooted in civic tech and community empowerment. Our mission is to make next-gen tools accessible to underserved communities while building sustainable business models that give back.",
-    website: "https://dungodigital.io/",
-    color: "#6366F1",
   },
   {
     id: "redhat",

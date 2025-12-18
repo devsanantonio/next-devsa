@@ -37,17 +37,18 @@ function ConfettiEffect({ isActive }: ConfettiProps) {
       return
     }
 
-    // Create confetti pieces starting from the center/top of the box
-    const pieces = Array.from({ length: 15 }, (_, i) => ({
+    // Create confetti pieces using brand colors (amber/pink)
+    const brandColors = ['#f59e0b', '#fbbf24', '#fcd34d', '#ec4899', '#f472b6', '#ffffff']
+    const pieces = Array.from({ length: 20 }, (_, i) => ({
       id: i,
-      x: 45 + Math.random() * 10, // Start near center
-      y: 40 + Math.random() * 20, // Start from top area of box
-      color: ['#ef426f', '#ff8400', '#00b3aa', '#3b82f6', '#f59e0b', '#8b5cf6'][Math.floor(Math.random() * 6)],
-      size: Math.random() * 6 + 3,
+      x: 40 + Math.random() * 20,
+      y: 50,
+      color: brandColors[Math.floor(Math.random() * brandColors.length)],
+      size: Math.random() * 5 + 2,
       rotation: Math.random() * 360,
-      speedX: (Math.random() - 0.5) * 6, // More horizontal spread
-      speedY: Math.random() * -12 - 4, // Faster upward burst
-      rotationSpeed: (Math.random() - 0.5) * 15,
+      speedX: (Math.random() - 0.5) * 8,
+      speedY: Math.random() * -10 - 6,
+      rotationSpeed: (Math.random() - 0.5) * 20,
     }))
 
     setConfettiPieces(pieces)
@@ -117,39 +118,36 @@ function PartnerModal({ partner, isOpen, onClose }: PartnerModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60"
         onClick={onClose}
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="fixed inset-0 z-70 flex items-center justify-center p-4"
+        onClick={onClose}
       >
         <div 
-          className={`relative w-full ${
-            isEasterEgg 
-              ? 'max-w-4xl max-h-[80vh]' 
-              : 'max-w-md md:max-w-[400px] max-h-[90vh]'
-          }`} 
-          style={isEasterEgg ? { aspectRatio: "16/9" } : { aspectRatio: "4/5" }}
+          className={isEasterEgg ? 'w-full max-w-3xl' : 'w-80'}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className={`bg-neutral-900/95 backdrop-blur-xl border border-neutral-700 rounded-2xl flex flex-col overflow-hidden h-full shadow-2xl ${
-            isEasterEgg ? 'border-[#ef426f]/50' : ''
+          <div className={`bg-slate-950 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-2xl ${
+            isEasterEgg ? 'border-amber-500/30' : ''
           }`}>
             {isEasterEgg ? (
               // Video Content for Easter Eggs
-              <div className="relative w-full h-full">
+              <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 z-10 text-neutral-400 hover:text-white transition-colors bg-neutral-900/80 hover:bg-neutral-800 rounded-full p-2 backdrop-blur-sm shadow-md"
+                  className="absolute top-3 right-3 z-10 text-neutral-400 hover:text-white transition-colors bg-neutral-900/90 hover:bg-neutral-800 rounded-full p-1.5"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
                 <video
                   src={partner.video}
                   title={`${partner.name} Video`}
-                  className="w-full h-full rounded-2xl object-cover"
+                  className="w-full h-full rounded-xl object-cover"
                   controls
                   autoPlay
                   muted
@@ -161,41 +159,39 @@ function PartnerModal({ partner, isOpen, onClose }: PartnerModalProps) {
             ) : (
               // Regular Partner Content
               <>
-                <div className="relative h-32 md:h-36 bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                <div className="relative h-40 bg-neutral-950 flex items-center justify-center shrink-0">
                   <Image
                     src={partner.logo || "/placeholder.svg"}
                     alt={partner.name}
-                    width={120}
-                    height={120}
-                    className="h-20 md:h-24 w-auto object-contain"
+                    width={80}
+                    height={80}
+                    className="h-28 w-auto object-contain"
                   />
                   <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 text-neutral-400 hover:text-white transition-colors bg-neutral-700/80 hover:bg-neutral-600 rounded-full p-1.5 backdrop-blur-sm shadow-md"
+                    className="absolute top-2 right-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800 rounded-full p-1"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="overflow-y-auto p-6 space-y-4 flex-1">
-                  <h3 className="text-white text-3xl md:text-4xl font-black tracking-tight leading-tight">
+                <div className="p-5 space-y-3">
+                  <h3 className="text-white text-xl font-bold tracking-tight">
                     {partner.name}
                   </h3>
-                  <p className="text-neutral-300 leading-relaxed text-base">{partner.description}</p>
+                  <p className="text-neutral-400 leading-relaxed text-sm">{partner.description}</p>
 
-                  <div className="pt-2">
-                    {partner.website && (
-                      <a
-                        href={partner.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 text-[#ef426f] hover:text-[#ff6b8a] transition-colors text-sm font-semibold hover:bg-neutral-800/50 rounded-lg p-2.5"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Visit Website
-                      </a>
-                    )}
-                  </div>
+                  {partner.website && (
+                    <a
+                      href={partner.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors text-sm font-medium mt-2"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Visit Website
+                    </a>
+                  )}
                 </div>
               </>
             )}
@@ -223,12 +219,9 @@ export function PartnersSection() {
 
   return (
     <>
-      <section className="w-full bg-neutral-950 py-12 md:py-20 relative overflow-hidden" data-bg-type="dark">
-        {/* Dark gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950" />
-
+      <section className="w-full bg-white py-16 md:py-24 relative overflow-hidden" data-bg-type="light">
         <div className="relative z-10">
-          <div className="max-w-6xl mx-auto px-4 md:px-8 mb-8 md:mb-12">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 mb-10 md:mb-14">
             {/* Section Heading */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -237,30 +230,30 @@ export function PartnersSection() {
               transition={{ duration: 0.6 }}
               className="text-center space-y-6"
             >
-              <div className="space-y-4">
-                <p className="text-sm md:text-base font-semibold text-neutral-400 uppercase tracking-[0.2em]">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
                   Our Strategic Partners
                 </p>
-                <h2 className="text-white tracking-[-0.02em] text-balance text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[0.9] max-w-5xl mx-auto">
+                <h2 className="text-neutral-900 tracking-tight text-balance text-3xl md:text-4xl lg:text-5xl font-bold leading-tight max-w-4xl mx-auto">
                   Connecting Our Ecosystem
                 </h2>
               </div>
-              <div className="space-y-4 max-w-4xl mx-auto">
-                <p className="text-sm md:text-xl lg:text-2xl text-neutral-200 leading-[1.4] font-light text-balance">
-                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio for connecting passionate builders with key resources and organizations across the San Antonio tech ecosystem.
+              <div className="max-w-3xl mx-auto">
+                <p className="text-base md:text-lg text-neutral-600 leading-relaxed text-balance">
+                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio for connecting passionate builders with key resources and organizations across the tech ecosystem.
                 </p>
               </div>
             </motion.div>
           </div>
 
-          {/* Single Row of Partner Logos - Full Width */}
-          <div className="w-full max-w-4xl mx-auto px-4 md:px-8 mb-12 md:mb-16">
+          {/* Partner Logos Grid */}
+          <div className="w-full max-w-5xl mx-auto px-4 md:px-8 mb-14 md:mb-18">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8"
+              className="flex flex-wrap justify-center gap-4 md:gap-5"
             >
               {partners.map((partner, index) => (
                 <motion.div
@@ -268,46 +261,40 @@ export function PartnersSection() {
                   initial={{ opacity: 0, scale: 0.9, rotate: 0 }}
                   whileInView={{ opacity: 1, scale: 1, rotate: getRandomRotation(index) }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
                   className="relative group cursor-pointer"
                   onMouseEnter={() => setHoveredPartner(partner.id)}
                   onMouseLeave={() => setHoveredPartner(null)}
                   onClick={() => handlePartnerClick(partner)}
                 >
                   {/* Logo Container */}
-                  <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/20 transition-all duration-300 flex items-center justify-center p-3 md:p-4">
+                  <div 
+                    className={`relative w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 bg-neutral-950 rounded-xl border transition-all duration-300 flex items-center justify-center p-3 md:p-4 ${
+                      hoveredPartner === partner.id
+                        ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.3)]'
+                        : 'border-neutral-800 hover:border-neutral-700'
+                    }`}
+                  >
                     {/* Confetti Celebration Effect - Only for Easter Eggs */}
                     {partner.isEasterEgg && (
-                      <div className="absolute -inset-8 z-0 pointer-events-none">
+                      <div className="absolute -inset-12 z-20 pointer-events-none">
                         <ConfettiEffect isActive={hoveredPartner === partner.id} />
                       </div>
                     )}
                     
-                    {/* Logo with celebration glow */}
+                    {/* Logo */}
                     <div className="relative z-10 w-full h-full flex items-center justify-center">
                       <Image
                         src={partner.logo || "/placeholder.svg"}
                         alt={partner.name}
-                        width={120}
-                        height={120}
+                        width={100}
+                        height={100}
                         className={`object-contain w-full h-full transition-all duration-300 ${
                           hoveredPartner === partner.id 
-                            ? 'scale-110 brightness-110 drop-shadow-[0_0_20px_rgba(239,66,111,0.6)]' 
+                            ? 'scale-105 brightness-110' 
                             : 'scale-100'
                         }`}
                       />
-                      
-                      {/* Sparkle effects around the logo - Only for Easter Eggs */}
-                      {partner.isEasterEgg && hoveredPartner === partner.id && (
-                        <>
-                          <div className="absolute -top-2 -left-2 w-2 h-2 bg-[#ff8400] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                          <div className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-[#00b3aa] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-                          <div className="absolute -bottom-2 -left-3 w-1.5 h-1.5 bg-[#3b82f6] rounded-full animate-bounce" style={{ animationDelay: '0.5s' }} />
-                          <div className="absolute -bottom-1 -right-2 w-2 h-2 bg-[#f59e0b] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                          <div className="absolute top-1 -left-4 w-1 h-1 bg-[#8b5cf6] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-                          <div className="absolute top-2 -right-4 w-1 h-1 bg-[#ef426f] rounded-full animate-bounce" style={{ animationDelay: '0.6s' }} />
-                        </>
-                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -316,8 +303,8 @@ export function PartnersSection() {
           </div>
         </div>
 
-        {/* DevSA Community Space Spotlight - Refined Size */}
-        <div className="max-w-5xl mx-auto px-4 md:px-16 relative z-10">
+        {/* DevSA Community Space Spotlight */}
+        <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -326,7 +313,7 @@ export function PartnersSection() {
             className="relative overflow-hidden"
           >
             {/* Mobile: Regular rounded container */}
-            <div className="md:hidden bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 rounded-2xl relative">
+            <div className="md:hidden bg-neutral-950 border border-neutral-800 rounded-2xl relative">
               <div className="grid grid-cols-1 gap-0">
                 {/* Content for mobile */}
                 <div className="relative z-10 p-6 md:p-8 flex flex-col justify-center">
@@ -335,31 +322,31 @@ export function PartnersSection() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="space-y-6"
+                    className="space-y-5"
                   >
-                    <div className="space-y-4">
-                      <p className="text-xs font-medium text-neutral-400 uppercase tracking-[0.2em]">
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide">
                         DEVSA Community Space
                       </p>
-                      <h3 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-[-0.01em]">
+                      <h3 className="text-xl font-bold text-white leading-tight tracking-tight">
                         Community Driven{" "}
-                        <span className="text-neutral-300 font-light italic">Coworking Space</span>
+                        <span className="text-neutral-400 font-normal">Coworking Space</span>
                       </h3>
                     </div>
-                    <p className="text-base text-neutral-300 leading-relaxed font-light">
+                    <p className="text-sm text-neutral-400 leading-relaxed">
                       Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
-                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-6 py-3 rounded-full font-bold text-base hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
+                      className="group inline-flex items-center gap-2 bg-amber-500 text-neutral-900 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-amber-400 transition-all duration-300 w-fit"
                     >
                       Explore the Space
-                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="size-4 group-hover:tranneutral-x-1 transition-transform" />
                     </Link>
                   </motion.div>
                 </div>
                 {/* Video for mobile */}
-                <div className="relative min-h-[300px]">
+                <div className="relative min-h-70">
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -387,7 +374,7 @@ export function PartnersSection() {
 
             {/* Desktop: Refined and compact design */}
             <div 
-              className="hidden md:block bg-neutral-800/60 backdrop-blur-sm border border-neutral-700/30 relative min-h-[320px] lg:min-h-[360px] rounded-2xl overflow-hidden"
+              className="hidden md:block bg-neutral-950 border border-neutral-800 relative min-h-75 lg:min-h-85 rounded-2xl overflow-hidden"
             >
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 h-full">
                 {/* Left Content - Takes more space */}
@@ -397,32 +384,32 @@ export function PartnersSection() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="space-y-6"
+                    className="space-y-5"
                   >
-                    <div className="space-y-4">
-                      <p className="text-sm font-medium text-neutral-400 uppercase tracking-[0.2em]">
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
                         DEVSA Community Space
                       </p>
-                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight tracking-[-0.01em]">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight">
                         Community Driven{" "}
-                        <span className="text-neutral-300 font-light italic block">Coworking Space</span>
+                        <span className="text-neutral-400 font-normal block">Coworking Space</span>
                       </h3>
                     </div>
-                    <p className="text-base md:text-lg text-neutral-300 leading-relaxed font-light max-w-lg text-balance">
+                    <p className="text-base text-neutral-400 leading-relaxed max-w-lg">
                       Thanks to <span className="font-semibold text-white">Geekdom</span>, we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community without the need for a daily pass or monthly membership.
                     </p>
                     <Link
                       href="/coworking-space"
-                      className="group inline-flex items-center gap-3 bg-[#ef426f] text-white px-6 py-3 rounded-full font-bold text-base hover:bg-[#d63860] transition-all duration-300 hover:scale-105 w-fit"
+                      className="group inline-flex items-center gap-2 bg-amber-500 text-neutral-900 px-6 py-3 rounded-full font-semibold text-sm hover:bg-amber-400 transition-all duration-300 w-fit"
                     >
                       Explore the Space
-                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="size-4 group-hover:tranneutral-x-1 transition-transform" />
                     </Link>
                   </motion.div>
                 </div>
 
                 {/* Right Video - Smaller footprint */}
-                <div className="relative lg:col-span-2 lg:h-full min-h-[300px]">
+                <div className="relative lg:col-span-2 lg:h-full min-h-70">
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}

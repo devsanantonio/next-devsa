@@ -176,8 +176,8 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Overlay Gradient - Subtle for better media visibility */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/70 pointer-events-none" />
+      {/* Overlay linear - Subtle for better media visibility */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/70 pointer-events-none" />
 
       {/* Centered Content - Compact for media focus */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen pointer-events-none px-4 py-8">
@@ -187,7 +187,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8 }}
           className="pointer-events-auto text-center max-w-3xl mx-auto p-6 md:p-10 rounded-2xl bg-[#0a0a0a]/60 backdrop-blur-xl border border-[#FFD43B]/20 shadow-2xl"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#FFD43B] via-[#4B8BBE] to-[#646464] leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-linear-to-r from-[#FFD43B] via-[#4B8BBE] to-[#646464] leading-tight">
             Thank You!
           </h1>
           <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -403,7 +403,7 @@ function GridItem({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
       whileHover={{ scale: 1.03, zIndex: 10 }}
-      className="relative group cursor-pointer overflow-hidden rounded-lg md:rounded-xl bg-[#1a1a1a] shadow-lg aspect-[4/3]"
+      className="relative group cursor-pointer overflow-hidden rounded-lg md:rounded-xl bg-[#1a1a1a] shadow-lg aspect-4/3"
       onClick={onClick}
     >
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">

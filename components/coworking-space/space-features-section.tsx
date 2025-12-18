@@ -1,9 +1,9 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { Dispatch, SetStateAction, useState } from "react"
-import { SpaceModal } from "./space-modal"
+import { motion } from "motion/react"
+import { useState } from "react"
 import { Dithering } from '@paper-design/shaders-react'
+import { ExternalLink } from "lucide-react"
 
 
 interface SpaceFeature {
@@ -18,16 +18,13 @@ interface SpaceFeature {
 
 interface SpaceFeaturesSectionProps {
   features: SpaceFeature[]
-  activeModal: string | null
-  setActiveModal: Dispatch<SetStateAction<string | null>>
 }
 
 interface FeatureCardProps {
   feature: SpaceFeature
-  onClick: () => void
 }
 
-function FeatureCard({ feature, onClick }: FeatureCardProps) {
+function FeatureCard({ feature }: FeatureCardProps) {
   const [isHovered, setIsHovered] = useState(false)
 
   const getFeatureColor = (id: string) => {
@@ -41,13 +38,15 @@ function FeatureCard({ feature, onClick }: FeatureCardProps) {
   }
 
   return (
-    <motion.button
-      onClick={onClick}
+    <motion.a
+      href={feature.link}
+      target="_blank"
+      rel="noopener noreferrer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="group relative bg-white border border-gray-200 rounded-2xl p-8 text-left transition-all duration-300 hover:shadow-xl hover:border-gray-300 overflow-hidden"
+      className="group relative bg-white border border-gray-200 rounded-2xl p-8 text-left transition-all duration-300 hover:shadow-xl hover:border-gray-300 overflow-hidden block"
       style={{ minHeight: "320px" }}
     >
       {/* Background gradient effect */}
@@ -77,9 +76,16 @@ function FeatureCard({ feature, onClick }: FeatureCardProps) {
           </p>
         </div>
         
-        {/* Interactive footer section with shader-like effect */}
+        {/* Interactive footer section with link text */}
         <div className="mt-6 pt-4 border-t border-gray-100 group-hover:border-gray-200 transition-colors">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <span 
+              className="text-sm font-semibold transition-colors duration-300 flex items-center gap-2"
+              style={{ color: getFeatureColor(feature.id) }}
+            >
+              {feature.linkText}
+              <ExternalLink className="w-4 h-4" />
+            </span>
             <div 
               className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
               style={{ 
@@ -124,65 +130,49 @@ function FeatureCard({ feature, onClick }: FeatureCardProps) {
           </div>
         </motion.div>
       )}
-    </motion.button>
+    </motion.a>
   )
 }
 
-export function SpaceFeaturesSection({ features, activeModal, setActiveModal }: SpaceFeaturesSectionProps) {
+export function SpaceFeaturesSection({ features }: SpaceFeaturesSectionProps) {
 
   return (
-    <>
-      <section className="py-20 md:py-32 bg-white">
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-16 md:mb-20" 
-          >
-            <div className="space-y-6">
-              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
-                Essential Information
+    <section className="py-20 md:py-32 bg-white">
+      <div className="container mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-16 md:mb-20" 
+        >
+          <div className="space-y-6">
+            <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+              Essential Information
+            </p>
+            <h2 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-gray-900 leading-[0.95] tracking-[-0.02em] max-w-4xl">
+              Getting Here: Parking & Space Access
+            </h2>
+            <div className="space-y-4 max-w-2xl">
+              <p className="text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.4] font-light">
+                Your two biggest questions, answered!
               </p>
-              <h2 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-gray-900 leading-[0.95] tracking-[-0.02em] max-w-4xl">
-                Getting Here: Parking & Space Access
-              </h2>
-              <div className="space-y-4 max-w-2xl">
-                <p className="text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.4] font-light">
-                  Your two biggest questions, answered!
-                </p>
-                <p className="text-base md:text-lg text-gray-600 leading-relaxed">
-                  Read below for a quick guide on finding affordable downtown parking and gaining entry via our community Discord server.
-                </p>
-              </div>
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed">
+                Read below for a quick guide on finding affordable downtown parking and gaining entry via our community Discord server.
+              </p>
             </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            {features.map((feature: SpaceFeature) => (
-              <FeatureCard
-                key={feature.id}
-                feature={feature}
-                onClick={() => setActiveModal(feature.id)}
-              />
-            ))}
           </div>
-        </div>
-      </section>
+        </motion.div>
 
-      {features.map((feature: SpaceFeature) => (
-        <SpaceModal
-          key={feature.id}
-          isOpen={activeModal === feature.id}
-          onClose={() => setActiveModal(null)}
-          title={feature.title}
-          description={feature.description}
-          link={feature.link}
-          linkText={feature.linkText}
-          image={feature.image}
-        />
-      ))}
-    </>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {features.map((feature: SpaceFeature) => (
+            <FeatureCard
+              key={feature.id}
+              feature={feature}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
