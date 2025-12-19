@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
-import { Calendar, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react"
+import { Calendar, MapPin, Send, AlertCircle } from "lucide-react"
 
 const sessionFormats = [
   { id: "talk", label: "Talk (30-45 min)", description: "Standard presentation with Q&A" },
@@ -10,6 +11,7 @@ const sessionFormats = [
 ]
 
 export function CallForSpeakers() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,7 +21,6 @@ export function CallForSpeakers() {
     abstract: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
 
@@ -72,34 +73,14 @@ export function CallForSpeakers() {
         throw new Error(data.error || 'Failed to submit proposal')
       }
 
-      setIsSubmitted(true)
+      // Redirect to AI conference page after successful submission
+      router.push('/events/aiconference2026?submitted=true')
     } catch (err) {
       console.error('Form submission error:', err)
       setError(err instanceof Error ? err.message : 'Failed to submit proposal. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (isSubmitted) {
-    return (
-      <section className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-24">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="rounded-xl border border-green-200 bg-green-50 p-8 text-center sm:p-12"
-          >
-            <CheckCircle className="mx-auto h-16 w-16 text-green-600" />
-            <h2 className="mt-6 text-2xl font-bold text-gray-900 sm:text-3xl">Proposal Submitted!</h2>
-            <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-gray-600">
-              Thank you for submitting your talk proposal. We&apos;ll review your submission and get back to you soon.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-    )
   }
 
   return (
