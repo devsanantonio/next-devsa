@@ -1,7 +1,9 @@
 "use client"
 import { motion } from "motion/react"
-import { Play, Clock, ArrowRight } from "lucide-react"
+import { Play, ArrowRight } from "lucide-react"
 import { featuredOnDemandEvent } from "@/data/events"
+import Image from "next/image"
+import Link from "next/link"
 
 export function FeaturedOnDemandEvent() {
   if (!featuredOnDemandEvent) return null
@@ -9,42 +11,55 @@ export function FeaturedOnDemandEvent() {
   return (
     <section className="border-b border-gray-200 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">On-Demand Sessions</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Watch and learn from our experts.
+          </p>
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-8 shadow-lg shadow-gray-100 sm:p-12"
+          className="grid gap-6 md:grid-cols-2"
         >
-          <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-[#ef426f]/5 blur-3xl" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex-1 space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#ef426f] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">
-                <Play className="h-3 w-3 fill-white" />
-                Featured On-Demand
-              </div>
-              <h2 className="text-balance text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-                {featuredOnDemandEvent.title}
-              </h2>
-              <p className="max-w-2xl text-pretty text-base leading-relaxed text-gray-600 sm:text-lg">
-                {featuredOnDemandEvent.description}
-              </p>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="h-5 w-5 text-[#ef426f]" />
-                <span className="font-medium">Watch anytime</span>
+          {/* Video Thumbnail */}
+          <Link
+            href={featuredOnDemandEvent.url || "#"}
+            className="group relative aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-100"
+          >
+            <Image
+              src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg"
+              alt={featuredOnDemandEvent.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 transition-colors group-hover:bg-black/40">
+              <span className="mb-2 text-sm font-medium text-white/90">Watch now</span>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 shadow-lg transition-transform group-hover:scale-110">
+                <Play className="h-6 w-6 fill-gray-900 text-gray-900" />
               </div>
             </div>
+          </Link>
+
+          {/* Event Info */}
+          <div className="flex flex-col justify-center space-y-4">
+            <h3 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+              {featuredOnDemandEvent.title}
+            </h3>
+            <p className="text-pretty text-base leading-relaxed text-gray-600">
+              {featuredOnDemandEvent.description}
+            </p>
             {featuredOnDemandEvent.url && (
-              <div className="flex-shrink-0">
-                <a
+              <div>
+                <Link
                   href={featuredOnDemandEvent.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group inline-flex items-center justify-center gap-2 rounded-full border-2 border-gray-900 bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-900 hover:text-white"
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#ef426f]"
                 >
-                  Watch Now
+                  View all sessions
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </a>
+                </Link>
               </div>
             )}
           </div>

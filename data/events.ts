@@ -32,32 +32,32 @@ export interface CommunityEvent extends BaseEvent {
 export type AnyEvent = DevsaEvent | OnDemandEvent | CommunityEvent;
 
 export const upcomingDevsaEvent: DevsaEvent | null = {
-  id: "devsa-meetup-1",
+  id: "devsa-ai-conference-2026",
   type: "devsa",
-  title: "DevSA Monthly Meetup",
-  date: new Date().toISOString(),
-  location: "San Antonio, TX",
-  description: "Join the local developer community for talks, networking, and collaboration.",
-  url: "https://devsa.io/events",
+  title: "Dream It. Ship It",
+  date: "2026-02-28T09:00:00.000Z",
+  location: "Geekdom 3rd Floor",
+  description: "DEVSA is the bridge connecting builders across San Antonio’s core industries. We are bringing together professionals from Military, Cybersecurity, Health, Science, Web Development, and the Creative Arts to explore the AI tools and real-world use cases redefining our industry workflows.",
+  url: "/events/aiconference2026",
 };
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {
-  id: "devsa-on-demand-1",
+  id: "pysanantonio",
   type: "on-demand",
-  title: "Building the San Antonio Dev Ecosystem",
-  date: new Date().toISOString(),
+  title: "PySanAntonio: The First Python Conference in San Antonio",
+  date: "2025-11-08T00:00:00.000Z",
   location: "On-demand video",
-  description: "Watch a recorded session on how DevSA supports builders in San Antonio.",
-  url: "https://devsa.io/on-demand",
+  description: "PySanAntonio brought together developers, data scientists, security specialists, automation engineers, hobbyists, and curious minds across all experience levels.",
+  url: "/events/pysanantonio",
 };
 
 export const initialCommunityEvents: CommunityEvent[] = [
   {
     id: "community-1",
     type: "community",
-    title: "Python San Antonio Meetup",
-    date: new Date().toISOString(),
-    location: "Geekdom, San Antonio, TX",
+    title: "Alamo Python Meetup - January 2026",
+    date: "2026-01-28T09:00:00.000Z",
+    location: "Digital Canvas HQ - Finesilver",
     description: "Monthly meetup for Python developers of all levels.",
     communityTag: "alamo-python",
     source: "manual",
