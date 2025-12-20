@@ -80,7 +80,7 @@ San Antonio Tech Community`
                 {'>'} Coworking Space
               </Link>
               <Link
-                href="/pysanantonio"
+                href="/events/pysanantonio"
                 onClick={onClose}
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
               >
