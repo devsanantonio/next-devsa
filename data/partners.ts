@@ -85,14 +85,14 @@ export const partners: Partner[] = [
     description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
     website: "https://nucleate.org/",
   }, */
-  {
+ /*  {
     id: "emergeandrise",
     name: "Emerge and Rise",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-emerge.png",
     description:
       "At Emerge and Rise™, we strengthen our San Antonio community by building up the businesses within it. We work with small and mid-sized companies (SMEs) that are ready to grow but may not know where to start, or even what's possible. From uncovering funding opportunities and improving digital skills to navigating hiring, mindset, and strategy, we meet business owners where they are.",
     website: "https://emergeandrise.org/",
-  },
+  }, */
   {
     id: "launchsa",
     name: "LaunchSA",

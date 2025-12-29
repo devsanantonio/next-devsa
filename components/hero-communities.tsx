@@ -154,7 +154,7 @@ export function HeroCommunities() {
             className="mt-10 sm:mt-12 max-w-2xl mx-auto"
           >
             <p className="text-neutral-600 text-base sm:text-lg leading-relaxed tracking-tight md:tracking-normal">
-              We found them scattered across the city, living in their own bubbles.
+              We found the tech community and 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 
               that match your interests and where these groups can now easily collaborate, 
