@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
-import { Calendar, MapPin, Send, AlertCircle } from "lucide-react"
+import { Calendar, MapPin, Send, AlertCircle, Loader2 } from "lucide-react"
+import Link from "next/link"
 
 const sessionFormats = [
   { id: "talk", label: "Talk (30-45 min)", description: "Standard presentation with Q&A" },
@@ -85,44 +86,47 @@ export function CallForSpeakers() {
 
   return (
     <section className="border-b border-gray-200 bg-white">
-      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Header */}
-          <div className="mb-10 text-center">
-            <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              DEVSA AI Conference <span className="text-[#ef426f]">2026</span>
+          <div className="mb-12 text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              DEVSA AI Conference{" "}
+              <span className="text-[#ef426f]">2026</span>
             </h1>
 
-            <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-gray-600 sm:text-lg">
+            <p className="mt-4 text-lg font-medium text-gray-600">
               Call For Speakers
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2.5 text-gray-700">
                 <Calendar className="h-5 w-5 text-[#ef426f]" />
-                <span className="font-medium">February 28, 2026</span>
+                <span className="font-semibold">February 28, 2026</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5 text-gray-700">
                 <MapPin className="h-5 w-5 text-[#ef426f]" />
-                <span className="font-medium">Geekdom 3rd Floor</span>
+                <span className="font-semibold">Geekdom 3rd Floor</span>
               </div>
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Speaker Information */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
-              <h3 className="mb-6 text-lg font-semibold text-gray-900">Speaker Information</h3>
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-6 sm:p-8">
+              <h3 className="mb-6 text-lg font-bold tracking-tight text-gray-900">
+                Speaker Information
+              </h3>
+              <div className="space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
-                      Full Name *
+                    <label htmlFor="name" className="mb-2 block text-sm font-semibold text-gray-900">
+                      Full Name <span className="text-[#ef426f]">*</span>
                     </label>
                     <input
                       type="text"
@@ -131,13 +135,13 @@ export function CallForSpeakers() {
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                       placeholder="Your full name"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
-                      Email Address *
+                    <label htmlFor="email" className="mb-2 block text-sm font-semibold text-gray-900">
+                      Email Address <span className="text-[#ef426f]">*</span>
                     </label>
                     <input
                       type="email"
@@ -146,14 +150,14 @@ export function CallForSpeakers() {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                       placeholder="you@example.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="company" className="mb-2 block text-sm font-medium text-gray-700">
+                  <label htmlFor="company" className="mb-2 block text-sm font-semibold text-gray-900">
                     Company / Organization
                   </label>
                   <input
@@ -162,7 +166,7 @@ export function CallForSpeakers() {
                     name="company"
                     value={formData.company}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                     placeholder="Your company (optional)"
                   />
                 </div>
@@ -170,12 +174,14 @@ export function CallForSpeakers() {
             </div>
 
             {/* Session Details */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
-              <h3 className="mb-6 text-lg font-semibold text-gray-900">Talk Details</h3>
-              <div className="space-y-4">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-6 sm:p-8">
+              <h3 className="mb-6 text-lg font-bold tracking-tight text-gray-900">
+                Talk Details
+              </h3>
+              <div className="space-y-5">
                 <div>
-                  <label htmlFor="sessionTitle" className="mb-2 block text-sm font-medium text-gray-700">
-                    Talk Title *
+                  <label htmlFor="sessionTitle" className="mb-2 block text-sm font-semibold text-gray-900">
+                    Talk Title <span className="text-[#ef426f]">*</span>
                   </label>
                   <input
                     type="text"
@@ -184,21 +190,23 @@ export function CallForSpeakers() {
                     required
                     value={formData.sessionTitle}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                     placeholder="Give your talk a compelling title"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-3 block text-sm font-medium text-gray-700">Format *</label>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="mb-3 block text-sm font-semibold text-gray-900">
+                    Format <span className="text-[#ef426f]">*</span>
+                  </label>
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {sessionFormats.map((format) => (
                       <label
                         key={format.id}
-                        className={`flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-4 shadow-sm transition-all ${
+                        className={`flex cursor-pointer items-start gap-3.5 rounded-xl border-2 bg-white p-4 shadow-sm transition-all ${
                           formData.sessionFormat === format.id
                             ? "border-[#ef426f] bg-[#ef426f]/5"
-                            : "border-gray-200 hover:border-gray-300"
+                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         <input
@@ -211,8 +219,8 @@ export function CallForSpeakers() {
                           required
                         />
                         <div className="flex-1">
-                          <span className="block font-medium text-gray-900">{format.label}</span>
-                          <p className="mt-1 text-xs text-gray-500">{format.description}</p>
+                          <span className="block text-base font-semibold text-gray-900">{format.label}</span>
+                          <p className="mt-1 text-sm leading-relaxed text-gray-500">{format.description}</p>
                         </div>
                       </label>
                     ))}
@@ -220,64 +228,77 @@ export function CallForSpeakers() {
                 </div>
 
                 <div>
-                  <label htmlFor="abstract" className="mb-2 block text-sm font-medium text-gray-700">
-                    Abstract *
+                  <label htmlFor="abstract" className="mb-2 block text-sm font-semibold text-gray-900">
+                    Abstract <span className="text-[#ef426f]">*</span>
                   </label>
                   <textarea
                     id="abstract"
                     name="abstract"
                     required
-                    rows={5}
+                    rows={6}
                     value={formData.abstract}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base leading-relaxed text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all resize-none"
                     placeholder="Describe your talk. What will attendees learn? Why is this topic important?"
                   />
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2.5 text-sm leading-relaxed text-gray-500">
                     Aim for 150-300 words. Include key takeaways for attendees.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="space-y-4">
+            {/* Submit Section */}
+            <div className="space-y-5">
               {error && (
-                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                  <AlertCircle className="h-5 w-5 shrink-0" />
-                  <p>{error}</p>
+                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm leading-relaxed text-red-700">{error}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="group flex w-full items-center justify-center gap-2.5 rounded-xl bg-gray-900 px-6 py-4 text-base font-semibold text-white shadow-sm transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Submitting...
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Submitting...</span>
                   </>
                 ) : (
                   <>
-                    Submit Proposal
+                    <span>Submit Proposal</span>
                     <Send className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                   </>
                 )}
               </button>
 
-              <p className="text-center text-sm text-gray-600">
-                <span className="font-medium">Deadline:</span> January 31, 2026
-              </p>
-              <p className="text-center text-xs text-gray-500">
-                Questions? Contact us at{" "}
-                <a href="mailto:hello@devsa.community" className="font-medium text-[#ef426f] hover:underline">
-                  hello@devsa.community
-                </a>
+              <div className="text-center space-y-2">
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">Deadline:</span> January 31, 2026
+                </p>
+                <p className="text-sm text-gray-500">
+                  Questions? Contact us at{" "}
+                  <a href="mailto:hello@devsa.community" className="font-semibold text-[#ef426f] hover:underline">
+                    hello@devsa.community
+                  </a>
+                </p>
+              </div>
+
+              {/* Magen protection notice */}
+              <p className="text-center text-xs text-gray-400">
+                Protected by{" "}
+                <Link
+                  href="https://magenminer.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#b45309] hover:text-[#92400e] font-medium transition-colors"
+                >
+                  Magen
+                </Link>
+                {" "}bot detection
               </p>
             </div>
           </form>

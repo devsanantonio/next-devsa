@@ -1,21 +1,9 @@
 "use client"
 
 import { motion } from "motion/react"
-import { useState, useCallback, useEffect } from "react"
-import { ArrowRight, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ArrowRight, ChevronDown, ExternalLink } from "lucide-react"
 import { techCommunities, type TechCommunity } from "@/data/communities"
-
-// Fun random colors for hover effect
-const hoverColors = [
-  "rgba(251, 191, 36, 0.9)",  // amber
-  "rgba(236, 72, 153, 0.9)",  // pink
-  "rgba(139, 92, 246, 0.9)",  // violet
-  "rgba(34, 211, 238, 0.9)",  // cyan
-  "rgba(74, 222, 128, 0.9)",  // green
-  "rgba(251, 146, 60, 0.9)",  // orange
-  "rgba(248, 113, 113, 0.9)", // red
-  "rgba(96, 165, 250, 0.9)",  // blue
-]
 
 interface TestimonialCardProps {
   community: TechCommunity
@@ -23,24 +11,16 @@ interface TestimonialCardProps {
 }
 
 function TestimonialCard({ community, index }: TestimonialCardProps) {
-  const [hoverColor, setHoverColor] = useState<string | null>(null)
+  const [isHovered, setIsHovered] = useState(false)
   const primaryLink = community.website || community.meetup || community.discord || community.instagram || community.twitter
-
-  const handleMouseEnter = useCallback(() => {
-    const randomColor = hoverColors[Math.floor(Math.random() * hoverColors.length)]
-    setHoverColor(randomColor)
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    setHoverColor(null)
-  }, [])
+  const communityColor = community.color || "#ef426f"
 
   return (
     <motion.a
       href={primaryLink || "#"}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ 
@@ -48,41 +28,79 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
         delay: index * 0.03,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="group flex flex-col justify-between p-4 sm:p-5 bg-neutral-950 border border-neutral-800 transition-all duration-200 cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative flex flex-col justify-between p-5 sm:p-6 bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer hover:border-neutral-700 hover:shadow-xl"
       style={{
-        backgroundColor: hoverColor || undefined,
+        boxShadow: isHovered ? `0 20px 40px -12px ${communityColor}30` : undefined,
       }}
     >
-      {/* Testimonial text */}
-      <p 
-        className="text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3 transition-colors duration-200"
-        style={{ color: hoverColor ? "rgba(0,0,0,0.8)" : "rgb(148, 163, 184)" }}
-      >
-        {community.description}
-      </p>
+      {/* Hover gradient overlay */}
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background: `linear-gradient(135deg, ${communityColor}15 0%, transparent 60%)`,
+        }}
+      />
+      
+      {/* Top accent line */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-1 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+        style={{ backgroundColor: communityColor }}
+      />
 
-      {/* Logo and arrow */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img
-            src={community.logo || "/placeholder.svg"}
-            alt={community.name}
-            className="w-6 h-6 object-contain"
-            style={{ filter: hoverColor ? "brightness(0)" : "none" }}
-          />
-          <span 
-            className="font-semibold text-xs sm:text-sm transition-colors duration-200"
-            style={{ color: hoverColor ? "rgba(0,0,0,0.9)" : "white" }}
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Logo and name header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div 
+            className="relative h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-300"
+            style={{
+              backgroundColor: isHovered ? `${communityColor}20` : 'rgba(38, 38, 38, 1)',
+            }}
           >
-            {community.name}
-          </span>
+            <img
+              src={community.logo || "/placeholder.svg"}
+              alt={community.name}
+              className="w-6 h-6 object-contain transition-transform duration-300 group-hover:scale-110"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-sm sm:text-base text-white truncate transition-colors duration-300 group-hover:text-white">
+              {community.name}
+            </h3>
+          </div>
+          <ExternalLink 
+            className="w-4 h-4 text-neutral-600 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:text-white transform group-hover:translate-x-0 -translate-x-2" 
+          />
         </div>
-        <ArrowRight 
-          className="w-3.5 h-3.5 group-hover:tranneutral-x-1 transition-all duration-200" 
-          style={{ color: hoverColor ? "rgba(0,0,0,0.7)" : "rgb(71, 85, 105)" }}
-        />
+
+        {/* Description */}
+        <p className="text-sm leading-relaxed text-neutral-400 line-clamp-3 transition-colors duration-300 group-hover:text-neutral-300">
+          {community.description}
+        </p>
+      </div>
+
+      {/* Footer */}
+      <div className="relative z-10 mt-5 pt-4 border-t border-neutral-800 group-hover:border-neutral-700 transition-colors duration-300">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span 
+              className="h-2 w-2 rounded-full transition-all duration-300"
+              style={{ backgroundColor: communityColor }}
+            />
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 group-hover:text-neutral-400 transition-colors duration-300">
+              Community
+            </span>
+          </div>
+          <div 
+            className="flex items-center gap-1.5 text-xs font-semibold transition-all duration-300"
+            style={{ color: isHovered ? communityColor : 'rgb(115, 115, 115)' }}
+          >
+            Visit
+            <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-300" />
+          </div>
+        </div>
       </div>
     </motion.a>
   )
@@ -165,9 +183,9 @@ export function HeroCommunities() {
       </div>
 
       {/* Testimonial grid - white background container */}
-      <div className="relative z-10 px-6 pb-12">
+      <div className="relative z-10 px-4 sm:px-6 pb-12">
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {displayedCommunities.map((community, index) => (
               <TestimonialCard
                 key={community.id}

@@ -99,7 +99,7 @@ export function HeroSection() {
               {/* First set of items */}
               {mediaItems.map((item, index) => (
                 <div key={`${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
-                  <div className="relative aspect-[4/5] overflow-hidden">
+                  <div className="relative aspect-4/5 overflow-hidden">
                     <div className="absolute inset-0 bg-gray-100 rounded-lg"></div>
                     {item.type === "image" ? (
                       <Image
@@ -130,7 +130,7 @@ export function HeroSection() {
               {/* Duplicate set for seamless loop */}
               {mediaItems.map((item, index) => (
                 <div key={`duplicate-${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
-                  <div className="relative aspect-[4/5] overflow-hidden">
+                  <div className="relative aspect-4/5 overflow-hidden">
                     <div className="absolute inset-0 bg-gray-100 rounded-lg"></div>
                     {item.type === "image" ? (
                       <Image

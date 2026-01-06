@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Footer } from "@/components/footer"
-import { AuthProvider } from "@/lib/auth-context"
+import { ConvexClientProvider } from "./ConvexClientProvider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -170,12 +170,12 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <AuthProvider>
+          <ConvexClientProvider>
             <Navbar />
             {children}
             <Footer />
             <Analytics />
-          </AuthProvider>
+          </ConvexClientProvider>
         </Suspense>
       </body>
     </html>

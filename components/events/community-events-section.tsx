@@ -3,71 +3,26 @@
 import type React from "react"
 import { useState, useMemo } from "react"
 import { motion } from "motion/react"
-import { Search, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react"
-import { initialCommunityEvents, type CommunityEvent } from "@/data/events"
+import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus } from "lucide-react"
+import { initialCommunityEvents } from "@/data/events"
 import { techCommunities } from "@/data/communities"
-import { useAuth } from "@/lib/auth-context"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useConvexAuth } from "convex/react"
 import Image from "next/image"
+import Link from "next/link"
 
-function isAdminOrOrganizer(role: string | null | undefined) {
-  if (!role) return false
-  return ["admin", "organizer"].includes(role.toLowerCase())
-}
-
-function CommunityLogosBackground() {
-  // Create a scattered pattern of community logos
-  const logoPositions = useMemo(() => {
-    return techCommunities.map((community, index) => {
-      // Create a pseudo-random but deterministic pattern
-      const row = Math.floor(index / 5)
-      const col = index % 5
-      const offsetX = (index * 37) % 20 - 10
-      const offsetY = (index * 23) % 20 - 10
-      const rotation = (index * 17) % 30 - 15
-      const scale = 0.7 + (index % 4) * 0.15
-
-      return {
-        ...community,
-        style: {
-          left: `${col * 20 + offsetX + 2}%`,
-          top: `${row * 25 + offsetY + 5}%`,
-          transform: `rotate(${rotation}deg) scale(${scale})`,
-          opacity: 0.08 + (index % 3) * 0.03,
-        },
-      }
-    })
-  }, [])
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {logoPositions.map((logo) => (
-        <div
-          key={logo.id}
-          className="absolute h-16 w-16 transition-opacity duration-500 md:h-20 md:w-20"
-          style={logo.style}
-        >
-          <Image
-            src={logo.logo}
-            alt=""
-            fill
-            className="object-contain grayscale"
-            sizes="80px"
-          />
-        </div>
-      ))}
-    </div>
-  )
+interface EventCalendarProps {
+  events: Array<{ date: string }>
+  selectedDate: Date | null
+  onSelectDate: (date: Date | null) => void
 }
 
 function EventCalendar({
   events,
   selectedDate,
   onSelectDate,
-}: {
-  events: CommunityEvent[]
-  selectedDate: Date | null
-  onSelectDate: (date: Date | null) => void
-}) {
+}: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()
@@ -100,22 +55,22 @@ function EventCalendar({
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">
+    <div className="sticky top-6 rounded-2xl border border-gray-800 bg-gray-900/80 p-5 shadow-lg backdrop-blur-sm">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="text-base font-bold text-white">
           {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h3>
         <div className="flex gap-1">
           <button
             onClick={goToPreviousMonth}
-            className="rounded-lg p-1 hover:bg-gray-800 transition-colors"
+            className="rounded-lg p-2 hover:bg-gray-800 transition-colors"
             aria-label="Previous month"
           >
             <ChevronLeft className="h-4 w-4 text-gray-400" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="rounded-lg p-1 hover:bg-gray-800 transition-colors"
+            className="rounded-lg p-2 hover:bg-gray-800 transition-colors"
             aria-label="Next month"
           >
             <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -123,9 +78,9 @@ function EventCalendar({
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-400 mb-2">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-gray-500 mb-3 uppercase tracking-wide">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-          <div key={day} className="py-1">
+          <div key={day} className="py-2">
             {day}
           </div>
         ))}
@@ -147,11 +102,11 @@ function EventCalendar({
               key={day}
               onClick={() => handleDateClick(day)}
               disabled={!hasEvent}
-              className={`aspect-square rounded-lg text-xs font-medium transition-all ${
+              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
                 isSelected
-                  ? "bg-[#ef426f] text-white"
+                  ? "bg-[#ef426f] text-white shadow-lg shadow-[#ef426f]/30"
                   : hasEvent
-                    ? "bg-[#ffe3ec] text-[#ef426f] hover:bg-[#ffc0d4]"
+                    ? "bg-[#ef426f]/20 text-[#ef426f] hover:bg-[#ef426f]/30 hover:scale-105"
                     : "text-gray-600"
               } ${!hasEvent && "cursor-default"}`}
             >
@@ -160,61 +115,89 @@ function EventCalendar({
           )
         })}
       </div>
+      
+      {/* Legend */}
+      <div className="mt-5 pt-4 border-t border-gray-800">
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#ef426f]/20" />
+            Has events
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#ef426f]" />
+            Selected
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
 
-// Scrolling logos strip component
-function CommunityLogosStrip() {
-  // Double the logos for seamless looping
-  const logos = [...techCommunities, ...techCommunities]
-
-  return (
-    <div className="relative mb-8 overflow-hidden py-4">
-      <div className="absolute left-0 top-0 bottom-0 z-10 w-16 bg-linear-to-r from-black to-transparent" />
-      <div className="absolute right-0 top-0 bottom-0 z-10 w-16 bg-linear-to-l from-black to-transparent" />
-      
-      <motion.div
-        className="flex gap-8"
-        animate={{ x: [0, -50 * techCommunities.length] }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 30,
-            ease: "linear",
-          },
-        }}
-      >
-        {logos.map((community, index) => (
-          <div
-            key={`${community.id}-${index}`}
-            className="relative h-12 w-12 shrink-0 opacity-40 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-          >
-            <Image
-              src={community.logo}
-              alt={community.name}
-              fill
-              className="object-contain"
-              sizes="48px"
-            />
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  )
+// Merged event type for combining Convex and static events
+interface MergedEvent {
+  id: string
+  title: string
+  date: string
+  location: string
+  description: string
+  url?: string
+  communityId: string
+  slug?: string
+  source: "convex" | "static"
 }
 
 export function CommunityEventsSection() {
-  const { role } = useAuth?.() || { role: null }
-  const [events] = useState<CommunityEvent[]>(initialCommunityEvents)
+  const { isAuthenticated } = useConvexAuth()
+  const convexEvents = useQuery(api.events.listUpcomingEvents)
+  const currentUser = useQuery(api.users.getCurrentUser)
+  
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+
+  // Merge Convex events with static fallback events
+  const allEvents: MergedEvent[] = useMemo(() => {
+    const events: MergedEvent[] = []
+
+    // Add Convex events
+    if (convexEvents) {
+      convexEvents.forEach((event) => {
+        events.push({
+          id: event._id,
+          title: event.title,
+          date: event.date,
+          location: event.location,
+          description: event.description,
+          url: event.url,
+          communityId: event.communityId,
+          slug: event.slug,
+          source: "convex",
+        })
+      })
+    }
+
+    // Add static events if no Convex events exist (fallback)
+    if (!convexEvents || convexEvents.length === 0) {
+      initialCommunityEvents.forEach((event) => {
+        events.push({
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          location: event.location,
+          description: event.description,
+          url: event.url,
+          communityId: event.communityTag,
+          source: "static",
+        })
+      })
+    }
+
+    return events
+  }, [convexEvents])
 
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
 
-    return events
+    return allEvents
       .filter((event) => {
         if (!normalizedSearch) return true
         const haystack = `${event.title} ${event.description} ${event.location}`.toLowerCase()
@@ -226,62 +209,101 @@ export function CommunityEventsSection() {
         return eventDate.toDateString() === selectedDate.toDateString()
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [events, search, selectedDate])
+  }, [allEvents, search, selectedDate])
 
-  // Suppress unused variable warning - used for admin features
-  void isAdminOrOrganizer(role)
+  const canCreateEvents = currentUser?.role === "organizer" || currentUser?.role === "admin"
+
+  // Determine button behavior based on auth state
+  const getAddEventButton = () => {
+    if (!isAuthenticated) {
+      // Not logged in - redirect to sign in
+      return (
+        <Link
+          href="/signin"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
+        >
+          <Plus className="h-4 w-4" />
+          Add Event
+        </Link>
+      )
+    }
+
+    if (canCreateEvents) {
+      // Logged in as organizer/admin - go to create page
+      return (
+        <Link
+          href="/events/create"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
+        >
+          <Plus className="h-4 w-4" />
+          Add Event
+        </Link>
+      )
+    }
+
+    // Logged in but not an organizer - show request access
+    return (
+      <button
+        onClick={() => alert("To add events, please contact us at community@devsa.community to become a community organizer.")}
+        className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+      >
+        <Plus className="h-4 w-4" />
+        Add Event
+      </button>
+    )
+  }
 
   return (
-    <section className="relative bg-black py-12 sm:py-16">
-      {/* Background with community logos as stickers */}
-      <CommunityLogosBackground />
-
-      <div className="relative mx-auto max-w-7xl px-4">
-        {/* Header with scrolling logos */}
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Community Events</h2>
-          <p className="mx-auto mt-2 max-w-xl text-pretty text-sm leading-relaxed text-gray-400">
-            A shared calendar of meetups and gatherings from the tech communities across San Antonio.
+    <section className="relative bg-black py-16 sm:py-24">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        {/* Header - Left aligned */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl leading-[1.1]">
+            Community Calendar
+          </h2>
+          <p className="mt-4 max-w-2xl text-base font-normal leading-7 text-gray-400 sm:text-lg sm:leading-8">
+            A shared calendar of meetups and gatherings from tech communities across San Antonio. 
+            Find your next event, connect with like-minded builders, and grow your network.
           </p>
+          <div className="mt-6">
+            {getAddEventButton()}
+          </div>
         </div>
 
-        {/* Scrolling community logos */}
-        <CommunityLogosStrip />
-
-        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
           {/* Left column: Search and Events */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Search bar */}
-            <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 shadow-sm">
+            <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-5 backdrop-blur-sm">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search events..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 shadow-sm focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                  placeholder="Search events by name, location, or topic..."
+                  className="w-full rounded-xl border border-gray-700 bg-gray-800/80 py-3 pl-12 pr-4 text-base font-medium text-white placeholder:text-gray-500 shadow-sm focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                 />
               </div>
 
               {(search || selectedDate) && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {selectedDate && (
                     <button
                       onClick={() => setSelectedDate(null)}
-                      className="inline-flex items-center gap-1 rounded-full bg-[#ffe3ec] px-3 py-1 text-xs font-medium text-[#ef426f]"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#ef426f]/10 border border-[#ef426f]/20 px-4 py-1.5 text-sm font-semibold text-[#ef426f] hover:bg-[#ef426f]/20 transition-colors"
                     >
-                      <CalendarIcon className="h-3 w-3" />
+                      <CalendarIcon className="h-3.5 w-3.5" />
                       {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      <span className="text-[#ef426f]">×</span>
+                      <span className="ml-1">×</span>
                     </button>
                   )}
                   {search && (
                     <button
                       onClick={() => setSearch("")}
-                      className="inline-flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-300"
+                      className="inline-flex items-center gap-2 rounded-full bg-gray-800 border border-gray-700 px-4 py-1.5 text-sm font-semibold text-gray-300 hover:bg-gray-700 transition-colors"
                     >
                       &quot;{search}&quot;
-                      <span className="text-gray-400">×</span>
+                      <span className="ml-1 text-gray-500">×</span>
                     </button>
                   )}
                 </div>
@@ -289,16 +311,22 @@ export function CommunityEventsSection() {
             </div>
 
             {/* Events list */}
-            <div className="min-h-100 max-h-150 overflow-y-auto rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+            <div className="min-h-100 max-h-175 overflow-y-auto rounded-2xl border border-gray-800 bg-gray-900/30 p-4 sm:p-6">
               {filteredEvents.length === 0 ? (
                 <div className="flex h-full min-h-75 items-center justify-center">
-                  <p className="text-sm text-gray-400">No events found. Check back later for new events!</p>
+                  <div className="text-center">
+                    <p className="text-base font-medium text-gray-400">No events found</p>
+                    <p className="mt-1 text-sm text-gray-500">Check back later for new events!</p>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {filteredEvents.map((event, index) => {
-                    const community = techCommunities.find((c) => c.id === event.communityTag)
+                    const community = techCommunities.find((c) => c.id === event.communityId)
                     const isFirst = index === 0
+                    const eventLink = event.slug 
+                      ? `/events/community/${event.slug}`
+                      : event.url
 
                     return (
                       <motion.article
@@ -307,58 +335,66 @@ export function CommunityEventsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="rounded-xl border border-gray-800 bg-gray-900 p-5 shadow-sm transition-shadow hover:shadow-md hover:border-gray-700"
+                        className="group rounded-2xl border border-gray-800 bg-gray-900/80 p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-gray-700 hover:bg-gray-900"
                       >
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#ef426f]" />
-                            {isFirst ? "Next Up" : "Community Event"}
-                          </div>
-                          <span className="text-xs font-medium text-gray-400">
+                        {/* Date and badge row */}
+                        <div className="mb-4 flex flex-wrap items-center gap-3">
+                          <time className="text-sm font-bold text-[#ef426f] uppercase tracking-wide">
                             {new Date(event.date).toLocaleDateString("en-US", {
+                              weekday: "short",
                               month: "short",
                               day: "numeric",
-                              year: "numeric",
                             })}
-                          </span>
+                          </time>
+                          {isFirst && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                              Next Up
+                            </span>
+                          )}
                         </div>
 
+                        {/* Content */}
                         <div className="flex gap-4">
                           {community && (
-                            <div className="relative hidden h-12 w-12 shrink-0 sm:block">
+                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-gray-800/50 p-2 group-hover:bg-gray-800 transition-colors">
                               <Image
                                 src={community.logo}
                                 alt={community.name}
                                 fill
-                                className="object-contain"
-                                sizes="48px"
+                                className="object-contain p-1"
+                                sizes="56px"
                               />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold leading-tight text-white">{event.title}</h3>
-                            <p className="mt-1 text-sm font-medium text-gray-400">{event.location}</p>
-                            <p className="mt-2 text-pretty text-sm leading-relaxed text-gray-500 line-clamp-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-bold leading-tight text-white group-hover:text-[#ef426f] transition-colors">
+                              {event.title}
+                            </h3>
+                            <p className="mt-2 text-sm font-semibold text-gray-400">
+                              📍 {event.location}
+                            </p>
+                            <p className="mt-3 text-sm font-normal leading-6 text-gray-500 line-clamp-2">
                               {event.description}
                             </p>
                           </div>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                        {/* Footer */}
+                        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-800">
                           {community && (
-                            <span className="rounded-full bg-[#ffe3ec] px-3 py-1 text-xs font-semibold text-[#ef426f]">
+                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-400">
+                              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: community.color || '#ef426f' }} />
                               {community.name}
                             </span>
                           )}
-                          {event.url && (
-                            <a
-                              href={event.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center justify-center rounded-lg border border-gray-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-white hover:text-gray-900 hover:border-white"
+                          {eventLink && (
+                            <Link
+                              href={eventLink}
+                              className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-gray-900 transition-all hover:bg-[#ef426f] hover:text-white hover:scale-105"
                             >
-                              Learn More
-                            </a>
+                              View Details →
+                            </Link>
                           )}
                         </div>
                       </motion.article>
@@ -371,7 +407,9 @@ export function CommunityEventsSection() {
 
           {/* Right column: Calendar */}
           <div className="hidden lg:block">
-            <EventCalendar events={events} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            <div className="sticky top-6">
+              <EventCalendar events={allEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            </div>
           </div>
         </div>
       </div>

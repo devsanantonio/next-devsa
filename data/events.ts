@@ -34,11 +34,11 @@ export type AnyEvent = DevsaEvent | OnDemandEvent | CommunityEvent;
 export const upcomingDevsaEvent: DevsaEvent | null = {
   id: "devsa-ai-conference-2026",
   type: "devsa",
-  title: "Dream It. Ship It",
+  title: "More Human Than Human",
   date: "2026-02-28T09:00:00.000Z",
   location: "Geekdom 3rd Floor",
-  description: "DEVSA is the bridge connecting builders across San Antonio’s core industries. We are bringing together professionals from Military, Cybersecurity, Health, Science, Web Development, and the Creative Arts to explore the AI tools and real-world use cases redefining our industry workflows.",
-  url: "/events/aiconference2026",
+  description: "Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship. It's an amazing time to build—and this is where you learn how",
+  url: "/events/morehumanthanhuman",
 };
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {

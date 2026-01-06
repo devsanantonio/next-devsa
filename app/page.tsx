@@ -3,6 +3,7 @@
 import { HeroCommunities } from "@/components/hero-communities"
 import { HeroBridge } from "../components/hero-bridge"
 import { PartnersSection } from "@/components/partner-section"
+import { MagenNewsletterCTA } from "@/components/magen-newsletter-cta"
 
 export default function HomePage() {
   return (
@@ -11,6 +12,7 @@ export default function HomePage() {
         <HeroBridge />
         <PartnersSection />
         <HeroCommunities />
+        <MagenNewsletterCTA />
       </main>
     </div>
   )
