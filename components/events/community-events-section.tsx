@@ -227,46 +227,50 @@ export function CommunityEventsSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1] flex items-center gap-2 flex-wrap">
-            <span>Community Calendar</span>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1]">
+              Community Calendar
+            </h2>
             
-            {/* Easter egg plus button */}
+            {/* Easter egg plus button with inline Add Event */}
             <motion.button
               onClick={() => setShowAddEvent(!showAddEvent)}
-              className="relative inline-flex items-center justify-center"
-              whileTap={{ scale: 0.9 }}
+              className="relative inline-flex items-center gap-2 group"
+              whileTap={{ scale: 0.95 }}
               aria-label="Add event"
             >
               <motion.div
                 animate={{ rotate: showAddEvent ? 45 : 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#ef426f] transition-colors"
               >
-                <Plus className="h-3.5 w-3.5 sm:h-6 sm:w-6 text-slate-500 group-hover:text-white transition-colors" strokeWidth={2.5} />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
               </motion.div>
+              
+              {/* Animated "Add Event" text */}
+              <AnimatePresence>
+                {showAddEvent && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: "auto", opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="overflow-hidden"
+                  >
+                    <Link
+                      href={getAddEventHref()}
+                      className="inline-flex items-center gap-1 whitespace-nowrap text-sm sm:text-base font-semibold text-[#ef426f] hover:text-[#fbbf24] transition-colors"
+                    >
+                      Add Event
+                      <span className="">→</span>
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
-
-            {/* Animated "Add Event" link that appears on click */}
-            <motion.div
-              initial={false}
-              animate={{ 
-                width: showAddEvent ? "auto" : 0,
-                opacity: showAddEvent ? 1 : 0,
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="overflow-hidden"
-            >
-              <Link
-                href={getAddEventHref()}
-                className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-slate-800"
-              >
-                Add Event
-                <span className="text-slate-400">→</span>
-              </Link>
-            </motion.div>
-          </h2>
+          </div>
           <p className="mt-4 max-w-3xl text-base font-normal leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            A shared calendar of meetups and gatherings from tech communities across San Antonio. 
-            Find your next event, connect with like-minded builders, and grow your network.
+            Discover communities that align with your interests. DEVSA is the central hub where local groups collaborate, exchange resources, and build a more connected tech ecosystem.
           </p>
         </div>
 
@@ -357,7 +361,7 @@ export function CommunityEventsSection() {
                         {/* Content */}
                         <div className="flex gap-4">
                           {community && (
-                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-100 p-2 group-hover:bg-slate-50 transition-colors">
+                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-900 p-2 group-hover:bg-slate-950 transition-colors">
                               <Image
                                 src={community.logo}
                                 alt={community.name}
