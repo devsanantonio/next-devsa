@@ -219,7 +219,7 @@ export function PartnersSection() {
 
   return (
     <>
-      <section className="w-full bg-white py-16 md:py-24 relative overflow-hidden" data-bg-type="light">
+      <section className="w-full bg-white py-8 md:py-16 relative overflow-hidden" data-bg-type="light">
         <div className="relative z-10">
           <div className="max-w-6xl mx-auto px-4 md:px-8 mb-10 md:mb-14">
             {/* Section Heading */}
@@ -347,13 +347,13 @@ export function PartnersSection() {
                   </motion.div>
                 </div>
                 {/* Video for mobile */}
-                <div className="relative min-h-70">
+                <div className="relative min-h-96">
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.4 }}
-                    className="w-full h-full"
+                    className="w-full h-96"
                   >
                     <video
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_7916.mov"

@@ -21,7 +21,7 @@ export function TerminalDropdown({ isOpen, onClose, onSocialMenuOpen }: Terminal
 ██████╔╝███████╗ ╚████╔╝ ███████║██║  ██║
 ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
 
-Part of the Digital Canvas Network`
+Your Direct Connection to the Tech Community`
 
   if (!isOpen) return null
 
@@ -73,18 +73,18 @@ Part of the Digital Canvas Network`
             {/* Menu Items */}
             <div className="py-2">
               <Link
-                href="/coworking-space"
-                onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
-              >
-                {'>'} Coworking Space
-              </Link>
-              <Link
                 href="/events"
                 onClick={onClose}
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
               >
                 {'>'} Events
+              </Link>
+              <Link
+                href="/coworking-space"
+                onClick={onClose}
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+              >
+                {'>'} Coworking Space
               </Link>
               <Link
                 href="/events/pysanantonio"

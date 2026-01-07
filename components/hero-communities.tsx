@@ -20,19 +20,18 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
       href={primaryLink || "#"}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={{ 
-        duration: 0.4, 
-        delay: index * 0.03,
-        ease: [0.25, 0.1, 0.25, 1]
+        duration: 0.3, 
+        ease: "easeOut"
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative flex flex-col justify-between p-5 sm:p-6 bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer hover:border-neutral-700 hover:shadow-xl"
+      className="group relative flex flex-col justify-between p-5 sm:p-6 bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden transition-shadow duration-300 cursor-pointer hover:border-neutral-700 will-change-[opacity] transform-gpu"
       style={{
-        boxShadow: isHovered ? `0 20px 40px -12px ${communityColor}30` : undefined,
+        boxShadow: isHovered ? `0 20px 40px -12px ${communityColor}30` : '0 0 0 0 transparent',
       }}
     >
       {/* Hover gradient overlay */}
@@ -144,7 +143,7 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-neutral-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15]"
+            className="text-neutral-900 text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15]"
           >
             Our mission started with a{" "}
             <span className="bg-linear-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent">
@@ -157,7 +156,7 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mt-6 sm:mt-8 text-xl sm:text-2xl md:text-3xl font-bold text-neutral-800 tracking-tight leading-snug"
+            className="mt-6 sm:mt-8 text-2xl md:text-3xl font-bold text-neutral-800 tracking-tight leading-snug"
           >
             &ldquo;Where is the tech community <br className="hidden sm:block" />
             in San&nbsp;Antonio?&rdquo;
@@ -171,7 +170,7 @@ export function HeroCommunities() {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
             className="mt-10 sm:mt-12 max-w-2xl mx-auto"
           >
-            <p className="text-neutral-600 text-base sm:text-lg leading-relaxed tracking-tight md:tracking-normal">
+            <p className="text-neutral-600 text-lg leading-relaxed text-balance md:tracking-normal">
               We found the tech community and 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 

@@ -38,7 +38,7 @@ export const upcomingDevsaEvent: DevsaEvent | null = {
   title: "More Human Than Human",
   date: "2026-02-28T09:00:00.000Z",
   location: "Geekdom 3rd Floor",
-  description: "Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship. It's an amazing time to build—and this is where you learn how",
+  description: "Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship.",
   url: "/events/morehumanthanhuman",
 };
 
