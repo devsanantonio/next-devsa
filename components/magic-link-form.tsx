@@ -2,7 +2,7 @@
 
 import { useAuthActions } from "@convex-dev/auth/react"
 import { useState, useEffect } from "react"
-import { Loader2, Mail, AlertCircle, CheckCircle } from "lucide-react"
+import { Loader2, Mail, AlertCircle, KeyRound, ArrowLeft } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -10,12 +10,15 @@ interface MagicLinkFormProps {
   onSuccess?: () => void
 }
 
+type Step = "email" | { email: string }
+
 export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
   const { signIn } = useAuthActions()
   const [email, setEmail] = useState("")
+  const [code, setCode] = useState("")
+  const [step, setStep] = useState<Step>("email")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [emailSent, setEmailSent] = useState(false)
   const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
 
   // Start Magen session for bot protection
@@ -36,7 +39,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
     startMagenSession()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -66,48 +69,137 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
         }
       }
 
-      await signIn("resend", { email })
-      setEmailSent(true)
-      onSuccess?.()
+      await signIn("resend-otp", { email })
+      setStep({ email })
     } catch (err) {
-      console.error("Magic link error:", err)
-      setError("Failed to send magic link. Please try again.")
+      console.error("Send code error:", err)
+      setError("Failed to send verification code. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (emailSent) {
+  const handleCodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    if (!code) {
+      setError("Please enter the verification code")
+      return
+    }
+
+    if (step === "email") return
+
+    setIsLoading(true)
+
+    try {
+      await signIn("resend-otp", { email: step.email, code })
+      onSuccess?.()
+    } catch (err) {
+      console.error("Verification error:", err)
+      setError("Invalid or expired code. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Code entry step
+  if (step !== "email") {
     return (
       <div className="w-full max-w-sm mx-auto">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 text-center shadow-sm">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-          </div>
-          
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-3">
-            Check your email
-          </h2>
-          <p className="text-base leading-relaxed text-gray-600 mb-6">
-            We sent a magic link to{" "}
-            <span className="font-semibold text-gray-900">{email}</span>
-          </p>
-          
-          <div className="rounded-xl bg-gray-50 border border-gray-100 p-5 text-left">
-            <p className="text-sm leading-relaxed text-gray-600">
-              Click the link in your email to sign in. The link expires in 24 hours.
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#ef426f]/10">
+              <KeyRound className="h-8 w-8 text-[#ef426f]" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
+              Enter your code
+            </h2>
+            <p className="text-base leading-relaxed text-gray-600">
+              We sent an 8-digit code to{" "}
+              <span className="font-semibold text-gray-900">{step.email}</span>
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 flex items-start gap-3 rounded-xl bg-red-50 border border-red-100 p-4">
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+              <p className="text-sm leading-relaxed text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Code Form */}
+          <form onSubmit={handleCodeSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="code" className="block text-sm font-semibold text-gray-900 mb-2">
+                Verification code
+              </label>
+              <input
+                type="text"
+                id="code"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                placeholder="12345678"
+                disabled={isLoading}
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                className="w-full rounded-xl border border-gray-300 bg-white py-3.5 px-4 text-center text-2xl font-mono tracking-widest text-gray-900 placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50 transition-all"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || code.length < 8}
+              className="w-full rounded-xl bg-[#ef426f] px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <span>Sign In</span>
+              )}
+            </button>
+          </form>
+
+          {/* Back button */}
           <button
             onClick={() => {
-              setEmailSent(false)
-              setEmail("")
+              setStep("email")
+              setCode("")
+              setError(null)
             }}
-            className="mt-6 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+            className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
           >
+            <ArrowLeft className="h-4 w-4" />
             Use a different email
           </button>
+
+          {/* Resend option */}
+          <p className="mt-4 text-center text-sm text-gray-500">
+            Didn&apos;t receive the code?{" "}
+            <button
+              onClick={async () => {
+                setError(null)
+                setIsLoading(true)
+                try {
+                  await signIn("resend-otp", { email: step.email })
+                  setCode("")
+                } catch {
+                  setError("Failed to resend code. Please try again.")
+                } finally {
+                  setIsLoading(false)
+                }
+              }}
+              disabled={isLoading}
+              className="text-[#ef426f] hover:text-[#d63760] font-semibold transition-colors disabled:opacity-50"
+            >
+              Resend
+            </button>
+          </p>
         </div>
       </div>
     )
@@ -131,7 +223,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
             Sign in to DEVSA
           </h2>
           <p className="text-base leading-relaxed text-gray-600">
-            Enter your email and we&apos;ll send you a magic link to sign in instantly.
+            Enter your email and we&apos;ll send you a code to sign in.
           </p>
         </div>
 
@@ -144,7 +236,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleEmailSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
               Email address
@@ -171,12 +263,12 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
             {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Sending magic link...</span>
+                <span>Sending code...</span>
               </>
             ) : (
               <>
                 <Mail className="h-5 w-5" />
-                <span>Send Magic Link</span>
+                <span>Send Code</span>
               </>
             )}
           </button>
@@ -184,7 +276,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm leading-relaxed text-gray-500">
-          No password needed. We&apos;ll email you a secure link to sign in.
+          No password needed. We&apos;ll email you a secure code to sign in.
         </p>
 
         {/* Magen protection notice */}

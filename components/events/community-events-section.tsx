@@ -228,7 +228,7 @@ export function CommunityEventsSection() {
         {/* Header - Left aligned */}
         <div className="mb-12">
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1]">
+            <h2 className="font-extrabold tracking-tight text-slate-900 text-4xl lg:text-5xl leading-[1.1]">
               Community Calendar
             </h2>
             
@@ -242,9 +242,9 @@ export function CommunityEventsSection() {
               <motion.div
                 animate={{ rotate: showAddEvent ? 45 : 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#ef426f] transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#ef426f] transition-colors"
               >
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
+                <Plus className="h-5 w-5 text-slate-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
               </motion.div>
               
               {/* Animated "Add Event" text */}
@@ -259,7 +259,7 @@ export function CommunityEventsSection() {
                   >
                     <Link
                       href={getAddEventHref()}
-                      className="inline-flex items-center gap-1 whitespace-nowrap text-sm sm:text-base font-semibold text-[#ef426f] hover:text-[#fbbf24] transition-colors"
+                      className="inline-flex items-center gap-1 whitespace-nowrap text-base font-semibold text-[#ef426f] hover:text-[#fbbf24] transition-colors"
                     >
                       Add Event
                       <span className="">→</span>
@@ -269,7 +269,7 @@ export function CommunityEventsSection() {
               </AnimatePresence>
             </motion.button>
           </div>
-          <p className="mt-4 max-w-3xl text-base font-normal leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mt-4 max-w-3xl font-normal text-slate-600 text-lg leading-8">
             Discover communities that align with your interests. DEVSA is the central hub where local groups collaborate, exchange resources, and build a more connected tech ecosystem.
           </p>
         </div>
