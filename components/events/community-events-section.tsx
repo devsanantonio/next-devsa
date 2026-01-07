@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { motion } from "motion/react"
+import { motion, AnimatePresence } from "motion/react"
 import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus } from "lucide-react"
 import { initialCommunityEvents } from "@/data/events"
 import { techCommunities } from "@/data/communities"
@@ -152,6 +152,7 @@ export function CommunityEventsSection() {
   
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [showAddEvent, setShowAddEvent] = useState(false)
 
   // Merge Convex events with static fallback events
   const allEvents: MergedEvent[] = useMemo(() => {
@@ -213,44 +214,12 @@ export function CommunityEventsSection() {
 
   const canCreateEvents = currentUser?.role === "organizer" || currentUser?.role === "admin"
 
-  // Determine button behavior based on auth state
-  const getAddEventButton = () => {
+  // Get the appropriate link for the add event easter egg
+  const getAddEventHref = () => {
     if (!isAuthenticated) {
-      // Not logged in - redirect to sign in
-      return (
-        <Link
-          href="/signin"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
-        >
-          <Plus className="h-4 w-4" />
-          Add Event
-        </Link>
-      )
+      return "/signin"
     }
-
-    if (canCreateEvents) {
-      // Logged in as organizer/admin - go to create page
-      return (
-        <Link
-          href="/events/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
-        >
-          <Plus className="h-4 w-4" />
-          Add Event
-        </Link>
-      )
-    }
-
-    // Logged in but not an organizer - show request access
-    return (
-      <button
-        onClick={() => alert("To add events, please contact us at community@devsa.community to become a community organizer.")}
-        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
-      >
-        <Plus className="h-4 w-4" />
-        Add Event
-      </button>
-    )
+    return "/events/create"
   }
 
   return (
@@ -258,16 +227,47 @@ export function CommunityEventsSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1]">
-            Community Calendar
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1] flex items-center gap-2 flex-wrap">
+            <span>Community Calendar</span>
+            
+            {/* Easter egg plus button */}
+            <motion.button
+              onClick={() => setShowAddEvent(!showAddEvent)}
+              className="relative inline-flex items-center justify-center"
+              whileTap={{ scale: 0.9 }}
+              aria-label="Add event"
+            >
+              <motion.div
+                animate={{ rotate: showAddEvent ? 45 : 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <Plus className="h-3.5 w-3.5 sm:h-6 sm:w-6 text-slate-500 group-hover:text-white transition-colors" strokeWidth={2.5} />
+              </motion.div>
+            </motion.button>
+
+            {/* Animated "Add Event" link that appears on click */}
+            <motion.div
+              initial={false}
+              animate={{ 
+                width: showAddEvent ? "auto" : 0,
+                opacity: showAddEvent ? 1 : 0,
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="overflow-hidden"
+            >
+              <Link
+                href={getAddEventHref()}
+                className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-slate-800"
+              >
+                Add Event
+                <span className="text-slate-400">→</span>
+              </Link>
+            </motion.div>
           </h2>
-          <p className="mt-4 max-w-2xl text-base font-normal leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mt-4 max-w-3xl text-base font-normal leading-7 text-slate-600 sm:text-lg sm:leading-8">
             A shared calendar of meetups and gatherings from tech communities across San Antonio. 
             Find your next event, connect with like-minded builders, and grow your network.
           </p>
-          <div className="mt-6">
-            {getAddEventButton()}
-          </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">

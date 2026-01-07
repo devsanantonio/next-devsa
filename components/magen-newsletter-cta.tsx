@@ -65,21 +65,19 @@ export function MagenNewsletterCTA() {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-              Protected by{" "}
+              Secured by{" "}
               <Link 
                 href="https://magenminer.io" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[#f59e0b] hover:text-[#fbbf24] transition-colors underline decoration-2 underline-offset-4"
               >
-                Magen
+                MAGEN
               </Link>
             </h2>
 
             <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Our forms are secured with Magen&apos;s intelligent bot detection. 
-              Real humans get through instantly while automated abuse is blocked—no 
-              frustrating CAPTCHAs required.
+              Experience bot protection without the disruption. Proudly using San Antonio&apos;s own MAGEN to keep the DEVSA ecosystem human-first.
             </p>
 
             <Link

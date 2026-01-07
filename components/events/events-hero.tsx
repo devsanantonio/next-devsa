@@ -77,8 +77,8 @@ export function EventsHero() {
             Community{" "}
             <span className="text-[#ef426f]">Events</span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg font-medium leading-relaxed text-gray-400 md:text-xl md:mx-auto">
-            Bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.
+          <p className="mt-6 max-w-3xl text-lg font-medium leading-relaxed text-gray-400 md:text-xl md:mx-auto">
+            Our platform is bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.
           </p>
         </motion.div>
 
