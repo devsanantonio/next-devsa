@@ -19,6 +19,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
   const [step, setStep] = useState<Step>("email")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false) // Prevent double submissions
+  const [isSuccess, setIsSuccess] = useState(false) // Track successful sign-in
   const [error, setError] = useState<string | null>(null)
   const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
 
@@ -100,15 +101,40 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
 
     try {
       await signIn("resend-otp", { email: step.email, code })
-      // Don't reset isSubmitting - keep it locked after successful sign-in
+      // Mark as successful - this will show the success UI
+      setIsSuccess(true)
+      setIsLoading(false)
       onSuccess?.()
     } catch (err) {
       console.error("Verification error:", err)
       setError("Invalid or expired code. Please try again.")
       setIsSubmitting(false) // Only reset on error so user can retry
-    } finally {
       setIsLoading(false)
     }
+  }
+
+  // Success state
+  if (isSuccess) {
+    return (
+      <div className="w-full max-w-sm mx-auto">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 text-center shadow-sm">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-3">
+            Signed in!
+          </h2>
+          <p className="text-base text-gray-600">
+            Redirecting...
+          </p>
+          <div className="mt-4 flex justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-[#ef426f]" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Code entry step
