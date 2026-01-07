@@ -28,7 +28,7 @@ export default function SignInPage() {
 
   return (
     <main className="min-h-screen bg-black py-12 sm:py-20">
-      <div className="mx-auto max-w-md px-4">
+      <div className="mx-auto max-w-sm px-4">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"

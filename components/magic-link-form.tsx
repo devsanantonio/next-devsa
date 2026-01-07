@@ -79,7 +79,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
 
   if (emailSent) {
     return (
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-sm mx-auto">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 text-center shadow-sm">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
             <CheckCircle className="h-8 w-8 text-green-600" />
@@ -114,16 +114,16 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-sm mx-auto">
       <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="mx-auto mb-2 md:mb-6 relative h-16 w-124">
+          <div className="mx-auto mb-2 md:mb-6 relative h-16 w-full scale-320 md:scale-440">
             <Image
               src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-8-hero+(1).png"
               alt="DEVSA"
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
           </div>

@@ -5,11 +5,13 @@ import { Resend as ResendAPI } from "resend";
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
     Resend({
-      id: "resend",
-      apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@devsa.community>",
       async sendVerificationRequest({ identifier: email, url }) {
-        const resend = new ResendAPI(process.env.AUTH_RESEND_KEY);
+        const apiKey = process.env.AUTH_RESEND_KEY;
+        if (!apiKey) {
+          throw new Error("AUTH_RESEND_KEY environment variable is not set");
+        }
+        const resend = new ResendAPI(apiKey);
         
         const { error } = await resend.emails.send({
           from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@devsa.community>",
