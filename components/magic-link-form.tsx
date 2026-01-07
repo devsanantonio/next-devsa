@@ -18,6 +18,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
   const [code, setCode] = useState("")
   const [step, setStep] = useState<Step>("email")
   const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false) // Prevent double submissions
   const [error, setError] = useState<string | null>(null)
   const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
 
@@ -81,6 +82,10 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent double submission
+    if (isSubmitting || isLoading) return
+    
     setError(null)
 
     if (!code) {
@@ -91,13 +96,16 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
     if (step === "email") return
 
     setIsLoading(true)
+    setIsSubmitting(true)
 
     try {
       await signIn("resend-otp", { email: step.email, code })
+      // Don't reset isSubmitting - keep it locked after successful sign-in
       onSuccess?.()
     } catch (err) {
       console.error("Verification error:", err)
       setError("Invalid or expired code. Please try again.")
+      setIsSubmitting(false) // Only reset on error so user can retry
     } finally {
       setIsLoading(false)
     }
@@ -142,7 +150,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                 placeholder="12345678"
-                disabled={isLoading}
+                disabled={isLoading || isSubmitting}
                 autoComplete="one-time-code"
                 inputMode="numeric"
                 className="w-full rounded-xl border border-gray-300 bg-white py-3.5 px-4 text-center text-2xl font-mono tracking-widest text-gray-900 placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50 transition-all"
@@ -151,10 +159,10 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
 
             <button
               type="submit"
-              disabled={isLoading || code.length < 8}
+              disabled={isLoading || isSubmitting || code.length < 8}
               className="w-full rounded-xl bg-[#ef426f] px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-sm"
             >
-              {isLoading ? (
+              {isLoading || isSubmitting ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span>Verifying...</span>
@@ -168,11 +176,14 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
           {/* Back button */}
           <button
             onClick={() => {
+              if (isSubmitting) return
               setStep("email")
               setCode("")
               setError(null)
+              setIsSubmitting(false)
             }}
-            className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+            disabled={isSubmitting}
+            className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-50"
           >
             <ArrowLeft className="h-4 w-4" />
             Use a different email
@@ -183,6 +194,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
             Didn&apos;t receive the code?{" "}
             <button
               onClick={async () => {
+                if (isSubmitting) return
                 setError(null)
                 setIsLoading(true)
                 try {
@@ -194,7 +206,7 @@ export function MagicLinkForm({ onSuccess }: MagicLinkFormProps) {
                   setIsLoading(false)
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
               className="text-[#ef426f] hover:text-[#d63760] font-semibold transition-colors disabled:opacity-50"
             >
               Resend
