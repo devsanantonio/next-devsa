@@ -5,7 +5,7 @@ import { Resend as ResendAPI } from "resend";
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
     Resend({
-      from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@devsa.community>",
+      from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@send.devsa.community>",
       async sendVerificationRequest({ identifier: email, url }) {
         const apiKey = process.env.AUTH_RESEND_KEY;
         if (!apiKey) {
@@ -14,7 +14,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         const resend = new ResendAPI(apiKey);
         
         const { error } = await resend.emails.send({
-          from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@devsa.community>",
+          from: process.env.AUTH_RESEND_FROM ?? "DEVSA <noreply@send.devsa.community>",
           to: [email],
           subject: "Sign in to DEVSA Community",
           html: `
