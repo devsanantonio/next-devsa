@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useConvexAuth } from "convex/react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { MagicLinkForm } from "@/components/magic-link-form"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -10,13 +10,29 @@ import { ArrowLeft } from "lucide-react"
 export default function SignInPage() {
   const router = useRouter()
   const { isAuthenticated, isLoading } = useConvexAuth()
+  const [signInSuccess, setSignInSuccess] = useState(false)
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated or after successful sign-in
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       router.push("/events")
     }
   }, [isAuthenticated, isLoading, router])
+
+  // Handle successful sign-in from form - force redirect after a short delay
+  useEffect(() => {
+    if (signInSuccess) {
+      // Give Convex a moment to update auth state, then force redirect
+      const timeout = setTimeout(() => {
+        router.push("/events")
+      }, 1500)
+      return () => clearTimeout(timeout)
+    }
+  }, [signInSuccess, router])
+
+  const handleSignInSuccess = () => {
+    setSignInSuccess(true)
+  }
 
   return (
     <main className="min-h-screen bg-black py-12 sm:py-20">
@@ -33,7 +49,7 @@ export default function SignInPage() {
           <div className="flex justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-[#ef426f]" />
           </div>
-        ) : isAuthenticated ? (
+        ) : isAuthenticated || signInSuccess ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 text-center shadow-sm">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
               <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,7 +60,7 @@ export default function SignInPage() {
             <p className="text-base text-gray-600">Redirecting to events...</p>
           </div>
         ) : (
-          <MagicLinkForm />
+          <MagicLinkForm onSuccess={handleSignInSuccess} />
         )}
       </div>
     </main>
