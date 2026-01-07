@@ -17,7 +17,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           subject: "Sign in to DEVSA Community",
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-              <div style="text-align: center; margin-bottom: -60px;">
+              <div style="text-align: center; margin-bottom: -96px;">
                 <img src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-8-hero+(1).png" alt="DEVSA" style="width: 100%; max-width: 500px; height: auto;" />
               </div>
               

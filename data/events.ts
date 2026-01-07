@@ -10,6 +10,7 @@ export interface BaseEvent {
   location: string;
   description: string;
   url?: string;
+  slug?: string;
 }
 
 export interface DevsaEvent extends BaseEvent {
@@ -51,6 +52,16 @@ export const featuredOnDemandEvent: OnDemandEvent | null = {
   url: "/events/pysanantonio",
 };
 
+// Helper to generate a URL-friendly slug (same logic as Convex)
+function generateSlug(title: string, date: string): string {
+  const dateSlug = new Date(date).toISOString().split("T")[0];
+  const titleSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return `${titleSlug}-${dateSlug}`;
+}
+
 export const initialCommunityEvents: CommunityEvent[] = [
   {
     id: "community-1",
@@ -62,5 +73,6 @@ export const initialCommunityEvents: CommunityEvent[] = [
     communityTag: "alamo-python",
     source: "manual",
     url: "https://www.meetup.com/python-san-antonio/",
+    slug: generateSlug("Alamo Python Meetup - January 2026", "2026-01-28T09:00:00.000Z"),
   },
 ];

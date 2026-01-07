@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus } from "lucide-react"
@@ -55,30 +54,30 @@ function EventCalendar({
   }
 
   return (
-    <div className="sticky top-6 rounded-2xl border border-gray-800 bg-gray-900/80 p-5 shadow-lg backdrop-blur-sm">
+    <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-base font-bold text-white">
+        <h3 className="text-base font-bold text-slate-900">
           {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h3>
         <div className="flex gap-1">
           <button
             onClick={goToPreviousMonth}
-            className="rounded-lg p-2 hover:bg-gray-800 transition-colors"
+            className="rounded-lg p-2 hover:bg-slate-100 transition-colors"
             aria-label="Previous month"
           >
-            <ChevronLeft className="h-4 w-4 text-gray-400" />
+            <ChevronLeft className="h-4 w-4 text-slate-500" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="rounded-lg p-2 hover:bg-gray-800 transition-colors"
+            className="rounded-lg p-2 hover:bg-slate-100 transition-colors"
             aria-label="Next month"
           >
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4 text-slate-500" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-gray-500 mb-3 uppercase tracking-wide">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-3 uppercase tracking-wide">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div key={day} className="py-2">
             {day}
@@ -106,8 +105,8 @@ function EventCalendar({
                 isSelected
                   ? "bg-[#ef426f] text-white shadow-lg shadow-[#ef426f]/30"
                   : hasEvent
-                    ? "bg-[#ef426f]/20 text-[#ef426f] hover:bg-[#ef426f]/30 hover:scale-105"
-                    : "text-gray-600"
+                    ? "bg-[#ef426f]/10 text-[#ef426f] hover:bg-[#ef426f]/20 hover:scale-105"
+                    : "text-slate-300"
               } ${!hasEvent && "cursor-default"}`}
             >
               {day}
@@ -117,8 +116,8 @@ function EventCalendar({
       </div>
       
       {/* Legend */}
-      <div className="mt-5 pt-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 text-xs text-gray-500">
+      <div className="mt-5 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-3 text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#ef426f]/20" />
             Has events
@@ -186,6 +185,7 @@ export function CommunityEventsSection() {
           description: event.description,
           url: event.url,
           communityId: event.communityTag,
+          slug: event.slug,
           source: "static",
         })
       })
@@ -245,7 +245,7 @@ export function CommunityEventsSection() {
     return (
       <button
         onClick={() => alert("To add events, please contact us at community@devsa.community to become a community organizer.")}
-        className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
       >
         <Plus className="h-4 w-4" />
         Add Event
@@ -254,14 +254,14 @@ export function CommunityEventsSection() {
   }
 
   return (
-    <section className="relative bg-black py-16 sm:py-24">
+    <section className="relative bg-white py-16 sm:py-24">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl leading-[1.1]">
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.1]">
             Community Calendar
           </h2>
-          <p className="mt-4 max-w-2xl text-base font-normal leading-7 text-gray-400 sm:text-lg sm:leading-8">
+          <p className="mt-4 max-w-2xl text-base font-normal leading-7 text-slate-600 sm:text-lg sm:leading-8">
             A shared calendar of meetups and gatherings from tech communities across San Antonio. 
             Find your next event, connect with like-minded builders, and grow your network.
           </p>
@@ -274,14 +274,14 @@ export function CommunityEventsSection() {
           {/* Left column: Search and Events */}
           <div className="space-y-6">
             {/* Search bar */}
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-5 backdrop-blur-sm">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search events by name, location, or topic..."
-                  className="w-full rounded-xl border border-gray-700 bg-gray-800/80 py-3 pl-12 pr-4 text-base font-medium text-white placeholder:text-gray-500 shadow-sm focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-base font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
                 />
               </div>
 
@@ -300,10 +300,10 @@ export function CommunityEventsSection() {
                   {search && (
                     <button
                       onClick={() => setSearch("")}
-                      className="inline-flex items-center gap-2 rounded-full bg-gray-800 border border-gray-700 px-4 py-1.5 text-sm font-semibold text-gray-300 hover:bg-gray-700 transition-colors"
+                      className="inline-flex items-center gap-2 rounded-full bg-slate-100 border border-slate-200 px-4 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
                     >
                       &quot;{search}&quot;
-                      <span className="ml-1 text-gray-500">×</span>
+                      <span className="ml-1 text-slate-400">×</span>
                     </button>
                   )}
                 </div>
@@ -311,12 +311,12 @@ export function CommunityEventsSection() {
             </div>
 
             {/* Events list */}
-            <div className="min-h-100 max-h-175 overflow-y-auto rounded-2xl border border-gray-800 bg-gray-900/30 p-4 sm:p-6">
+            <div className="min-h-100 max-h-175 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
               {filteredEvents.length === 0 ? (
                 <div className="flex h-full min-h-75 items-center justify-center">
                   <div className="text-center">
-                    <p className="text-base font-medium text-gray-400">No events found</p>
-                    <p className="mt-1 text-sm text-gray-500">Check back later for new events!</p>
+                    <p className="text-base font-medium text-slate-500">No events found</p>
+                    <p className="mt-1 text-sm text-slate-400">Check back later for new events!</p>
                   </div>
                 </div>
               ) : (
@@ -335,7 +335,7 @@ export function CommunityEventsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="group rounded-2xl border border-gray-800 bg-gray-900/80 p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-gray-700 hover:bg-gray-900"
+                        className="group rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-300"
                       >
                         {/* Date and badge row */}
                         <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -357,7 +357,7 @@ export function CommunityEventsSection() {
                         {/* Content */}
                         <div className="flex gap-4">
                           {community && (
-                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-gray-800/50 p-2 group-hover:bg-gray-800 transition-colors">
+                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-100 p-2 group-hover:bg-slate-50 transition-colors">
                               <Image
                                 src={community.logo}
                                 alt={community.name}
@@ -368,22 +368,22 @@ export function CommunityEventsSection() {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold leading-tight text-white group-hover:text-[#ef426f] transition-colors">
+                            <h3 className="text-xl font-bold leading-tight text-slate-900 group-hover:text-[#ef426f] transition-colors">
                               {event.title}
                             </h3>
-                            <p className="mt-2 text-sm font-semibold text-gray-400">
+                            <p className="mt-2 text-sm font-semibold text-slate-500">
                               📍 {event.location}
                             </p>
-                            <p className="mt-3 text-sm font-normal leading-6 text-gray-500 line-clamp-2">
+                            <p className="mt-3 text-sm font-normal leading-6 text-slate-500 line-clamp-2">
                               {event.description}
                             </p>
                           </div>
                         </div>
 
                         {/* Footer */}
-                        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-800">
+                        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
                           {community && (
-                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-400">
+                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
                               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: community.color || '#ef426f' }} />
                               {community.name}
                             </span>
@@ -391,7 +391,7 @@ export function CommunityEventsSection() {
                           {eventLink && (
                             <Link
                               href={eventLink}
-                              className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-gray-900 transition-all hover:bg-[#ef426f] hover:text-white hover:scale-105"
+                              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#ef426f] hover:scale-105"
                             >
                               View Details →
                             </Link>

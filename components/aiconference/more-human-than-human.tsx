@@ -133,8 +133,8 @@ export function MoreHumanThanHuman() {
   }
 
   return (
-    <main className="h-dvh bg-[#0a0a0a] overflow-hidden">
-      <section className="relative h-full flex items-center pt-16" data-bg-type="dark">
+    <main className="min-h-dvh bg-[#0a0a0a] overflow-x-hidden">
+      <section className="relative min-h-dvh flex items-center pt-20 sm:pt-16 pb-6 sm:pb-0" data-bg-type="dark">
         <AztecBackground />
 
         {/* Corner decorations */}
@@ -157,8 +157,8 @@ export function MoreHumanThanHuman() {
         </div>
 
         {/* Main Content - Two Column Layout */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-4">
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 xl:gap-14 items-center">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-4">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-14 items-start lg:items-center">
             
             {/* Left Column - Hero Content */}
             <motion.div
@@ -172,7 +172,7 @@ export function MoreHumanThanHuman() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 mb-6 px-4 py-2 border border-[#333] bg-[#111]/80 backdrop-blur-sm"
+                className="inline-flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-6 px-3 sm:px-4 py-1.5 sm:py-2 border border-[#333] bg-[#111]/80 backdrop-blur-sm"
               >
                 <Tv className="w-3.5 h-3.5 text-[#ff9900]" />
                 <span className="font-mono text-[10px] sm:text-xs text-[#a3a3a3] tracking-[0.15em] uppercase">DEVSA TV Recording</span>
@@ -184,10 +184,10 @@ export function MoreHumanThanHuman() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-4 leading-[0.9]"
+                className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-3 sm:mb-4 leading-[0.9]"
               >
                 <span className="block text-[#e5e5e5]">More Human</span>
-                <span className="block text-[#ff9900] mt-1">Than Human</span>
+                <span className="block text-[#ff9900] mt-0.5 sm:mt-1">Than Human</span>
               </motion.h1>
 
               {/* Subtitle & Tagline Combined */}
@@ -195,12 +195,12 @@ export function MoreHumanThanHuman() {
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 transition={{ delay: 0.5 }}
-                className="mb-6"
+                className="mb-4 sm:mb-6"
               >
-                <h2 className="font-mono text-base sm:text-lg md:text-xl text-[#00f2ff] tracking-[0.2em] uppercase font-medium mb-3">
+                <h2 className="font-mono text-sm sm:text-lg md:text-xl text-[#00f2ff] tracking-[0.15em] sm:tracking-[0.2em] uppercase font-medium mb-2 sm:mb-3">
                   DEVSA AI Conference
                 </h2>
-                <p className="font-mono text-sm text-[#737373] tracking-wide leading-relaxed max-w-md mx-auto lg:mx-0">
+                <p className="font-mono text-xs sm:text-sm text-[#737373] tracking-wide leading-relaxed max-w-md mx-auto lg:mx-0">
 Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship. Submit your talk and share your expertise with the San Antonio tech community.
                 </p>
               </motion.div>
@@ -210,15 +210,15 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
-                className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 sm:gap-6 mb-6"
+                className="flex flex-wrap items-center lg:items-start justify-center lg:justify-start gap-3 sm:gap-6 mb-4 sm:mb-6"
               >
-                <div className="flex items-center gap-2.5 font-mono text-xs sm:text-sm text-[#e5e5e5]">
-                  <Calendar className="w-4 h-4 text-[#ff9900]" />
+                <div className="flex items-center gap-2 font-mono text-xs sm:text-sm text-[#e5e5e5]">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ff9900]" />
                   <span className="tracking-wide">February 28, 2026</span>
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-[#333]" />
-                <div className="flex items-center gap-2.5 font-mono text-xs sm:text-sm text-[#e5e5e5]">
-                  <MapPin className="w-4 h-4 text-[#00f2ff]" />
+                <div className="flex items-center gap-2 font-mono text-xs sm:text-sm text-[#e5e5e5]">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00f2ff]" />
                   <span className="tracking-wide">Geekdom, San Antonio TX</span>
                 </div>
               </motion.div>
@@ -228,14 +228,14 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9 }}
-                className="inline-flex items-center gap-3 px-4 py-3 border border-[#ff9900]/30 bg-[#ff9900]/5"
+                className="inline-flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-[#ff9900]/30 bg-[#ff9900]/5"
               >
-                <div className="w-8 h-8 flex items-center justify-center border border-[#ff9900]/50 text-[#ff9900]">
-                  <Calendar className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-[#ff9900]/50 text-[#ff9900]">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div className="text-left">
-                  <p className="font-mono text-[10px] text-[#737373] uppercase tracking-wider">Deadline</p>
-                  <p className="text-sm font-semibold text-[#e5e5e5]">January 31, 2026</p>
+                  <p className="font-mono text-[9px] sm:text-[10px] text-[#737373] uppercase tracking-wider">Deadline</p>
+                  <p className="text-xs sm:text-sm font-semibold text-[#e5e5e5]">January 31, 2026</p>
                 </div>
               </motion.div>
             </motion.div>
