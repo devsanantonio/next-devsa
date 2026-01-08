@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkVerification, MAGEN_THRESHOLDS } from '@/lib/magen';
-import { ConvexHttpClient } from 'convex/browser';
-import { api } from '@/convex/_generated/api';
+import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-interface SpeakerSubmission {
+interface SpeakerSubmissionRequest {
   name: string;
   email: string;
   company?: string;
@@ -18,7 +15,7 @@ interface SpeakerSubmission {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: SpeakerSubmission = await request.json();
+    const body: SpeakerSubmissionRequest = await request.json();
     const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, eventId } = body;
 
     // Validate required fields
@@ -61,23 +58,28 @@ export async function POST(request: NextRequest) {
       console.log('MAGEN verification skipped - not configured');
     }
 
-    // Submit to Convex database
-    const submissionId = await convex.mutation(api.speakers.submit, {
+    // Submit to Firestore
+    const db = getDb();
+    const submission: SpeakerSubmission = {
       name,
-      email,
+      email: email.toLowerCase(),
       company: company || undefined,
       sessionTitle,
       sessionFormat,
       abstract,
       eventId: eventId || 'aiconference2026',
+      submittedAt: new Date(),
       magenSessionId: magenSessionId || undefined,
       magenHumanScore: humanScore,
-    });
+      status: 'pending',
+    };
+
+    const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
 
     return NextResponse.json({
       success: true,
       message: 'Proposal submitted successfully',
-      recordId: submissionId,
+      recordId: docRef.id,
     });
 
   } catch (error) {

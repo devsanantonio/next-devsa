@@ -1,19 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { useMutation, useQuery } from "convex/react"
-import { useConvexAuth } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { techCommunities } from "@/data/communities"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
+import { techCommunities } from "@/data/communities"
 
-export default function CreateEventPage() {
+export default function AdminCreateEventPage() {
   const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
-  const currentUser = useQuery(api.users.getCurrentUser)
-  const createEvent = useMutation(api.events.createEvent)
+  const [adminEmail, setAdminEmail] = useState<string | null>(null)
+  const [adminRole, setAdminRole] = useState<string | null>(null)
+  const [adminCommunityId, setAdminCommunityId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     title: "",
@@ -25,44 +25,35 @@ export default function CreateEventPage() {
     communityId: "",
     source: "manual" as const,
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const canCreateEvents = currentUser?.role === "organizer" || currentUser?.role === "admin"
+  useEffect(() => {
+    const checkAuth = async () => {
+      const storedEmail = localStorage.getItem("devsa-admin-email")
+      if (!storedEmail) {
+        router.push("/admin")
+        return
+      }
 
-  // Show loading state
-  if (authLoading || currentUser === undefined) {
-    return (
-      <main className="min-h-screen bg-black">
-        <div className="mx-auto max-w-2xl px-4 py-20">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
-          </div>
-        </div>
-      </main>
-    )
-  }
+      try {
+        const response = await fetch(`/api/admin/auth?email=${encodeURIComponent(storedEmail)}`)
+        const data = await response.json()
 
-  // Redirect if not authenticated or not authorized
-  if (!isAuthenticated || !canCreateEvents) {
-    return (
-      <main className="min-h-screen bg-black">
-        <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Access Denied</h1>
-          <p className="text-gray-400 mb-8">
-            You need to be signed in as an organizer to create events.
-          </p>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Events
-          </Link>
-        </div>
-      </main>
-    )
-  }
+        if (data.isAdmin) {
+          setAdminEmail(storedEmail)
+          setAdminRole(data.role)
+          setAdminCommunityId(data.communityId || null)
+        } else {
+          router.push("/admin")
+        }
+      } catch {
+        router.push("/admin")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,16 +63,27 @@ export default function CreateEventPage() {
     try {
       // Combine date and time
       const dateTime = new Date(`${formData.date}T${formData.time}:00`)
-      
-      await createEvent({
-        title: formData.title,
-        date: dateTime.toISOString(),
-        location: formData.location,
-        description: formData.description,
-        url: formData.url || undefined,
-        communityId: formData.communityId,
-        source: formData.source,
+
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          date: dateTime.toISOString(),
+          location: formData.location,
+          description: formData.description,
+          url: formData.url || undefined,
+          communityId: formData.communityId,
+          source: formData.source,
+          organizerEmail: adminEmail,
+        }),
       })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create event")
+      }
 
       router.push("/events")
     } catch (err) {
@@ -91,21 +93,28 @@ export default function CreateEventPage() {
     }
   }
 
-  // Filter communities based on user's assigned community (or show all for admin)
-  const availableCommunities = currentUser?.role === "admin"
+  // Filter communities based on user's role
+  const availableCommunities = adminRole === "admin"
     ? techCommunities
-    : techCommunities.filter((c) => c.id === currentUser?.communityId)
+    : techCommunities.filter((c) => c.id === adminCommunityId)
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-black">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:py-20">
-        {/* Back link */}
         <Link
-          href="/events"
+          href="/admin"
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Events
+          Back to Admin
         </Link>
 
         <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6 sm:p-8">

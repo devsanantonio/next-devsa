@@ -1,8 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
+import { useState, useEffect } from "react"
 import { Loader2, CheckCircle, Mail } from "lucide-react"
 import Link from "next/link"
 
@@ -15,8 +13,25 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
-  
-  const subscribe = useMutation(api.newsletter.subscribe)
+  const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
+
+  // Start Magen session for bot protection
+  useEffect(() => {
+    const startMagenSession = async () => {
+      try {
+        const response = await fetch('/api/magen/start-session', {
+          method: 'POST',
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setMagenSessionId(data?.sessionId || null)
+        }
+      } catch {
+        // Magen not available - continue without it
+      }
+    }
+    startMagenSession()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,11 +39,22 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
     setErrorMessage("")
 
     try {
-      await subscribe({
-        email,
-        source,
-        // In production, you would get Magen session and score here
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          source,
+          magenSessionId,
+        }),
       })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe')
+      }
+
       setStatus("success")
       setEmail("")
     } catch (err) {

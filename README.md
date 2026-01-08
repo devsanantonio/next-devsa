@@ -15,8 +15,7 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 - **Framework:** [Next.js 16](https://nextjs.org/) with App Router
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animation:** [Motion (Framer Motion)](https://motion.dev/)
-- **Database:** [Convex](https://convex.dev/) - Real-time backend
-- **Authentication:** Convex Auth with [Resend](https://resend.com/) for magic links
+- **Database:** [Google Firestore](https://firebase.google.com/docs/firestore) - NoSQL cloud database
 - **Bot Protection:** [MAGEN](https://magenminer.io/) - Human-first verification
 - **Deployment:** [Vercel](https://vercel.com/)
 - **Analytics:** Vercel Analytics
@@ -53,18 +52,28 @@ The app will be running at [http://localhost:3000](http://localhost:3000)
 Create a `.env.local` file with:
 
 ```env
-# Convex
-NEXT_PUBLIC_CONVEX_URL=your_convex_url
-CONVEX_DEPLOYMENT=dev:your-deployment
+# Google Firestore - Service Account Key (as JSON string)
+GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"your-project",...}
 
 # MAGEN (Bot Protection)
 MAGEN_API_KEY=your_magen_api_key
 MAGEN_SECRET_KEY=your_magen_secret_key
 
-# Resend (Email) - Set in Convex dashboard for production
-AUTH_RESEND_KEY=your_resend_api_key
-AUTH_RESEND_FROM=Your Name <noreply@yourdomain.com>
+# Admin Setup (one-time use to create first admin)
+ADMIN_SETUP_SECRET=your_random_secret_for_initial_setup
 ```
+
+### Setting Up the First Admin
+
+After deploying, set up your first admin by making a POST request:
+
+```bash
+curl -X POST https://your-domain.com/api/admin/setup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "your-email@example.com", "secret": "your_admin_setup_secret"}'
+```
+
+This only works once when no admins exist in the system.
 
 ## Project Structure
 
@@ -76,15 +85,21 @@ next-devsa/
 │   ├── globals.css           # Global styles & Tailwind
 │   ├── api/                  # API routes
 │   │   ├── magen/            # MAGEN bot protection endpoints
-│   │   └── og/               # Open Graph image generation
+│   │   ├── og/               # Open Graph image generation
+│   │   ├── admin/            # Admin API endpoints
+│   │   ├── newsletter/       # Newsletter subscription
+│   │   ├── events/           # Events CRUD
+│   │   └── access-request/   # Access request for organizers
 │   ├── events/               # Events pages
 │   │   ├── page.tsx          # Community calendar
-│   │   ├── create/           # Create event page
 │   │   ├── community/[slug]/ # Dynamic community event pages
 │   │   ├── morehumanthanhuman/ # AI Conference page
 │   │   └── pysanantonio/     # PySA event page
+│   ├── admin/                # Protected admin pages
+│   │   ├── page.tsx          # Admin dashboard
+│   │   └── create-event/     # Create event page
 │   ├── coworking-space/      # Geekdom coworking page
-│   └── signin/               # Authentication page
+│   └── signin/               # Access request page
 │
 ├── components/               # React components
 │   ├── hero-bridge.tsx       # Main hero section
@@ -93,20 +108,12 @@ next-devsa/
 │   ├── magen-newsletter-cta.tsx # Community spotlight section
 │   ├── navbar.tsx            # Navigation bar
 │   ├── footer.tsx            # Site footer
+│   ├── access-request-form.tsx # Organizer access request form
 │   ├── events/               # Event-specific components
 │   ├── coworking-space/      # Coworking page components
 │   ├── pysa/                 # PySA event components
 │   ├── aiconference/         # AI Conference components
 │   └── icons/                # SVG icon components
-│
-├── convex/                   # Convex backend
-│   ├── schema.ts             # Database schema
-│   ├── auth.ts               # Authentication config
-│   ├── events.ts             # Event mutations/queries
-│   ├── users.ts              # User mutations/queries
-│   ├── newsletter.ts         # Newsletter subscriptions
-│   ├── speakers.ts           # Speaker submissions
-│   └── _generated/           # Auto-generated Convex types
 │
 ├── data/                     # Static data files
 │   ├── communities.ts        # Tech community listings
@@ -118,7 +125,9 @@ next-devsa/
 │       └── sponsors.ts       # Event sponsors
 │
 ├── lib/                      # Utility functions
-│   ├── utils.ts              # General utilities (cn, etc.)
+│   ├── firebase-admin.ts     # Firebase Admin SDK setup
+│   ├── magen.ts              # MAGEN bot protection
+│   └── utils.ts              # General utilities (cn, etc.)
 │   └── magen.ts              # MAGEN verification helpers
 │
 ├── types/                    # TypeScript type definitions
@@ -181,14 +190,6 @@ pnpm dev          # Start development server with Turbopack
 pnpm build        # Build for production
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
-```
-
-## Convex Commands
-
-```bash
-npx convex dev    # Start Convex development server
-npx convex deploy # Deploy to production
-npx convex env list --prod  # List production env vars
 ```
 
 ## Connect With Us

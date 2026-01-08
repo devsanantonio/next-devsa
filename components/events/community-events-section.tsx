@@ -1,15 +1,23 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus } from "lucide-react"
 import { initialCommunityEvents } from "@/data/events"
 import { techCommunities } from "@/data/communities"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { useConvexAuth } from "convex/react"
 import Image from "next/image"
 import Link from "next/link"
+
+interface FirestoreEvent {
+  id: string
+  title: string
+  slug: string
+  date: string
+  location: string
+  description: string
+  url?: string
+  communityId: string
+}
 
 interface EventCalendarProps {
   events: Array<{ date: string }>
@@ -132,7 +140,7 @@ function EventCalendar({
   )
 }
 
-// Merged event type for combining Convex and static events
+// Merged event type for combining Firestore and static events
 interface MergedEvent {
   id: string
   title: string
@@ -142,27 +150,44 @@ interface MergedEvent {
   url?: string
   communityId: string
   slug?: string
-  source: "convex" | "static"
+  source: "firestore" | "static"
 }
 
 export function CommunityEventsSection() {
-  const { isAuthenticated } = useConvexAuth()
-  const convexEvents = useQuery(api.events.listUpcomingEvents)
-  const currentUser = useQuery(api.users.getCurrentUser)
+  const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true)
   
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showAddEvent, setShowAddEvent] = useState(false)
 
-  // Merge Convex events with static fallback events
+  // Fetch events from Firestore
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events')
+        if (response.ok) {
+          const data = await response.json()
+          setFirestoreEvents(data.events || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch events:', error)
+      } finally {
+        setIsLoadingEvents(false)
+      }
+    }
+    fetchEvents()
+  }, [])
+
+  // Merge Firestore events with static fallback events
   const allEvents: MergedEvent[] = useMemo(() => {
     const events: MergedEvent[] = []
 
-    // Add Convex events
-    if (convexEvents) {
-      convexEvents.forEach((event) => {
+    // Add Firestore events
+    if (firestoreEvents.length > 0) {
+      firestoreEvents.forEach((event) => {
         events.push({
-          id: event._id,
+          id: event.id,
           title: event.title,
           date: event.date,
           location: event.location,
@@ -170,13 +195,13 @@ export function CommunityEventsSection() {
           url: event.url,
           communityId: event.communityId,
           slug: event.slug,
-          source: "convex",
+          source: "firestore",
         })
       })
     }
 
-    // Add static events if no Convex events exist (fallback)
-    if (!convexEvents || convexEvents.length === 0) {
+    // Add static events if no Firestore events exist (fallback)
+    if (firestoreEvents.length === 0 && !isLoadingEvents) {
       initialCommunityEvents.forEach((event) => {
         events.push({
           id: event.id,
@@ -193,7 +218,7 @@ export function CommunityEventsSection() {
     }
 
     return events
-  }, [convexEvents])
+  }, [firestoreEvents, isLoadingEvents])
 
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -212,14 +237,9 @@ export function CommunityEventsSection() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [allEvents, search, selectedDate])
 
-  const canCreateEvents = currentUser?.role === "organizer" || currentUser?.role === "admin"
-
   // Get the appropriate link for the add event easter egg
   const getAddEventHref = () => {
-    if (!isAuthenticated) {
-      return "/signin"
-    }
-    return "/events/create"
+    return "/signin"
   }
 
   return (

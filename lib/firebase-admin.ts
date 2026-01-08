@@ -1,0 +1,114 @@
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+
+let app: App | null = null;
+let firestoreInstance: Firestore | null = null;
+
+// Initialize Firebase Admin SDK lazily
+function getFirebaseApp(): App {
+  if (app) {
+    return app;
+  }
+
+  if (getApps().length > 0) {
+    app = getApps()[0];
+    return app;
+  }
+
+  const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  
+  if (!serviceAccountKey) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY environment variable is not set');
+  }
+
+  try {
+    const serviceAccount = JSON.parse(serviceAccountKey);
+    
+    app = initializeApp({
+      credential: cert(serviceAccount),
+    });
+    
+    return app;
+  } catch (error) {
+    console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', error);
+    throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_KEY format');
+  }
+}
+
+// Export a getter for the Firestore instance
+// Uses the 'devsa' database ID instead of default
+export function getDb(): Firestore {
+  if (firestoreInstance) {
+    return firestoreInstance;
+  }
+  
+  const firebaseApp = getFirebaseApp();
+  firestoreInstance = getFirestore(firebaseApp, 'devsa');
+  return firestoreInstance;
+}
+
+// Collection names
+export const COLLECTIONS = {
+  NEWSLETTER: 'newsletter_subscriptions',
+  SPEAKERS: 'speaker_submissions',
+  ACCESS_REQUESTS: 'access_requests',
+  APPROVED_ADMINS: 'approved_admins',
+  EVENTS: 'events',
+} as const;
+
+// Types for Firestore documents
+export interface NewsletterSubscription {
+  email: string;
+  subscribedAt: Date;
+  source?: string;
+  magenSessionId?: string;
+  magenHumanScore?: number;
+  status: 'active' | 'unsubscribed';
+}
+
+export interface SpeakerSubmission {
+  name: string;
+  email: string;
+  company?: string;
+  sessionTitle: string;
+  sessionFormat: string;
+  abstract: string;
+  eventId?: string;
+  submittedAt: Date;
+  magenSessionId?: string;
+  magenHumanScore?: number;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface AccessRequest {
+  name: string;
+  email: string;
+  communityOrg: string;
+  submittedAt: Date;
+  magenSessionId?: string;
+  magenHumanScore?: number | null;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface ApprovedAdmin {
+  email: string;
+  approvedAt: Date;
+  approvedBy?: string;
+  role: 'admin' | 'organizer';
+  communityId?: string;
+}
+
+export interface Event {
+  title: string;
+  slug: string;
+  date: string;
+  location: string;
+  description: string;
+  url?: string;
+  communityId: string;
+  organizerEmail: string;
+  source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
+  status?: 'draft' | 'published' | 'cancelled';
+  createdAt: Date;
+  updatedAt?: Date;
+}
