@@ -62,17 +62,4 @@ function generateSlug(title: string, date: string): string {
   return `${titleSlug}-${dateSlug}`;
 }
 
-export const initialCommunityEvents: CommunityEvent[] = [
-  {
-    id: "community-1",
-    type: "community",
-    title: "Alamo Python Meetup - January 2026",
-    date: "2026-01-28T09:00:00.000Z",
-    location: "Digital Canvas HQ - Finesilver",
-    description: "Monthly meetup for Python developers of all levels.",
-    communityTag: "alamo-python",
-    source: "manual",
-    url: "https://www.meetup.com/python-san-antonio/",
-    slug: generateSlug("Alamo Python Meetup - January 2026", "2026-01-28T09:00:00.000Z"),
-  },
-];
+export const initialCommunityEvents: CommunityEvent[] = [];

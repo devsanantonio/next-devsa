@@ -317,7 +317,7 @@ export function CallForSpeakers() {
                   rel="noopener noreferrer"
                   className="text-[#b45309] hover:text-[#92400e] font-medium transition-colors"
                 >
-                  Magen
+                  MagenMiner
                 </Link>
                 {" "}bot detection
               </p>

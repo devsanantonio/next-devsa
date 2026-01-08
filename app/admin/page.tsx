@@ -14,7 +14,10 @@ import {
   XCircle,
   Shield,
   Plus,
-  Calendar
+  Calendar,
+  CalendarDays,
+  Edit,
+  Trash2
 } from "lucide-react"
 
 interface NewsletterSubscription {
@@ -54,7 +57,22 @@ interface Admin {
   approvedAt: string
 }
 
-type Tab = "newsletter" | "speakers" | "access" | "admins"
+interface CalendarEvent {
+  id: string
+  title: string
+  slug: string
+  date: string
+  location: string
+  description: string
+  url?: string
+  communityId: string
+  communityName?: string
+  status: string
+  source?: string
+  isStatic?: boolean
+}
+
+type Tab = "newsletter" | "speakers" | "access" | "admins" | "events"
 
 export default function AdminPage() {
   const router = useRouter()
@@ -70,9 +88,13 @@ export default function AdminPage() {
   const [speakers, setSpeakers] = useState<SpeakerSubmission[]>([])
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
+  const [events, setEvents] = useState<CalendarEvent[]>([])
   
   // Modal state
   const [showAddAdmin, setShowAddAdmin] = useState(false)
+  const [showEditEvent, setShowEditEvent] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [newAdminEmail, setNewAdminEmail] = useState("")
   const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
   const [newAdminCommunity, setNewAdminCommunity] = useState("")
@@ -114,14 +136,23 @@ export default function AdminPage() {
 
   const fetchData = async (email: string) => {
     try {
-      const response = await fetch(`/api/admin/data?email=${encodeURIComponent(email)}`)
-      const data = await response.json()
+      const [adminDataRes, eventsRes] = await Promise.all([
+        fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
+        fetch('/api/events')
+      ])
+      
+      const adminData = await adminDataRes.json()
+      const eventsData = await eventsRes.json()
 
-      if (response.ok) {
-        setNewsletter(data.newsletter || [])
-        setSpeakers(data.speakers || [])
-        setAccessRequests(data.accessRequests || [])
-        setAdmins(data.admins || [])
+      if (adminDataRes.ok) {
+        setNewsletter(adminData.newsletter || [])
+        setSpeakers(adminData.speakers || [])
+        setAccessRequests(adminData.accessRequests || [])
+        setAdmins(adminData.admins || [])
+      }
+      
+      if (eventsRes.ok) {
+        setEvents(eventsData.events || [])
       }
     } catch {
       setError("Failed to fetch data")
@@ -210,6 +241,70 @@ export default function AdminPage() {
       }
     } catch {
       setError("Failed to remove admin")
+    }
+  }
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEditingEvent({ ...event })
+    setShowEditEvent(true)
+  }
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingEvent) return
+
+    try {
+      const response = await fetch("/api/events", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: editingEvent.id,
+          title: editingEvent.title,
+          date: editingEvent.date,
+          location: editingEvent.location,
+          description: editingEvent.description,
+          url: editingEvent.url,
+          organizerEmail: adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setShowEditEvent(false)
+        setEditingEvent(null)
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to update event")
+      }
+    } catch {
+      setError("Failed to update event")
+    }
+  }
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) return
+    
+    setIsDeleting(eventId)
+    try {
+      const response = await fetch("/api/events", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          organizerEmail: adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete event")
+      }
+    } catch {
+      setError("Failed to delete event")
+    } finally {
+      setIsDeleting(null)
     }
   }
 
@@ -365,6 +460,17 @@ export default function AdminPage() {
           >
             <UserCheck className="h-4 w-4" />
             Admins ({admins.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("events")}
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "events"
+                ? "bg-[#ef426f] text-white"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            <CalendarDays className="h-4 w-4" />
+            Events ({events.length})
           </button>
         </div>
 
@@ -634,6 +740,191 @@ export default function AdminPage() {
                           className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                         >
                           Add Admin
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Events Tab */}
+          {activeTab === "events" && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-white">Calendar Events</h2>
+                <Link
+                  href="/admin/create-event"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Event
+                </Link>
+              </div>
+              
+              {events.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">No events yet. Create your first event!</p>
+              ) : (
+                <div className="space-y-4">
+                  {events.map((event) => (
+                    <div key={event.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-bold tracking-tight text-white truncate">{event.title}</h3>
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 ${
+                              event.status === "published"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-yellow-500/20 text-yellow-400"
+                            }`}>
+                              {event.status}
+                            </span>
+                            {event.isStatic && (
+                              <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-500/20 text-gray-400">
+                                Static
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-400 text-sm mt-1">{event.communityName || event.communityId}</p>
+                          <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
+                            <span className="flex items-center gap-1.5">
+                              <CalendarDays className="h-4 w-4" />
+                              {new Date(event.date).toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                            <span className="text-gray-600">•</span>
+                            <span>{event.location}</span>
+                            {event.source && (
+                              <>
+                                <span className="text-gray-600">•</span>
+                                <span className="text-xs text-gray-600">Source: {event.source}</span>
+                              </>
+                            )}
+                          </div>
+                          <p className="text-gray-400 text-sm mt-3 line-clamp-2">{event.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {event.isStatic ? (
+                            <span className="text-xs text-gray-500 italic">
+                              Edit in data/events.ts
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEditEvent(event)}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-400 hover:bg-blue-500/30 transition-colors"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteEvent(event.id)}
+                                disabled={isDeleting === event.id}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                              >
+                                {isDeleting === event.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Edit Event Modal */}
+              {showEditEvent && editingEvent && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Event</h3>
+                    <form onSubmit={handleUpdateEvent} className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Event Title
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editingEvent.title}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Date
+                        </label>
+                        <input
+                          type="datetime-local"
+                          required
+                          value={editingEvent.date ? new Date(editingEvent.date).toISOString().slice(0, 16) : ""}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, date: new Date(e.target.value).toISOString() })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Location
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editingEvent.location}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={editingEvent.description}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Event URL (optional)
+                        </label>
+                        <input
+                          type="url"
+                          value={editingEvent.url || ""}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, url: e.target.value })}
+                          placeholder="https://..."
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowEditEvent(false)
+                            setEditingEvent(null)
+                          }}
+                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                        >
+                          Save Changes
                         </button>
                       </div>
                     </form>

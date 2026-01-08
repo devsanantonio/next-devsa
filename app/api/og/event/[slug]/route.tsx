@@ -108,7 +108,7 @@ export async function GET(
             "radial-gradient(circle at 25% 25%, #1a1a2e 0%, transparent 50%), radial-gradient(circle at 75% 75%, #16213e 0%, transparent 50%)",
         }}
       >
-        {/* DEVSA branding */}
+        {/* Community branding */}
         <div
           style={{
             position: "absolute",
@@ -116,25 +116,8 @@ export async function GET(
             left: 60,
             display: "flex",
             alignItems: "center",
-            gap: 16,
           }}
         >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              backgroundColor: "#ef426f",
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: "bold",
-              fontSize: 24,
-            }}
-          >
-            D
-          </div>
           <span style={{ color: "white", fontSize: 28, fontWeight: 600 }}>
             {communityName}
           </span>

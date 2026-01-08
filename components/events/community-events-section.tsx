@@ -222,8 +222,32 @@ export function CommunityEventsSection() {
 
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
+    
+    // Get current date in CST (America/Chicago handles CST/CDT automatically)
+    const now = new Date()
+    const cstFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    const cstParts = cstFormatter.formatToParts(now)
+    const cstYear = parseInt(cstParts.find(p => p.type === 'year')?.value || '0')
+    const cstMonth = parseInt(cstParts.find(p => p.type === 'month')?.value || '0') - 1
+    const cstDay = parseInt(cstParts.find(p => p.type === 'day')?.value || '0')
+    const todayCST = new Date(cstYear, cstMonth, cstDay)
+    todayCST.setHours(0, 0, 0, 0)
 
     return allEvents
+      .filter((event) => {
+        // Filter out past events (events before today in CST)
+        const eventDate = new Date(event.date)
+        const eventDateCST = new Date(
+          eventDate.toLocaleString('en-US', { timeZone: 'America/Chicago' })
+        )
+        eventDateCST.setHours(0, 0, 0, 0)
+        return eventDateCST >= todayCST
+      })
       .filter((event) => {
         if (!normalizedSearch) return true
         const haystack = `${event.title} ${event.description} ${event.location}`.toLowerCase()

@@ -20,11 +20,12 @@ export async function GET() {
         id: doc.id,
         ...data,
         communityName: community?.name || 'DEVSA Community',
+        isStatic: false, // Firestore events can be edited/deleted
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string; communityName: string })[];
+    }) as (Event & { id: string; communityName: string; isStatic: boolean })[];
 
     // Also include static events from data/events.ts
     const staticEvents = initialCommunityEvents.map(event => {
@@ -41,6 +42,7 @@ export async function GET() {
         communityName: community?.name || 'DEVSA Community',
         source: event.source || 'manual',
         status: 'published' as const,
+        isStatic: true, // Static events from data/events.ts cannot be edited/deleted via API
       };
     });
 
@@ -137,6 +139,145 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Event creation error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Update an existing event
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { eventId, title, date, location, description, url, organizerEmail } = body;
+
+    if (!eventId || !organizerEmail) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Verify organizer is an approved admin/organizer
+    const db = getDb();
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', organizerEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - organizer access required' },
+        { status: 403 }
+      );
+    }
+
+    // Get the event to check permissions
+    const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(eventId).get();
+    
+    if (!eventDoc.exists) {
+      return NextResponse.json(
+        { error: 'Event not found' },
+        { status: 404 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    const eventData = eventDoc.data();
+
+    // If organizer role, check community access
+    if (adminData.role === 'organizer' && adminData.communityId !== eventData?.communityId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - you can only edit events for your community' },
+        { status: 403 }
+      );
+    }
+
+    // Build update object with only provided fields
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
+    if (title) updateData.title = title;
+    if (date) updateData.date = date;
+    if (location) updateData.location = location;
+    if (description) updateData.description = description;
+    if (url !== undefined) updateData.url = url;
+
+    await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Event updated successfully',
+    });
+  } catch (error) {
+    console.error('Event update error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete an event
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { eventId, organizerEmail } = body;
+
+    if (!eventId || !organizerEmail) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Verify organizer is an approved admin/organizer
+    const db = getDb();
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', organizerEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - organizer access required' },
+        { status: 403 }
+      );
+    }
+
+    // Get the event to check permissions
+    const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(eventId).get();
+    
+    if (!eventDoc.exists) {
+      return NextResponse.json(
+        { error: 'Event not found' },
+        { status: 404 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    const eventData = eventDoc.data();
+
+    // If organizer role, check community access
+    if (adminData.role === 'organizer' && adminData.communityId !== eventData?.communityId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - you can only delete events for your community' },
+        { status: 403 }
+      );
+    }
+
+    await db.collection(COLLECTIONS.EVENTS).doc(eventId).delete();
+
+    return NextResponse.json({
+      success: true,
+      message: 'Event deleted successfully',
+    });
+  } catch (error) {
+    console.error('Event deletion error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
