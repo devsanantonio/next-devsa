@@ -234,7 +234,7 @@ export function PartnersSection() {
                 <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
                   Our Strategic Partners
                 </p>
-                <h2 className="text-neutral-900 tracking-tight text-balance text-3xl md:text-4xl lg:text-5xl font-bold leading-tight max-w-4xl mx-auto">
+                <h2 className="text-neutral-900 tracking-tight text-balance text-2xl md:text-4xl lg:text-5xl font-bold leading-tight max-w-4xl mx-auto">
                   Connecting Our Ecosystem
                 </h2>
               </div>

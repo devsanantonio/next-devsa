@@ -126,14 +126,14 @@ export function HeroCommunities() {
       data-bg-type="light"
     >
       {/* Hero header section */}
-      <div className="relative z-10 px-6 pt-24 pb-16 sm:pt-32 sm:pb-20">
+      <div className="relative z-10 px-4 md:px-6 pt-16 pb-12 md:pt-32 md:pb-20">
         <div className="max-w-4xl mx-auto md:text-center">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-amber-500 text-base font-semibold tracking-wide uppercase mb-6"
+            className="text-amber-500 text-sm md:text-base font-semibold tracking-wide uppercase mb-4 md:mb-6"
           >
             The Origin Story
           </motion.p>
@@ -143,7 +143,7 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-neutral-900 text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15]"
+            className="text-neutral-900 text-2xl md:text-5xl lg:text-6xl font-bold md:font-black tracking-tight leading-tight md:leading-[1.15]"
           >
             Our mission started with a{" "}
             <span className="bg-linear-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent">
@@ -156,9 +156,9 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mt-6 sm:mt-8 text-2xl md:text-3xl font-bold text-neutral-800 tracking-tight leading-snug"
+            className="mt-5 md:mt-8 text-xl md:text-3xl font-bold text-neutral-800 tracking-tight leading-tight md:leading-snug"
           >
-            &ldquo;Where is the tech community <br className="hidden sm:block" />
+            &ldquo;Where is the tech community <br className="hidden md:block" />
             in San&nbsp;Antonio?&rdquo;
           </motion.p>
 
@@ -168,9 +168,9 @@ export function HeroCommunities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mt-10 sm:mt-12 max-w-2xl mx-auto"
+            className="mt-8 md:mt-12 max-w-2xl mx-auto"
           >
-            <p className="text-neutral-600 text-lg leading-relaxed">
+            <p className="text-neutral-600 text-base md:text-lg leading-relaxed">
               We found the tech community and 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 

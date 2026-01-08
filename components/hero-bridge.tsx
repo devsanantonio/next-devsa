@@ -38,7 +38,7 @@ export function HeroBridge() {
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: 1, opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="w-16 h-0.5 sm:h-1 mx-auto mb-3 sm:mb-6 bg-linear-to-r from-[#f59e0b] via-[#fbbf24] to-[#fcd34d] rounded-full origin-center"
+          className="w-16 h-0.5 md:h-1 mx-auto mb-4 md:mb-6 bg-linear-to-r from-[#f59e0b] via-[#fbbf24] to-[#fcd34d] rounded-full origin-center"
         />
 
         {/* Main message */}
@@ -46,7 +46,7 @@ export function HeroBridge() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="font-bold text-slate-900 text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-4 tracking-tight leading-tight"
+          className="font-bold text-slate-900 text-2xl md:text-4xl lg:text-5xl mb-3 md:mb-4 tracking-tight leading-tight"
         >
           You&apos;re absolutely right!
         </motion.h2>
@@ -56,7 +56,7 @@ export function HeroBridge() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-lg md:text-xl lg:text-2xl text-slate-600 leading-relaxed text-balance max-w-2xl mx-auto"
+          className="text-base md:text-xl lg:text-2xl text-slate-600 leading-relaxed text-balance max-w-2xl mx-auto"
         >
           DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in&nbsp;San&nbsp;Antonio.
         </motion.p>
