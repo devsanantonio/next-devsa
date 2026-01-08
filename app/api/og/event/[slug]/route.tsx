@@ -3,34 +3,95 @@ import { NextRequest } from "next/server"
 
 export const runtime = "edge"
 
+// Static event data for OG generation (edge runtime can't import from data files directly)
+const staticEvents = [
+  {
+    slug: "alamo-python-meetup-january-2026-2026-01-28",
+    title: "Alamo Python Meetup - January 2026",
+    date: "2026-01-28T09:00:00.000Z",
+    communityId: "alamo-python",
+    communityName: "Alamo Python",
+  },
+]
+
+async function getEventBySlug(slug: string, baseUrl: string) {
+  // Try to fetch from API
+  try {
+    const response = await fetch(`${baseUrl}/api/events`, {
+      next: { revalidate: 60 },
+    })
+    if (response.ok) {
+      const data = await response.json()
+      const event = data.events?.find((e: { slug: string }) => e.slug === slug)
+      if (event) {
+        return {
+          title: event.title,
+          date: event.date,
+          communityId: event.communityId || event.communityTag,
+          communityName: event.communityName,
+        }
+      }
+    }
+  } catch (error) {
+    console.error("OG: Error fetching event from API:", error)
+  }
+
+  // Fallback to static events
+  const staticEvent = staticEvents.find((e) => e.slug === slug)
+  if (staticEvent) {
+    return staticEvent
+  }
+
+  // Last resort: parse from slug
+  const parts = slug.split("-")
+  const dateStr = parts.slice(-3).join("-")
+  const titleParts = parts.slice(0, -3)
+  const title = titleParts
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+
+  return {
+    title: title || "Community Event",
+    date: dateStr ? `${dateStr}T00:00:00.000Z` : null,
+    communityId: null,
+    communityName: null,
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
 
-  // Parse the slug to extract event info
-  // Format: title-slug-YYYY-MM-DD
-  const parts = slug.split("-")
-  const dateStr = parts.slice(-3).join("-") // Last 3 parts are the date
-  const titleParts = parts.slice(0, -3)
-  const title = titleParts
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ")
+  // Get base URL for API calls
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    request.nextUrl.origin ||
+    "https://devsa.community"
+
+  const event = await getEventBySlug(slug, baseUrl)
 
   // Format date
-  let formattedDate = ""
-  try {
-    const date = new Date(dateStr)
-    formattedDate = date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
-  } catch {
-    formattedDate = "Upcoming Event"
+  let formattedDate = "Upcoming Event"
+  if (event.date) {
+    try {
+      const date = new Date(event.date)
+      if (!isNaN(date.getTime())) {
+        formattedDate = date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      }
+    } catch {
+      formattedDate = "Upcoming Event"
+    }
   }
+
+  const displayTitle = event.title || "Community Event"
+  const communityName = event.communityName || "DEVSA Community"
 
   return new ImageResponse(
     (
@@ -75,11 +136,11 @@ export async function GET(
             D
           </div>
           <span style={{ color: "white", fontSize: 28, fontWeight: 600 }}>
-            DEVSA Community
+            {communityName}
           </span>
         </div>
 
-        {/* Event badge */}
+        {/* Community badge */}
         <div
           style={{
             display: "flex",
@@ -109,7 +170,7 @@ export async function GET(
         >
           <h1
             style={{
-              fontSize: title.length > 40 ? 48 : 64,
+              fontSize: displayTitle.length > 40 ? 48 : 64,
               fontWeight: 700,
               color: "white",
               lineHeight: 1.2,
@@ -117,7 +178,7 @@ export async function GET(
               marginBottom: 24,
             }}
           >
-            {title || "Community Event"}
+            {displayTitle}
           </h1>
 
           {/* Date */}

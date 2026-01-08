@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
+import { techCommunities } from '@/data/communities';
+import { initialCommunityEvents } from '@/data/events';
 
 // Get all events
 export async function GET() {
@@ -11,25 +13,52 @@ export async function GET() {
       .where('status', '==', 'published')
       .get();
 
-    const events = eventsSnapshot.docs.map(doc => {
+    const firestoreEvents = eventsSnapshot.docs.map(doc => {
       const data = doc.data();
+      const community = techCommunities.find(c => c.id === data.communityId);
       return {
         id: doc.id,
         ...data,
+        communityName: community?.name || 'DEVSA Community',
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string })[];
+    }) as (Event & { id: string; communityName: string })[];
 
-    // Sort by date on the client side
-    events.sort((a, b) => {
+    // Also include static events from data/events.ts
+    const staticEvents = initialCommunityEvents.map(event => {
+      const community = techCommunities.find(c => c.id === event.communityTag);
+      return {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        date: event.date,
+        location: event.location,
+        description: event.description,
+        url: event.url,
+        communityId: event.communityTag,
+        communityName: community?.name || 'DEVSA Community',
+        source: event.source || 'manual',
+        status: 'published' as const,
+      };
+    });
+
+    // Merge events, preferring Firestore events over static ones with same slug
+    const firestoreSlugs = new Set(firestoreEvents.map(e => e.slug));
+    const mergedEvents = [
+      ...firestoreEvents,
+      ...staticEvents.filter(e => e.slug && !firestoreSlugs.has(e.slug)),
+    ];
+
+    // Sort by date
+    mergedEvents.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       return dateA - dateB;
     });
 
-    return NextResponse.json({ events });
+    return NextResponse.json({ events: mergedEvents });
   } catch (error) {
     console.error('Events fetch error:', error);
     return NextResponse.json(

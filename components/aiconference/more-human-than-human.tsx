@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
-import { Calendar, MapPin, Tv, Send, AlertCircle, Loader2 } from "lucide-react"
+import { Calendar, MapPin, Tv, Send, AlertCircle, Loader2, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
 const sessionFormats = [
@@ -65,6 +65,8 @@ function AztecBorder() {
 
 export function MoreHumanThanHuman() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isSubmitted = searchParams.get('submitted') === 'true'
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -145,7 +147,7 @@ export function MoreHumanThanHuman() {
         throw new Error(data.error || 'Failed to submit proposal')
       }
 
-      router.push('/events/aiconference2026?submitted=true')
+      router.push('/events/morehumanthanhuman?submitted=true')
     } catch (err) {
       console.error('Form submission error:', err)
       setError(err instanceof Error ? err.message : 'Failed to submit proposal. Please try again.')
@@ -262,13 +264,32 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Form */}
+            {/* Right Column - Form or Success Message */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="w-full"
             >
+              {isSubmitted ? (
+                <div className="border border-[#333] bg-[#111]/80 backdrop-blur-sm p-6 sm:p-8 text-center">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-[#00f2ff]/50 bg-[#00f2ff]/10">
+                    <CheckCircle className="h-8 w-8 text-[#00f2ff]" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">
+                    Proposal Submitted!
+                  </h3>
+                  <p className="text-[#a3a3a3] leading-relaxed mb-6">
+                    Thank you for your speaker proposal. Our team will review your submission and get back to you by email.
+                  </p>
+                  <Link
+                    href="/events"
+                    className="inline-flex items-center gap-2 bg-[#ff9900] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#0a0a0a] transition-all hover:bg-[#00f2ff]"
+                  >
+                    <span className="font-mono">Back to Events</span>
+                  </Link>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
                 {/* Speaker Information */}
                 <div className="border border-[#333] bg-[#111]/80 backdrop-blur-sm p-3 sm:p-4">
@@ -438,6 +459,7 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
                   </p>
                 </div>
               </form>
+              )}
             </motion.div>
           </div>
         </div>
