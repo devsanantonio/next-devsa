@@ -1,47 +1,36 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
+import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { techCommunities } from "@/data/communities"
 
-export const runtime = "edge"
+// Use Node.js runtime to access Firestore directly
+export const runtime = "nodejs"
 
-// Static event data for OG generation (edge runtime can't import from data files directly)
-const staticEvents = [
-  {
-    slug: "alamo-python-meetup-january-2026-2026-01-28",
-    title: "Alamo Python Meetup - January 2026",
-    date: "2026-01-28T09:00:00.000Z",
-    location: "Geekdom, San Antonio",
-    communityId: "alamo-python",
-    communityName: "Alamo Python",
-  },
-]
-
-async function getEventBySlug(slug: string, baseUrl: string) {
-  // Try to fetch from API
+async function getEventBySlug(slug: string) {
+  // Try to fetch from Firestore directly
   try {
-    const response = await fetch(`${baseUrl}/api/events`, {
-      next: { revalidate: 60 },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      const event = data.events?.find((e: { slug: string }) => e.slug === slug)
-      if (event) {
-        return {
-          title: event.title,
-          date: event.date,
-          location: event.location,
-          communityId: event.communityId || event.communityTag,
-          communityName: event.communityName,
-        }
+    const db = getDb()
+    const eventsSnapshot = await db
+      .collection(COLLECTIONS.EVENTS)
+      .where("slug", "==", slug)
+      .where("status", "==", "published")
+      .limit(1)
+      .get()
+
+    if (!eventsSnapshot.empty) {
+      const doc = eventsSnapshot.docs[0]
+      const data = doc.data()
+      const community = techCommunities.find((c) => c.id === data.communityId)
+      return {
+        title: data.title,
+        date: data.date,
+        location: data.location,
+        communityId: data.communityId,
+        communityName: community?.name || "DEVSA Community",
       }
     }
   } catch (error) {
-    console.error("OG: Error fetching event from API:", error)
-  }
-
-  // Fallback to static events
-  const staticEvent = staticEvents.find((e) => e.slug === slug)
-  if (staticEvent) {
-    return staticEvent
+    console.error("OG: Error fetching event from Firestore:", error)
   }
 
   // Last resort: parse from slug
@@ -67,13 +56,7 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  // Get base URL for API calls
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    request.nextUrl.origin ||
-    "https://devsa.community"
-
-  const event = await getEventBySlug(slug, baseUrl)
+  const event = await getEventBySlug(slug)
 
   // Format date
   let formattedDate = "Date TBA"
@@ -132,21 +115,6 @@ export async function GET(
               gap: 12,
             }}
           >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
-                background: "linear-gradient(135deg, #ef426f 0%, #8b5cf6 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span style={{ color: "white", fontSize: 24, fontWeight: 700 }}>
-                {organizerName.charAt(0).toUpperCase()}
-              </span>
-            </div>
             <span style={{ color: "#111827", fontSize: 28, fontWeight: 600 }}>
               {organizerName}
             </span>

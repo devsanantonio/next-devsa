@@ -3,6 +3,9 @@ import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 import { techCommunities } from '@/data/communities';
 import { initialCommunityEvents } from '@/data/events';
 
+// Valid community IDs for validation
+const validCommunityIds = new Set(techCommunities.map(c => c.id));
+
 // Get all events
 export async function GET() {
   try {
@@ -278,6 +281,127 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('Event deletion error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH: Audit and fix invalid communityIds
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { action, organizerEmail, eventId, newCommunityId } = body;
+
+    if (!organizerEmail) {
+      return NextResponse.json(
+        { error: 'Missing organizerEmail' },
+        { status: 400 }
+      );
+    }
+
+    // Verify user is an admin (not just organizer)
+    const db = getDb();
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', organizerEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    if (adminData.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - only admins can audit/fix events' },
+        { status: 403 }
+      );
+    }
+
+    // Action: audit - find all events with invalid communityIds
+    if (action === 'audit') {
+      const eventsSnapshot = await db.collection(COLLECTIONS.EVENTS).get();
+      
+      const auditResults = eventsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        const communityId = data.communityId;
+        const isValid = validCommunityIds.has(communityId);
+        const community = techCommunities.find(c => c.id === communityId);
+        
+        return {
+          id: doc.id,
+          title: data.title,
+          slug: data.slug,
+          communityId,
+          communityName: community?.name || null,
+          isValid,
+          status: data.status,
+        };
+      });
+
+      const invalidEvents = auditResults.filter(e => !e.isValid);
+      const validEvents = auditResults.filter(e => e.isValid);
+
+      return NextResponse.json({
+        summary: {
+          total: auditResults.length,
+          valid: validEvents.length,
+          invalid: invalidEvents.length,
+        },
+        invalidEvents,
+        validCommunityIds: techCommunities.map(c => ({ id: c.id, name: c.name })),
+      });
+    }
+
+    // Action: fix - update a specific event's communityId
+    if (action === 'fix') {
+      if (!eventId || !newCommunityId) {
+        return NextResponse.json(
+          { error: 'Missing eventId or newCommunityId' },
+          { status: 400 }
+        );
+      }
+
+      if (!validCommunityIds.has(newCommunityId)) {
+        return NextResponse.json(
+          { error: `Invalid newCommunityId. Must be one of: ${[...validCommunityIds].join(', ')}` },
+          { status: 400 }
+        );
+      }
+
+      const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(eventId).get();
+      if (!eventDoc.exists) {
+        return NextResponse.json(
+          { error: 'Event not found' },
+          { status: 404 }
+        );
+      }
+
+      await db.collection(COLLECTIONS.EVENTS).doc(eventId).update({
+        communityId: newCommunityId,
+        updatedAt: new Date(),
+      });
+
+      const community = techCommunities.find(c => c.id === newCommunityId);
+
+      return NextResponse.json({
+        success: true,
+        message: `Event communityId updated to "${newCommunityId}" (${community?.name})`,
+      });
+    }
+
+    return NextResponse.json(
+      { error: 'Invalid action. Use "audit" or "fix"' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('Event audit/fix error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
