@@ -62,3 +62,32 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// GET handler to check if setup is available
+export async function GET() {
+  try {
+    const db = getDb();
+    const existingAdmins = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .limit(1)
+      .get();
+
+    if (!existingAdmins.empty) {
+      return NextResponse.json({
+        setupAvailable: false,
+        message: 'Setup already completed. Admin already exists.',
+      });
+    }
+
+    return NextResponse.json({
+      setupAvailable: true,
+      message: 'No admins exist. POST to this endpoint with { email, secret } to create the first admin.',
+    });
+  } catch (error) {
+    console.error('Admin setup check error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
