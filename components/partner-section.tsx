@@ -228,7 +228,7 @@ export function PartnersSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-center space-y-6"
+              className="md:text-center space-y-6"
             >
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
@@ -239,7 +239,7 @@ export function PartnersSection() {
                 </h2>
               </div>
               <div className="max-w-3xl mx-auto">
-                <p className="text-base md:text-lg text-neutral-600 leading-relaxed text-balance">
+                <p className="text-base md:text-lg text-neutral-600 leading-relaxed md:text-balance">
                   Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio for connecting passionate builders with key resources and organizations across the tech ecosystem.
                 </p>
               </div>

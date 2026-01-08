@@ -65,7 +65,7 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm sm:text-base text-white truncate transition-colors duration-300 group-hover:text-white">
+            <h3 className="font-bold text-base text-white truncate transition-colors duration-300 group-hover:text-white">
               {community.name}
             </h3>
           </div>
@@ -127,13 +127,13 @@ export function HeroCommunities() {
     >
       {/* Hero header section */}
       <div className="relative z-10 px-6 pt-24 pb-16 sm:pt-32 sm:pb-20">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto md:text-center">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-amber-500 text-sm sm:text-base font-semibold tracking-wide uppercase mb-6"
+            className="text-amber-500 text-base font-semibold tracking-wide uppercase mb-6"
           >
             The Origin Story
           </motion.p>
@@ -170,7 +170,7 @@ export function HeroCommunities() {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
             className="mt-10 sm:mt-12 max-w-2xl mx-auto"
           >
-            <p className="text-neutral-600 text-lg leading-relaxed text-balance md:tracking-normal">
+            <p className="text-neutral-600 text-lg leading-relaxed">
               We found the tech community and 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 
@@ -238,12 +238,12 @@ export function HeroCommunities() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto text-center"
+          className="max-w-3xl mx-auto md:text-center"
         >
-          <h3 className="text-neutral-900 text-2xl sm:text-3xl md:text-4xl font-bold mb-4 tracking-tight">
+          <h3 className="text-neutral-900 text-3xl md:text-4xl font-bold mb-4 tracking-tight">
             How do I stay connected?
           </h3>
-          <p className="text-neutral-600 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl mx-auto tracking-tight">
+          <p className="text-neutral-600 text-lg leading-relaxed mb-8 max-w-2xl mx-auto tracking-tight">
             Many of these communities don&apos;t have their own web presence or social media of their own. 
             <span className="text-neutral-900 font-semibold"> DEVSA has become their voice online</span>—sharing 
             their events, amplifying their work, and connecting them with new members. 
@@ -251,7 +251,7 @@ export function HeroCommunities() {
           </p>
 
           {/* Social platform grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 max-w-4xl mx-auto">
             <a
               href="https://discord.gg/cvHHzThrEw"
               target="_blank"

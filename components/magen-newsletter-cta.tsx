@@ -21,12 +21,12 @@ export function MagenNewsletterCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-12 sm:mb-16 text-center"
+          className="mb-12 sm:mb-16 md:text-center"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
             Community Spotlight
           </h2>
-          <div className="mt-4 h-1 w-16 bg-linear-to-r from-[#f59e0b] to-[#fbbf24] rounded-full mx-auto" />
+          <div className="mx-auto mt-4 h-1 w-16 bg-linear-to-r from-[#f59e0b] to-[#fbbf24] rounded-full" />
         </motion.div>
 
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-start">

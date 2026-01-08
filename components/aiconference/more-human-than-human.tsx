@@ -454,7 +454,7 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
                       rel="noopener noreferrer"
                       className="text-[#b45309] hover:text-[#ff9900] transition-colors"
                     >
-                      Magen
+                      MagenMiner
                     </Link>
                   </p>
                 </div>
