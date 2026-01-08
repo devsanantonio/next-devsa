@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type NewsletterSubscription } from '@/lib/firebase-admin';
-import { checkVerification, MAGEN_THRESHOLDS } from '@/lib/magen';
+import { MAGEN_THRESHOLDS } from '@/lib/magen';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, source, magenSessionId } = body;
+    const { email, source, magenSessionId, magenHumanScore } = body;
 
     // Validate email
     if (!email) {
@@ -23,21 +23,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify MAGEN session if provided
+    // Check MAGEN human score (passed from frontend verification)
+    // Frontend has already verified and rejected low scores, but double-check here
     const MAGEN_API_KEY = process.env.MAGEN_API_KEY;
-    let humanScore: number | undefined;
+    let humanScore: number | undefined = magenHumanScore;
 
-    if (magenSessionId && MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
-      const verification = await checkVerification(magenSessionId);
-
-      if (verification.valid && verification.humanScore !== undefined) {
-        if (verification.humanScore < MAGEN_THRESHOLDS.formSubmission) {
-          return NextResponse.json(
-            { error: 'Verification failed' },
-            { status: 403 }
-          );
-        }
-        humanScore = verification.humanScore;
+    if (MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
+      // If we have a score from frontend, validate it
+      if (humanScore !== undefined && humanScore < MAGEN_THRESHOLDS.formSubmission) {
+        return NextResponse.json(
+          { error: 'Verification failed' },
+          { status: 403 }
+        );
       }
     }
 

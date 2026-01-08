@@ -108,12 +108,34 @@ export function MoreHumanThanHuman() {
     setError(null)
 
     try {
+      // Verify Magen session before proceeding (if available)
+      let verifiedHumanScore: number | undefined;
+      if (magenSessionId) {
+        const verifyResponse = await fetch('/api/magen/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: magenSessionId }),
+        })
+        
+        if (verifyResponse.ok) {
+          const verifyData = await verifyResponse.json()
+          verifiedHumanScore = verifyData.humanScore
+          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
+            setError("Verification failed. Please try again.")
+            setIsSubmitting(false)
+            return
+          }
+        }
+      }
+
+      // Submit to API with verified human score
       const response = await fetch('/api/call-for-speakers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           magenSessionId,
+          magenHumanScore: verifiedHumanScore,
         }),
       })
 

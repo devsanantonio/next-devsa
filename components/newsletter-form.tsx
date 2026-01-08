@@ -39,6 +39,26 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
     setErrorMessage("")
 
     try {
+      // Verify Magen session before proceeding (if available)
+      let verifiedHumanScore: number | undefined;
+      if (magenSessionId) {
+        const verifyResponse = await fetch('/api/magen/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: magenSessionId }),
+        })
+        
+        if (verifyResponse.ok) {
+          const verifyData = await verifyResponse.json()
+          verifiedHumanScore = verifyData.humanScore
+          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
+            setStatus("error")
+            setErrorMessage("Verification failed. Please try again.")
+            return
+          }
+        }
+      }
+
       const response = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,6 +66,7 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
           email,
           source,
           magenSessionId,
+          magenHumanScore: verifiedHumanScore,
         }),
       })
 

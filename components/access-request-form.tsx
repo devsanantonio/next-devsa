@@ -45,6 +45,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
 
     try {
       // Verify Magen session before proceeding (if available)
+      // Using threshold 0.7 to match MAGEN_THRESHOLDS.formSubmission
       let verifiedHumanScore: number | undefined;
       if (magenSessionId) {
         const verifyResponse = await fetch('/api/magen/verify', {
@@ -56,7 +57,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
         if (verifyResponse.ok) {
           const verifyData = await verifyResponse.json()
           verifiedHumanScore = verifyData.humanScore
-          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.3) {
+          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
             setError("Verification failed. Please try again.")
             setIsLoading(false)
             return

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkVerification, MAGEN_THRESHOLDS } from '@/lib/magen';
+import { MAGEN_THRESHOLDS } from '@/lib/magen';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 
 interface SpeakerSubmissionRequest {
@@ -10,13 +10,14 @@ interface SpeakerSubmissionRequest {
   sessionFormat: string;
   abstract: string;
   magenSessionId?: string;
+  magenHumanScore?: number;
   eventId?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SpeakerSubmissionRequest = await request.json();
-    const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, eventId } = body;
+    const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, magenHumanScore, eventId } = body;
 
     // Validate required fields
     if (!name || !email || !sessionTitle || !sessionFormat || !abstract) {
@@ -26,32 +27,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify MAGEN session if provided and API key is configured
+    // Check MAGEN human score (passed from frontend verification)
+    // Frontend has already verified and rejected low scores, but double-check here
     const MAGEN_API_KEY = process.env.MAGEN_API_KEY;
-    let humanScore: number | undefined;
-    
-    if (magenSessionId && MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
-      const verification = await checkVerification(magenSessionId);
+    let humanScore: number | undefined = magenHumanScore;
 
-      // Only block if verification explicitly returns low score
-      // Allow through if verification service is unavailable
-      if (verification.valid && verification.humanScore !== undefined) {
-        if (verification.humanScore < MAGEN_THRESHOLDS.formSubmission) {
-          console.log('Low human score:', verification.humanScore);
-          return NextResponse.json(
-            { error: 'Verification failed', reason: 'Low confidence score' },
-            { status: 403 }
-          );
-        }
-        humanScore = verification.humanScore;
+    if (MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
+      // If we have a score from frontend, validate it
+      if (humanScore !== undefined && humanScore < MAGEN_THRESHOLDS.formSubmission) {
+        console.log('Low human score:', humanScore);
+        return NextResponse.json(
+          { error: 'Verification failed', reason: 'Low confidence score' },
+          { status: 403 }
+        );
+      }
+      if (humanScore !== undefined) {
         console.log('MAGEN verification passed:', {
-          humanScore: verification.humanScore,
-          classification: verification.classification,
-          sessionId: verification.sessionId,
+          humanScore,
+          sessionId: magenSessionId,
         });
-      } else {
-        // Verification service error - allow submission but log it
-        console.log('MAGEN verification skipped - service unavailable:', verification.error);
       }
     } else {
       // MAGEN not configured - proceeding without verification
