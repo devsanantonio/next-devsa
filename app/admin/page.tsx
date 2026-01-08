@@ -289,31 +289,31 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-black py-8 sm:py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors mb-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-gray-400 mt-1">Logged in as {adminEmail}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
+            <p className="text-gray-400 mt-1 text-sm">Logged in as <span className="text-gray-300 font-medium">{adminEmail}</span></p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/admin/create-event"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
             >
               <Calendar className="h-4 w-4" />
               Create Event
             </Link>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+              className="rounded-xl border border-gray-700 px-5 py-2.5 text-sm font-medium text-gray-300 hover:bg-gray-800 transition-colors"
             >
               Logout
             </button>
@@ -324,10 +324,10 @@ export default function AdminPage() {
         <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => setActiveTab("newsletter")}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "newsletter"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
             }`}
           >
             <Mail className="h-4 w-4" />
@@ -335,10 +335,10 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("speakers")}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "speakers"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
             }`}
           >
             <Mic2 className="h-4 w-4" />
@@ -346,10 +346,10 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("access")}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "access"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
             }`}
           >
             <Users className="h-4 w-4" />
@@ -357,10 +357,10 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("admins")}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "admins"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
             }`}
           >
             <UserCheck className="h-4 w-4" />
@@ -369,31 +369,31 @@ export default function AdminPage() {
         </div>
 
         {/* Content */}
-        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
+        <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 sm:p-8">
           {/* Newsletter Tab */}
           {activeTab === "newsletter" && (
             <div>
-              <h2 className="text-xl font-bold text-white mb-6">Newsletter Subscriptions</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Newsletter Subscriptions</h2>
               {newsletter.length === 0 ? (
-                <p className="text-gray-400">No newsletter subscriptions yet.</p>
+                <p className="text-gray-400 text-center py-8">No newsletter subscriptions yet.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
+                  <table className="w-full min-w-150">
                     <thead>
                       <tr className="border-b border-gray-800">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Email</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Source</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Status</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Subscribed At</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Source</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Subscribed At</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-800/50">
                       {newsletter.map((sub) => (
-                        <tr key={sub.id} className="border-b border-gray-800/50">
-                          <td className="py-3 px-4 text-white">{sub.email}</td>
-                          <td className="py-3 px-4 text-gray-400">{sub.source || "—"}</td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                        <tr key={sub.id} className="hover:bg-gray-800/30 transition-colors">
+                          <td className="py-4 px-4 text-sm font-medium text-white">{sub.email}</td>
+                          <td className="py-4 px-4 text-sm text-gray-400">{sub.source || "—"}</td>
+                          <td className="py-4 px-4">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
                               sub.status === "active"
                                 ? "bg-green-500/20 text-green-400"
                                 : "bg-gray-500/20 text-gray-400"
@@ -401,7 +401,7 @@ export default function AdminPage() {
                               {sub.status}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-gray-400">
+                          <td className="py-4 px-4 text-sm text-gray-400">
                             {new Date(sub.subscribedAt).toLocaleDateString()}
                           </td>
                         </tr>
@@ -416,22 +416,22 @@ export default function AdminPage() {
           {/* Speakers Tab */}
           {activeTab === "speakers" && (
             <div>
-              <h2 className="text-xl font-bold text-white mb-6">Speaker Submissions</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Speaker Submissions</h2>
               {speakers.length === 0 ? (
-                <p className="text-gray-400">No speaker submissions yet.</p>
+                <p className="text-gray-400 text-center py-8">No speaker submissions yet.</p>
               ) : (
                 <div className="space-y-4">
                   {speakers.map((speaker) => (
-                    <div key={speaker.id} className="rounded-xl border border-gray-800 bg-gray-800/50 p-5">
+                    <div key={speaker.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
                       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                         <div>
-                          <h3 className="text-lg font-bold text-white">{speaker.sessionTitle}</h3>
-                          <p className="text-gray-400 text-sm">
-                            {speaker.name} {speaker.company && `• ${speaker.company}`}
+                          <h3 className="text-lg font-bold tracking-tight text-white">{speaker.sessionTitle}</h3>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {speaker.name} {speaker.company && <span className="text-gray-500">• {speaker.company}</span>}
                           </p>
                           <p className="text-gray-500 text-sm">{speaker.email}</p>
                         </div>
-                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
                           speaker.status === "approved"
                             ? "bg-green-500/20 text-green-400"
                             : speaker.status === "rejected"
@@ -441,15 +441,15 @@ export default function AdminPage() {
                           {speaker.status}
                         </span>
                       </div>
-                      <div className="mb-3">
-                        <span className="text-xs font-semibold text-gray-500 uppercase">Format</span>
-                        <p className="text-gray-300 text-sm">{speaker.sessionFormat}</p>
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Format</span>
+                        <p className="text-gray-300 text-sm mt-1">{speaker.sessionFormat}</p>
                       </div>
                       <div>
-                        <span className="text-xs font-semibold text-gray-500 uppercase">Abstract</span>
-                        <p className="text-gray-300 text-sm">{speaker.abstract}</p>
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Abstract</span>
+                        <p className="text-gray-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
                       </div>
-                      <p className="mt-3 text-xs text-gray-500">
+                      <p className="mt-4 text-xs text-gray-500">
                         Submitted: {new Date(speaker.submittedAt).toLocaleString()}
                       </p>
                     </div>
@@ -462,21 +462,21 @@ export default function AdminPage() {
           {/* Access Requests Tab */}
           {activeTab === "access" && (
             <div>
-              <h2 className="text-xl font-bold text-white mb-6">Access Requests</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Access Requests</h2>
               {accessRequests.length === 0 ? (
-                <p className="text-gray-400">No access requests yet.</p>
+                <p className="text-gray-400 text-center py-8">No access requests yet.</p>
               ) : (
                 <div className="space-y-4">
                   {accessRequests.map((request) => (
-                    <div key={request.id} className="rounded-xl border border-gray-800 bg-gray-800/50 p-5">
+                    <div key={request.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                          <h3 className="text-lg font-bold text-white">{request.name}</h3>
-                          <p className="text-gray-400 text-sm">{request.email}</p>
+                          <h3 className="text-lg font-bold tracking-tight text-white">{request.name}</h3>
+                          <p className="text-gray-400 text-sm mt-1">{request.email}</p>
                           <p className="text-gray-500 text-sm mt-1">
-                            Community: {request.communityOrg}
+                            Community: <span className="text-gray-400">{request.communityOrg}</span>
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">
+                          <p className="text-xs text-gray-500 mt-3">
                             Requested: {new Date(request.submittedAt).toLocaleString()}
                           </p>
                         </div>
@@ -485,21 +485,21 @@ export default function AdminPage() {
                             <>
                               <button
                                 onClick={() => handleApproveAccess(request)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-sm font-medium text-green-400 hover:bg-green-500/30 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 transition-colors"
                               >
                                 <CheckCircle className="h-4 w-4" />
                                 Approve
                               </button>
                               <button
                                 onClick={() => handleRejectAccess(request.id)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/30 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors"
                               >
                                 <XCircle className="h-4 w-4" />
                                 Reject
                               </button>
                             </>
                           ) : (
-                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
                               request.status === "approved"
                                 ? "bg-green-500/20 text-green-400"
                                 : "bg-red-500/20 text-red-400"
@@ -520,10 +520,10 @@ export default function AdminPage() {
           {activeTab === "admins" && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Approved Admins</h2>
+                <h2 className="text-xl font-bold tracking-tight text-white">Approved Admins</h2>
                 <button
                   onClick={() => setShowAddAdmin(true)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                 >
                   <Plus className="h-4 w-4" />
                   Add Admin
@@ -531,25 +531,25 @@ export default function AdminPage() {
               </div>
               
               {admins.length === 0 ? (
-                <p className="text-gray-400">No approved admins yet.</p>
+                <p className="text-gray-400 text-center py-8">No approved admins yet.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
+                  <table className="w-full min-w-150">
                     <thead>
                       <tr className="border-b border-gray-800">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Email</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Community</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Approved At</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Actions</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Community</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Approved At</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-800/50">
                       {admins.map((admin) => (
-                        <tr key={admin.id} className="border-b border-gray-800/50">
-                          <td className="py-3 px-4 text-white">{admin.email}</td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                        <tr key={admin.id} className="hover:bg-gray-800/30 transition-colors">
+                          <td className="py-4 px-4 text-sm font-medium text-white">{admin.email}</td>
+                          <td className="py-4 px-4">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
                               admin.role === "admin"
                                 ? "bg-purple-500/20 text-purple-400"
                                 : "bg-blue-500/20 text-blue-400"
@@ -557,15 +557,15 @@ export default function AdminPage() {
                               {admin.role}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-gray-400">{admin.communityId || "All"}</td>
-                          <td className="py-3 px-4 text-gray-400">
+                          <td className="py-4 px-4 text-sm text-gray-400">{admin.communityId || "All"}</td>
+                          <td className="py-4 px-4 text-sm text-gray-400">
                             {new Date(admin.approvedAt).toLocaleDateString()}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-4">
                             {admin.email !== adminEmail && (
                               <button
                                 onClick={() => handleRemoveAdmin(admin.email)}
-                                className="text-red-400 hover:text-red-300 text-sm font-medium"
+                                className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
                               >
                                 Remove
                               </button>
@@ -580,12 +580,12 @@ export default function AdminPage() {
 
               {/* Add Admin Modal */}
               {showAddAdmin && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 max-w-md w-full">
-                    <h3 className="text-xl font-bold text-white mb-4">Add New Admin</h3>
-                    <form onSubmit={handleAddAdmin} className="space-y-4">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-md w-full shadow-2xl">
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Add New Admin</h3>
+                    <form onSubmit={handleAddAdmin} className="space-y-5">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
                           Email Address
                         </label>
                         <input
@@ -593,24 +593,24 @@ export default function AdminPage() {
                           required
                           value={newAdminEmail}
                           onChange={(e) => setNewAdminEmail(e.target.value)}
-                          className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 px-4 text-white focus:border-[#ef426f] focus:outline-none"
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
                           Role
                         </label>
                         <select
                           value={newAdminRole}
                           onChange={(e) => setNewAdminRole(e.target.value as "admin" | "organizer")}
-                          className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 px-4 text-white focus:border-[#ef426f] focus:outline-none"
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         >
                           <option value="organizer">Organizer</option>
                           <option value="admin">Admin</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
                           Community ID (optional, for organizers)
                         </label>
                         <input
@@ -618,20 +618,20 @@ export default function AdminPage() {
                           value={newAdminCommunity}
                           onChange={(e) => setNewAdminCommunity(e.target.value)}
                           placeholder="e.g., satechbloc"
-                          className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none"
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
                       <div className="flex gap-3 pt-4">
                         <button
                           type="button"
                           onClick={() => setShowAddAdmin(false)}
-                          className="flex-1 rounded-lg border border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-300 hover:bg-gray-800"
+                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
-                          className="flex-1 rounded-lg bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760]"
+                          className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                         >
                           Add Admin
                         </button>

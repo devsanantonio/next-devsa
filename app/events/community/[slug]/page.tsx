@@ -48,14 +48,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       year: "numeric",
     })
     
-    const title = `${event.title} | DEVSA Community`
-    const description = `${event.description.slice(0, 150)}${event.description.length > 150 ? "..." : ""} - ${eventDate} at ${event.location}`
+    // OG best practices: title under 60 chars, description 120-160 chars
+    const title = `${event.title} | DEVSA`
+    const description = `Join ${community?.name || 'the community'} on ${eventDate} in San Antonio. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem.`
     
     return {
       title,
       description,
       openGraph: {
-        title,
+        title: event.title,
         description,
         url: `${siteUrl}/events/community/${slug}`,
         siteName: "DEVSA",
@@ -79,12 +80,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Fallback metadata if event not found
+  const fallbackTitle = "Community Event | DEVSA"
+  const fallbackDescription = "Join the San Antonio tech community. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem."
+  
   return {
-    title: `Event | DEVSA Community`,
-    description: "Join the San Antonio tech community for this upcoming event.",
+    title: fallbackTitle,
+    description: fallbackDescription,
     openGraph: {
-      title: `Event | DEVSA Community`,
-      description: "Join the San Antonio tech community for this upcoming event.",
+      title: "Community Event",
+      description: fallbackDescription,
       url: `${siteUrl}/events/community/${slug}`,
       siteName: "DEVSA",
       images: [
@@ -99,8 +103,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title: `Event | DEVSA Community`,
-      description: "Join the San Antonio tech community for this upcoming event.",
+      title: "Community Event | DEVSA",
+      description: fallbackDescription,
       images: [`${siteUrl}/api/og/event/${slug}`],
     },
   }

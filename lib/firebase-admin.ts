@@ -62,7 +62,7 @@ export interface NewsletterSubscription {
   subscribedAt: Date;
   source?: string;
   magenSessionId?: string;
-  magenHumanScore?: number;
+  magenHumanScore?: number | null;
   status: 'active' | 'unsubscribed';
 }
 
@@ -76,7 +76,7 @@ export interface SpeakerSubmission {
   eventId?: string;
   submittedAt: Date;
   magenSessionId?: string;
-  magenHumanScore?: number;
+  magenHumanScore?: number | null;
   status: 'pending' | 'approved' | 'rejected';
 }
 

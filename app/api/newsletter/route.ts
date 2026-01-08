@@ -56,13 +56,13 @@ export async function POST(request: NextRequest) {
       const data = doc.data() as NewsletterSubscription;
 
       if (data.status === 'unsubscribed') {
-        // Resubscribe
+        // Resubscribe (use null for undefined values for Firestore compatibility)
         await doc.ref.update({
           status: 'active',
           subscribedAt: new Date(),
           source,
           magenSessionId,
-          magenHumanScore: humanScore,
+          magenHumanScore: humanScore ?? null,
         });
         return NextResponse.json({
           success: true,
@@ -76,13 +76,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create new subscription
+    // Create new subscription (use null for undefined values for Firestore compatibility)
     const subscription: NewsletterSubscription = {
       email: normalizedEmail,
       subscribedAt: new Date(),
       source,
       magenSessionId,
-      magenHumanScore: humanScore,
+      magenHumanScore: humanScore ?? null,
       status: 'active',
     };
 

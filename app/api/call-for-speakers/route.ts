@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       console.log('MAGEN verification skipped - not configured');
     }
 
-    // Submit to Firestore
+    // Submit to Firestore (use null instead of undefined for Firestore compatibility)
     const db = getDb();
     const submission: SpeakerSubmission = {
       name,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       eventId: eventId || 'aiconference2026',
       submittedAt: new Date(),
       magenSessionId: magenSessionId || undefined,
-      magenHumanScore: humanScore,
+      magenHumanScore: humanScore ?? null,
       status: 'pending',
     };
 
