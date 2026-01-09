@@ -317,7 +317,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'admin') {
+    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can audit/fix events' },
         { status: 403 }

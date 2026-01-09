@@ -30,7 +30,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all data
+    const adminData = adminQuery.docs[0].data();
+    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+
+    // If user is an organizer (not admin/superadmin), they should not see sensitive data
+    // Only return empty arrays for newsletter, speakers, access requests, and admins
+    if (!isAdmin) {
+      return NextResponse.json({
+        newsletter: [],
+        speakers: [],
+        accessRequests: [],
+        admins: [],
+        role: adminData.role,
+        communityId: adminData.communityId,
+      });
+    }
+
+    // For admins, fetch all data
     const [newsletterSnapshot, speakersSnapshot, accessRequestsSnapshot, adminsSnapshot] = await Promise.all([
       db.collection(COLLECTIONS.NEWSLETTER).orderBy('subscribedAt', 'desc').get(),
       db.collection(COLLECTIONS.SPEAKERS).orderBy('submittedAt', 'desc').get(),
@@ -67,6 +83,8 @@ export async function GET(request: NextRequest) {
       speakers,
       accessRequests,
       admins,
+      role: adminData.role,
+      communityId: adminData.communityId,
     });
   } catch (error) {
     console.error('Admin data fetch error:', error);

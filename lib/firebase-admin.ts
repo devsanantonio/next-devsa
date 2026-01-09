@@ -94,9 +94,12 @@ export interface ApprovedAdmin {
   email: string;
   approvedAt: Date;
   approvedBy?: string;
-  role: 'admin' | 'organizer';
+  role: 'superadmin' | 'admin' | 'organizer';
   communityId?: string;
 }
+
+// Protected super admin - cannot be removed or have role changed
+export const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com';
 
 export interface Event {
   title: string;

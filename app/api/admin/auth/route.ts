@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // Check if user is an approved admin
 export async function GET(request: NextRequest) {
@@ -59,11 +59,10 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
 
-    // Check if approver is an admin
+    // Check if approver is an admin or superadmin
     const approverQuery = await db
       .collection(COLLECTIONS.APPROVED_ADMINS)
       .where('email', '==', approverEmail.toLowerCase())
-      .where('role', '==', 'admin')
       .limit(1)
       .get();
 
@@ -74,7 +73,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const approverData = approverQuery.docs[0].data() as ApprovedAdmin;
+    if (approverData.role !== 'admin' && approverData.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - only admins can add new admins' },
+        { status: 403 }
+      );
+    }
+
     const normalizedEmail = email.toLowerCase();
+
+    // Protect super admin from having their role changed
+    if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'Cannot modify super admin account' },
+        { status: 403 }
+      );
+    }
 
     // Check if already exists
     const existingQuery = await db
@@ -146,11 +161,10 @@ export async function DELETE(request: NextRequest) {
 
     const db = getDb();
 
-    // Check if approver is an admin
+    // Check if approver is an admin or superadmin
     const approverQuery = await db
       .collection(COLLECTIONS.APPROVED_ADMINS)
       .where('email', '==', approverEmail.toLowerCase())
-      .where('role', '==', 'admin')
       .limit(1)
       .get();
 
@@ -161,7 +175,23 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const approverData = approverQuery.docs[0].data() as ApprovedAdmin;
+    if (approverData.role !== 'admin' && approverData.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - only admins can remove admins' },
+        { status: 403 }
+      );
+    }
+
     const normalizedEmail = email.toLowerCase();
+
+    // Protect super admin from being removed
+    if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'Cannot remove super admin account' },
+        { status: 403 }
+      );
+    }
 
     // Find and delete
     const adminQuery = await db

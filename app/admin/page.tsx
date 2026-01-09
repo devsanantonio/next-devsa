@@ -74,14 +74,24 @@ interface CalendarEvent {
 
 type Tab = "newsletter" | "speakers" | "access" | "admins" | "events"
 
+// Protected super admin email - cannot be removed or modified
+const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
+
+// Helper to check if a role has admin-level access
+const hasAdminAccess = (role: string | null | undefined): boolean => {
+  return role === 'superadmin' || role === 'admin'
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const [adminEmail, setAdminEmail] = useState("")
+  const [adminRole, setAdminRole] = useState<"superadmin" | "admin" | "organizer" | null>(null)
+  const [adminCommunityId, setAdminCommunityId] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>("newsletter")
+  const [activeTab, setActiveTab] = useState<Tab>("events")
   
   // Data states
   const [newsletter, setNewsletter] = useState<NewsletterSubscription[]>([])
@@ -119,9 +129,13 @@ export default function AdminPage() {
 
       if (data.isAdmin) {
         setAdminEmail(email)
+        setAdminRole(data.role)
+        setAdminCommunityId(data.communityId || null)
         setIsAuthenticated(true)
         localStorage.setItem("devsa-admin-email", email)
-        await fetchData(email)
+        // Set default tab based on role - admins/superadmins see newsletter first, organizers see events
+        setActiveTab(hasAdminAccess(data.role) ? "newsletter" : "events")
+        await fetchData(email, data.role, data.communityId)
       } else {
         setError("You are not authorized to access the admin panel")
         localStorage.removeItem("devsa-admin-email")
@@ -134,7 +148,7 @@ export default function AdminPage() {
     }
   }
 
-  const fetchData = async (email: string) => {
+  const fetchData = async (email: string, role?: string, communityId?: string) => {
     try {
       const [adminDataRes, eventsRes] = await Promise.all([
         fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
@@ -145,14 +159,26 @@ export default function AdminPage() {
       const eventsData = await eventsRes.json()
 
       if (adminDataRes.ok) {
-        setNewsletter(adminData.newsletter || [])
-        setSpeakers(adminData.speakers || [])
-        setAccessRequests(adminData.accessRequests || [])
-        setAdmins(adminData.admins || [])
+        // Only admins/superadmins should see newsletter, speakers, access requests, and admins data
+        // The API should also enforce this, but we double-check on the frontend
+        const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
+        setNewsletter(isAdmin ? (adminData.newsletter || []) : [])
+        setSpeakers(isAdmin ? (adminData.speakers || []) : [])
+        setAccessRequests(isAdmin ? (adminData.accessRequests || []) : [])
+        setAdmins(isAdmin ? (adminData.admins || []) : [])
       }
       
       if (eventsRes.ok) {
-        setEvents(eventsData.events || [])
+        // Organizers can only see events for their community
+        const userCommunityId = communityId || adminCommunityId
+        const userRole = role || adminRole
+        const allEvents = eventsData.events || []
+        
+        if (userRole === "organizer" && userCommunityId) {
+          setEvents(allEvents.filter((event: CalendarEvent) => event.communityId === userCommunityId))
+        } else {
+          setEvents(allEvents)
+        }
       }
     } catch {
       setError("Failed to fetch data")
@@ -168,6 +194,8 @@ export default function AdminPage() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setAdminEmail("")
+    setAdminRole(null)
+    setAdminCommunityId(null)
     localStorage.removeItem("devsa-admin-email")
   }
 
@@ -415,52 +443,56 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Only show admin-only tabs to admins/superadmins */}
         <div className="flex flex-wrap gap-2 mb-8">
-          <button
-            onClick={() => setActiveTab("newsletter")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "newsletter"
-                ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            <Mail className="h-4 w-4" />
-            Newsletter ({newsletter.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("speakers")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "speakers"
-                ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            <Mic2 className="h-4 w-4" />
-            Speakers ({speakers.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("access")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "access"
-                ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            Access Requests ({accessRequests.filter(r => r.status === "pending").length})
-          </button>
-          <button
-            onClick={() => setActiveTab("admins")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "admins"
-                ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            <UserCheck className="h-4 w-4" />
-            Admins ({admins.length})
-          </button>
+          {hasAdminAccess(adminRole) && (
+            <>
+              <button
+                onClick={() => setActiveTab("newsletter")}
+                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+                  activeTab === "newsletter"
+                    ? "bg-[#ef426f] text-white"
+                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                }`}
+              >
+                <Mail className="h-4 w-4" />
+                Newsletter ({newsletter.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("speakers")}
+                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+                  activeTab === "speakers"
+                    ? "bg-[#ef426f] text-white"
+                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                }`}
+              >
+                <Mic2 className="h-4 w-4" />
+                Speakers ({speakers.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("access")}
+                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+                  activeTab === "access"
+                    ? "bg-[#ef426f] text-white"
+                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                Access Requests ({accessRequests.filter(r => r.status === "pending").length})
+              </button>
+              <button
+                onClick={() => setActiveTab("admins")}
+                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+                  activeTab === "admins"
+                    ? "bg-[#ef426f] text-white"
+                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                }`}
+              >
+                <UserCheck className="h-4 w-4" />
+                Admins ({admins.length})
+              </button>
+            </>
+          )}
           <button
             onClick={() => setActiveTab("events")}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
@@ -476,8 +508,8 @@ export default function AdminPage() {
 
         {/* Content */}
         <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 sm:p-8">
-          {/* Newsletter Tab */}
-          {activeTab === "newsletter" && (
+          {/* Newsletter Tab - Admin Only */}
+          {activeTab === "newsletter" && hasAdminAccess(adminRole) && (
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Newsletter Subscriptions</h2>
               {newsletter.length === 0 ? (
@@ -519,8 +551,8 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Speakers Tab */}
-          {activeTab === "speakers" && (
+          {/* Speakers Tab - Admin Only */}
+          {activeTab === "speakers" && hasAdminAccess(adminRole) && (
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Speaker Submissions</h2>
               {speakers.length === 0 ? (
@@ -565,8 +597,8 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Access Requests Tab */}
-          {activeTab === "access" && (
+          {/* Access Requests Tab - Admin Only */}
+          {activeTab === "access" && hasAdminAccess(adminRole) && (
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Access Requests</h2>
               {accessRequests.length === 0 ? (
@@ -622,8 +654,8 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Admins Tab */}
-          {activeTab === "admins" && (
+          {/* Admins Tab - Admin Only */}
+          {activeTab === "admins" && hasAdminAccess(adminRole) && (
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold tracking-tight text-white">Approved Admins</h2>
@@ -653,14 +685,21 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-800/50">
                       {admins.map((admin) => (
                         <tr key={admin.id} className="hover:bg-gray-800/30 transition-colors">
-                          <td className="py-4 px-4 text-sm font-medium text-white">{admin.email}</td>
+                          <td className="py-4 px-4 text-sm font-medium text-white">
+                            {admin.email}
+                            {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                              <span className="ml-2 text-xs text-yellow-500">(Site Owner)</span>
+                            )}
+                          </td>
                           <td className="py-4 px-4">
                             <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                              admin.role === "admin"
+                              admin.role === "superadmin"
+                                ? "bg-yellow-500/20 text-yellow-400"
+                                : admin.role === "admin"
                                 ? "bg-purple-500/20 text-purple-400"
                                 : "bg-blue-500/20 text-blue-400"
                             }`}>
-                              {admin.role}
+                              {admin.role === "superadmin" ? "Super Admin" : admin.role}
                             </span>
                           </td>
                           <td className="py-4 px-4 text-sm text-gray-400">{admin.communityId || "All"}</td>
@@ -668,13 +707,17 @@ export default function AdminPage() {
                             {new Date(admin.approvedAt).toLocaleDateString()}
                           </td>
                           <td className="py-4 px-4">
-                            {admin.email !== adminEmail && (
+                            {/* Prevent removing yourself or the super admin */}
+                            {admin.email !== adminEmail && admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
                               <button
                                 onClick={() => handleRemoveAdmin(admin.email)}
                                 className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
                               >
                                 Remove
                               </button>
+                            )}
+                            {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                              <span className="text-xs text-gray-500 italic">Protected</span>
                             )}
                           </td>
                         </tr>
