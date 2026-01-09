@@ -34,13 +34,6 @@ const mediaItems = [
   },
   {
     type: "image",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa-paul.jpg",
-    alt: "PySanAntonio Conference Speaker",
-    width: 1067,
-    height: 1600,
-  },
-  {
-    type: "image",
     src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg",
     alt: "PySanAntonio Conference",
     width: 1600,
