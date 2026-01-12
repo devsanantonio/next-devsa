@@ -88,27 +88,10 @@ export function FeaturedOnDemandEvent() {
             {/* Overlay gradient */}
             <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
             
-            {/* Play button */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                className="relative"
-              >
-                {/* Pulse ring */}
-                <div className="absolute inset-0 rounded-full bg-[#FFD43B]/30 animate-ping" style={{ animationDuration: '2s' }} />
-                <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-[#FFD43B] shadow-2xl transition-all duration-300 group-hover:bg-[#4B8BBE]">
-                  <Play className="h-6 w-6 sm:h-8 sm:w-8 fill-[#0a0a0a] text-[#0a0a0a] ml-1" />
-                </div>
-              </motion.div>
-              <span className="mt-4 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-white/90">
-                Watch Now
-              </span>
-            </div>
-            
             {/* Duration badge */}
             <div className="absolute bottom-4 left-4 flex items-center gap-2 border border-[#333] bg-[#0a0a0a]/80 backdrop-blur-sm px-3 py-1.5">
-              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#FFD43B]" />
-              <span className="font-mono text-[10px] sm:text-xs font-semibold text-[#e5e5e5]">Full Session</span>
+              <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#FFD43B]" />
+              <span className="font-mono text-[10px] sm:text-xs font-semibold text-[#e5e5e5]">Full Event</span>
             </div>
           </Link>
 
@@ -134,13 +117,13 @@ export function FeaturedOnDemandEvent() {
             {/* CTA */}
             {featuredOnDemandEvent.url && (
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Link
+                {/* <Link
                   href={featuredOnDemandEvent.url}
                   className="group/btn inline-flex items-center justify-center gap-3 bg-[#FFD43B] px-6 py-3.5 text-sm sm:text-base font-bold uppercase tracking-wider text-[#0a0a0a] transition-all duration-300 hover:bg-[#4B8BBE] hover:scale-105"
                 >
                   <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                   <span className="font-mono">Watch Session</span>
-                </Link>
+                </Link> */}
                 <Link
                   href="/events/pysanantonio"
                   className="group/link inline-flex items-center gap-2 font-mono text-sm font-semibold text-[#737373] transition-colors hover:text-[#FFD43B]"

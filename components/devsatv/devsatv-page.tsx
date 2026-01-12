@@ -11,7 +11,13 @@ import {
   Video,
   Clapperboard,
   Users,
-  ArrowDown
+  Crown,
+  Zap,
+  Building2,
+  Sparkles,
+  Coffee,
+  Target,
+  CheckCircle2
 } from "lucide-react"
 
 // Aztec decorations only for the More Human Than Human card
@@ -36,21 +42,90 @@ function AztecCardCorner({ position }: { position: 'top-left' | 'top-right' | 'b
 }
 
 export function DevsaTVPage() {
-  const revenueOutlets = [
+  const annualTiers = [
     {
-      icon: Mic2,
-      name: "Sponsored Workshops",
-      description: "Enterprise partners fund workshops, we capture documentary-style content featuring DEVSA community members.",
-    },
-    {
-      icon: Calendar,
-      name: "Quarterly Conferences",
-      description: "High-profile events generating fresh content with premium production value and engaged audiences.",
-    },
-    {
+      name: "Documentary Story",
+      tier: "Premier Tier",
       icon: Film,
-      name: "Documentary Stories",
-      description: "Long-form content showcasing San Antonio's tech ecosystem—authentic stories sponsors cannot replicate.",
+      investment: "$50,000/year",
+      goal: "2 Partners",
+      target: "Local Pillars (Frost Bank, HEB, USAA, PortSA, UTSA, Spurs)",
+      benefits: [
+        "10–15 min cinematic documentary of your impact",
+        "Premiere screening at DEVSA Conference",
+        "Permanent placement in 434 MEDIA Library",
+        "5 short-form vertical clips for social",
+        "12-month branding on all documentary trailers",
+      ],
+    },
+    {
+      name: "Quarterly Conference",
+      tier: "Event Tier",
+      icon: Calendar,
+      investment: "$25,000/event",
+      goal: "4 Events = $100K",
+      target: "Infrastructure/Dev Tools (Vercel, Cloudflare, Microsoft, Google)",
+      benefits: [
+        "Title sponsorship of one major conference",
+        "Dedicated keynote or technical showcase slot",
+        "Direct access to attendee list",
+        "Professional 'Deep Dive' video for YouTube",
+      ],
+    },
+    {
+      name: "Sponsored Workshop",
+      tier: "Growth Tier",
+      icon: Mic2,
+      investment: "$10,000/workshop",
+      goal: "5 Workshops = $50K",
+      target: "Local Tech Orgs (VIA, SWBC, 80/20) or Frameworks (Laravel, Cursor)",
+      benefits: [
+        "Focused workshop building with your tools",
+        "'Sponsor Story' documentary recap video",
+        "First-look access to local talent pipeline",
+        "Bridge Builder recognition across all channels",
+      ],
+    },
+  ]
+
+  const eventTiers = [
+    {
+      name: "The Titan",
+      subtitle: "Title Sponsor",
+      icon: Crown,
+      investment: "$25,000",
+      exclusive: true,
+      benefits: [
+        "15-minute dedicated keynote stage time",
+        "Spotlight segment in documentary film",
+        "Branding on DEVSA TV interview set",
+        "Premier logo on all conference assets",
+      ],
+    },
+    {
+      name: "The Agent",
+      subtitle: "Track Sponsor",
+      icon: Zap,
+      investment: "$10,000",
+      limit: "3 Partners",
+      benefits: [
+        "'Presented by' track ownership",
+        "5-10 min Lightning Talk slot",
+        "Two professional short-form clips",
+        "Dedicated booth in Geekdom lounge",
+      ],
+    },
+    {
+      name: "The Builder",
+      subtitle: "Community Sponsor",
+      icon: Coffee,
+      investment: "$5,000",
+      benefits: [
+        "Official networking sponsor recognition",
+        "Logo in 'Architects' marquee",
+        "Social media shout-outs",
+        "Featured spotlight in TheFeed",
+      ],
     },
   ]
 
@@ -62,126 +137,59 @@ export function DevsaTVPage() {
   ]
 
   return (
-    <main className="h-dvh bg-white overflow-x-hidden overflow-y-auto">
-      {/* Hero Section - Full viewport storytelling */}
-      <section className="min-h-dvh flex flex-col pt-16 sm:pt-20 pb-8 px-4 sm:px-6 lg:px-8" data-bg-type="light">
-        <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col">
+    <main className="min-h-dvh bg-white overflow-x-hidden overflow-y-auto">
+      
+      {/* Hero Section */}
+      <section className="pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8 border-b border-slate-200" data-bg-type="light">
+        <div className="w-full max-w-6xl mx-auto">
           
-          {/* Header: Story + Title */}
-          <div className="text-center mb-6 sm:mb-8">
-            {/* The Story Lead */}
-            <motion.p
+          {/* Header */}
+          <div className="text-center mb-10">
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-sm sm:text-base text-slate-500 mb-3 max-w-2xl mx-auto leading-relaxed"
+              className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 bg-slate-100 border border-slate-200"
             >
-              DEVSA built a living ecosystem connecting 20+ tech organizations in San Antonio.
-            </motion.p>
+              <Tv className="w-4 h-4 text-amber-500" />
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-600">Content Production Studio</span>
+            </motion.div>
             
-            {/* Main Title */}
-            <motion.div
+            <motion.h1
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="mb-3"
+              className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-none mb-4"
             >
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-[0.95]">
-                DEVSA{" "}
-                <span className="text-amber-500">TV</span>
-              </h1>
-            </motion.div>
+              DEVSA <span className="text-amber-500">TV</span>
+            </motion.h1>
 
-            {/* Story Continuation */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-2"
+            >
+              Standard event sponsorships die when the lights go out.
+            </motion.p>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg md:text-xl text-slate-600 max-w-xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl font-semibold text-slate-900 max-w-2xl mx-auto"
             >
-              Now we bring that ecosystem to life—transforming authentic community stories into sponsor-ready content.
+              A DEVSA TV partnership lives forever.
             </motion.p>
           </div>
 
-          {/* Three Revenue Models - The Spotlight */}
+          {/* Featured Production Showcase - KEEPING AS IS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-6 sm:mb-8"
+            className="max-w-2xl mx-auto mb-10"
           >
-            <p className="text-center text-xs sm:text-sm font-semibold text-amber-600 uppercase tracking-wider mb-4">
-              Three Revenue Outlets
-            </p>
-            <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
-              {revenueOutlets.map((outlet, index) => (
-                <motion.div
-                  key={outlet.name}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="group bg-slate-50 border border-slate-200 p-4 sm:p-5 hover:border-amber-400 hover:bg-amber-50/50 transition-all duration-300"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-amber-100 border border-amber-200 shrink-0">
-                      <outlet.icon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-1 leading-tight">
-                        {outlet.name}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                        {outlet.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Bottom Row: Conferences + More Human Than Human Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="grid lg:grid-cols-2 gap-4 sm:gap-6 flex-1 min-h-0"
-          >
-            {/* 2026 Quarterly Conferences */}
-            <div className="bg-slate-50 border border-slate-200 p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                <h2 className="text-xs sm:text-sm font-semibold text-slate-900 uppercase tracking-wider">
-                  2026 Quarterly Schedule
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                {conferences.map((conf, index) => (
-                  <div 
-                    key={conf.name}
-                    className={`p-3 border transition-all ${
-                      index === 0 
-                        ? 'border-amber-300 bg-amber-50' 
-                        : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <p className={`text-[10px] sm:text-xs font-mono uppercase tracking-wider mb-0.5 ${
-                      index === 0 ? 'text-amber-600' : 'text-slate-400'
-                    }`}>
-                      {conf.date}
-                    </p>
-                    <p className={`text-xs sm:text-sm font-medium leading-tight ${
-                      index === 0 ? 'text-amber-900' : 'text-slate-700'
-                    }`}>
-                      {conf.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* More Human Than Human - Aztec-style Card */}
-            <div className="relative bg-[#0a0a0a] p-4 sm:p-5 overflow-hidden">
+            <div className="relative bg-[#0a0a0a] p-5 sm:p-6 overflow-hidden">
               {/* Aztec corners */}
               <div className="absolute top-1 left-1">
                 <AztecCardCorner position="top-left" />
@@ -243,35 +251,259 @@ export function DevsaTVPage() {
             </div>
           </motion.div>
 
-          {/* Footer: The Flywheel + CTA */}
+          {/* 2026 Schedule */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-6 sm:mt-8 pt-5 border-t border-slate-200"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto"
           >
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              {/* Flywheel Summary */}
-              <div className="flex items-center gap-3 text-slate-500 text-xs sm:text-sm">
-                <Users className="w-4 h-4 text-amber-500 shrink-0" />
-                <p className="leading-relaxed">
-                  <span className="text-slate-700 font-medium">The Flywheel:</span>{" "}
-                  Community → Content → Library → Sponsors → Growth
+            {conferences.map((conf, index) => (
+              <div 
+                key={conf.name}
+                className={`p-3 border text-center transition-all ${
+                  index === 0 
+                    ? 'border-amber-400 bg-amber-50' 
+                    : 'border-slate-200 bg-slate-50'
+                }`}
+              >
+                <p className={`text-[10px] font-mono uppercase tracking-wider mb-1 ${
+                  index === 0 ? 'text-amber-600' : 'text-slate-400'
+                }`}>
+                  {conf.date}
+                </p>
+                <p className={`text-xs font-semibold leading-tight ${
+                  index === 0 ? 'text-amber-900' : 'text-slate-700'
+                }`}>
+                  {conf.name}
                 </p>
               </div>
-              
-              {/* Partner CTA */}
-              <Link
-                href="mailto:hello@devsa.io"
-                className="group inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 px-5 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-white transition-all"
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 2026 Annual Sponsorship Tiers */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-b border-slate-200" data-bg-type="light">
+        <div className="w-full max-w-6xl mx-auto">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <p className="text-xs font-semibold tracking-wider uppercase text-amber-600 mb-2">
+              2026 Annual Partnerships
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 mb-3">
+              Sponsorship Tiers
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
+              We capture the energy of events and transform them into a premium Content Library that your brand owns.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {annualTiers.map((tier, index) => (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white border border-slate-200 overflow-hidden hover:border-slate-300 transition-colors"
               >
-                <span>Partner With DEVSA TV</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Link>
+                {/* Header */}
+                <div className="p-5 border-b border-slate-100">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 flex items-center justify-center bg-slate-900">
+                      <tier.icon className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-wider uppercase text-amber-600">
+                        {tier.tier}
+                      </p>
+                      <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                        {tier.name}
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                    <span className="font-medium text-slate-700">Target:</span> {tier.target}
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-slate-900">{tier.investment}</span>
+                    <span className="text-xs text-slate-500">Goal: {tier.goal}</span>
+                  </div>
+                </div>
+                
+                {/* Benefits */}
+                <div className="p-5">
+                  <p className="text-[10px] font-semibold tracking-wider uppercase text-slate-400 mb-3">
+                    What You Get
+                  </p>
+                  <ul className="space-y-2">
+                    {tier.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span className="text-xs text-slate-600 leading-relaxed">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Event-Specific Tiers: More Human Than Human */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200" data-bg-type="light">
+        <div className="w-full max-w-6xl mx-auto">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <p className="text-xs font-semibold tracking-wider uppercase text-cyan-600 mb-2">
+              Event Sponsorship Prospectus
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 mb-3">
+              More Human Than Human
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
+              February 28, 2026 at Geekdom, San Antonio — The inaugural event of the 2026 DEVSA TV season.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-10">
+            {eventTiers.map((tier, index) => (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className={`border overflow-hidden transition-colors ${
+                  tier.exclusive 
+                    ? 'bg-slate-900 border-slate-800' 
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {/* Header */}
+                <div className={`p-5 border-b ${tier.exclusive ? 'border-slate-700' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-10 h-10 flex items-center justify-center ${tier.exclusive ? 'bg-amber-500' : 'bg-slate-900'}`}>
+                      <tier.icon className={`w-5 h-5 ${tier.exclusive ? 'text-slate-900' : 'text-cyan-400'}`} />
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-bold leading-tight ${tier.exclusive ? 'text-white' : 'text-slate-900'}`}>
+                        {tier.name}
+                      </h3>
+                      <p className={`text-xs ${tier.exclusive ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {tier.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                  {tier.exclusive && (
+                    <p className="text-[10px] font-semibold tracking-wider uppercase text-amber-500 mb-2">
+                      Exclusive to One Partner
+                    </p>
+                  )}
+                  {tier.limit && (
+                    <p className="text-[10px] font-semibold tracking-wider uppercase text-cyan-600 mb-2">
+                      Limited to {tier.limit}
+                    </p>
+                  )}
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-2xl font-black ${tier.exclusive ? 'text-white' : 'text-slate-900'}`}>
+                      {tier.investment}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Benefits */}
+                <div className="p-5">
+                  <ul className="space-y-2">
+                    {tier.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${tier.exclusive ? 'text-amber-500' : 'text-cyan-500'}`} />
+                        <span className={`text-xs leading-relaxed ${tier.exclusive ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {benefit}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Strategic Deliverables */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-slate-100 border border-slate-200 p-6 sm:p-8"
+          >
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
+              Strategic Deliverables — What You Get After the Event
+            </h3>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3">
+                <Video className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 mb-1">Raw & Refined Footage</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">Professional 4K recordings of your participation</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Users className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 mb-1">The &ldquo;Human&rdquo; Metric</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">Engagement data from Discord and LinkedIn surveys</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Target className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 mb-1">The Identity</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">Alignment with the most authentic builder movement in South Texas</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {/* CTA Footer */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900" data-bg-type="dark">
+        <div className="w-full max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-xs font-semibold tracking-wider uppercase text-amber-500 mb-3">
+              The Flywheel
+            </p>
+            <p className="text-sm sm:text-base text-slate-400 mb-6 leading-relaxed">
+              Community → Content → Library → Sponsors → Growth
+            </p>
+            <Link
+              href="mailto:hello@devsa.io"
+              className="group inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wider text-slate-900 transition-all"
+            >
+              <span>Partner With DEVSA TV</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
     </main>
   )
 }
