@@ -400,7 +400,7 @@ interface EventCardProps {
 
 function EventCard({ event, isUpcoming, index }: EventCardProps) {
   const eventDate = new Date(event.date)
-  const eventLink = event.slug ? `/events/community/${event.slug}` : event.url
+  const eventLink = event.slug ? `/events/${event.slug}` : event.url
 
   return (
     <motion.div
