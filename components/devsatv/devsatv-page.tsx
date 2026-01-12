@@ -1,6 +1,7 @@
 "use client"
 
-import { motion } from "motion/react"
+import { useState } from "react"
+import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
 import { 
   Tv, 
@@ -17,7 +18,10 @@ import {
   Sparkles,
   Coffee,
   Target,
-  CheckCircle2
+  CheckCircle2,
+  Play,
+  BookOpen,
+  Camera
 } from "lucide-react"
 
 // Aztec decorations only for the More Human Than Human card
@@ -42,6 +46,21 @@ function AztecCardCorner({ position }: { position: 'top-left' | 'top-right' | 'b
 }
 
 export function DevsaTVPage() {
+  const [activeTab, setActiveTab] = useState<'conferences' | 'workshops' | 'documentaries'>('conferences')
+
+  // YouTube video IDs - extract from URL:
+  // youtu.be/BOCU-seUXQ8?si=xxx → ID is "BOCU-seUXQ8"
+  // youtube.com/watch?v=BOCU-seUXQ8 → ID is "BOCU-seUXQ8"
+  // https://youtu.be/8pDqJVdNa44?si=SlrDxKeNQImzKL3J
+  const workshopVideoId = "BOCU-seUXQ8"
+  const documentaryVideoId = "8pDqJVdNa44"
+
+  const revenueOutlets = [
+    { id: 'conferences' as const, label: 'Quarterly Conferences', icon: Calendar, investment: '$25K/event' },
+    { id: 'workshops' as const, label: 'Sponsored Workshops', icon: Mic2, investment: '$10K/workshop' },
+    { id: 'documentaries' as const, label: 'Documentary Stories', icon: Film, investment: '$50K/year' },
+  ]
+
   const annualTiers = [
     {
       name: "Documentary Story",
@@ -131,9 +150,9 @@ export function DevsaTVPage() {
 
   const conferences = [
     { date: "Feb 28", name: "More Human Than Human: AI Conference" },
-    { date: "May", name: "Emerging Technology Conference" },
-    { date: "Aug", name: "React Conference" },
-    { date: "Nov", name: "PySanAntonio 2" },
+    { date: "May 30", name: "Emerging Technology Conference" },
+    { date: "Aug 29", name: "React Conference" },
+    { date: "Nov 7", name: "PySanAntonio 2" },
   ]
 
   return (
@@ -141,7 +160,7 @@ export function DevsaTVPage() {
       
       {/* Hero Section */}
       <section className="pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8 border-b border-slate-200" data-bg-type="light">
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto">
           
           {/* Header */}
           <div className="text-center mb-10">
@@ -151,8 +170,8 @@ export function DevsaTVPage() {
               transition={{ delay: 0.1 }}
               className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 bg-slate-100 border border-slate-200"
             >
-              <Tv className="w-4 h-4 text-amber-500" />
-              <span className="text-xs font-semibold tracking-wider uppercase text-slate-600">Content Production Studio</span>
+              <Tv className="w-4 h-4 text-[#ef426f]" />
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-600">From Community to Content</span>
             </motion.div>
             
             <motion.h1
@@ -161,94 +180,267 @@ export function DevsaTVPage() {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-none mb-4"
             >
-              DEVSA <span className="text-amber-500">TV</span>
+              DEVSA <span className="text-[#ef426f]">TV</span>
             </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-2"
-            >
-              Standard event sponsorships die when the lights go out.
-            </motion.p>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg sm:text-xl font-semibold text-slate-900 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl font-semibold text-slate-900 max-w-sm mx-auto"
             >
-              A DEVSA TV partnership lives forever.
+              Transform authentic community stories into premium, sponsor-ready content through documentary-style production.
             </motion.p>
           </div>
 
-          {/* Featured Production Showcase - KEEPING AS IS */}
+          {/* Revenue Outlets Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="max-w-2xl mx-auto mb-4"
+          >
+            <div className="flex border border-slate-200 bg-slate-50 p-1">
+              {revenueOutlets.map((outlet) => (
+                <button
+                  key={outlet.id}
+                  onClick={() => setActiveTab(outlet.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide transition-all ${
+                    activeTab === outlet.id
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <outlet.icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">{outlet.label}</span>
+                  <span className="sm:hidden">{outlet.label.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Featured Production Showcase - Tabbed Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="max-w-2xl mx-auto mb-10"
           >
-            <div className="relative bg-[#0a0a0a] p-5 sm:p-6 overflow-hidden">
-              {/* Aztec corners */}
-              <div className="absolute top-1 left-1">
-                <AztecCardCorner position="top-left" />
-              </div>
-              <div className="absolute top-1 right-1">
-                <AztecCardCorner position="top-right" />
-              </div>
-              <div className="absolute bottom-1 left-1">
-                <AztecCardCorner position="bottom-left" />
-              </div>
-              <div className="absolute bottom-1 right-1">
-                <AztecCardCorner position="bottom-right" />
-              </div>
-              
-              {/* Gradient accent */}
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#ff9900] via-[#00f2ff] to-[#ff9900] opacity-60" />
-              
-              <div className="relative z-10">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1 border border-[#333] bg-[#111]/80">
-                  <Tv className="w-3 h-3 text-[#ff9900]" />
-                  <span className="font-mono text-[9px] sm:text-[10px] text-[#a3a3a3] tracking-[0.12em] uppercase">Featured Production</span>
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                </div>
-
-                {/* Title */}
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
-                  <span className="text-[#e5e5e5]">More Human </span>
-                  <span className="text-[#ff9900]">Than Human</span>
-                </h2>
-
-                {/* Subtitle */}
-                <p className="font-mono text-[10px] sm:text-xs text-[#00f2ff] tracking-[0.12em] uppercase mb-3">
-                  DEVSA AI Conference
-                </p>
-
-                {/* Details */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
-                  <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-xs text-[#e5e5e5]">
-                    <Calendar className="w-3 h-3 text-[#ff9900]" />
-                    <span>Feb 28, 2026</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-xs text-[#e5e5e5]">
-                    <Video className="w-3 h-3 text-[#00f2ff]" />
-                    <span>Full Documentary Coverage</span>
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <Link
-                  href="/events/morehumanthanhuman"
-                  className="group inline-flex items-center gap-1.5 bg-[#ff9900] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#0a0a0a] transition-all hover:bg-[#00f2ff]"
+            <AnimatePresence mode="wait">
+              {/* Quarterly Conferences Tab */}
+              {activeTab === 'conferences' && (
+                <motion.div
+                  key="conferences"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative bg-[#0a0a0a] p-5 sm:p-6 overflow-hidden"
                 >
-                  <Clapperboard className="w-3 h-3" />
-                  <span className="font-mono">Learn More</span>
-                  <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-            </div>
+                  {/* Aztec corners */}
+                  <div className="absolute top-1 left-1">
+                    <AztecCardCorner position="top-left" />
+                  </div>
+                  <div className="absolute top-1 right-1">
+                    <AztecCardCorner position="top-right" />
+                  </div>
+                  <div className="absolute bottom-1 left-1">
+                    <AztecCardCorner position="bottom-left" />
+                  </div>
+                  <div className="absolute bottom-1 right-1">
+                    <AztecCardCorner position="bottom-right" />
+                  </div>
+                  
+                  {/* Gradient accent */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#ef426f] via-[#00f2ff] to-[#ef426f] opacity-60" />
+                  
+                  <div className="relative z-10">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1 border border-[#333] bg-[#111]/80">
+                      <Tv className="w-3 h-3 text-[#ff9900]" />
+                      <span className="font-mono text-[9px] sm:text-[10px] text-[#a3a3a3] tracking-[0.12em] uppercase">Featured Production</span>
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                      <span className="text-[#e5e5e5]">More Human </span>
+                      <span className="text-[#ff9900]">Than Human</span>
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p className="font-mono text-[10px] sm:text-xs text-[#00f2ff] tracking-[0.12em] uppercase mb-3">
+                      DEVSA AI Conference
+                    </p>
+
+                    {/* Details */}
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-xs text-[#e5e5e5]">
+                        <Calendar className="w-3 h-3 text-[#ff9900]" />
+                        <span>Feb 28, 2026</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-xs text-[#e5e5e5]">
+                        <Video className="w-3 h-3 text-[#00f2ff]" />
+                        <span>Full Documentary Coverage</span>
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <Link
+                      href="/events/morehumanthanhuman"
+                      className="group inline-flex items-center gap-1.5 bg-[#ff9900] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#0a0a0a] transition-all hover:bg-[#00f2ff]"
+                    >
+                      <Clapperboard className="w-3 h-3" />
+                      <span className="font-mono">Learn More</span>
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Sponsored Workshops Tab */}
+              {activeTab === 'workshops' && (
+                <motion.div
+                  key="workshops"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative bg-[#0a0a0a] p-5 sm:p-6 overflow-hidden"
+                >
+                  {/* Gradient accent */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#10b981] via-[#3b82f6] to-[#10b981] opacity-60" />
+                  
+                  <div className="relative z-10">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1 border border-[#333] bg-[#111]/80">
+                      <Mic2 className="w-3 h-3 text-[#10b981]" />
+                      <span className="font-mono text-[9px] sm:text-[10px] text-[#a3a3a3] tracking-[0.12em] uppercase">Growth Tier • $10K/Workshop</span>
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                      <span className="text-[#e5e5e5]">Sponsored </span>
+                      <span className="text-[#10b981]">Workshops</span>
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p className="font-mono text-[10px] sm:text-xs text-[#3b82f6] tracking-[0.12em] uppercase mb-4">
+                      Hands-On Learning • Your Tools • Our Community
+                    </p>
+
+                    {/* YouTube Video Embed or Placeholder */}
+                    {workshopVideoId ? (
+                      <div className="relative aspect-video bg-[#111] border border-[#333] mb-4 overflow-hidden">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${workshopVideoId}?rel=0&modestbranding=1`}
+                          title="Workshop Recap Video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="absolute inset-0 w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative aspect-video bg-[#111] border border-[#333] mb-4 flex items-center justify-center group cursor-pointer hover:border-[#10b981] transition-colors">
+                        <div className="absolute inset-0 bg-linear-to-br from-[#10b981]/5 to-[#3b82f6]/5" />
+                        <div className="relative flex flex-col items-center gap-3">
+                          <div className="w-16 h-16 flex items-center justify-center bg-[#10b981] rounded-full group-hover:scale-110 transition-transform">
+                            <Play className="w-6 h-6 text-white ml-1" />
+                          </div>
+                          <p className="font-mono text-[10px] text-[#666] uppercase tracking-wider">Workshop Recap Video Coming Soon</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+                      Partner with DEVSA to host focused workshops that showcase your tools and frameworks to San Antonio&apos;s tech community. Each workshop includes a professional &quot;Sponsor Story&quot; recap video.
+                    </p>
+
+                    {/* CTA */}
+                    <Link
+                      href="mailto:jesse@devsanantonio.com?subject=Sponsored%20Workshop%20Inquiry"
+                      className="group inline-flex items-center gap-1.5 bg-[#10b981] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#0a0a0a] transition-all hover:bg-[#3b82f6]"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span className="font-mono">Become a Workshop Sponsor</span>
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Documentary Stories Tab */}
+              {activeTab === 'documentaries' && (
+                <motion.div
+                  key="documentaries"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative bg-[#0a0a0a] p-5 sm:p-6 overflow-hidden"
+                >
+                  {/* Gradient accent */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#f59e0b] via-[#ef4444] to-[#f59e0b] opacity-60" />
+                  
+                  <div className="relative z-10">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1 border border-[#333] bg-[#111]/80">
+                      <Film className="w-3 h-3 text-[#f59e0b]" />
+                      <span className="font-mono text-[9px] sm:text-[10px] text-[#a3a3a3] tracking-[0.12em] uppercase">Premier Tier • $50K/Year</span>
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                      <span className="text-[#e5e5e5]">Documentary </span>
+                      <span className="text-[#f59e0b]">Stories</span>
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p className="font-mono text-[10px] sm:text-xs text-[#ef4444] tracking-[0.12em] uppercase mb-4">
+                      Cinematic Storytelling • Your Impact • Lasting Legacy
+                    </p>
+
+                    {/* YouTube Video Embed or Placeholder */}
+                    {documentaryVideoId ? (
+                      <div className="relative aspect-video bg-[#111] border border-[#333] mb-4 overflow-hidden">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${documentaryVideoId}?rel=0&modestbranding=1`}
+                          title="Documentary Trailer"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="absolute inset-0 w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative aspect-video bg-[#111] border border-[#333] mb-4 flex items-center justify-center group cursor-pointer hover:border-[#f59e0b] transition-colors">
+                        <div className="absolute inset-0 bg-linear-to-br from-[#f59e0b]/5 to-[#ef4444]/5" />
+                        <div className="relative flex flex-col items-center gap-3">
+                          <div className="w-16 h-16 flex items-center justify-center bg-[#f59e0b] rounded-full group-hover:scale-110 transition-transform">
+                            <Play className="w-6 h-6 text-white ml-1" />
+                          </div>
+                          <p className="font-mono text-[10px] text-[#666] uppercase tracking-wider">Documentary Trailer Coming Soon</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+                      Tell your organization&apos;s story through a 30-45 minute cinematic documentary. Premiere at DEVSA conferences with permanent placement in the 434 MEDIA Library.
+                    </p>
+
+                    {/* CTA */}
+                    <Link
+                      href="mailto:jesse@devsanantonio.com?subject=Documentary%20Story%20Inquiry"
+                      className="group inline-flex items-center gap-1.5 bg-[#f59e0b] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#0a0a0a] transition-all hover:bg-[#ef4444]"
+                    >
+                      <Camera className="w-3 h-3" />
+                      <span className="font-mono">Tell Your Story</span>
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* 2026 Schedule */}
