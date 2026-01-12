@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: event.title,
         description,
-        url: `${siteUrl}/events/community/${slug}`,
+        url: `${siteUrl}/events/${slug}`,
         siteName: "DEVSA",
         images: [
           {
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: "Community Event",
       description: fallbackDescription,
-      url: `${siteUrl}/events/community/${slug}`,
+      url: `${siteUrl}/events/${slug}`,
       siteName: "DEVSA",
       images: [
         {

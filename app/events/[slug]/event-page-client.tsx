@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { techCommunities } from "@/data/communities"
 import { initialCommunityEvents } from "@/data/events"
 import Image from "next/image"
@@ -51,6 +52,7 @@ interface EventPageClientProps {
 const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
 
 export function EventPageClient({ slug }: EventPageClientProps) {
+  const router = useRouter()
   const [event, setEvent] = useState<Event | null | undefined>(undefined)
   const [copied, setCopied] = useState(false)
 
@@ -109,13 +111,13 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           <p className="text-lg text-slate-600 leading-relaxed mb-8">
             The event you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Events
-          </Link>
+            Go Back
+          </button>
         </div>
       </main>
     )
@@ -160,24 +162,24 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
-        {/* Back link */}
-        <Link
-          href="/events"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Events
-        </Link>
+      <section data-bg-type="light">
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
+          {/* Back button using router.back() */}
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-8 cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
 
-        {/* Event header */}
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-          {/* Community banner with logo */}
-          {community && (
-            <div 
-              className="p-6 sm:p-8 flex items-center gap-5 border-b border-slate-100"
-              style={{ backgroundColor: community.color ? `${community.color}08` : "#ef426f08" }}
-            >
+          {/* Event header */}
+          <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+            {/* Community banner with logo */}
+            {community && (
+              <div 
+                className="p-6 sm:p-8 flex items-center gap-5 border-b border-slate-100 bg-[#ef426f]/5"
+              >
               <div className="relative h-20 w-20 shrink-0 rounded-2xl bg-black p-3 shadow-md">
                 <Image
                   src={community.logo}
@@ -201,11 +203,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
             {/* Date and location */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-6 sm:gap-10 mb-10">
               <div className="flex items-start gap-4">
-                <div 
-                  className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
-                  style={{ backgroundColor: community?.color ? `${community.color}15` : "#ef426f15" }}
-                >
-                  <Calendar className="h-5 w-5" style={{ color: community?.color || "#ef426f" }} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-[#ef426f]/10">
+                  <Calendar className="h-5 w-5 text-[#ef426f]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Date & Time</p>
@@ -227,11 +226,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               </div>
 
               <div className="flex items-start gap-4">
-                <div 
-                  className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
-                  style={{ backgroundColor: community?.color ? `${community.color}15` : "#ef426f15" }}
-                >
-                  <MapPin className="h-5 w-5" style={{ color: community?.color || "#ef426f" }} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-[#ef426f]/10">
+                  <MapPin className="h-5 w-5 text-[#ef426f]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Location</p>
@@ -349,7 +345,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </section>
     </main>
   )
 }

@@ -48,7 +48,7 @@ const mediaItems = [
 
 export function HeroSection() {
   return (
-    <section className="relative" data-testid="coworking-homepage-container-carousel" id="carousel">
+    <section className="relative" data-testid="coworking-homepage-container-carousel" id="carousel" data-bg-type="light">
       <div className="-mt-px pt-[calc(1.5rem-var(--header-height))] md:pt-[calc(6rem-var(--header-height))] lg:pt-[calc(12rem-var(--header-height))] pb-6 md:pb-24 text-black bg-white">
         <div className="flex flex-col gap-6 md:gap-y-12 lg:gap-y-10">
           <div className="my-0! gap-10 lg:gap-5 container-responsive grid grid-cols-1 lg:grid-cols-[repeat(18,1fr)]">

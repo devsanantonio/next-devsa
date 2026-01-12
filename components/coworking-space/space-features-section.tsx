@@ -137,7 +137,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
 export function SpaceFeaturesSection({ features }: SpaceFeaturesSectionProps) {
 
   return (
-    <section className="py-20 md:py-32 bg-white">
+    <section className="py-20 md:py-32 bg-white" data-bg-type="light">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

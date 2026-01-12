@@ -2,8 +2,9 @@
 
 import { motion } from "motion/react"
 import { useState, useEffect } from "react"
-import { ArrowRight, ChevronDown, ExternalLink } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { techCommunities, type TechCommunity } from "@/data/communities"
+import Link from "next/link"
 
 interface TestimonialCardProps {
   community: TechCommunity
@@ -12,28 +13,25 @@ interface TestimonialCardProps {
 
 function TestimonialCard({ community, index }: TestimonialCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const primaryLink = community.website || community.meetup || community.discord || community.instagram || community.twitter
-  const communityColor = community.color || "#ef426f"
+  const communityColor = "#ef426f"
 
   return (
-    <motion.a
-      href={primaryLink || "#"}
-      target="_blank"
-      rel="noopener noreferrer"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.1 }}
-      transition={{ 
-        duration: 0.3, 
-        ease: "easeOut"
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="group relative flex flex-col justify-between p-5 sm:p-6 bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden transition-shadow duration-300 cursor-pointer hover:border-neutral-700 will-change-[opacity] transform-gpu"
-      style={{
-        boxShadow: isHovered ? `0 20px 40px -12px ${communityColor}30` : '0 0 0 0 transparent',
-      }}
-    >
+    <Link href={`/buildingtogether/${community.id}`}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ 
+          duration: 0.3, 
+          ease: "easeOut"
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="group relative flex flex-col justify-between p-5 sm:p-6 bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden transition-shadow duration-300 cursor-pointer hover:border-neutral-700 will-change-[opacity] transform-gpu h-full"
+        style={{
+          boxShadow: isHovered ? `0 20px 40px -12px ${communityColor}30` : '0 0 0 0 transparent',
+        }}
+      >
       {/* Hover gradient overlay */}
       <div 
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -69,8 +67,8 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
               {community.name}
             </h3>
           </div>
-          <ExternalLink 
-            className="w-4 h-4 text-neutral-600 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:text-white transform group-hover:translate-x-0 -translate-x-2" 
+          <ArrowRight 
+            className="w-4 h-4 text-neutral-600 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:text-white transform group-hover:translate-x-1 -translate-x-2" 
           />
         </div>
 
@@ -96,17 +94,17 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
             className="flex items-center gap-1.5 text-xs font-semibold transition-all duration-300"
             style={{ color: isHovered ? communityColor : 'rgb(115, 115, 115)' }}
           >
-            Visit
+            Click to learn more
             <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-300" />
           </div>
         </div>
       </div>
-    </motion.a>
+      </motion.div>
+    </Link>
   )
 }
 
 export function HeroCommunities() {
-  const [showAll, setShowAll] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   
   useEffect(() => {
@@ -117,7 +115,7 @@ export function HeroCommunities() {
   }, [])
   
   const initialCount = isMobile ? 8 : 9
-  const displayedCommunities = showAll ? techCommunities : techCommunities.slice(0, initialCount)
+  const displayedCommunities = techCommunities.slice(0, initialCount)
 
   return (
     <section 
@@ -171,12 +169,19 @@ export function HeroCommunities() {
             className="mt-8 md:mt-12 max-w-2xl mx-auto"
           >
             <p className="text-neutral-600 text-base md:text-lg leading-relaxed">
-              We found the tech community and 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles.
+              We found the tech community and 20+ tech-focused groups scattered across the city, not collaborating and living in their own bubbles.
               <span className="text-neutral-900 font-semibold"> So we built DEVSA 
               to bring them together</span>. A platform where you can discover tech communities 
               that match your interests and where these groups can now easily collaborate, 
               share resources, and grow stronger together.
             </p>
+            <Link
+              href="/buildingtogether"
+              className="inline-flex items-center gap-2 mt-6 text-amber-500 hover:text-amber-600 font-semibold transition-colors"
+            >
+              View all partners and communities
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </motion.div>
         </div>
       </div>
@@ -195,41 +200,6 @@ export function HeroCommunities() {
           </div>
         </div>
       </div>
-
-      {/* Show more / Show less button */}
-      {techCommunities.length > initialCount && (
-        <div className="relative z-20">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-center py-8"
-          >
-            {!showAll ? (
-              <button
-                onClick={() => setShowAll(true)}
-                className="group inline-flex items-center gap-2 text-neutral-500 text-sm font-medium hover:text-neutral-900 transition-colors"
-              >
-                Show more communities
-                <motion.span
-                  animate={{ y: [0, 3, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </motion.span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowAll(false)}
-                className="text-neutral-500 text-sm font-medium hover:text-neutral-900 transition-colors"
-              >
-                Show less
-              </button>
-            )}
-          </motion.div>
-        </div>
-      )}
 
       {/* Bottom CTA */}
       <div className="relative z-10 px-6 py-20 border-t border-neutral-100">

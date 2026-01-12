@@ -52,7 +52,7 @@ function AztecCorner({ position }: { position: 'top-left' | 'top-right' | 'botto
 // Border decoration
 function AztecBorder() {
   return (
-    <div className="h-1 w-full bg-linear-to-r from-[#ff9900] via-[#00f2ff] to-[#ff9900] opacity-60" />
+    <div className="mt-1.5 h-1 w-full bg-linear-to-r from-[#ff9900] via-[#00f2ff] to-[#ff9900] opacity-60" />
   )
 }
 
@@ -62,7 +62,7 @@ export function FeaturedDevsaEvent() {
       <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
         <AztecBackground />
         <AztecBorder />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
           <div className="mb-8">
             <h2 className="text-3xl font-extrabold tracking-tight text-[#e5e5e5] sm:text-4xl lg:text-5xl leading-[1.1]">
               Featured <span className="text-[#ff9900]">Event</span>
@@ -104,7 +104,7 @@ export function FeaturedDevsaEvent() {
         <AztecCorner position="bottom-right" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
         <div className="mb-10">
           <motion.h2 
             initial={{ opacity: 0, y: 10 }}

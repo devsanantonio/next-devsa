@@ -77,7 +77,7 @@ Your Direct Connection to the Tech Community`
                 onClick={onClose}
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
               >
-                {'>'} Events
+                {'>'} Events Calendar
               </Link>
               <Link
                 href="/coworking-space"
@@ -85,6 +85,13 @@ Your Direct Connection to the Tech Community`
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
               >
                 {'>'} Coworking Space
+              </Link>
+              <Link
+                href="/buildingtogether"
+                onClick={onClose}
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+              >
+                {'>'} Partners & Communities
               </Link>
               <Link
                 href="/events/pysanantonio"

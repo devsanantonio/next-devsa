@@ -106,7 +106,7 @@ export function CallForSpeakers() {
   }
 
   return (
-    <section className="border-b border-gray-200 bg-white">
+    <section className="border-b border-gray-200 bg-white" data-bg-type="light">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

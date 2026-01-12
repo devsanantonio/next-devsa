@@ -267,7 +267,7 @@ export function CommunityEventsSection() {
   }
 
   return (
-    <section className="relative bg-white py-16 sm:py-24">
+    <section className="relative bg-white py-16 sm:py-24" data-bg-type="light">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
@@ -373,7 +373,7 @@ export function CommunityEventsSection() {
                     const community = techCommunities.find((c) => c.id === event.communityId)
                     const isFirst = index === 0
                     const eventLink = event.slug 
-                      ? `/events/community/${event.slug}`
+                      ? `/events/${event.slug}`
                       : event.url
 
                     return (
@@ -432,7 +432,7 @@ export function CommunityEventsSection() {
                         <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
                           {community && (
                             <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
-                              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: community.color || '#ef426f' }} />
+                              <span className="h-2 w-2 rounded-full bg-[#ef426f]" />
                               {community.name}
                             </span>
                           )}
