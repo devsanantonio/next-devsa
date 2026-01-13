@@ -38,6 +38,7 @@ interface Event {
   title: string
   slug: string
   date: string
+  endTime?: string
   location: string
   description: string
   url?: string
@@ -55,6 +56,15 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const router = useRouter()
   const [event, setEvent] = useState<Event | null | undefined>(undefined)
   const [copied, setCopied] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  // Update current time every minute for live "Happening Now" detection
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -126,7 +136,22 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const community = techCommunities.find((c) => c.id === event.communityId)
   const eventDate = new Date(event.date)
   const shareUrl = typeof window !== "undefined" ? window.location.href : ""
-  const shareText = `${event.title} - ${eventDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
+  const shareText = `${event.title} - ${eventDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "America/Chicago" })}`
+
+  // Helper to get event status
+  const getEventStatus = (): "upcoming" | "happening" | "ended" => {
+    const startTime = new Date(event.date).getTime()
+    const endTime = event.endTime 
+      ? new Date(event.endTime).getTime()
+      : startTime + (2 * 60 * 60 * 1000) // Default 2 hours
+    const now = currentTime.getTime()
+    
+    if (now >= startTime && now < endTime) return "happening"
+    if (now >= endTime) return "ended"
+    return "upcoming"
+  }
+
+  const eventStatus = getEventStatus()
 
   const handleCopyLink = async () => {
     try {
@@ -198,7 +223,21 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
           {/* Event content */}
           <div className="p-6 sm:p-8">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight mb-8">{event.title}</h1>
+            {/* Title with status badge */}
+            <div className="flex flex-wrap items-start gap-4 mb-8">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">{event.title}</h1>
+              {eventStatus === "happening" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shrink-0">
+                  <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                  Happening Now
+                </span>
+              )}
+              {eventStatus === "ended" && (
+                <span className="inline-flex items-center rounded-full bg-slate-200 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-600 shrink-0">
+                  Event Ended
+                </span>
+              )}
+            </div>
 
             {/* Date and location */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-6 sm:gap-10 mb-10">
@@ -214,12 +253,14 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                       month: "long",
                       day: "numeric",
                       year: "numeric",
+                      timeZone: "America/Chicago",
                     })}
                   </p>
                   <p className="text-base text-slate-600 mt-0.5">
                     {eventDate.toLocaleTimeString("en-US", {
                       hour: "numeric",
                       minute: "2-digit",
+                      timeZone: "America/Chicago",
                     })}
                   </p>
                 </div>

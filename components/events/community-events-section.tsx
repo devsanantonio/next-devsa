@@ -13,6 +13,7 @@ interface FirestoreEvent {
   title: string
   slug: string
   date: string
+  endTime?: string
   location: string
   description: string
   url?: string
@@ -145,6 +146,7 @@ interface MergedEvent {
   id: string
   title: string
   date: string
+  endTime?: string
   location: string
   description: string
   url?: string
@@ -160,6 +162,15 @@ export function CommunityEventsSection() {
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showAddEvent, setShowAddEvent] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  // Update current time every minute for live "Happening Now" detection
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000) // Update every minute
+    return () => clearInterval(interval)
+  }, [])
 
   // Fetch events from Firestore
   useEffect(() => {
@@ -190,6 +201,7 @@ export function CommunityEventsSection() {
           id: event.id,
           title: event.title,
           date: event.date,
+          endTime: event.endTime,
           location: event.location,
           description: event.description,
           url: event.url,
@@ -220,33 +232,34 @@ export function CommunityEventsSection() {
     return events
   }, [firestoreEvents, isLoadingEvents])
 
+  // Helper function to get event status: "upcoming" | "happening" | "ended"
+  const getEventStatus = (event: MergedEvent): "upcoming" | "happening" | "ended" => {
+    const startTime = new Date(event.date).getTime()
+    // Default to 2 hours if no endTime provided
+    const endTime = event.endTime 
+      ? new Date(event.endTime).getTime()
+      : startTime + (2 * 60 * 60 * 1000)
+    const now = currentTime.getTime()
+    
+    if (now >= startTime && now < endTime) {
+      return "happening"
+    } else if (now >= endTime) {
+      return "ended"
+    }
+    return "upcoming"
+  }
+
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
-    
-    // Get current date in CST (America/Chicago handles CST/CDT automatically)
-    const now = new Date()
-    const cstFormatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Chicago',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    const cstParts = cstFormatter.formatToParts(now)
-    const cstYear = parseInt(cstParts.find(p => p.type === 'year')?.value || '0')
-    const cstMonth = parseInt(cstParts.find(p => p.type === 'month')?.value || '0') - 1
-    const cstDay = parseInt(cstParts.find(p => p.type === 'day')?.value || '0')
-    const todayCST = new Date(cstYear, cstMonth, cstDay)
-    todayCST.setHours(0, 0, 0, 0)
 
     return allEvents
       .filter((event) => {
-        // Filter out past events (events before today in CST)
-        const eventDate = new Date(event.date)
-        const eventDateCST = new Date(
-          eventDate.toLocaleString('en-US', { timeZone: 'America/Chicago' })
-        )
-        eventDateCST.setHours(0, 0, 0, 0)
-        return eventDateCST >= todayCST
+        // Filter out ended events (use endTime if available, otherwise 2 hours after start)
+        const startTime = new Date(event.date).getTime()
+        const endTime = event.endTime 
+          ? new Date(event.endTime).getTime()
+          : startTime + (2 * 60 * 60 * 1000) // Default 2 hour duration
+        return currentTime.getTime() < endTime
       })
       .filter((event) => {
         if (!normalizedSearch) return true
@@ -259,7 +272,7 @@ export function CommunityEventsSection() {
         return eventDate.toDateString() === selectedDate.toDateString()
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [allEvents, search, selectedDate])
+  }, [allEvents, search, selectedDate, currentTime])
 
   // Get the appropriate link for the add event easter egg
   const getAddEventHref = () => {
@@ -375,6 +388,7 @@ export function CommunityEventsSection() {
                     const eventLink = event.slug 
                       ? `/events/${event.slug}`
                       : event.url
+                    const eventStatus = getEventStatus(event)
 
                     return (
                       <motion.article
@@ -383,7 +397,11 @@ export function CommunityEventsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="group rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-300"
+                        className={`group rounded-2xl border p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-lg ${
+                          eventStatus === "happening"
+                            ? "border-green-300 bg-green-50/50 hover:border-green-400"
+                            : "border-slate-200 bg-white hover:border-slate-300"
+                        }`}
                       >
                         {/* Date and badge row */}
                         <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -392,9 +410,15 @@ export function CommunityEventsSection() {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
+                              timeZone: "America/Chicago",
                             })}
                           </time>
-                          {isFirst && (
+                          {eventStatus === "happening" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                              Happening Now
+                            </span>
+                          ) : isFirst && (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Next Up

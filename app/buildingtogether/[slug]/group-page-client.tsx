@@ -426,6 +426,7 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
+                timeZone: "America/Chicago",
               })}
             </time>
             {isUpcoming && index === 0 && (

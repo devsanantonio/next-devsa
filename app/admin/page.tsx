@@ -838,6 +838,7 @@ export default function AdminPage() {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
+                                timeZone: "America/Chicago",
                               })}
                             </span>
                             <span className="text-gray-600">•</span>

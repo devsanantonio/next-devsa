@@ -19,6 +19,7 @@ export default function AdminCreateEventPage() {
     title: "",
     date: "",
     time: "18:00",
+    endTime: "20:00",
     location: "",
     description: "",
     url: "",
@@ -63,6 +64,7 @@ export default function AdminCreateEventPage() {
     try {
       // Combine date and time
       const dateTime = new Date(`${formData.date}T${formData.time}:00`)
+      const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`)
 
       const response = await fetch("/api/events", {
         method: "POST",
@@ -70,6 +72,7 @@ export default function AdminCreateEventPage() {
         body: JSON.stringify({
           title: formData.title,
           date: dateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
           location: formData.location,
           description: formData.description,
           url: formData.url || undefined,
@@ -168,7 +171,7 @@ export default function AdminCreateEventPage() {
             </div>
 
             {/* Date and Time */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label htmlFor="date" className="block text-sm font-semibold text-gray-300 mb-2">
                   Date *
@@ -184,7 +187,7 @@ export default function AdminCreateEventPage() {
               </div>
               <div>
                 <label htmlFor="time" className="block text-sm font-semibold text-gray-300 mb-2">
-                  Time *
+                  Start Time *
                 </label>
                 <input
                   type="time"
@@ -192,6 +195,19 @@ export default function AdminCreateEventPage() {
                   required
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                />
+              </div>
+              <div>
+                <label htmlFor="endTime" className="block text-sm font-semibold text-gray-300 mb-2">
+                  End Time *
+                </label>
+                <input
+                  type="time"
+                  id="endTime"
+                  required
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                   className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                 />
               </div>

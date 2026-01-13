@@ -172,6 +172,7 @@ export function FeaturedDevsaEvent() {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
+                          timeZone: "America/Chicago",
                         })}
                       </p>
                     </div>

@@ -105,6 +105,7 @@ export interface Event {
   title: string;
   slug: string;
   date: string;
+  endTime?: string; // ISO string for event end time
   location: string;
   description: string;
   url?: string;

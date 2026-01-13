@@ -46,6 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       month: "long",
       day: "numeric",
       year: "numeric",
+      timeZone: "America/Chicago",
     })
     
     // OG best practices: title under 60 chars, description 120-160 chars

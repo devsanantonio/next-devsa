@@ -58,7 +58,7 @@ export async function GET(
 
   const event = await getEventBySlug(slug)
 
-  // Format date
+  // Format date - explicitly use CST (America/Chicago) timezone
   let formattedDate = "Date TBA"
   let formattedTime = ""
   if (event.date) {
@@ -70,11 +70,13 @@ export async function GET(
           month: "long",
           day: "numeric",
           year: "numeric",
+          timeZone: "America/Chicago",
         })
         formattedTime = date.toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
           hour12: true,
+          timeZone: "America/Chicago",
         })
       }
     } catch {

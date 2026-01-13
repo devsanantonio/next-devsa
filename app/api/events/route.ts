@@ -77,7 +77,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, location, description, url, communityId, source, organizerEmail } = body;
+    const { title, date, endTime, location, description, url, communityId, source, organizerEmail } = body;
 
     if (!title || !date || !location || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
       title,
       slug,
       date,
+      endTime, // Optional end time for "Happening Now" feature
       location,
       description,
       url,
