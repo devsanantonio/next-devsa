@@ -94,7 +94,7 @@ export default function AdminCreateEventPage() {
   }
 
   // Filter communities based on user's role
-  const availableCommunities = adminRole === "admin"
+  const availableCommunities = adminRole === "admin" || adminRole === "superadmin"
     ? techCommunities
     : techCommunities.filter((c) => c.id === adminCommunityId)
 
