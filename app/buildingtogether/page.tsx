@@ -1,18 +1,31 @@
 import { Metadata } from "next"
 import { GroupsHero } from "@/components/partners/groups-hero"
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+
 export const metadata: Metadata = {
-  title: "Tech Groups | DEVSA",
-  description: "Discover 20+ active tech-focused groups in San Antonio. DEVSA is the bridge connecting passionate builders, local communities, and the growing tech ecosystem.",
+  title: "Partners + Communities | DEVSA",
+  description: "Our platform is bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
   openGraph: {
-    title: "Tech Groups | DEVSA",
-    description: "Discover 20+ active tech-focused groups in San Antonio. DEVSA is the bridge connecting passionate builders, local communities, and the growing tech ecosystem.",
+    title: "Partners + Communities | DEVSA",
+    description: "Our platform is bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
+    url: `${siteUrl}/buildingtogether`,
+    siteName: "DEVSA",
+    images: [
+      {
+        url: `${siteUrl}/api/og/buildingtogether`,
+        width: 1200,
+        height: 630,
+        alt: "DEVSA Tech Groups - Building Together",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tech Groups | DEVSA",
-    description: "Discover 20+ active tech-focused groups in San Antonio. DEVSA is the bridge connecting passionate builders, local communities, and the growing tech ecosystem.",
+    title: "Partners + Communities | DEVSA",
+    description: "Our platform is bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.",
+    images: [`${siteUrl}/api/og/buildingtogether`],
   },
 }
 

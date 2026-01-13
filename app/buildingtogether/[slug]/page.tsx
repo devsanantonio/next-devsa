@@ -39,19 +39,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: "DEVSA",
         images: [
           {
-            url: community.logo,
-            width: 400,
-            height: 400,
-            alt: community.name,
+            url: `${siteUrl}/api/og/buildingtogether/${slug}`,
+            width: 1200,
+            height: 630,
+            alt: `${community.name} - DEVSA Tech Group`,
           },
         ],
         type: "website",
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title,
         description,
-        images: [community.logo],
+        images: [`${siteUrl}/api/og/buildingtogether/${slug}`],
       },
     }
   }
@@ -72,19 +72,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: "DEVSA",
         images: [
           {
-            url: partner.logo,
-            width: 400,
-            height: 400,
-            alt: partner.name,
+            url: `${siteUrl}/api/og/buildingtogether/${slug}`,
+            width: 1200,
+            height: 630,
+            alt: `${partner.name} - DEVSA Partner`,
           },
         ],
         type: "website",
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title,
         description,
-        images: [partner.logo],
+        images: [`${siteUrl}/api/og/buildingtogether/${slug}`],
       },
     }
   }

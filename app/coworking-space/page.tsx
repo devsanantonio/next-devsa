@@ -41,6 +41,14 @@ export const metadata: Metadata = {
       "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
     url: `${siteUrl}/coworking-space`,
     siteName: "DEVSA",
+    images: [
+      {
+        url: `${siteUrl}/api/og/coworking-space`,
+        width: 1200,
+        height: 630,
+        alt: "DEVSA Community Space in Downtown San Antonio",
+      },
+    ],
     locale: "en_US",
     type: "website",
   },
@@ -49,6 +57,7 @@ export const metadata: Metadata = {
     title: "DEVSA Community Space Downtown San Antonio",
     description:
       "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
+    images: [`${siteUrl}/api/og/coworking-space`],
     creator: "@devsatx",
     site: "@devsatx",
   },
