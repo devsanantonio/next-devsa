@@ -17,7 +17,8 @@ import {
   Calendar,
   CalendarDays,
   Edit,
-  Trash2
+  Trash2,
+  Archive
 } from "lucide-react"
 
 interface NewsletterSubscription {
@@ -105,6 +106,7 @@ export default function AdminPage() {
   const [showEditEvent, setShowEditEvent] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
   const [newAdminEmail, setNewAdminEmail] = useState("")
   const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
   const [newAdminCommunity, setNewAdminCommunity] = useState("")
@@ -152,7 +154,7 @@ export default function AdminPage() {
     try {
       const [adminDataRes, eventsRes] = await Promise.all([
         fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
-        fetch('/api/events')
+        fetch('/api/events?includeAll=true')
       ])
       
       const adminData = await adminDataRes.json()
@@ -292,6 +294,7 @@ export default function AdminPage() {
           location: editingEvent.location,
           description: editingEvent.description,
           url: editingEvent.url,
+          status: editingEvent.status,
           organizerEmail: adminEmail,
         }),
       })
@@ -333,6 +336,33 @@ export default function AdminPage() {
       setError("Failed to delete event")
     } finally {
       setIsDeleting(null)
+    }
+  }
+
+  const handleDeleteSpeaker = async (submissionId: string) => {
+    if (!confirm("Are you sure you want to delete this speaker submission? This action cannot be undone.")) return
+    
+    setIsDeletingSpeaker(submissionId)
+    try {
+      const response = await fetch("/api/call-for-speakers", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete speaker submission")
+      }
+    } catch {
+      setError("Failed to delete speaker submission")
+    } finally {
+      setIsDeletingSpeaker(null)
     }
   }
 
@@ -569,15 +599,18 @@ export default function AdminPage() {
                           </p>
                           <p className="text-gray-500 text-sm">{speaker.email}</p>
                         </div>
-                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                          speaker.status === "approved"
-                            ? "bg-green-500/20 text-green-400"
-                            : speaker.status === "rejected"
-                            ? "bg-red-500/20 text-red-400"
-                            : "bg-yellow-500/20 text-yellow-400"
-                        }`}>
-                          {speaker.status}
-                        </span>
+                        <button
+                          onClick={() => handleDeleteSpeaker(speaker.id)}
+                          disabled={isDeletingSpeaker === speaker.id}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        >
+                          {isDeletingSpeaker === speaker.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                          Delete
+                        </button>
                       </div>
                       <div className="mb-4">
                         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Format</span>
@@ -806,86 +839,126 @@ export default function AdminPage() {
                 </Link>
               </div>
               
-              {events.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No events yet. Create your first event!</p>
-              ) : (
-                <div className="space-y-4">
-                  {events.map((event) => (
-                    <div key={event.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-bold tracking-tight text-white truncate">{event.title}</h3>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 ${
-                              event.status === "published"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                            }`}>
-                              {event.status}
+              {(() => {
+                const now = new Date()
+                // Separate upcoming and archived events
+                const upcomingEvents = events
+                  .filter(event => new Date(event.date) >= now)
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                
+                const archivedEvents = events
+                  .filter(event => new Date(event.date) < now)
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                
+                const renderEventCard = (event: CalendarEvent) => (
+                  <div key={event.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-bold tracking-tight text-white truncate">{event.title}</h3>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 ${
+                            event.status === "published"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-yellow-500/20 text-yellow-400"
+                          }`}>
+                            {event.status}
+                          </span>
+                          {event.isStatic && (
+                            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-500/20 text-gray-400">
+                              Static
                             </span>
-                            {event.isStatic && (
-                              <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-500/20 text-gray-400">
-                                Static
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-gray-400 text-sm mt-1">{event.communityName || event.communityId}</p>
-                          <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
-                            <span className="flex items-center gap-1.5">
-                              <CalendarDays className="h-4 w-4" />
-                              {new Date(event.date).toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                                timeZone: "America/Chicago",
-                              })}
-                            </span>
-                            <span className="text-gray-600">•</span>
-                            <span>{event.location}</span>
-                            {event.source && (
-                              <>
-                                <span className="text-gray-600">•</span>
-                                <span className="text-xs text-gray-600">Source: {event.source}</span>
-                              </>
-                            )}
-                          </div>
-                          <p className="text-gray-400 text-sm mt-3 line-clamp-2">{event.description}</p>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {event.isStatic ? (
-                            <span className="text-xs text-gray-500 italic">
-                              Edit in data/events.ts
-                            </span>
-                          ) : (
+                        <p className="text-gray-400 text-sm mt-1">{event.communityName || event.communityId}</p>
+                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
+                          <span className="flex items-center gap-1.5">
+                            <CalendarDays className="h-4 w-4" />
+                            {new Date(event.date).toLocaleDateString("en-US", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              timeZone: "America/Chicago",
+                            })}
+                          </span>
+                          <span className="text-gray-600">•</span>
+                          <span>{event.location}</span>
+                          {event.source && (
                             <>
-                              <button
-                                onClick={() => handleEditEvent(event)}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-400 hover:bg-blue-500/30 transition-colors"
-                              >
-                                <Edit className="h-4 w-4" />
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEvent(event.id)}
-                                disabled={isDeleting === event.id}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-                              >
-                                {isDeleting === event.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                                Delete
-                              </button>
+                              <span className="text-gray-600">•</span>
+                              <span className="text-xs text-gray-600">Source: {event.source}</span>
                             </>
                           )}
                         </div>
+                        <p className="text-gray-400 text-sm mt-3 line-clamp-2">{event.description}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {event.isStatic ? (
+                          <span className="text-xs text-gray-500 italic">
+                            Edit in data/events.ts
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-400 hover:bg-blue-500/30 transition-colors"
+                            >
+                              <Edit className="h-4 w-4" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              disabled={isDeleting === event.id}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                            >
+                              {isDeleting === event.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                )
+
+                return (
+                  <>
+                    {/* Upcoming Events Section */}
+                    <div className="mb-8">
+                      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <CalendarDays className="h-5 w-5 text-[#ef426f]" />
+                        Upcoming Events ({upcomingEvents.length})
+                      </h3>
+                      {upcomingEvents.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8 bg-gray-800/20 rounded-xl border border-gray-800">
+                          No upcoming events. Create your first event!
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {upcomingEvents.map(renderEventCard)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Archived Events Section */}
+                    {archivedEvents.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                          <Archive className="h-5 w-5" />
+                          Archived Events ({archivedEvents.length})
+                        </h3>
+                        <div className="space-y-4 opacity-75">
+                          {archivedEvents.map(renderEventCard)}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
 
               {/* Edit Event Modal */}
               {showEditEvent && editingEvent && (
@@ -952,6 +1025,22 @@ export default function AdminPage() {
                           placeholder="https://..."
                           className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Status
+                        </label>
+                        <select
+                          value={editingEvent.status}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        >
+                          <option value="published">Published</option>
+                          <option value="draft">Draft</option>
+                        </select>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Draft events are only visible in the admin dashboard
+                        </p>
                       </div>
                       <div className="flex gap-3 pt-4">
                         <button

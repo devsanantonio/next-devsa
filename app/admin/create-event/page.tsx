@@ -25,6 +25,7 @@ export default function AdminCreateEventPage() {
     url: "",
     communityId: "",
     source: "manual" as const,
+    status: "published" as "published" | "draft",
   })
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function AdminCreateEventPage() {
           url: formData.url || undefined,
           communityId: formData.communityId,
           source: formData.source,
+          status: formData.status,
           organizerEmail: adminEmail,
         }),
       })
@@ -281,6 +283,25 @@ export default function AdminCreateEventPage() {
               </select>
             </div>
 
+            {/* Status */}
+            <div>
+              <label htmlFor="status" className="block text-sm font-semibold text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                id="status"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as "published" | "draft" })}
+                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+              >
+                <option value="published">Publish Now</option>
+                <option value="draft">Save as Draft</option>
+              </select>
+              <p className="mt-2 text-xs text-gray-500">
+                Draft events are only visible in the admin dashboard
+              </p>
+            </div>
+
             {/* Submit button */}
             <button
               type="submit"
@@ -290,10 +311,10 @@ export default function AdminCreateEventPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Creating...
+                  {formData.status === "draft" ? "Saving..." : "Publishing..."}
                 </>
               ) : (
-                "Create Event"
+                formData.status === "draft" ? "Save as Draft" : "Publish Event"
               )}
             </button>
           </form>

@@ -7,14 +7,22 @@ import { initialCommunityEvents } from '@/data/events';
 const validCommunityIds = new Set(techCommunities.map(c => c.id));
 
 // Get all events
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const db = getDb();
-    // Fetch all published events without server-side ordering to avoid index requirement
-    const eventsSnapshot = await db
-      .collection(COLLECTIONS.EVENTS)
-      .where('status', '==', 'published')
-      .get();
+    const includeAll = request.nextUrl.searchParams.get('includeAll') === 'true';
+    
+    // For admin dashboard, fetch all events including drafts
+    // For public pages, only fetch published events
+    let eventsSnapshot;
+    if (includeAll) {
+      eventsSnapshot = await db.collection(COLLECTIONS.EVENTS).get();
+    } else {
+      eventsSnapshot = await db
+        .collection(COLLECTIONS.EVENTS)
+        .where('status', '==', 'published')
+        .get();
+    }
 
     const firestoreEvents = eventsSnapshot.docs.map(doc => {
       const data = doc.data();
@@ -77,7 +85,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, description, url, communityId, source, organizerEmail } = body;
+    const { title, date, endTime, location, description, url, communityId, source, status, organizerEmail } = body;
 
     if (!title || !date || !location || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
@@ -129,7 +137,7 @@ export async function POST(request: NextRequest) {
       communityId,
       organizerEmail: organizerEmail.toLowerCase(),
       source: source || 'manual',
-      status: 'published',
+      status: status === 'draft' ? 'draft' : 'published',
       createdAt: new Date(),
     };
 
@@ -154,7 +162,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, location, description, url, organizerEmail } = body;
+    const { eventId, title, date, location, description, url, status, organizerEmail } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -209,6 +217,7 @@ export async function PUT(request: NextRequest) {
     if (location) updateData.location = location;
     if (description) updateData.description = description;
     if (url !== undefined) updateData.url = url;
+    if (status && (status === 'published' || status === 'draft')) updateData.status = status;
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 
