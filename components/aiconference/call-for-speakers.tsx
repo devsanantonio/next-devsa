@@ -312,12 +312,12 @@ export function CallForSpeakers() {
               <p className="text-center text-xs text-gray-400">
                 Protected by{" "}
                 <Link
-                  href="https://magenminer.io"
+                  href="https://magentrust.ai"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#b45309] hover:text-[#92400e] font-medium transition-colors"
                 >
-                  MagenMiner
+                  Magen
                 </Link>
                 {" "}bot detection
               </p>

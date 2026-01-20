@@ -449,12 +449,12 @@ Join San Antonio's builders, dreamers, and technologists as we explore how AI is
                     
                     Protected by{" "}
                     <Link
-                      href="https://magenminer.io"
+                      href="https://magentrust.ai"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#b45309] hover:text-[#ff9900] transition-colors"
                     >
-                      MagenMiner
+                      Magen
                     </Link>
                   </p>
                 </div>

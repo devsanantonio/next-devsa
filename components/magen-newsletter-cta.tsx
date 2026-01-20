@@ -54,12 +54,12 @@ export function MagenNewsletterCTA() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
               Secured by{" "}
               <Link 
-                href="https://magenminer.io" 
+                href="https://magentrust.ai" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[#f59e0b] hover:text-[#fbbf24] transition-colors underline decoration-2 underline-offset-4"
               >
-                MagenMiner
+                Magen Trust
               </Link>
             </h2>
 
@@ -68,12 +68,12 @@ export function MagenNewsletterCTA() {
             </p>
 
             <Link
-              href="https://magenminer.io"
+              href="https://magentrust.ai"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-[#b45309] font-semibold hover:text-[#92400e] transition-colors group"
             >
-              Learn more about MagenMiner
+              Learn more about Magen
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>

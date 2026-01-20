@@ -129,7 +129,7 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
       <p className="mt-2 text-xs text-gray-500">
         Protected by{" "}
         <Link
-          href="https://magenminer.io"
+          href="https://magentrust.ai"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#f59e0b] hover:text-[#fbbf24] transition-colors"
