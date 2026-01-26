@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin, type AccessRequest } from '@/lib/firebase-admin';
+import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { AccessApprovedEmail } from '@/lib/emails/access-approved';
 
 // Check if user is an approved admin
 export async function GET(request: NextRequest) {
@@ -112,25 +114,50 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create new approved admin
+    // Create new approved admin (filter out undefined values for Firestore)
     const approvedAdmin: ApprovedAdmin = {
       email: normalizedEmail,
       approvedAt: new Date(),
       approvedBy: approverEmail,
       role,
-      communityId,
+      ...(communityId && { communityId }),
     };
 
     await db.collection(COLLECTIONS.APPROVED_ADMINS).add(approvedAdmin);
 
-    // Update access request status if exists
+    // Update access request status if exists and get user info for email
     const accessRequestQuery = await db
       .collection(COLLECTIONS.ACCESS_REQUESTS)
       .where('email', '==', normalizedEmail)
       .get();
 
+    let userName: string | undefined;
+    let userCommunityOrg: string | undefined;
+
     for (const doc of accessRequestQuery.docs) {
+      const requestData = doc.data() as AccessRequest;
+      userName = requestData.name;
+      userCommunityOrg = requestData.communityOrg;
       await doc.ref.update({ status: 'approved' });
+    }
+
+    // Send approval notification email
+    if (isResendConfigured() && resend) {
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: normalizedEmail,
+          subject: "You're Approved! Welcome to DEVSA 🎉",
+          html: AccessApprovedEmail({
+            name: userName,
+            email: normalizedEmail,
+            communityOrg: userCommunityOrg,
+          }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+        // Don't fail the request if email fails
+      }
     }
 
     return NextResponse.json({

@@ -10,7 +10,7 @@ export default function SignInPage() {
       <div className="mx-auto max-w-sm px-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
+          className="relative z-10 inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home

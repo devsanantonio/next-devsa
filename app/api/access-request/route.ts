@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MAGEN_THRESHOLDS } from '@/lib/magen';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
+import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { AccessRequestReceivedEmail } from '@/lib/emails/access-request-received';
 
 interface AccessRequestBody {
   name: string;
@@ -99,6 +101,21 @@ export async function POST(request: NextRequest) {
     };
 
     await db.collection(COLLECTIONS.ACCESS_REQUESTS).add(accessRequest);
+
+    // Send confirmation email
+    if (isResendConfigured() && resend) {
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: normalizedEmail,
+          subject: 'Access Request Received - DEVSA',
+          html: AccessRequestReceivedEmail({ name, communityOrg }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
