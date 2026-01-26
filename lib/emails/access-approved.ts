@@ -28,7 +28,7 @@ export function AccessApprovedEmail({ name, email, communityOrg }: AccessApprove
                 <span style="color: #ef426f;">DEV</span><span style="color: #ffffff;">SA</span>
               </div>
               <p style="margin: 8px 0 0 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px;">
-                San Antonio Developer Community
+                Your Direct Connection to the Tech Community
               </p>
             </td>
           </tr>
