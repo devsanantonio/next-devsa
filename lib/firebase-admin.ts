@@ -54,6 +54,9 @@ export const COLLECTIONS = {
   ACCESS_REQUESTS: 'access_requests',
   APPROVED_ADMINS: 'approved_admins',
   EVENTS: 'events',
+  AI_CONFERENCE_SPEAKERS: 'ai_conference_speakers',
+  AI_CONFERENCE_SESSIONS: 'ai_conference_sessions',
+  AI_CONFERENCE_SPONSORS: 'ai_conference_sponsors',
 } as const;
 
 // Types for Firestore documents
@@ -115,4 +118,42 @@ export interface Event {
   status?: 'draft' | 'published' | 'cancelled';
   createdAt: Date;
   updatedAt?: Date;
+}
+
+// AI Conference types
+export interface AIConferenceSpeaker {
+  name: string;
+  email: string;
+  company?: string;
+  title?: string;
+  bio: string;
+  photo?: string;
+  twitter?: string;
+  linkedin?: string;
+  website?: string;
+  status: 'confirmed' | 'pending' | 'declined';
+  order?: number;
+  createdAt: Date;
+}
+
+export interface AIConferenceSession {
+  title: string;
+  abstract: string;
+  speakerId: string;
+  speakerName: string;
+  format: 'talk' | 'lightning' | 'panel' | 'workshop';
+  time?: string;
+  room?: string;
+  status: 'scheduled' | 'pending' | 'cancelled';
+  order?: number;
+  createdAt: Date;
+}
+
+export interface AIConferenceSponsor {
+  name: string;
+  logo: string;
+  website?: string;
+  tier: 'platinum' | 'gold' | 'silver' | 'bronze' | 'community';
+  order?: number;
+  createdAt: Date;
 }
