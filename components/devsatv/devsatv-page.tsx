@@ -49,9 +49,6 @@ export function DevsaTVPage() {
   const [activeTab, setActiveTab] = useState<'conferences' | 'workshops' | 'documentaries'>('conferences')
 
   // YouTube video IDs - extract from URL:
-  // youtu.be/BOCU-seUXQ8?si=xxx → ID is "BOCU-seUXQ8"
-  // youtube.com/watch?v=BOCU-seUXQ8 → ID is "BOCU-seUXQ8"
-  // https://youtu.be/8pDqJVdNa44?si=SlrDxKeNQImzKL3J
   const workshopVideoId = "BOCU-seUXQ8"
   const documentaryVideoId = "8pDqJVdNa44"
 
@@ -63,46 +60,47 @@ export function DevsaTVPage() {
 
   const annualTiers = [
     {
-      name: "Documentary Story",
+      name: "The Documentary Story",
       tier: "Premier Tier",
       icon: Film,
       investment: "$50,000/year",
       goal: "2 Partners",
-      target: "Local Pillars (Frost Bank, HEB, USAA, PortSA, UTSA, Spurs)",
+      target: "Local Pillars (Frost, H-E-B, USAA, PortSA, UTSA, Spurs)",
       benefits: [
-        "10–15 min cinematic documentary of your impact",
-        "Premiere screening at DEVSA Conference",
-        "Permanent placement in 434 MEDIA Library",
-        "5 short-form vertical clips for social",
-        "12-month branding on all documentary trailers",
+        "45-minute cinematic documentary chronicling your team's innovation, culture, and community impact",
+        "Episodic flexibility: Option to break into a Limited Series (3 x 15-minute episodes)",
+        "Exclusive red-carpet premiere screening at the DEVSA Annual Conference",
+        "Permanent placement in the 434 MEDIA Library as a historical 'Source of Truth'",
+        "10+ professional short-form vertical assets (Reels/TikToks) from feature content",
+        "12-month 'Presented By' placement on all DEVSA TV documentary trailers and season teasers",
       ],
     },
     {
-      name: "Quarterly Conference",
+      name: "The Quarterly Conference",
       tier: "Event Tier",
       icon: Calendar,
       investment: "$25,000/event",
-      goal: "4 Events = $100K",
-      target: "Infrastructure/Dev Tools (Vercel, Cloudflare, Microsoft, Google)",
+      goal: "4 Events per Season",
+      target: "Infrastructure & Dev Tools (Vercel, Cloudflare, Microsoft, Cursor, Google)",
       benefits: [
-        "Title sponsorship of one major conference",
-        "Dedicated keynote or technical showcase slot",
-        "Direct access to attendee list",
-        "Professional 'Deep Dive' video for YouTube",
+        "Exclusive title sponsorship of one major conference (e.g., More Human Than Human)",
+        "One 45-minute Main Stage Keynote or deep-dive technical showcase",
+        "Professional 'Deep Dive' video of your session, edited for DEVSA TV YouTube channel",
+        "Your logo featured on the DEVSA TV interview set",
       ],
     },
     {
-      name: "Sponsored Workshop",
+      name: "The Sponsored Workshop",
       tier: "Growth Tier",
       icon: Mic2,
       investment: "$10,000/workshop",
-      goal: "5 Workshops = $50K",
-      target: "Local Tech Orgs (VIA, SWBC, 80/20) or Frameworks (Laravel, Cursor)",
+      goal: "5 Workshops per Season",
+      target: "Local Tech Orgs (VIA, SWBC, 80/20) or Frameworks (Laravel, Cursor, AWS)",
       benefits: [
-        "Focused workshop building with your tools",
-        "'Sponsor Story' documentary recap video",
-        "First-look access to local talent pipeline",
-        "Bridge Builder recognition across all channels",
+        "A focused technical workshop where developers build using your tools or frameworks",
+        "'Sponsor Story' documentary recap video (3–5 minutes) capturing builders in action",
+        "Direct interaction with a 'vetted' local talent pipeline",
+        "Official 'Bridge Builder' status across all channels and TheFeed",
       ],
     },
   ]
@@ -115,10 +113,10 @@ export function DevsaTVPage() {
       investment: "$25,000",
       exclusive: true,
       benefits: [
-        "15-minute dedicated keynote stage time",
-        "Spotlight segment in documentary film",
-        "Branding on DEVSA TV interview set",
-        "Premier logo on all conference assets",
+        "45-minute Keynote slot to define the future of your industry",
+        "Featured spotlight segment in the official documentary film",
+        "Primary branding on the DEVSA TV live-recording set (visible in all 2026 distribution)",
+        "Top-tier logo placement on all conference assets, digital and physical",
       ],
     },
     {
@@ -128,22 +126,34 @@ export function DevsaTVPage() {
       investment: "$10,000",
       limit: "3 Partners",
       benefits: [
-        "'Presented by' track ownership",
-        "5-10 min Lightning Talk slot",
-        "Two professional short-form clips",
-        "Dedicated booth in Geekdom lounge",
+        "\"Presented by [Your Brand]\" signage and digital intro for your track (Cyber, Healthcare, Aero, or Energy)",
+        "15-minute high-impact Lightning Talk to showcase a technical breakthrough",
+        "Two professional short-form video clips, edited for social distribution",
+        "Dedicated demo booth in the Geekdom Lounge for direct interaction with builders",
+      ],
+    },
+    {
+      name: "The Social Architect",
+      subtitle: "After-Party Host",
+      icon: Sparkles,
+      investment: "$7,500",
+      exclusive: true,
+      benefits: [
+        "Sole branding of the Conference Happy Hour & After-Party",
+        "5-minute opening remarks to \"kick off\" the networking session",
+        "Curate a \"branded\" atmosphere (custom drink names, swag, or lighting)",
+        "Featured in the 'Architects' section of all conference signage",
       ],
     },
     {
       name: "The Builder",
-      subtitle: "Community Sponsor",
+      subtitle: "Community Partner",
       icon: Coffee,
-      investment: "$5,000",
+      investment: "$2,500",
       benefits: [
-        "Official networking sponsor recognition",
-        "Logo in 'Architects' marquee",
-        "Social media shout-outs",
-        "Featured spotlight in TheFeed",
+        "Featured spotlight in TheFeed (DEVSA's primary newsletter)",
+        "Logo placement in the 'Architects' marquee on-site",
+        "Social media shout-outs across the DEVSA ecosystem throughout the conference",
       ],
     },
   ]
@@ -186,7 +196,7 @@ export function DevsaTVPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg sm:text-xl font-semibold text-slate-900 max-w-sm mx-auto"
+              className="text-lg sm:text-xl font-medium text-slate-600 max-w-md mx-auto leading-relaxed"
             >
               Transform authentic community stories into premium, sponsor-ready content through documentary-style production.
             </motion.p>
@@ -204,7 +214,7 @@ export function DevsaTVPage() {
                 <button
                   key={outlet.id}
                   onClick={() => setActiveTab(outlet.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-semibold uppercase tracking-wide transition-all ${
                     activeTab === outlet.id
                       ? 'bg-slate-900 text-white'
                       : 'text-slate-600 hover:bg-slate-100'
@@ -262,7 +272,7 @@ export function DevsaTVPage() {
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-tight">
                       <span className="text-[#e5e5e5]">More Human </span>
                       <span className="text-[#ff9900]">Than Human</span>
                     </h2>
@@ -318,7 +328,7 @@ export function DevsaTVPage() {
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-tight">
                       <span className="text-[#e5e5e5]">Sponsored </span>
                       <span className="text-[#10b981]">Workshops</span>
                     </h2>
@@ -352,7 +362,7 @@ export function DevsaTVPage() {
                     )}
 
                     {/* Description */}
-                    <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+                    <p className="text-sm text-[#a3a3a3] leading-relaxed mb-4">
                       Partner with DEVSA to host focused workshops that showcase your tools and frameworks to San Antonio&apos;s tech community. Each workshop includes a professional &quot;Sponsor Story&quot; recap video.
                     </p>
 
@@ -390,7 +400,7 @@ export function DevsaTVPage() {
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-[0.9]">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight mb-2 leading-tight">
                       <span className="text-[#e5e5e5]">Documentary </span>
                       <span className="text-[#f59e0b]">Stories</span>
                     </h2>
@@ -424,8 +434,8 @@ export function DevsaTVPage() {
                     )}
 
                     {/* Description */}
-                    <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
-                      Tell your organization&apos;s story through a 30-45 minute cinematic documentary. Premiere at DEVSA conferences with permanent placement in the 434 MEDIA Library.
+                    <p className="text-sm text-[#a3a3a3] leading-relaxed mb-4">
+                      Tell your organization&apos;s story through a 45-minute cinematic documentary. Premiere at DEVSA conferences with permanent placement in the 434 MEDIA Library.
                     </p>
 
                     {/* CTA */}
@@ -486,13 +496,13 @@ export function DevsaTVPage() {
             className="text-center mb-10"
           >
             <p className="text-xs font-semibold tracking-wider uppercase text-amber-600 mb-2">
-              2026 Annual Partnerships
+              2026 DEVSA Annual Partnerships
             </p>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 mb-3">
-              Sponsorship Tiers
+              Infrastructure. Narrative. Legacy.
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
-              We capture the energy of events and transform them into a premium Content Library that your brand owns.
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              You are the protagonist of the San Antonio narrative. These tiers move beyond traditional marketing and into Full-Scale Production, documenting your technical evolution for the global stage.
             </p>
           </motion.div>
 
@@ -525,8 +535,8 @@ export function DevsaTVPage() {
                     <span className="font-medium text-slate-700">Target:</span> {tier.target}
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-black text-slate-900">{tier.investment}</span>
-                    <span className="text-xs text-slate-500">Goal: {tier.goal}</span>
+                    <span className="text-xl font-extrabold text-slate-900">{tier.investment}</span>
+                    <span className="text-xs text-slate-500 leading-relaxed">Goal: {tier.goal}</span>
                   </div>
                 </div>
                 
@@ -566,12 +576,15 @@ export function DevsaTVPage() {
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 mb-3">
               More Human Than Human
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
-              February 28, 2026 at Geekdom, San Antonio — The inaugural event of the 2026 DEVSA TV season.
+            <p className="text-sm text-slate-500 mb-3">
+              February 28, 2026 | Geekdom, San Antonio — The Season Premiere of DEVSA TV
+            </p>
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              As Texas transforms into a national production hub fueled by SB 22, the technical infrastructure behind that growth is being built here. More Human Than Human is where the builders, architects, and industry leaders converge to explore the synergy between human creativity and machine intelligence.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             {eventTiers.map((tier, index) => (
               <motion.div
                 key={tier.name}
@@ -611,7 +624,7 @@ export function DevsaTVPage() {
                     </p>
                   )}
                   <div className="flex items-baseline gap-2">
-                    <span className={`text-2xl font-black ${tier.exclusive ? 'text-white' : 'text-slate-900'}`}>
+                    <span className={`text-2xl font-extrabold ${tier.exclusive ? 'text-white' : 'text-slate-900'}`}>
                       {tier.investment}
                     </span>
                   </div>
@@ -686,7 +699,7 @@ export function DevsaTVPage() {
               Community → Content → Library → Sponsors → Growth
             </p>
             <Link
-              href="mailto:hello@devsa.io"
+              href="mailto:jesse@devsanantonio.com?subject=DEVSA%20TV%20Partnership%20Inquiry"
               className="group inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 px-6 py-3 text-sm font-bold uppercase tracking-wider text-slate-900 transition-all"
             >
               <span>Partner With DEVSA TV</span>
