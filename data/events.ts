@@ -39,7 +39,7 @@ export const upcomingDevsaEvent: DevsaEvent | null = {
   date: "2026-02-28T09:00:00.000Z",
   location: "Geekdom 3rd Floor",
   description: "Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship.",
-  url: "/events/morehumanthanhuman",
+  url: "https://www.digitalcanvas.community/events/morehumanthanhuman",
 };
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {

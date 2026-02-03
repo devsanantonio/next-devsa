@@ -194,6 +194,8 @@ export function FeaturedDevsaEvent() {
               {upcomingDevsaEvent.url && (
                 <div className="shrink-0 lg:self-center">
                   <Link
+                    target="_blank"
+                    rel="noopener noreferrer"
                     href={upcomingDevsaEvent.url}
                     className="group/btn inline-flex items-center justify-center gap-3 bg-[#ff9900] px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold uppercase tracking-wider text-[#0a0a0a] transition-all duration-300 hover:bg-[#00f2ff] hover:scale-105"
                   >
