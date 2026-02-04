@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
     const submission: SpeakerSubmission = {
       name,
       email: email.toLowerCase(),
-      company: company || undefined,
+      company: company || null,
       sessionTitle,
       sessionFormat,
       abstract,
       eventId: eventId || 'aiconference2026',
       submittedAt: new Date(),
-      magenSessionId: magenSessionId || undefined,
+      magenSessionId: magenSessionId ?? null,
       magenHumanScore: humanScore ?? null,
       status: 'pending',
     };

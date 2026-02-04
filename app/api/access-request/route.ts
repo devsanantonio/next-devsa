@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       email: normalizedEmail,
       communityOrg,
       submittedAt: new Date(),
-      magenSessionId,
+      magenSessionId: magenSessionId ?? null,
       magenHumanScore: humanScore ?? null,
       status: 'pending',
     };

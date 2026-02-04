@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
         await doc.ref.update({
           status: 'active',
           subscribedAt: new Date(),
-          source,
-          magenSessionId,
+          source: source ?? null,
+          magenSessionId: magenSessionId ?? null,
           magenHumanScore: humanScore ?? null,
         });
         return NextResponse.json({
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
     const subscription: NewsletterSubscription = {
       email: normalizedEmail,
       subscribedAt: new Date(),
-      source,
-      magenSessionId,
+      source: source ?? null,
+      magenSessionId: magenSessionId ?? null,
       magenHumanScore: humanScore ?? null,
       status: 'active',
     };

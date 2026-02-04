@@ -63,8 +63,8 @@ export const COLLECTIONS = {
 export interface NewsletterSubscription {
   email: string;
   subscribedAt: Date;
-  source?: string;
-  magenSessionId?: string;
+  source?: string | null;
+  magenSessionId?: string | null;
   magenHumanScore?: number | null;
   status: 'active' | 'unsubscribed';
 }
@@ -72,13 +72,13 @@ export interface NewsletterSubscription {
 export interface SpeakerSubmission {
   name: string;
   email: string;
-  company?: string;
+  company?: string | null;
   sessionTitle: string;
   sessionFormat: string;
   abstract: string;
   eventId?: string;
   submittedAt: Date;
-  magenSessionId?: string;
+  magenSessionId?: string | null;
   magenHumanScore?: number | null;
   status: 'pending' | 'approved' | 'rejected';
 }
@@ -88,7 +88,7 @@ export interface AccessRequest {
   email: string;
   communityOrg: string;
   submittedAt: Date;
-  magenSessionId?: string;
+  magenSessionId?: string | null;
   magenHumanScore?: number | null;
   status: 'pending' | 'approved' | 'rejected';
 }
