@@ -71,7 +71,7 @@ export const techCommunities: TechCommunity[] = [
   {
     id: "gdg",
     name: "Google Developer Group",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg-sa.svg",
+    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdglogo.webp",
     description:
       "GDG San Antonio is a group of passionate developers and technologists excited to connect, learn, and grow together. Whether you're a seasoned programmer or just starting your coding journey, GDG San Antonio is a welcoming space for all.",
     website: "https://gdg.community.dev/gdg-san-antonio/",
