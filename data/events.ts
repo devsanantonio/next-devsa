@@ -15,6 +15,7 @@ export interface BaseEvent {
 
 export interface DevsaEvent extends BaseEvent {
   type: "devsa";
+  video?: string;
 }
 
 export interface OnDemandEvent extends BaseEvent {
@@ -40,6 +41,7 @@ export const upcomingDevsaEvent: DevsaEvent | null = {
   location: "Geekdom 3rd Floor",
   description: "Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship.",
   url: "https://www.digitalcanvas.community/events/morehumanthanhuman",
+  video: "https://devsa-assets.s3.us-east-2.amazonaws.com/HEAD_v01.mp4",
 };
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {

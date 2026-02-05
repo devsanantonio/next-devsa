@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "motion/react"
-import { Calendar, MapPin, ArrowRight, Tv } from "lucide-react"
+import { Tv } from "lucide-react"
 import { upcomingDevsaEvent } from "@/data/events"
 import Link from "next/link"
 
@@ -85,24 +85,23 @@ export function FeaturedDevsaEvent() {
     )
   }
 
+  const formattedDate = new Date(upcomingDevsaEvent.date).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/Chicago",
+  })
+
+  // Split title for styling (first 2 words in accent color)
+  const titleWords = upcomingDevsaEvent.title.split(' ')
+  const titleFirst = titleWords.slice(0, 2).join(' ')
+  const titleRest = titleWords.slice(2).join(' ')
+
   return (
     <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
       <AztecBackground />
       <AztecBorder />
-      
-      {/* Corner decorations */}
-      <div className="absolute top-4 left-4 lg:top-6 lg:left-6 hidden sm:block">
-        <AztecCorner position="top-left" />
-      </div>
-      <div className="absolute top-4 right-4 lg:top-6 lg:right-6 hidden sm:block">
-        <AztecCorner position="top-right" />
-      </div>
-      <div className="absolute bottom-4 left-4 lg:bottom-6 lg:left-6 hidden sm:block">
-        <AztecCorner position="bottom-left" />
-      </div>
-      <div className="absolute bottom-4 right-4 lg:bottom-6 lg:right-6 hidden sm:block">
-        <AztecCorner position="bottom-right" />
-      </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
         <div className="mb-10">
@@ -126,86 +125,101 @@ export function FeaturedDevsaEvent() {
         </div>
         
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="group relative overflow-hidden border border-[#333] bg-[#111]/80 backdrop-blur-sm"
+          transition={{ duration: 0.6, delay: 0.1 }}
         >
-          {/* Gradient accent */}
-          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[#ff9900]/10 blur-3xl transition-all duration-500 group-hover:bg-[#ff9900]/20" />
-          <div className="absolute -left-20 -bottom-20 h-60 w-60 rounded-full bg-[#00f2ff]/10 blur-3xl" />
-          
-          <div className="relative p-6 sm:p-8 lg:p-10">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex-1 space-y-6">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2.5 border border-[#333] bg-[#111]/80 backdrop-blur-sm px-4 py-2">
-                  <Tv className="w-3.5 h-3.5 text-[#ff9900]" />
-                  <span className="font-mono text-[10px] sm:text-xs text-[#a3a3a3] tracking-[0.15em] uppercase">
-                    DEVSA TV Recording
-                  </span>
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                </div>
-                
-                {/* Title */}
-                <h3 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black uppercase leading-[0.95] tracking-tight text-[#e5e5e5] group-hover:text-[#ff9900] transition-colors duration-300">
-                  {upcomingDevsaEvent.title}
-                </h3>
-                
-                {/* Description */}
-                <p className="max-w-2xl font-mono text-sm sm:text-base leading-relaxed text-[#737373]">
-                  {upcomingDevsaEvent.description}
-                </p>
-                
-                {/* Meta info */}
-                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center border border-[#ff9900]/50 bg-[#ff9900]/10">
-                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-[#ff9900]" />
-                    </div>
-                    <div>
-                      <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider text-[#525252]">Date</p>
-                      <p className="text-xs sm:text-sm font-semibold text-[#e5e5e5]">
-                        {new Date(upcomingDevsaEvent.date).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          timeZone: "America/Chicago",
-                        })}
-                      </p>
-                    </div>
+          <Link 
+            href={upcomingDevsaEvent.url || "#"} 
+            target={upcomingDevsaEvent.url?.startsWith("http") ? "_blank" : undefined}
+            rel={upcomingDevsaEvent.url?.startsWith("http") ? "noopener noreferrer" : undefined}
+            className="group block"
+          >
+            <div className="relative border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 group-hover:border-[#fbbf24]/50">
+              {/* Corner decorations */}
+              <div className="absolute top-0 left-0 z-20"><AztecCorner position="top-left" /></div>
+              <div className="absolute top-0 right-0 z-20"><AztecCorner position="top-right" /></div>
+              <div className="absolute bottom-0 left-0 z-20"><AztecCorner position="bottom-left" /></div>
+              <div className="absolute bottom-0 right-0 z-20"><AztecCorner position="bottom-right" /></div>
+
+              <div className="grid lg:grid-cols-2">
+                {/* Visual side */}
+                <div className="relative h-56 sm:h-64 lg:h-auto lg:min-h-80 overflow-hidden">
+                  {upcomingDevsaEvent.video ? (
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    >
+                      <source src={upcomingDevsaEvent.video} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-linear-to-br from-[#ff9900]/20 via-[#0a0a0a] to-[#00f2ff]/20" />
+                      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-[#ff9900]/30 blur-3xl rounded-full animate-pulse" />
+                          <Tv className="relative w-16 h-16 sm:w-20 sm:h-20 text-[#ff9900]/60" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#111] lg:block hidden" />
+                  <div className="absolute inset-0 bg-linear-to-t from-[#111] via-transparent to-transparent lg:hidden" />
+                  <div className="absolute inset-0 bg-black/30" />
+                  
+                  {/* Status badge */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="inline-flex items-center gap-2 bg-[#fbbf24] text-[#0a0a0a] font-semibold text-[10px] uppercase tracking-wider px-3 py-1.5">
+                      <span className="w-1.5 h-1.5 bg-[#0a0a0a] rounded-full animate-pulse" />
+                      Registration Open
+                    </span>
                   </div>
-                  <div className="hidden sm:block w-px h-8 bg-[#333]" />
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center border border-[#00f2ff]/50 bg-[#00f2ff]/10">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-[#00f2ff]" />
-                    </div>
-                    <div>
-                      <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider text-[#525252]">Location</p>
-                      <p className="text-xs sm:text-sm font-semibold text-[#e5e5e5]">{upcomingDevsaEvent.location}</p>
+                </div>
+
+                {/* Content side */}
+                <div className="relative p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
+                  <div className="absolute inset-0 bg-linear-to-br from-[#fbbf24]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  <div className="relative">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#666] mb-3">
+                      {formattedDate} • {upcomingDevsaEvent.location}
+                    </p>
+                    
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white uppercase tracking-tight leading-none mb-1">
+                      <span className="text-[#fbbf24]">{titleFirst}</span>
+                      {titleRest && <span className="block">{titleRest}</span>}
+                    </h2>
+                    
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#444] mb-4">
+                      DEVSA AI Conference 2026
+                    </p>
+                    
+                    <p className="text-[#999] text-sm leading-relaxed mb-3">
+                      {upcomingDevsaEvent.description}
+                    </p>
+                    
+                    <p className="text-[#ff9900] text-xs font-medium italic leading-relaxed mb-6">
+                      Where local builders shape the future of AI in San Antonio
+                    </p>
+
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center gap-2 bg-[#fbbf24] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all group-hover:bg-[#ff9900]">
+                        View Event
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              {/* CTA */}
-              {upcomingDevsaEvent.url && (
-                <div className="shrink-0 lg:self-center">
-                  <Link
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={upcomingDevsaEvent.url}
-                    className="group/btn inline-flex items-center justify-center gap-3 bg-[#ff9900] px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold uppercase tracking-wider text-[#0a0a0a] transition-all duration-300 hover:bg-[#00f2ff] hover:scale-105"
-                  >
-                    <span className="font-mono">Register Now</span>
-                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover/btn:translate-x-1" />
-                  </Link>
-                </div>
-              )}
             </div>
-          </div>
+          </Link>
         </motion.div>
       </div>
       <AztecBorder />
