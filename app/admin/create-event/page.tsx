@@ -44,6 +44,11 @@ export default function AdminCreateEventPage() {
           setAdminEmail(storedEmail)
           setAdminRole(data.role)
           setAdminCommunityId(data.communityId || null)
+          
+          // Auto-select community for organizers
+          if (data.role === "organizer" && data.communityId) {
+            setFormData(prev => ({ ...prev, communityId: data.communityId }))
+          }
         } else {
           router.push("/admin")
         }
@@ -145,7 +150,8 @@ export default function AdminCreateEventPage() {
                 required
                 value={formData.communityId}
                 onChange={(e) => setFormData({ ...formData, communityId: e.target.value })}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                disabled={adminRole === "organizer" && availableCommunities.length === 1}
+                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <option value="">Select a community</option>
                 {availableCommunities.map((community) => (
@@ -154,6 +160,11 @@ export default function AdminCreateEventPage() {
                   </option>
                 ))}
               </select>
+              {adminRole === "organizer" && availableCommunities.length === 1 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Events will be created for your assigned community
+                </p>
+              )}
             </div>
 
             {/* Event title */}

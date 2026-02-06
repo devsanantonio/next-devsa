@@ -129,3 +129,66 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Delete (reject) an access request - admin only
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { requestId, adminEmail } = body;
+
+    if (!requestId || !adminEmail) {
+      return NextResponse.json(
+        { error: 'Request ID and admin email are required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDb();
+
+    // Verify admin has proper permissions
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', adminEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - only admins can reject access requests' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the access request
+    const requestRef = db.collection(COLLECTIONS.ACCESS_REQUESTS).doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      return NextResponse.json(
+        { error: 'Access request not found' },
+        { status: 404 }
+      );
+    }
+
+    await requestRef.delete();
+
+    return NextResponse.json({
+      success: true,
+      message: 'Access request rejected and removed',
+    });
+  } catch (error) {
+    console.error('Delete access request error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

@@ -20,6 +20,7 @@ import {
   Trash2,
   Archive
 } from "lucide-react"
+import { techCommunities } from "@/data/communities"
 
 interface NewsletterSubscription {
   id: string
@@ -83,6 +84,13 @@ const hasAdminAccess = (role: string | null | undefined): boolean => {
   return role === 'superadmin' || role === 'admin'
 }
 
+// Helper to get community name from id
+const getCommunityName = (communityId: string | undefined): string => {
+  if (!communityId) return "All Communities"
+  const community = techCommunities.find(c => c.id === communityId)
+  return community?.name || communityId
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const [adminEmail, setAdminEmail] = useState("")
@@ -107,6 +115,8 @@ export default function AdminPage() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
+  const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
+  const [isApprovingAccess, setIsApprovingAccess] = useState<string | null>(null)
   const [newAdminEmail, setNewAdminEmail] = useState("")
   const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
   const [newAdminCommunity, setNewAdminCommunity] = useState("")
@@ -202,6 +212,7 @@ export default function AdminPage() {
   }
 
   const handleApproveAccess = async (request: AccessRequest) => {
+    setIsApprovingAccess(request.id)
     try {
       const response = await fetch("/api/admin/auth", {
         method: "POST",
@@ -215,15 +226,42 @@ export default function AdminPage() {
 
       if (response.ok) {
         await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to approve access request")
       }
     } catch {
       setError("Failed to approve access request")
+    } finally {
+      setIsApprovingAccess(null)
     }
   }
 
   const handleRejectAccess = async (requestId: string) => {
-    // For now, we'll just remove from UI - in production, you'd want a delete endpoint
-    setAccessRequests(prev => prev.filter(r => r.id !== requestId))
+    if (!confirm("Are you sure you want to reject this access request? This action cannot be undone.")) return
+    
+    setIsRejectingAccess(requestId)
+    try {
+      const response = await fetch("/api/access-request", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setAccessRequests(prev => prev.filter(r => r.id !== requestId))
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to reject access request")
+      }
+    } catch {
+      setError("Failed to reject access request")
+    } finally {
+      setIsRejectingAccess(null)
+    }
   }
 
   const handleAddAdmin = async (e: React.FormEvent) => {
@@ -656,17 +694,27 @@ export default function AdminPage() {
                             <>
                               <button
                                 onClick={() => handleApproveAccess(request)}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 transition-colors"
+                                disabled={isApprovingAccess === request.id || isRejectingAccess === request.id}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                <CheckCircle className="h-4 w-4" />
-                                Approve
+                                {isApprovingAccess === request.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4" />
+                                )}
+                                {isApprovingAccess === request.id ? "Approving..." : "Approve"}
                               </button>
                               <button
                                 onClick={() => handleRejectAccess(request.id)}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors"
+                                disabled={isApprovingAccess === request.id || isRejectingAccess === request.id}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                <XCircle className="h-4 w-4" />
-                                Reject
+                                {isRejectingAccess === request.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-4 w-4" />
+                                )}
+                                {isRejectingAccess === request.id ? "Rejecting..." : "Reject"}
                               </button>
                             </>
                           ) : (
@@ -735,7 +783,7 @@ export default function AdminPage() {
                               {admin.role === "superadmin" ? "Super Admin" : admin.role}
                             </span>
                           </td>
-                          <td className="py-4 px-4 text-sm text-gray-400">{admin.communityId || "All"}</td>
+                          <td className="py-4 px-4 text-sm text-gray-400">{getCommunityName(admin.communityId)}</td>
                           <td className="py-4 px-4 text-sm text-gray-400">
                             {new Date(admin.approvedAt).toLocaleDateString()}
                           </td>
@@ -775,7 +823,8 @@ export default function AdminPage() {
                           required
                           value={newAdminEmail}
                           onChange={(e) => setNewAdminEmail(e.target.value)}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          placeholder="user@example.com"
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
                       <div>
@@ -784,25 +833,42 @@ export default function AdminPage() {
                         </label>
                         <select
                           value={newAdminRole}
-                          onChange={(e) => setNewAdminRole(e.target.value as "admin" | "organizer")}
+                          onChange={(e) => {
+                            setNewAdminRole(e.target.value as "admin" | "organizer")
+                            // Clear community when switching to admin role
+                            if (e.target.value === "admin") {
+                              setNewAdminCommunity("")
+                            }
+                          }}
                           className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         >
-                          <option value="organizer">Organizer</option>
-                          <option value="admin">Admin</option>
+                          <option value="organizer">Organizer (can only manage their community&apos;s events)</option>
+                          <option value="admin">Admin (full access to all features)</option>
                         </select>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
-                          Community ID (optional, for organizers)
-                        </label>
-                        <input
-                          type="text"
-                          value={newAdminCommunity}
-                          onChange={(e) => setNewAdminCommunity(e.target.value)}
-                          placeholder="e.g., satechbloc"
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        />
-                      </div>
+                      {newAdminRole === "organizer" && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">
+                            Assigned Community *
+                          </label>
+                          <select
+                            required={newAdminRole === "organizer"}
+                            value={newAdminCommunity}
+                            onChange={(e) => setNewAdminCommunity(e.target.value)}
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          >
+                            <option value="">Select a community</option>
+                            {techCommunities.map((community) => (
+                              <option key={community.id} value={community.id}>
+                                {community.name}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="mt-2 text-xs text-gray-500">
+                            Organizers can only create and manage events for their assigned community
+                          </p>
+                        </div>
+                      )}
                       <div className="flex gap-3 pt-4">
                         <button
                           type="button"
