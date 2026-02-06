@@ -1,4 +1,18 @@
-const MAGEN_BASE_URL = 'https://axdupochainmbxtfyflq.supabase.co/functions/v1';
+// Magen API base URL - configure via environment variable
+const MAGEN_BASE_URL = process.env.MAGEN_API_URL || 'https://api.magenminer.io/v1';
+
+// Get configured keys
+function getMagenKeys() {
+  const apiKey = process.env.MAGEN_API_KEY;
+  const secretKey = process.env.MAGEN_SECRET_KEY;
+  return { apiKey, secretKey };
+}
+
+// Check if Magen is properly configured
+export function isMagenConfigured(): boolean {
+  const { apiKey, secretKey } = getMagenKeys();
+  return !!(apiKey && !apiKey.includes('your_') && secretKey && !secretKey.includes('your_'));
+}
 
 export interface MagenSession {
   sessionId: string;
@@ -21,7 +35,7 @@ export async function startVerificationSession(options: {
   userId?: string;
   context?: string;
 }): Promise<{ success: boolean; sessionId?: string; error?: string }> {
-  const apiKey = process.env.MAGEN_API_KEY;
+  const { apiKey, secretKey } = getMagenKeys();
   
   if (!apiKey || apiKey.includes('your_')) {
     console.log('MAGEN: API key not configured, skipping verification');
@@ -34,6 +48,7 @@ export async function startVerificationSession(options: {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        ...(secretKey && { 'X-Magen-Secret': secretKey }),
       },
       body: JSON.stringify({
         action: options.action,
@@ -58,7 +73,7 @@ export async function startVerificationSession(options: {
 
 // Check verification status for a session
 export async function checkVerification(sessionId: string): Promise<MagenVerificationResult> {
-  const apiKey = process.env.MAGEN_API_KEY;
+  const { apiKey, secretKey } = getMagenKeys();
   
   if (!apiKey || apiKey.includes('your_')) {
     return { valid: false, error: 'MAGEN API key not configured' };
@@ -70,6 +85,7 @@ export async function checkVerification(sessionId: string): Promise<MagenVerific
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        ...(secretKey && { 'X-Magen-Secret': secretKey }),
       },
       body: JSON.stringify({ sessionId }),
     });
@@ -97,7 +113,7 @@ export async function checkVerification(sessionId: string): Promise<MagenVerific
 
 // Get session details
 export async function getSession(sessionId: string): Promise<MagenSession | null> {
-  const apiKey = process.env.MAGEN_API_KEY;
+  const { apiKey, secretKey } = getMagenKeys();
   
   if (!apiKey || apiKey.includes('your_')) {
     return null;
@@ -109,6 +125,7 @@ export async function getSession(sessionId: string): Promise<MagenSession | null
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        ...(secretKey && { 'X-Magen-Secret': secretKey }),
       },
       body: JSON.stringify({ sessionId }),
     });

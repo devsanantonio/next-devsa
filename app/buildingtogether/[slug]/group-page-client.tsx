@@ -5,7 +5,7 @@ import { motion } from "motion/react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { techCommunities } from "@/data/communities"
+import { techCommunities, type TechCommunity } from "@/data/communities"
 import { initialCommunityEvents, type CommunityEvent } from "@/data/events"
 import { 
   ArrowLeft, 
@@ -13,8 +13,7 @@ import {
   Globe, 
   Calendar, 
   MapPin, 
-  Loader2,
-  Users
+  Loader2
 } from "lucide-react"
 import { 
   LinkedInIcon, 
@@ -63,8 +62,42 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
   const router = useRouter()
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
-  
-  const community = techCommunities.find((c) => c.id === slug)
+  const [community, setCommunity] = useState<TechCommunity | null>(null)
+  const [isLoadingCommunity, setIsLoadingCommunity] = useState(true)
+
+  // Fetch community data from API (Firestore) with fallback to static
+  useEffect(() => {
+    const fetchCommunity = async () => {
+      try {
+        const response = await fetch('/api/communities?includeStatic=true')
+        if (response.ok) {
+          const data = await response.json()
+          const communities = data.communities || []
+          const foundCommunity = communities.find((c: TechCommunity) => c.id === slug)
+          
+          if (foundCommunity) {
+            setCommunity(foundCommunity)
+          } else {
+            // Fallback to static data
+            const staticCommunity = techCommunities.find((c) => c.id === slug)
+            setCommunity(staticCommunity || null)
+          }
+        } else {
+          // Fallback to static data on API error
+          const staticCommunity = techCommunities.find((c) => c.id === slug)
+          setCommunity(staticCommunity || null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch community:', error)
+        // Fallback to static data
+        const staticCommunity = techCommunities.find((c) => c.id === slug)
+        setCommunity(staticCommunity || null)
+      } finally {
+        setIsLoadingCommunity(false)
+      }
+    }
+    fetchCommunity()
+  }, [slug])
 
   // Fetch events from Firestore
   useEffect(() => {
@@ -143,6 +176,15 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
 
     return { upcomingEvents: upcoming, pastEvents: past }
   }, [firestoreEvents, isLoadingEvents, slug])
+
+  // Show loading state while fetching community data
+  if (isLoadingCommunity) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
+      </main>
+    )
+  }
 
   if (!community) {
     return (

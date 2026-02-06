@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 
-const MAGEN_BASE_URL = 'https://axdupochainmbxtfyflq.supabase.co/functions/v1';
+const MAGEN_BASE_URL = process.env.MAGEN_API_URL || 'https://api.magenminer.io/v1';
 
 export async function POST() {
   try {
     const apiKey = process.env.MAGEN_API_KEY;
+    const secretKey = process.env.MAGEN_SECRET_KEY;
     
     // If MAGEN isn't configured, return gracefully
     if (!apiKey || apiKey.includes('your_')) {
@@ -17,6 +18,7 @@ export async function POST() {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        ...(secretKey && { 'X-Magen-Secret': secretKey }),
       },
       body: JSON.stringify({
         action: 'speaker-submission',
