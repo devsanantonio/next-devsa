@@ -54,6 +54,8 @@ export const COLLECTIONS = {
   ACCESS_REQUESTS: 'access_requests',
   APPROVED_ADMINS: 'approved_admins',
   EVENTS: 'events',
+  COMMUNITIES: 'communities',
+  PARTNERS: 'partners',
   AI_CONFERENCE_SPEAKERS: 'ai_conference_speakers',
   AI_CONFERENCE_SESSIONS: 'ai_conference_sessions',
   AI_CONFERENCE_SPONSORS: 'ai_conference_sponsors',
@@ -99,6 +101,40 @@ export interface ApprovedAdmin {
   approvedBy?: string;
   role: 'superadmin' | 'admin' | 'organizer';
   communityId?: string;
+}
+
+// Community (formerly TechCommunity from static data)
+export interface Community {
+  id: string; // Firestore doc ID matches this
+  name: string;
+  logo: string;
+  description: string;
+  website?: string;
+  discord?: string;
+  meetup?: string;
+  luma?: string;
+  instagram?: string;
+  twitter?: string;
+  linkedin?: string;
+  youtube?: string;
+  twitch?: string;
+  facebook?: string;
+  github?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Partner organization
+export interface Partner {
+  id: string; // Firestore doc ID matches this
+  name: string;
+  logo: string;
+  description: string;
+  website?: string;
+  video?: string;
+  isEasterEgg?: boolean;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 // Protected super admin - cannot be removed or have role changed

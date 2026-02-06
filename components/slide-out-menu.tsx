@@ -121,6 +121,61 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                         Twitter
                       </a>
                     )}
+                    {community.linkedin && (
+                      <a
+                        href={community.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-blue-500 hover:text-blue-400 transition-colors text-base font-medium hover:bg-blue-500/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        LinkedIn
+                      </a>
+                    )}
+                    {community.youtube && (
+                      <a
+                        href={community.youtube}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-red-500 hover:text-red-400 transition-colors text-base font-medium hover:bg-red-500/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        YouTube
+                      </a>
+                    )}
+                    {community.twitch && (
+                      <a
+                        href={community.twitch}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-purple-500 hover:text-purple-400 transition-colors text-base font-medium hover:bg-purple-500/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Twitch
+                      </a>
+                    )}
+                    {community.facebook && (
+                      <a
+                        href={community.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-blue-600 hover:text-blue-500 transition-colors text-base font-medium hover:bg-blue-600/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        Facebook
+                      </a>
+                    )}
+                    {community.github && (
+                      <a
+                        href={community.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-gray-400 hover:text-gray-300 transition-colors text-base font-medium hover:bg-gray-400/10 rounded-lg p-2 -m-2"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        GitHub
+                      </a>
+                    )}
                     {community.meetup && (
                       <a
                         href={community.meetup}

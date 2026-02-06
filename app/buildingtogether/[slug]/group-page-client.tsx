@@ -16,6 +16,13 @@ import {
   Loader2,
   Users
 } from "lucide-react"
+import { 
+  LinkedInIcon, 
+  YouTubeIcon, 
+  TwitchIcon, 
+  FacebookIcon, 
+  GitHubIcon 
+} from "@/components/icons/social-icons"
 
 // DEVSA Discord - all community organizers are in this server
 const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
@@ -284,6 +291,66 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                     </svg>
                     Instagram
+                    <ExternalLink className="h-3 w-3 opacity-60" />
+                  </a>
+                )}
+                {community.linkedin && (
+                  <a
+                    href={community.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-[#0A66C2] hover:text-white hover:border-[#0A66C2] hover:scale-105"
+                  >
+                    <LinkedInIcon className="h-4 w-4" />
+                    LinkedIn
+                    <ExternalLink className="h-3 w-3 opacity-60" />
+                  </a>
+                )}
+                {community.youtube && (
+                  <a
+                    href={community.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000] hover:scale-105"
+                  >
+                    <YouTubeIcon className="h-4 w-4" />
+                    YouTube
+                    <ExternalLink className="h-3 w-3 opacity-60" />
+                  </a>
+                )}
+                {community.twitch && (
+                  <a
+                    href={community.twitch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF] hover:scale-105"
+                  >
+                    <TwitchIcon className="h-4 w-4" />
+                    Twitch
+                    <ExternalLink className="h-3 w-3 opacity-60" />
+                  </a>
+                )}
+                {community.facebook && (
+                  <a
+                    href={community.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:scale-105"
+                  >
+                    <FacebookIcon className="h-4 w-4" />
+                    Facebook
+                    <ExternalLink className="h-3 w-3 opacity-60" />
+                  </a>
+                )}
+                {community.github && (
+                  <a
+                    href={community.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:scale-105"
+                  >
+                    <GitHubIcon className="h-4 w-4" />
+                    GitHub
                     <ExternalLink className="h-3 w-3 opacity-60" />
                   </a>
                 )}

@@ -9,6 +9,11 @@ export interface TechCommunity {
   luma?: string
   instagram?: string
   twitter?: string
+  linkedin?: string
+  youtube?: string
+  twitch?: string
+  facebook?: string
+  github?: string
 }
 
 export const techCommunities: TechCommunity[] = [

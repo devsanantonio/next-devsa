@@ -18,9 +18,14 @@ import {
   CalendarDays,
   Edit,
   Trash2,
-  Archive
+  Archive,
+  Building2,
+  Database,
+  ExternalLink,
+  Upload,
+  Link as LinkIcon
 } from "lucide-react"
-import { techCommunities } from "@/data/communities"
+import { techCommunities as staticCommunities } from "@/data/communities"
 
 interface NewsletterSubscription {
   id: string
@@ -74,7 +79,26 @@ interface CalendarEvent {
   isStatic?: boolean
 }
 
-type Tab = "newsletter" | "speakers" | "access" | "admins" | "events"
+interface Community {
+  id: string
+  name: string
+  logo: string
+  description: string
+  website?: string
+  discord?: string
+  meetup?: string
+  luma?: string
+  instagram?: string
+  twitter?: string
+  linkedin?: string
+  youtube?: string
+  twitch?: string
+  facebook?: string
+  github?: string
+  isStatic?: boolean
+}
+
+type Tab = "newsletter" | "speakers" | "access" | "admins" | "events" | "communities"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -84,10 +108,11 @@ const hasAdminAccess = (role: string | null | undefined): boolean => {
   return role === 'superadmin' || role === 'admin'
 }
 
-// Helper to get community name from id
-const getCommunityName = (communityId: string | undefined): string => {
+// Helper to get community name from id (fallback to static communities for initial render)
+const getCommunityName = (communityId: string | undefined, communityList?: Community[]): string => {
   if (!communityId) return "All Communities"
-  const community = techCommunities.find(c => c.id === communityId)
+  const list = communityList && communityList.length > 0 ? communityList : staticCommunities
+  const community = list.find(c => c.id === communityId)
   return community?.name || communityId
 }
 
@@ -100,6 +125,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("events")
   
   // Data states
@@ -108,18 +134,34 @@ export default function AdminPage() {
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [communities, setCommunities] = useState<Community[]>([])
+  const [communitiesSource, setCommunitiesSource] = useState<string>("static")
   
   // Modal state
   const [showAddAdmin, setShowAddAdmin] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
+  const [showEditCommunity, setShowEditCommunity] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [editingCommunity, setEditingCommunity] = useState<Community | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
   const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
   const [isApprovingAccess, setIsApprovingAccess] = useState<string | null>(null)
+  const [isMigrating, setIsMigrating] = useState(false)
+  const [isSavingCommunity, setIsSavingCommunity] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+  const [useFileUpload, setUseFileUpload] = useState(true)
   const [newAdminEmail, setNewAdminEmail] = useState("")
   const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
   const [newAdminCommunity, setNewAdminCommunity] = useState("")
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
+
+  // Helper to get community name from current communities state
+  const getCommunityNameFromState = (communityId: string | undefined): string => {
+    if (!communityId) return "All Communities"
+    const community = communities.find(c => c.id === communityId)
+    return community?.name || communityId
+  }
 
   // Check auth on load
   useEffect(() => {
@@ -162,13 +204,15 @@ export default function AdminPage() {
 
   const fetchData = async (email: string, role?: string, communityId?: string) => {
     try {
-      const [adminDataRes, eventsRes] = await Promise.all([
+      const [adminDataRes, eventsRes, communitiesRes] = await Promise.all([
         fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
-        fetch('/api/events?includeAll=true')
+        fetch('/api/events?includeAll=true'),
+        fetch('/api/communities?includeStatic=true')
       ])
       
       const adminData = await adminDataRes.json()
       const eventsData = await eventsRes.json()
+      const communitiesData = await communitiesRes.json()
 
       if (adminDataRes.ok) {
         // Only admins/superadmins should see newsletter, speakers, access requests, and admins data
@@ -178,6 +222,11 @@ export default function AdminPage() {
         setSpeakers(isAdmin ? (adminData.speakers || []) : [])
         setAccessRequests(isAdmin ? (adminData.accessRequests || []) : [])
         setAdmins(isAdmin ? (adminData.admins || []) : [])
+      }
+      
+      if (communitiesRes.ok) {
+        setCommunities(communitiesData.communities || [])
+        setCommunitiesSource(communitiesData.source || 'static')
       }
       
       if (eventsRes.ok) {
@@ -272,7 +321,7 @@ export default function AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: newAdminEmail,
+          email: editingAdmin ? editingAdmin.email : newAdminEmail,
           role: newAdminRole,
           communityId: newAdminCommunity || undefined,
           approverEmail: adminEmail,
@@ -281,14 +330,26 @@ export default function AdminPage() {
 
       if (response.ok) {
         setShowAddAdmin(false)
+        setEditingAdmin(null)
         setNewAdminEmail("")
         setNewAdminRole("organizer")
         setNewAdminCommunity("")
         await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to save admin")
       }
     } catch {
-      setError("Failed to add admin")
+      setError("Failed to save admin")
     }
+  }
+
+  const handleEditAdmin = (admin: Admin) => {
+    setEditingAdmin(admin)
+    setNewAdminEmail(admin.email)
+    setNewAdminRole(admin.role === "superadmin" ? "admin" : admin.role as "admin" | "organizer")
+    setNewAdminCommunity(admin.communityId || "")
+    setShowAddAdmin(true)
   }
 
   const handleRemoveAdmin = async (email: string) => {
@@ -404,6 +465,127 @@ export default function AdminPage() {
     }
   }
 
+  const handleMigrateToDB = async () => {
+    if (!confirm("This will migrate communities and partners from static files to Firestore. Continue?")) return
+    
+    setIsMigrating(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/admin/migrate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminEmail,
+          migrateType: "all",
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        setSuccessMessage(`Migration complete! Communities: ${data.results.communities.migrated} migrated, ${data.results.communities.skipped} skipped. Partners: ${data.results.partners.migrated} migrated, ${data.results.partners.skipped} skipped.`)
+        await fetchData(adminEmail)
+      } else {
+        setError(data.error || "Failed to migrate data")
+      }
+    } catch {
+      setError("Failed to migrate data")
+    } finally {
+      setIsMigrating(false)
+    }
+  }
+
+  const handleEditCommunity = (community: Community) => {
+    setEditingCommunity({ ...community })
+    setShowEditCommunity(true)
+    setUseFileUpload(true) // Reset to file upload mode
+  }
+
+  const handleLogoUpload = async (file: File) => {
+    if (!editingCommunity) return
+
+    setIsUploadingLogo(true)
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('adminEmail', adminEmail)
+      formData.append('communityId', editingCommunity.id)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setEditingCommunity({ ...editingCommunity, logo: data.url })
+        setSuccessMessage('Logo uploaded successfully!')
+      } else {
+        setError(data.error || 'Failed to upload logo')
+      }
+    } catch {
+      setError('Failed to upload logo')
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+  const handleSaveCommunity = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCommunity) return
+
+    setIsSavingCommunity(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/communities", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingCommunity.id,
+          name: editingCommunity.name,
+          logo: editingCommunity.logo,
+          description: editingCommunity.description,
+          website: editingCommunity.website,
+          discord: editingCommunity.discord,
+          meetup: editingCommunity.meetup,
+          luma: editingCommunity.luma,
+          instagram: editingCommunity.instagram,
+          twitter: editingCommunity.twitter,
+          linkedin: editingCommunity.linkedin,
+          youtube: editingCommunity.youtube,
+          twitch: editingCommunity.twitch,
+          facebook: editingCommunity.facebook,
+          github: editingCommunity.github,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setShowEditCommunity(false)
+        setEditingCommunity(null)
+        setSuccessMessage("Community updated successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to update community")
+      }
+    } catch {
+      setError("Failed to update community")
+    } finally {
+      setIsSavingCommunity(false)
+    }
+  }
+
+  // Clear messages after showing
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [successMessage])
+
   if (isLoading) {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center">
@@ -492,7 +674,24 @@ export default function AdminPage() {
               Back to home
             </Link>
             <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
-            <p className="text-gray-400 mt-1 text-sm">Logged in as <span className="text-gray-300 font-medium">{adminEmail}</span></p>
+            <p className="text-gray-400 mt-1 text-sm">
+              Logged in as <span className="text-gray-300 font-medium">{adminEmail}</span>
+              <span className="mx-2">•</span>
+              <span className={`font-medium ${
+                adminRole === "superadmin" ? "text-yellow-400" : 
+                adminRole === "admin" ? "text-purple-400" : "text-blue-400"
+              }`}>
+                {adminRole === "superadmin" ? "Super Admin" : adminRole}
+              </span>
+              {adminRole === "organizer" && (
+                <>
+                  <span className="mx-2">•</span>
+                  <span className="text-gray-300">
+                    {adminCommunityId ? getCommunityName(adminCommunityId) : <span className="text-red-400">No community assigned</span>}
+                  </span>
+                </>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -572,7 +771,33 @@ export default function AdminPage() {
             <CalendarDays className="h-4 w-4" />
             Events ({events.length})
           </button>
+          <button
+            onClick={() => setActiveTab("communities")}
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "communities"
+                ? "bg-[#ef426f] text-white"
+                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            <Building2 className="h-4 w-4" />
+            {adminRole === "organizer" ? "My Community" : `Communities (${communities.length})`}
+          </button>
         </div>
+
+        {/* Success/Error messages */}
+        {successMessage && (
+          <div className="mb-6 rounded-xl bg-green-500/10 border border-green-500/20 p-4 text-green-400 text-sm flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            {successMessage}
+          </div>
+        )}
+        {error && (
+          <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-red-400 text-sm flex items-center gap-2">
+            <XCircle className="h-4 w-4 shrink-0" />
+            {error}
+            <button onClick={() => setError(null)} className="ml-auto text-xs underline">Dismiss</button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 sm:p-8">
@@ -788,18 +1013,29 @@ export default function AdminPage() {
                             {new Date(admin.approvedAt).toLocaleDateString()}
                           </td>
                           <td className="py-4 px-4">
-                            {/* Prevent removing yourself or the super admin */}
-                            {admin.email !== adminEmail && admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
-                              <button
-                                onClick={() => handleRemoveAdmin(admin.email)}
-                                className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
-                              >
-                                Remove
-                              </button>
-                            )}
-                            {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
-                              <span className="text-xs text-gray-500 italic">Protected</span>
-                            )}
+                            <div className="flex items-center gap-3">
+                              {/* Edit button - not for super admin */}
+                              {admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
+                                <button
+                                  onClick={() => handleEditAdmin(admin)}
+                                  className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {/* Prevent removing yourself or the super admin */}
+                              {admin.email !== adminEmail && admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
+                                <button
+                                  onClick={() => handleRemoveAdmin(admin.email)}
+                                  className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                              {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                                <span className="text-xs text-gray-500 italic">Protected</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -808,11 +1044,13 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Add Admin Modal */}
+              {/* Add/Edit Admin Modal */}
               {showAddAdmin && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                   <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-md w-full shadow-2xl">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Add New Admin</h3>
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">
+                      {editingAdmin ? "Edit Admin" : "Add New Admin"}
+                    </h3>
                     <form onSubmit={handleAddAdmin} className="space-y-5">
                       <div>
                         <label className="block text-sm font-semibold text-gray-300 mb-2">
@@ -824,8 +1062,12 @@ export default function AdminPage() {
                           value={newAdminEmail}
                           onChange={(e) => setNewAdminEmail(e.target.value)}
                           placeholder="user@example.com"
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          disabled={!!editingAdmin}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
+                        {editingAdmin && (
+                          <p className="mt-2 text-xs text-gray-500">Email cannot be changed</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-300 mb-2">
@@ -858,7 +1100,7 @@ export default function AdminPage() {
                             className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           >
                             <option value="">Select a community</option>
-                            {techCommunities.map((community) => (
+                            {(communities.length > 0 ? communities : staticCommunities).map((community) => (
                               <option key={community.id} value={community.id}>
                                 {community.name}
                               </option>
@@ -872,7 +1114,13 @@ export default function AdminPage() {
                       <div className="flex gap-3 pt-4">
                         <button
                           type="button"
-                          onClick={() => setShowAddAdmin(false)}
+                          onClick={() => {
+                            setShowAddAdmin(false)
+                            setEditingAdmin(null)
+                            setNewAdminEmail("")
+                            setNewAdminRole("organizer")
+                            setNewAdminCommunity("")
+                          }}
                           className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
                         >
                           Cancel
@@ -881,7 +1129,7 @@ export default function AdminPage() {
                           type="submit"
                           className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                         >
-                          Add Admin
+                          {editingAdmin ? "Save Changes" : "Add Admin"}
                         </button>
                       </div>
                     </form>
@@ -1124,6 +1372,403 @@ export default function AdminPage() {
                           className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                         >
                           Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Communities Tab */}
+          {activeTab === "communities" && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-white">
+                    {adminRole === "organizer" ? "My Community" : "Communities"}
+                  </h2>
+                  {hasAdminAccess(adminRole) && (
+                    <p className="text-sm text-gray-400 mt-1">
+                      Source: <span className={communitiesSource === 'firestore' ? 'text-green-400' : 'text-yellow-400'}>
+                        {communitiesSource === 'firestore' ? 'Firestore Database' : 'Static Files (not migrated)'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                {adminRole === 'superadmin' && communitiesSource !== 'firestore' && (
+                  <button
+                    onClick={handleMigrateToDB}
+                    disabled={isMigrating}
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+                  >
+                    {isMigrating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Migrating...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4" />
+                        Migrate to Firestore
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {adminRole === "organizer" ? (
+                // Organizer view - show only their community
+                (() => {
+                  const myCommunity = communities.find(c => c.id === adminCommunityId)
+                  if (!myCommunity) {
+                    return (
+                      <div className="text-center py-12">
+                        <Building2 className="mx-auto h-12 w-12 text-gray-600 mb-4" />
+                        <p className="text-gray-400 mb-2">No community assigned to your account.</p>
+                        <p className="text-gray-500 text-sm">Contact an admin to assign you to a community.</p>
+                      </div>
+                    )
+                  }
+                  return (
+                    <div className="rounded-xl border border-gray-800 bg-gray-800/30 p-6">
+                      <div className="flex items-start gap-4 mb-6">
+                        {myCommunity.logo && (
+                          <img 
+                            src={myCommunity.logo} 
+                            alt={myCommunity.name} 
+                            className="h-16 w-16 rounded-xl object-contain bg-gray-900 p-2"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold tracking-tight text-white">{myCommunity.name}</h3>
+                          <p className="text-gray-400 text-sm mt-1 leading-relaxed">{myCommunity.description}</p>
+                        </div>
+                        {communitiesSource === 'firestore' && (
+                          <button
+                            onClick={() => handleEditCommunity(myCommunity)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-gray-700 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-600 transition-colors"
+                          >
+                            <Edit className="h-4 w-4" />
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {myCommunity.website && (
+                          <a href={myCommunity.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Website
+                          </a>
+                        )}
+                        {myCommunity.meetup && (
+                          <a href={myCommunity.meetup} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Meetup
+                          </a>
+                        )}
+                        {myCommunity.discord && (
+                          <a href={myCommunity.discord} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Discord
+                          </a>
+                        )}
+                        {myCommunity.luma && (
+                          <a href={myCommunity.luma} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Lu.ma
+                          </a>
+                        )}
+                        {myCommunity.twitter && (
+                          <a href={myCommunity.twitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Twitter
+                          </a>
+                        )}
+                        {myCommunity.instagram && (
+                          <a href={myCommunity.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+                            <ExternalLink className="h-4 w-4" /> Instagram
+                          </a>
+                        )}
+                      </div>
+                      {communitiesSource !== 'firestore' && (
+                        <p className="mt-4 text-xs text-yellow-400">
+                          Editing is disabled until an admin migrates communities to Firestore.
+                        </p>
+                      )}
+                    </div>
+                  )
+                })()
+              ) : (
+                // Admin view - show all communities
+                <div className="space-y-4">
+                  {communities.length === 0 ? (
+                    <p className="text-gray-400 text-center py-8">No communities found.</p>
+                  ) : (
+                    communities.map((community) => (
+                      <div key={community.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-4 hover:bg-gray-800/50 transition-colors">
+                        <div className="flex items-start gap-4">
+                          {community.logo && (
+                            <img 
+                              src={community.logo} 
+                              alt={community.name} 
+                              className="h-12 w-12 rounded-lg object-contain bg-gray-900 p-1.5 shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-white truncate">{community.name}</h3>
+                              <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-800 rounded-full">{community.id}</span>
+                            </div>
+                            <p className="text-gray-400 text-sm mt-1 line-clamp-2">{community.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                              {community.website && <span>Website</span>}
+                              {community.meetup && <span>Meetup</span>}
+                              {community.discord && <span>Discord</span>}
+                              {community.luma && <span>Lu.ma</span>}
+                              {community.twitter && <span>Twitter</span>}
+                            </div>
+                          </div>
+                          {communitiesSource === 'firestore' && (
+                            <button
+                              onClick={() => handleEditCommunity(community)}
+                              className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors shrink-0"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Edit Community Modal */}
+              {showEditCommunity && editingCommunity && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Community</h3>
+                    <form onSubmit={handleSaveCommunity} className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingCommunity.name}
+                          onChange={(e) => setEditingCommunity({ ...editingCommunity, name: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-semibold text-gray-300">Logo</label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setUseFileUpload(true)}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
+                                useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              <Upload className="h-3 w-3" />
+                              File
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setUseFileUpload(false)}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
+                                !useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              <LinkIcon className="h-3 w-3" />
+                              URL
+                            </button>
+                          </div>
+                        </div>
+                        {useFileUpload ? (
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) handleLogoUpload(file)
+                                }}
+                                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
+                                disabled={isUploadingLogo}
+                              />
+                              {isUploadingLogo && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                  <Loader2 className="h-5 w-5 animate-spin text-[#ef426f]" />
+                                </div>
+                              )}
+                            </div>
+                            {editingCommunity.logo && (
+                              <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-800 border border-gray-700">
+                                <img 
+                                  src={editingCommunity.logo} 
+                                  alt="Logo preview" 
+                                  className="h-10 w-10 rounded object-contain bg-gray-700"
+                                />
+                                <span className="text-xs text-gray-400 truncate flex-1">{editingCommunity.logo}</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <input
+                            type="url"
+                            required
+                            value={editingCommunity.logo}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, logo: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={editingCommunity.description}
+                          onChange={(e) => setEditingCommunity({ ...editingCommunity, description: e.target.value })}
+                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Website</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.website || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, website: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Meetup</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.meetup || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, meetup: e.target.value })}
+                            placeholder="https://meetup.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Discord</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.discord || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, discord: e.target.value })}
+                            placeholder="https://discord.gg/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Lu.ma</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.luma || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, luma: e.target.value })}
+                            placeholder="https://lu.ma/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Twitter</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.twitter || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, twitter: e.target.value })}
+                            placeholder="https://twitter.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Instagram</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.instagram || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, instagram: e.target.value })}
+                            placeholder="https://instagram.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">LinkedIn</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.linkedin || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, linkedin: e.target.value })}
+                            placeholder="https://linkedin.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">YouTube</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.youtube || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, youtube: e.target.value })}
+                            placeholder="https://youtube.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Twitch</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.twitch || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, twitch: e.target.value })}
+                            placeholder="https://twitch.tv/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Facebook</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.facebook || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, facebook: e.target.value })}
+                            placeholder="https://facebook.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">GitHub</label>
+                          <input
+                            type="url"
+                            value={editingCommunity.github || ""}
+                            onChange={(e) => setEditingCommunity({ ...editingCommunity, github: e.target.value })}
+                            placeholder="https://github.com/..."
+                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowEditCommunity(false)
+                            setEditingCommunity(null)
+                          }}
+                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSavingCommunity}
+                          className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
+                        >
+                          {isSavingCommunity ? (
+                            <>
+                              <Loader2 className="inline h-4 w-4 animate-spin mr-2" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save Changes"
+                          )}
                         </button>
                       </div>
                     </form>

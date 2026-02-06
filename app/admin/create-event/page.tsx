@@ -4,7 +4,15 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { techCommunities } from "@/data/communities"
+import { techCommunities as staticCommunities } from "@/data/communities"
+
+interface Community {
+  id: string
+  name: string
+  logo: string
+  description: string
+  isStatic?: boolean
+}
 
 export default function AdminCreateEventPage() {
   const router = useRouter()
@@ -14,6 +22,7 @@ export default function AdminCreateEventPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [communities, setCommunities] = useState<Community[]>([])
 
   const [formData, setFormData] = useState({
     title: "",
@@ -37,13 +46,22 @@ export default function AdminCreateEventPage() {
       }
 
       try {
-        const response = await fetch(`/api/admin/auth?email=${encodeURIComponent(storedEmail)}`)
-        const data = await response.json()
+        const [authResponse, communitiesResponse] = await Promise.all([
+          fetch(`/api/admin/auth?email=${encodeURIComponent(storedEmail)}`),
+          fetch('/api/communities?includeStatic=true')
+        ])
+        
+        const data = await authResponse.json()
+        const communitiesData = await communitiesResponse.json()
 
         if (data.isAdmin) {
           setAdminEmail(storedEmail)
           setAdminRole(data.role)
           setAdminCommunityId(data.communityId || null)
+          
+          // Set communities from Firestore or static fallback
+          const communityList = communitiesData.communities || staticCommunities
+          setCommunities(communityList)
           
           // Auto-select community for organizers
           if (data.role === "organizer" && data.communityId) {
@@ -103,10 +121,11 @@ export default function AdminCreateEventPage() {
     }
   }
 
-  // Filter communities based on user's role
-  const availableCommunities = adminRole === "admin" || adminRole === "superadmin"
-    ? techCommunities
-    : techCommunities.filter((c) => c.id === adminCommunityId)
+  // Check if user can select a community
+  const canSelectCommunity = (communityId: string): boolean => {
+    if (adminRole === "admin" || adminRole === "superadmin") return true
+    return communityId === adminCommunityId
+  }
 
   if (isLoading) {
     return (
@@ -150,19 +169,24 @@ export default function AdminCreateEventPage() {
                 required
                 value={formData.communityId}
                 onChange={(e) => setFormData({ ...formData, communityId: e.target.value })}
-                disabled={adminRole === "organizer" && availableCommunities.length === 1}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
               >
                 <option value="">Select a community</option>
-                {availableCommunities.map((community) => (
-                  <option key={community.id} value={community.id}>
-                    {community.name}
+                {(communities.length > 0 ? communities : staticCommunities).map((community) => (
+                  <option 
+                    key={community.id} 
+                    value={community.id}
+                    disabled={!canSelectCommunity(community.id)}
+                  >
+                    {community.name}{!canSelectCommunity(community.id) ? " (not assigned)" : ""}
                   </option>
                 ))}
               </select>
-              {adminRole === "organizer" && availableCommunities.length === 1 && (
+              {adminRole === "organizer" && (
                 <p className="mt-2 text-xs text-gray-500">
-                  Events will be created for your assigned community
+                  {adminCommunityId 
+                    ? `You can only create events for your assigned community`
+                    : "No community assigned. Please contact an admin to assign you to a community."}
                 </p>
               )}
             </div>
