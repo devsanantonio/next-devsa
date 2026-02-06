@@ -19,6 +19,11 @@ interface TechCommunity {
   instagram?: string
   twitter?: string
   meetup?: string
+  linkedin?: string
+  youtube?: string
+  twitch?: string
+  facebook?: string
+  github?: string
 }
 
 interface CommunityModalProps {
@@ -58,7 +63,7 @@ function CommunityModal({ community, isOpen, onClose }: CommunityModalProps) {
                 className="rounded-2xl"
               />
               <div className="bg-neutral-900/95 backdrop-blur-xl border border-neutral-700/30 rounded-2xl flex flex-col overflow-hidden h-full">
-                <div className="relative h-32 bg-gradient-to-br from-neutral-800 to-neutral-900">
+                <div className="relative h-32 bg-linear-to-br from-neutral-800 to-neutral-900">
                   <img
                     src={community.logo || "/placeholder.svg"}
                     alt={community.name}
@@ -425,7 +430,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
                   transition={{ delay: 0.2 }}
                   className="mb-2 md:mb-6 lg:mb-8 flex flex-row items-center gap-2 md:gap-8 md:px-10 max-w-7xl w-full"
                 >
-                  <div className="flex-shrink-0 px-4 md:px-0">
+                  <div className="shrink-0 px-4 md:px-0">
                     <img
                       src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
                       alt="DEVSA - Community"
