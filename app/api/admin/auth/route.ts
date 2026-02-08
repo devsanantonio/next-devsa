@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
       isAdmin: true,
       role: adminData.role,
       communityId: adminData.communityId,
+      firstName: adminData.firstName || null,
+      lastName: adminData.lastName || null,
+      profileImage: adminData.profileImage || null,
     });
   } catch (error) {
     console.error('Admin check error:', error);
@@ -242,6 +245,60 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('Remove admin error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Update admin profile (firstName, lastName, profileImage)
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { email, firstName, lastName, profileImage } = body;
+
+    if (!email) {
+      return NextResponse.json(
+        { error: 'Email is required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDb();
+    const normalizedEmail = email.toLowerCase();
+
+    // Find the admin record
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', normalizedEmail)
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Admin not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update profile fields
+    const updateData: Partial<ApprovedAdmin> = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (profileImage !== undefined) updateData.profileImage = profileImage;
+
+    await adminQuery.docs[0].ref.update(updateData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Profile updated successfully',
+      firstName: firstName || null,
+      lastName: lastName || null,
+      profileImage: profileImage || null,
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

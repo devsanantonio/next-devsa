@@ -56,6 +56,7 @@ export const COLLECTIONS = {
   EVENTS: 'events',
   COMMUNITIES: 'communities',
   PARTNERS: 'partners',
+  EVENT_RSVPS: 'event_rsvps',
   AI_CONFERENCE_SPEAKERS: 'ai_conference_speakers',
   AI_CONFERENCE_SESSIONS: 'ai_conference_sessions',
   AI_CONFERENCE_SPONSORS: 'ai_conference_sponsors',
@@ -101,6 +102,9 @@ export interface ApprovedAdmin {
   approvedBy?: string;
   role: 'superadmin' | 'admin' | 'organizer';
   communityId?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
 }
 
 // Community (formerly TechCommunity from static data)
@@ -152,8 +156,20 @@ export interface Event {
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';
+  rsvpEnabled?: boolean;
   createdAt: Date;
   updatedAt?: Date;
+}
+
+export interface EventRSVP {
+  eventId: string;
+  eventSlug: string;
+  communityId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  joinNewsletter: boolean;
+  submittedAt: Date;
 }
 
 // AI Conference types

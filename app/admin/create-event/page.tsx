@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { techCommunities as staticCommunities } from "@/data/communities"
+import { RichTextEditor } from "@/components/rich-text-editor"
 
 interface Community {
   id: string
@@ -31,10 +32,9 @@ export default function AdminCreateEventPage() {
     endTime: "20:00",
     location: "",
     description: "",
-    url: "",
     communityId: "",
-    source: "manual" as const,
     status: "published" as "published" | "draft",
+    rsvpEnabled: false,
   })
 
   useEffect(() => {
@@ -99,10 +99,9 @@ export default function AdminCreateEventPage() {
           endTime: endDateTime.toISOString(),
           location: formData.location,
           description: formData.description,
-          url: formData.url || undefined,
           communityId: formData.communityId,
-          source: formData.source,
           status: formData.status,
+          rsvpEnabled: formData.rsvpEnabled,
           organizerEmail: adminEmail,
         }),
       })
@@ -271,51 +270,50 @@ export default function AdminCreateEventPage() {
               <label htmlFor="description" className="block text-sm font-semibold text-gray-300 mb-2">
                 Description *
               </label>
-              <textarea
+              <RichTextEditor
                 id="description"
                 required
-                rows={5}
+                rows={10}
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your event..."
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none leading-relaxed"
+                onChange={(value) => setFormData({ ...formData, description: value })}
+                placeholder="Describe your event. Select text to format with bold, bullets, or links."
+                darkMode={true}
               />
             </div>
 
-            {/* External URL (optional) */}
-            <div>
-              <label htmlFor="url" className="block text-sm font-semibold text-gray-300 mb-2">
-                Registration URL (optional)
-              </label>
-              <input
-                type="url"
-                id="url"
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="https://meetup.com/..."
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-              />
-              <p className="mt-2 text-xs text-gray-500">
-                Link to Meetup, Lu.ma, Eventbrite, or other registration page
-              </p>
-            </div>
-
-            {/* Source */}
-            <div>
-              <label htmlFor="source" className="block text-sm font-semibold text-gray-300 mb-2">
-                Event Source
-              </label>
-              <select
-                id="source"
-                value={formData.source}
-                onChange={(e) => setFormData({ ...formData, source: e.target.value as typeof formData.source })}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-              >
-                <option value="manual">Manual Entry</option>
-                <option value="meetup">Meetup</option>
-                <option value="luma">Lu.ma</option>
-                <option value="eventbrite">Eventbrite</option>
-              </select>
+            {/* RSVP Toggle */}
+            <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-semibold text-gray-300">Enable RSVP</label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Collect RSVPs directly on your event page. Attendees can register with their name and email.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.rsvpEnabled}
+                  onClick={() => setFormData({ ...formData, rsvpEnabled: !formData.rsvpEnabled })}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ef426f] focus:ring-offset-2 focus:ring-offset-gray-900 ${
+                    formData.rsvpEnabled ? 'bg-[#ef426f]' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      formData.rsvpEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+              {formData.rsvpEnabled && (
+                <p className="mt-3 text-xs text-green-400 flex items-center gap-1.5">
+                  <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  RSVP form will appear on the event page. You can view and export RSVPs from your dashboard.
+                </p>
+              )}
             </div>
 
             {/* Status */}

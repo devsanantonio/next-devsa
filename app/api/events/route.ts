@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, description, url, communityId, source, status, organizerEmail } = body;
+    const { title, date, endTime, location, description, communityId, status, rsvpEnabled, organizerEmail } = body;
 
     if (!title || !date || !location || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
@@ -133,11 +133,10 @@ export async function POST(request: NextRequest) {
       endTime, // Optional end time for "Happening Now" feature
       location,
       description,
-      url,
       communityId,
       organizerEmail: organizerEmail.toLowerCase(),
-      source: source || 'manual',
       status: status === 'draft' ? 'draft' : 'published',
+      rsvpEnabled: rsvpEnabled || false,
       createdAt: new Date(),
     };
 
@@ -162,7 +161,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, location, description, url, status, organizerEmail } = body;
+    const { eventId, title, date, endTime, location, description, status, rsvpEnabled, organizerEmail } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -214,10 +213,11 @@ export async function PUT(request: NextRequest) {
 
     if (title) updateData.title = title;
     if (date) updateData.date = date;
+    if (endTime) updateData.endTime = endTime;
     if (location) updateData.location = location;
     if (description) updateData.description = description;
-    if (url !== undefined) updateData.url = url;
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
+    if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 

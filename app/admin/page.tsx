@@ -23,9 +23,14 @@ import {
   Database,
   ExternalLink,
   Upload,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ChevronDown,
+  Settings,
+  LogOut,
+  User
 } from "lucide-react"
 import { techCommunities as staticCommunities } from "@/data/communities"
+import { RichTextEditor } from "@/components/rich-text-editor"
 
 interface NewsletterSubscription {
   id: string
@@ -62,6 +67,9 @@ interface Admin {
   role: string
   communityId?: string
   approvedAt: string
+  firstName?: string
+  lastName?: string
+  profileImage?: string
 }
 
 interface CalendarEvent {
@@ -69,6 +77,7 @@ interface CalendarEvent {
   title: string
   slug: string
   date: string
+  endTime?: string
   location: string
   description: string
   url?: string
@@ -77,6 +86,7 @@ interface CalendarEvent {
   status: string
   source?: string
   isStatic?: boolean
+  rsvpEnabled?: boolean
 }
 
 interface Community {
@@ -98,7 +108,19 @@ interface Community {
   isStatic?: boolean
 }
 
-type Tab = "newsletter" | "speakers" | "access" | "admins" | "events" | "communities"
+interface EventRSVP {
+  id: string
+  eventId: string
+  eventSlug: string
+  communityId: string
+  firstName: string
+  lastName: string
+  email: string
+  joinNewsletter: boolean
+  submittedAt: string
+}
+
+type Tab = "newsletter" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -136,9 +158,26 @@ export default function AdminPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [communities, setCommunities] = useState<Community[]>([])
   const [communitiesSource, setCommunitiesSource] = useState<string>("static")
+  const [rsvps, setRsvps] = useState<EventRSVP[]>([])
+  const [selectedRsvpEvent, setSelectedRsvpEvent] = useState<string>("all")
+  const [selectedRsvpCommunity, setSelectedRsvpCommunity] = useState<string>("all")
+  const [isExportingRsvps, setIsExportingRsvps] = useState(false)
+  
+  // Profile state
+  const [adminFirstName, setAdminFirstName] = useState<string>("")
+  const [adminLastName, setAdminLastName] = useState<string>("")
+  const [adminProfileImage, setAdminProfileImage] = useState<string>("")
+  const [showProfileEdit, setShowProfileEdit] = useState(false)
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [profileFirstName, setProfileFirstName] = useState("")
+  const [profileLastName, setProfileLastName] = useState("")
   
   // Modal state
   const [showAddAdmin, setShowAddAdmin] = useState(false)
+  const [showAdminMenu, setShowAdminMenu] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showCommunityFilter, setShowCommunityFilter] = useState(false)
+  const [showEventFilter, setShowEventFilter] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
   const [showEditCommunity, setShowEditCommunity] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
@@ -155,6 +194,26 @@ export default function AdminPage() {
   const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
   const [newAdminCommunity, setNewAdminCommunity] = useState("")
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
+  const [showCreateCommunity, setShowCreateCommunity] = useState(false)
+  const [newCommunity, setNewCommunity] = useState<Omit<Community, 'isStatic'>>({
+    id: "",
+    name: "",
+    logo: "",
+    description: "",
+    website: "",
+    discord: "",
+    meetup: "",
+    luma: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+    youtube: "",
+    twitch: "",
+    facebook: "",
+    github: "",
+  })
+  const [isCreatingCommunity, setIsCreatingCommunity] = useState(false)
+  const [isUploadingNewLogo, setIsUploadingNewLogo] = useState(false)
 
   // Helper to get community name from current communities state
   const getCommunityNameFromState = (communityId: string | undefined): string => {
@@ -185,6 +244,9 @@ export default function AdminPage() {
         setAdminEmail(email)
         setAdminRole(data.role)
         setAdminCommunityId(data.communityId || null)
+        setAdminFirstName(data.firstName || "")
+        setAdminLastName(data.lastName || "")
+        setAdminProfileImage(data.profileImage || "")
         setIsAuthenticated(true)
         localStorage.setItem("devsa-admin-email", email)
         // Set default tab based on role - admins/superadmins see newsletter first, organizers see events
@@ -241,8 +303,44 @@ export default function AdminPage() {
           setEvents(allEvents)
         }
       }
+
+      // Fetch RSVPs
+      const rsvpsRes = await fetch(`/api/rsvp?adminEmail=${encodeURIComponent(email)}`)
+      if (rsvpsRes.ok) {
+        const rsvpsData = await rsvpsRes.json()
+        setRsvps(rsvpsData.rsvps || [])
+      }
     } catch {
       setError("Failed to fetch data")
+    }
+  }
+
+  const handleExportRsvps = async (eventId?: string) => {
+    setIsExportingRsvps(true)
+    try {
+      let url = `/api/rsvp?adminEmail=${encodeURIComponent(adminEmail)}&format=csv`
+      if (eventId && eventId !== 'all') {
+        url += `&eventId=${eventId}`
+      }
+      
+      const response = await fetch(url)
+      if (response.ok) {
+        const blob = await response.blob()
+        const downloadUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = downloadUrl
+        a.download = `rsvps-${eventId || 'all'}-${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(downloadUrl)
+      } else {
+        setError("Failed to export RSVPs")
+      }
+    } catch {
+      setError("Failed to export RSVPs")
+    } finally {
+      setIsExportingRsvps(false)
     }
   }
 
@@ -390,10 +488,11 @@ export default function AdminPage() {
           eventId: editingEvent.id,
           title: editingEvent.title,
           date: editingEvent.date,
+          endTime: editingEvent.endTime,
           location: editingEvent.location,
           description: editingEvent.description,
-          url: editingEvent.url,
           status: editingEvent.status,
+          rsvpEnabled: editingEvent.rsvpEnabled,
           organizerEmail: adminEmail,
         }),
       })
@@ -500,6 +599,94 @@ export default function AdminPage() {
     setUseFileUpload(true) // Reset to file upload mode
   }
 
+  const handleNewLogoUpload = async (file: File) => {
+    if (!newCommunity.id) {
+      setError("Please enter a community ID first")
+      return
+    }
+
+    setIsUploadingNewLogo(true)
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('adminEmail', adminEmail)
+      formData.append('communityId', newCommunity.id)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setNewCommunity({ ...newCommunity, logo: data.url })
+        setSuccessMessage('Logo uploaded successfully!')
+      } else {
+        setError(data.error || 'Failed to upload logo')
+      }
+    } catch {
+      setError('Failed to upload logo')
+    } finally {
+      setIsUploadingNewLogo(false)
+    }
+  }
+
+  const handleCreateCommunity = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newCommunity.id || !newCommunity.name || !newCommunity.logo || !newCommunity.description) {
+      setError("ID, name, logo, and description are required")
+      return
+    }
+
+    setIsCreatingCommunity(true)
+    setError(null)
+
+    try {
+      const response = await fetch("/api/communities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...newCommunity,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setShowCreateCommunity(false)
+        setNewCommunity({
+          id: "",
+          name: "",
+          logo: "",
+          description: "",
+          website: "",
+          discord: "",
+          meetup: "",
+          luma: "",
+          instagram: "",
+          twitter: "",
+          linkedin: "",
+          youtube: "",
+          twitch: "",
+          facebook: "",
+          github: "",
+        })
+        setSuccessMessage("Community created successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to create community")
+      }
+    } catch {
+      setError("Failed to create community")
+    } finally {
+      setIsCreatingCommunity(false)
+    }
+  }
+
   const handleLogoUpload = async (file: File) => {
     if (!editingCommunity) return
 
@@ -600,19 +787,19 @@ export default function AdminPage() {
         <div className="mx-auto max-w-md px-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to home
           </Link>
 
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8">
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
             <div className="text-center mb-8">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#ef426f]/20">
                 <Shield className="h-8 w-8 text-[#ef426f]" />
               </div>
               <h1 className="text-2xl font-bold text-white mb-2">Admin Access</h1>
-              <p className="text-gray-400">Enter your email to access the admin panel</p>
+              <p className="text-neutral-400">Enter your email to access the admin panel</p>
             </div>
 
             {error && (
@@ -623,18 +810,18 @@ export default function AdminPage() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                  <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
                   <input
                     type="email"
                     id="email"
                     name="email"
                     required
                     placeholder="admin@devsa.community"
-                    className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-10 pr-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-3 pl-10 pr-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                   />
                 </div>
               </div>
@@ -668,120 +855,329 @@ export default function AdminPage() {
           <div>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors mb-2"
+              className="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors mb-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
             <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
-            <p className="text-gray-400 mt-1 text-sm">
-              Logged in as <span className="text-gray-300 font-medium">{adminEmail}</span>
-              <span className="mx-2">•</span>
-              <span className={`font-medium ${
-                adminRole === "superadmin" ? "text-yellow-400" : 
-                adminRole === "admin" ? "text-purple-400" : "text-blue-400"
-              }`}>
-                {adminRole === "superadmin" ? "Super Admin" : adminRole}
-              </span>
-              {adminRole === "organizer" && (
-                <>
-                  <span className="mx-2">•</span>
-                  <span className="text-gray-300">
-                    {adminCommunityId ? getCommunityName(adminCommunityId) : <span className="text-red-400">No community assigned</span>}
-                  </span>
-                </>
-              )}
-            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/create-event"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
-            >
-              <Calendar className="h-4 w-4" />
-              Create Event
-            </Link>
+          
+          {/* User Profile Dropdown */}
+          <div className="relative">
             <button
-              onClick={handleLogout}
-              className="rounded-xl border border-gray-700 px-5 py-2.5 text-sm font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="inline-flex items-center gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
             >
-              Logout
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ef426f] overflow-hidden">
+                {adminProfileImage ? (
+                  <img src={adminProfileImage} alt="" className="h-full w-full object-cover" />
+                ) : adminCommunityId && communities.find(c => c.id === adminCommunityId)?.logo ? (
+                  <img src={communities.find(c => c.id === adminCommunityId)!.logo} alt="" className="h-full w-full object-contain p-0.5" />
+                ) : (
+                  <User className="h-4 w-4 text-white" />
+                )}
+              </div>
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-medium text-white">Hello, {adminFirstName || adminEmail?.split('@')[0]}</p>
+                <p className={`text-xs ${
+                  adminRole === "superadmin" ? "text-yellow-400" : 
+                  adminRole === "admin" ? "text-purple-400" : "text-blue-400"
+                }`}>
+                  {adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
+                </p>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
             </button>
+
+            {/* Dropdown Menu */}
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl overflow-hidden">
+                  {/* User Info Header */}
+                  <div className="px-4 py-4 border-b border-neutral-700 bg-neutral-800/80">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ef426f] overflow-hidden">
+                        {adminProfileImage ? (
+                          <img src={adminProfileImage} alt="" className="h-full w-full object-cover" />
+                        ) : adminCommunityId && communities.find(c => c.id === adminCommunityId)?.logo ? (
+                          <img src={communities.find(c => c.id === adminCommunityId)!.logo} alt="" className="h-full w-full object-contain p-1" />
+                        ) : (
+                          <User className="h-5 w-5 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {adminFirstName || adminLastName ? (
+                          <p className="text-sm font-medium text-white truncate">
+                            {adminFirstName} {adminLastName}
+                          </p>
+                        ) : null}
+                        <p className="text-xs text-neutral-400 truncate">{adminEmail}</p>
+                        <span className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          adminRole === "superadmin"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : adminRole === "admin"
+                            ? "bg-purple-500/20 text-purple-400"
+                            : "bg-blue-500/20 text-blue-400"
+                        }`}>
+                          {adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Community Info (for organizers) */}
+                  {adminRole === "organizer" && (
+                    <div className="px-4 py-3 border-b border-neutral-700">
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Community</p>
+                      {adminCommunityId ? (
+                        <p className="text-sm text-white font-medium">{getCommunityName(adminCommunityId)}</p>
+                      ) : (
+                        <p className="text-sm text-red-400">No community assigned</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Edit Profile Section */}
+                  {showProfileEdit ? (
+                    <div className="px-4 py-3 border-b border-neutral-700">
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Edit Profile</p>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-1">First Name</label>
+                          <input
+                            type="text"
+                            value={profileFirstName}
+                            onChange={(e) => setProfileFirstName(e.target.value)}
+                            placeholder="Enter first name"
+                            className="w-full rounded-lg border border-neutral-600 bg-neutral-700/50 px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-1">Last Name</label>
+                          <input
+                            type="text"
+                            value={profileLastName}
+                            onChange={(e) => setProfileLastName(e.target.value)}
+                            placeholder="Enter last name"
+                            className="w-full rounded-lg border border-neutral-600 bg-neutral-700/50 px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={async () => {
+                              setIsSavingProfile(true)
+                              try {
+                                const res = await fetch('/api/admin/auth', {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    email: adminEmail,
+                                    firstName: profileFirstName,
+                                    lastName: profileLastName,
+                                  }),
+                                })
+                                if (res.ok) {
+                                  setAdminFirstName(profileFirstName)
+                                  setAdminLastName(profileLastName)
+                                  setShowProfileEdit(false)
+                                  setSuccessMessage('Profile updated successfully')
+                                }
+                              } catch {
+                                setError('Failed to update profile')
+                              } finally {
+                                setIsSavingProfile(false)
+                              }
+                            }}
+                            disabled={isSavingProfile}
+                            className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-3 py-2 text-sm font-medium text-white hover:bg-[#d93a60] disabled:opacity-50"
+                          >
+                            {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowProfileEdit(false)
+                              setProfileFirstName(adminFirstName)
+                              setProfileLastName(adminLastName)
+                            }}
+                            className="flex-1 rounded-lg border border-neutral-600 px-3 py-2 text-sm font-medium text-neutral-300 hover:bg-neutral-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2 border-b border-neutral-700">
+                      <button
+                        onClick={() => {
+                          setProfileFirstName(adminFirstName)
+                          setProfileLastName(adminLastName)
+                          setShowProfileEdit(true)
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Edit Profile
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Logout Button */}
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false)
+                        handleLogout()
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Tabs - Only show admin-only tabs to admins/superadmins */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {hasAdminAccess(adminRole) && (
-            <>
-              <button
-                onClick={() => setActiveTab("newsletter")}
-                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  activeTab === "newsletter"
-                    ? "bg-[#ef426f] text-white"
-                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                <Mail className="h-4 w-4" />
-                Newsletter ({newsletter.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("speakers")}
-                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  activeTab === "speakers"
-                    ? "bg-[#ef426f] text-white"
-                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                <Mic2 className="h-4 w-4" />
-                Speakers ({speakers.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("access")}
-                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  activeTab === "access"
-                    ? "bg-[#ef426f] text-white"
-                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                <Users className="h-4 w-4" />
-                Access Requests ({accessRequests.filter(r => r.status === "pending").length})
-              </button>
-              <button
-                onClick={() => setActiveTab("admins")}
-                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  activeTab === "admins"
-                    ? "bg-[#ef426f] text-white"
-                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                <UserCheck className="h-4 w-4" />
-                Admins ({admins.length})
-              </button>
-            </>
-          )}
+        {/* Tabs - Reordered: Primary actions first, admin settings in dropdown */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
+          {/* Primary tabs - shown to everyone */}
           <button
             onClick={() => setActiveTab("events")}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "events"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
             }`}
           >
             <CalendarDays className="h-4 w-4" />
             Events ({events.length})
           </button>
           <button
+            onClick={() => setActiveTab("rsvps")}
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "rsvps"
+                ? "bg-[#ef426f] text-white"
+                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            RSVPs ({rsvps.length})
+          </button>
+          <button
             onClick={() => setActiveTab("communities")}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === "communities"
                 ? "bg-[#ef426f] text-white"
-                : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
             }`}
           >
             <Building2 className="h-4 w-4" />
             {adminRole === "organizer" ? "My Community" : `Communities (${communities.length})`}
           </button>
+
+          {/* Admin-only dropdown menu */}
+          {hasAdminAccess(adminRole) && (
+            <div className="relative">
+              <button
+                onClick={() => setShowAdminMenu(!showAdminMenu)}
+                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
+                  ["newsletter", "speakers", "access", "admins"].includes(activeTab)
+                    ? "bg-[#ef426f] text-white"
+                    : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                Admin
+                {(accessRequests.filter(r => r.status === "pending").length > 0) && (
+                  <span className="flex h-2 w-2 rounded-full bg-yellow-400" />
+                )}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showAdminMenu ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Dropdown menu */}
+              {showAdminMenu && (
+                <>
+                  {/* Backdrop to close menu */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowAdminMenu(false)} 
+                  />
+                  <div className="absolute left-0 top-full mt-2 z-50 w-56 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl">
+                    <button
+                      onClick={() => {
+                        setActiveTab("newsletter")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "newsletter"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <Mail className="h-4 w-4" />
+                      Newsletter
+                      <span className="ml-auto text-xs text-neutral-500">{newsletter.length}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab("speakers")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "speakers"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <Mic2 className="h-4 w-4" />
+                      Speakers
+                      <span className="ml-auto text-xs text-neutral-500">{speakers.length}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab("access")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "access"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <Users className="h-4 w-4" />
+                      Access Requests
+                      {accessRequests.filter(r => r.status === "pending").length > 0 && (
+                        <span className="ml-auto inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-semibold">
+                          {accessRequests.filter(r => r.status === "pending").length}
+                        </span>
+                      )}
+                    </button>
+                    <div className="my-2 border-t border-neutral-700" />
+                    <button
+                      onClick={() => {
+                        setActiveTab("admins")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "admins"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      Manage Admins
+                      <span className="ml-auto text-xs text-neutral-500">{admins.length}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Success/Error messages */}
@@ -800,43 +1196,64 @@ export default function AdminPage() {
         )}
 
         {/* Content */}
-        <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 sm:p-8">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 sm:p-8">
           {/* Newsletter Tab - Admin Only */}
           {activeTab === "newsletter" && hasAdminAccess(adminRole) && (
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Newsletter Subscriptions</h2>
               {newsletter.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No newsletter subscriptions yet.</p>
+                <p className="text-neutral-400 text-center py-8">No newsletter subscriptions yet.</p>
               ) : (
                 <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
                   <table className="w-full min-w-150">
                     <thead>
-                      <tr className="border-b border-gray-800">
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Source</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Subscribed At</th>
+                      <tr className="border-b border-neutral-800">
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Community</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Event</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Status</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Subscribed At</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800/50">
-                      {newsletter.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-gray-800/30 transition-colors">
-                          <td className="py-4 px-4 text-sm font-medium text-white">{sub.email}</td>
-                          <td className="py-4 px-4 text-sm text-gray-400">{sub.source || "—"}</td>
-                          <td className="py-4 px-4">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                              sub.status === "active"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-gray-500/20 text-gray-400"
-                            }`}>
-                              {sub.status}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4 text-sm text-gray-400">
-                            {new Date(sub.subscribedAt).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
+                    <tbody className="divide-y divide-neutral-800/50">
+                      {newsletter.map((sub) => {
+                        // Parse source to extract event slug (format: "event-rsvp:eventSlug" or other sources)
+                        const eventSlug = sub.source?.startsWith('event-rsvp:') 
+                          ? sub.source.replace('event-rsvp:', '') 
+                          : null
+                        const event = eventSlug ? events.find(e => e.slug === eventSlug) : null
+                        const community = event ? communities.find(c => c.id === event.communityId) : null
+                        
+                        return (
+                          <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors">
+                            <td className="py-4 px-4 text-sm font-medium text-white">{sub.email}</td>
+                            <td className="py-4 px-4">
+                              {community ? (
+                                <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
+                                  {community.name}
+                                </span>
+                              ) : (
+                                <span className="text-sm text-neutral-500">—</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4 text-sm text-neutral-400">
+                              {event?.title || (sub.source || "Direct signup")}
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                sub.status === "active"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-neutral-500/20 text-neutral-400"
+                              }`}>
+                                {sub.status}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-sm text-neutral-400">
+                              {new Date(sub.subscribedAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -849,18 +1266,18 @@ export default function AdminPage() {
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Speaker Submissions</h2>
               {speakers.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No speaker submissions yet.</p>
+                <p className="text-neutral-400 text-center py-8">No speaker submissions yet.</p>
               ) : (
                 <div className="space-y-4">
                   {speakers.map((speaker) => (
-                    <div key={speaker.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
+                    <div key={speaker.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
                       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                         <div>
                           <h3 className="text-lg font-bold tracking-tight text-white">{speaker.sessionTitle}</h3>
-                          <p className="text-gray-400 text-sm mt-1">
-                            {speaker.name} {speaker.company && <span className="text-gray-500">• {speaker.company}</span>}
+                          <p className="text-neutral-400 text-sm mt-1">
+                            {speaker.name} {speaker.company && <span className="text-neutral-500">• {speaker.company}</span>}
                           </p>
-                          <p className="text-gray-500 text-sm">{speaker.email}</p>
+                          <p className="text-neutral-500 text-sm">{speaker.email}</p>
                         </div>
                         <button
                           onClick={() => handleDeleteSpeaker(speaker.id)}
@@ -876,14 +1293,14 @@ export default function AdminPage() {
                         </button>
                       </div>
                       <div className="mb-4">
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Format</span>
-                        <p className="text-gray-300 text-sm mt-1">{speaker.sessionFormat}</p>
+                        <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
+                        <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
                       </div>
                       <div>
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Abstract</span>
-                        <p className="text-gray-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
+                        <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Abstract</span>
+                        <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
                       </div>
-                      <p className="mt-4 text-xs text-gray-500">
+                      <p className="mt-4 text-xs text-neutral-500">
                         Submitted: {new Date(speaker.submittedAt).toLocaleString()}
                       </p>
                     </div>
@@ -898,19 +1315,19 @@ export default function AdminPage() {
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white mb-6">Access Requests</h2>
               {accessRequests.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No access requests yet.</p>
+                <p className="text-neutral-400 text-center py-8">No access requests yet.</p>
               ) : (
                 <div className="space-y-4">
                   {accessRequests.map((request) => (
-                    <div key={request.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
+                    <div key={request.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                           <h3 className="text-lg font-bold tracking-tight text-white">{request.name}</h3>
-                          <p className="text-gray-400 text-sm mt-1">{request.email}</p>
-                          <p className="text-gray-500 text-sm mt-1">
-                            Community: <span className="text-gray-400">{request.communityOrg}</span>
+                          <p className="text-neutral-400 text-sm mt-1">{request.email}</p>
+                          <p className="text-neutral-500 text-sm mt-1">
+                            Community: <span className="text-neutral-400">{request.communityOrg}</span>
                           </p>
-                          <p className="text-xs text-gray-500 mt-3">
+                          <p className="text-xs text-neutral-500 mt-3">
                             Requested: {new Date(request.submittedAt).toLocaleString()}
                           </p>
                         </div>
@@ -975,22 +1392,22 @@ export default function AdminPage() {
               </div>
               
               {admins.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No approved admins yet.</p>
+                <p className="text-neutral-400 text-center py-8">No approved admins yet.</p>
               ) : (
                 <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
                   <table className="w-full min-w-150">
                     <thead>
-                      <tr className="border-b border-gray-800">
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Community</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Approved At</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                      <tr className="border-b border-neutral-800">
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Role</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Community</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Approved At</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800/50">
+                    <tbody className="divide-y divide-neutral-800/50">
                       {admins.map((admin) => (
-                        <tr key={admin.id} className="hover:bg-gray-800/30 transition-colors">
+                        <tr key={admin.id} className="hover:bg-neutral-800/30 transition-colors">
                           <td className="py-4 px-4 text-sm font-medium text-white">
                             {admin.email}
                             {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
@@ -1008,8 +1425,8 @@ export default function AdminPage() {
                               {admin.role === "superadmin" ? "Super Admin" : admin.role}
                             </span>
                           </td>
-                          <td className="py-4 px-4 text-sm text-gray-400">{getCommunityName(admin.communityId)}</td>
-                          <td className="py-4 px-4 text-sm text-gray-400">
+                          <td className="py-4 px-4 text-sm text-neutral-400">{getCommunityName(admin.communityId)}</td>
+                          <td className="py-4 px-4 text-sm text-neutral-400">
                             {new Date(admin.approvedAt).toLocaleDateString()}
                           </td>
                           <td className="py-4 px-4">
@@ -1033,7 +1450,7 @@ export default function AdminPage() {
                                 </button>
                               )}
                               {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
-                                <span className="text-xs text-gray-500 italic">Protected</span>
+                                <span className="text-xs text-neutral-500 italic">Protected</span>
                               )}
                             </div>
                           </td>
@@ -1047,13 +1464,13 @@ export default function AdminPage() {
               {/* Add/Edit Admin Modal */}
               {showAddAdmin && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-md w-full shadow-2xl">
+                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-md w-full shadow-2xl">
                     <h3 className="text-xl font-bold tracking-tight text-white mb-6">
                       {editingAdmin ? "Edit Admin" : "Add New Admin"}
                     </h3>
                     <form onSubmit={handleAddAdmin} className="space-y-5">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Email Address
                         </label>
                         <input
@@ -1063,14 +1480,14 @@ export default function AdminPage() {
                           onChange={(e) => setNewAdminEmail(e.target.value)}
                           placeholder="user@example.com"
                           disabled={!!editingAdmin}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                         {editingAdmin && (
-                          <p className="mt-2 text-xs text-gray-500">Email cannot be changed</p>
+                          <p className="mt-2 text-xs text-neutral-500">Email cannot be changed</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Role
                         </label>
                         <select
@@ -1082,7 +1499,7 @@ export default function AdminPage() {
                               setNewAdminCommunity("")
                             }
                           }}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         >
                           <option value="organizer">Organizer (can only manage their community&apos;s events)</option>
                           <option value="admin">Admin (full access to all features)</option>
@@ -1090,14 +1507,14 @@ export default function AdminPage() {
                       </div>
                       {newAdminRole === "organizer" && (
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
                             Assigned Community *
                           </label>
                           <select
                             required={newAdminRole === "organizer"}
                             value={newAdminCommunity}
                             onChange={(e) => setNewAdminCommunity(e.target.value)}
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           >
                             <option value="">Select a community</option>
                             {(communities.length > 0 ? communities : staticCommunities).map((community) => (
@@ -1106,7 +1523,7 @@ export default function AdminPage() {
                               </option>
                             ))}
                           </select>
-                          <p className="mt-2 text-xs text-gray-500">
+                          <p className="mt-2 text-xs text-neutral-500">
                             Organizers can only create and manage events for their assigned community
                           </p>
                         </div>
@@ -1121,7 +1538,7 @@ export default function AdminPage() {
                             setNewAdminRole("organizer")
                             setNewAdminCommunity("")
                           }}
-                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
+                          className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
                         >
                           Cancel
                         </button>
@@ -1165,7 +1582,7 @@ export default function AdminPage() {
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 
                 const renderEventCard = (event: CalendarEvent) => (
-                  <div key={event.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-6 hover:bg-gray-800/50 transition-colors">
+                  <div key={event.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
@@ -1178,13 +1595,13 @@ export default function AdminPage() {
                             {event.status}
                           </span>
                           {event.isStatic && (
-                            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-500/20 text-gray-400">
+                            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-neutral-500/20 text-neutral-400">
                               Static
                             </span>
                           )}
                         </div>
-                        <p className="text-gray-400 text-sm mt-1">{event.communityName || event.communityId}</p>
-                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
+                        <p className="text-neutral-400 text-sm mt-1">{event.communityName || event.communityId}</p>
+                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-neutral-500">
                           <span className="flex items-center gap-1.5">
                             <CalendarDays className="h-4 w-4" />
                             {new Date(event.date).toLocaleDateString("en-US", {
@@ -1195,20 +1612,20 @@ export default function AdminPage() {
                               timeZone: "America/Chicago",
                             })}
                           </span>
-                          <span className="text-gray-600">•</span>
+                          <span className="text-neutral-600">•</span>
                           <span>{event.location}</span>
                           {event.source && (
                             <>
-                              <span className="text-gray-600">•</span>
-                              <span className="text-xs text-gray-600">Source: {event.source}</span>
+                              <span className="text-neutral-600">•</span>
+                              <span className="text-xs text-neutral-600">Source: {event.source}</span>
                             </>
                           )}
                         </div>
-                        <p className="text-gray-400 text-sm mt-3 line-clamp-2">{event.description}</p>
+                        <p className="text-neutral-400 text-sm mt-3 line-clamp-2">{event.description}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {event.isStatic ? (
-                          <span className="text-xs text-gray-500 italic">
+                          <span className="text-xs text-neutral-500 italic">
                             Edit in data/events.ts
                           </span>
                         ) : (
@@ -1248,7 +1665,7 @@ export default function AdminPage() {
                         Upcoming Events ({upcomingEvents.length})
                       </h3>
                       {upcomingEvents.length === 0 ? (
-                        <p className="text-gray-400 text-center py-8 bg-gray-800/20 rounded-xl border border-gray-800">
+                        <p className="text-neutral-400 text-center py-8 bg-neutral-800/20 rounded-xl border border-neutral-800">
                           No upcoming events. Create your first event!
                         </p>
                       ) : (
@@ -1261,7 +1678,7 @@ export default function AdminPage() {
                     {/* Archived Events Section */}
                     {archivedEvents.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-neutral-400 mb-4 flex items-center gap-2">
                           <Archive className="h-5 w-5" />
                           Archived Events ({archivedEvents.length})
                         </h3>
@@ -1277,11 +1694,11 @@ export default function AdminPage() {
               {/* Edit Event Modal */}
               {showEditEvent && editingEvent && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Event</h3>
                     <form onSubmit={handleUpdateEvent} className="space-y-5">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Event Title
                         </label>
                         <input
@@ -1289,23 +1706,73 @@ export default function AdminPage() {
                           required
                           value={editingEvent.title}
                           onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
-                          Date
-                        </label>
-                        <input
-                          type="datetime-local"
-                          required
-                          value={editingEvent.date ? new Date(editingEvent.date).toISOString().slice(0, 16) : ""}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, date: new Date(e.target.value).toISOString() })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        />
+                      {/* Date and Time - using separate fields for accuracy */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Date
+                          </label>
+                          <input
+                            type="date"
+                            required
+                            value={editingEvent.date ? (() => {
+                              const d = new Date(editingEvent.date);
+                              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                            })() : ""}
+                            onChange={(e) => {
+                              const currentDate = new Date(editingEvent.date || new Date());
+                              const [year, month, day] = e.target.value.split('-').map(Number);
+                              currentDate.setFullYear(year, month - 1, day);
+                              setEditingEvent({ ...editingEvent, date: currentDate.toISOString() });
+                            }}
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Start Time
+                          </label>
+                          <input
+                            type="time"
+                            required
+                            value={editingEvent.date ? (() => {
+                              const d = new Date(editingEvent.date);
+                              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                            })() : "18:00"}
+                            onChange={(e) => {
+                              const currentDate = new Date(editingEvent.date || new Date());
+                              const [hours, minutes] = e.target.value.split(':').map(Number);
+                              currentDate.setHours(hours, minutes);
+                              setEditingEvent({ ...editingEvent, date: currentDate.toISOString() });
+                            }}
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            End Time
+                          </label>
+                          <input
+                            type="time"
+                            value={editingEvent.endTime ? (() => {
+                              const d = new Date(editingEvent.endTime);
+                              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                            })() : "20:00"}
+                            onChange={(e) => {
+                              const baseDate = new Date(editingEvent.date || new Date());
+                              const [hours, minutes] = e.target.value.split(':').map(Number);
+                              baseDate.setHours(hours, minutes);
+                              setEditingEvent({ ...editingEvent, endTime: baseDate.toISOString() });
+                            }}
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Location
                         </label>
                         <input
@@ -1313,46 +1780,61 @@ export default function AdminPage() {
                           required
                           value={editingEvent.location}
                           onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Description
                         </label>
-                        <textarea
+                        <RichTextEditor
                           required
-                          rows={4}
+                          rows={10}
                           value={editingEvent.description}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
+                          onChange={(value) => setEditingEvent({ ...editingEvent, description: value })}
+                          placeholder="Describe your event. Select text to format."
+                          darkMode={true}
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
-                          Event URL (optional)
-                        </label>
-                        <input
-                          type="url"
-                          value={editingEvent.url || ""}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, url: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        />
+                      {/* RSVP Toggle */}
+                      <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <label className="text-sm font-semibold text-neutral-300">Enable RSVP</label>
+                            <p className="text-xs text-neutral-500 mt-1">
+                              Collect RSVPs on your event page
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={editingEvent.rsvpEnabled || false}
+                            onClick={() => setEditingEvent({ ...editingEvent, rsvpEnabled: !editingEvent.rsvpEnabled })}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ef426f] focus:ring-offset-2 focus:ring-offset-neutral-900 ${
+                              editingEvent.rsvpEnabled ? 'bg-[#ef426f]' : 'bg-neutral-600'
+                            }`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                editingEvent.rsvpEnabled ? 'translate-x-5' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Status
                         </label>
                         <select
                           value={editingEvent.status}
                           onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         >
                           <option value="published">Published</option>
                           <option value="draft">Draft</option>
                         </select>
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-2 text-xs text-neutral-500">
                           Draft events are only visible in the admin dashboard
                         </p>
                       </div>
@@ -1363,7 +1845,7 @@ export default function AdminPage() {
                             setShowEditEvent(false)
                             setEditingEvent(null)
                           }}
-                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
+                          className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
                         >
                           Cancel
                         </button>
@@ -1385,37 +1867,39 @@ export default function AdminPage() {
           {activeTab === "communities" && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-white">
-                    {adminRole === "organizer" ? "My Community" : "Communities"}
-                  </h2>
-                  {hasAdminAccess(adminRole) && (
-                    <p className="text-sm text-gray-400 mt-1">
-                      Source: <span className={communitiesSource === 'firestore' ? 'text-green-400' : 'text-yellow-400'}>
-                        {communitiesSource === 'firestore' ? 'Firestore Database' : 'Static Files (not migrated)'}
-                      </span>
-                    </p>
+                <h2 className="text-xl font-bold tracking-tight text-white">
+                  {adminRole === "organizer" ? "My Community" : "Communities"}
+                </h2>
+                <div className="flex items-center gap-3">
+                  {hasAdminAccess(adminRole) && communitiesSource === 'firestore' && (
+                    <button
+                      onClick={() => setShowCreateCommunity(true)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Create Community
+                    </button>
+                  )}
+                  {adminRole === 'superadmin' && communitiesSource !== 'firestore' && (
+                    <button
+                      onClick={handleMigrateToDB}
+                      disabled={isMigrating}
+                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      {isMigrating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Migrating...
+                        </>
+                      ) : (
+                        <>
+                          <Database className="h-4 w-4" />
+                          Migrate to Firestore
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
-                {adminRole === 'superadmin' && communitiesSource !== 'firestore' && (
-                  <button
-                    onClick={handleMigrateToDB}
-                    disabled={isMigrating}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
-                  >
-                    {isMigrating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Migrating...
-                      </>
-                    ) : (
-                      <>
-                        <Database className="h-4 w-4" />
-                        Migrate to Firestore
-                      </>
-                    )}
-                  </button>
-                )}
               </div>
 
               {adminRole === "organizer" ? (
@@ -1425,30 +1909,30 @@ export default function AdminPage() {
                   if (!myCommunity) {
                     return (
                       <div className="text-center py-12">
-                        <Building2 className="mx-auto h-12 w-12 text-gray-600 mb-4" />
-                        <p className="text-gray-400 mb-2">No community assigned to your account.</p>
-                        <p className="text-gray-500 text-sm">Contact an admin to assign you to a community.</p>
+                        <Building2 className="mx-auto h-12 w-12 text-neutral-600 mb-4" />
+                        <p className="text-neutral-400 mb-2">No community assigned to your account.</p>
+                        <p className="text-neutral-500 text-sm">Contact an admin to assign you to a community.</p>
                       </div>
                     )
                   }
                   return (
-                    <div className="rounded-xl border border-gray-800 bg-gray-800/30 p-6">
+                    <div className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6">
                       <div className="flex items-start gap-4 mb-6">
                         {myCommunity.logo && (
                           <img 
                             src={myCommunity.logo} 
                             alt={myCommunity.name} 
-                            className="h-16 w-16 rounded-xl object-contain bg-gray-900 p-2"
+                            className="h-16 w-16 rounded-xl object-contain bg-neutral-900 p-2"
                           />
                         )}
                         <div className="flex-1">
                           <h3 className="text-xl font-bold tracking-tight text-white">{myCommunity.name}</h3>
-                          <p className="text-gray-400 text-sm mt-1 leading-relaxed">{myCommunity.description}</p>
+                          <p className="text-neutral-400 text-sm mt-1 leading-relaxed">{myCommunity.description}</p>
                         </div>
                         {communitiesSource === 'firestore' && (
                           <button
                             onClick={() => handleEditCommunity(myCommunity)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-gray-700 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-600 transition-colors"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-700 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-600 transition-colors"
                           >
                             <Edit className="h-4 w-4" />
                             Edit
@@ -1499,25 +1983,25 @@ export default function AdminPage() {
                 // Admin view - show all communities
                 <div className="space-y-4">
                   {communities.length === 0 ? (
-                    <p className="text-gray-400 text-center py-8">No communities found.</p>
+                    <p className="text-neutral-400 text-center py-8">No communities found.</p>
                   ) : (
                     communities.map((community) => (
-                      <div key={community.id} className="rounded-xl border border-gray-800 bg-gray-800/30 p-4 hover:bg-gray-800/50 transition-colors">
+                      <div key={community.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-4 hover:bg-neutral-800/50 transition-colors">
                         <div className="flex items-start gap-4">
                           {community.logo && (
                             <img 
                               src={community.logo} 
                               alt={community.name} 
-                              className="h-12 w-12 rounded-lg object-contain bg-gray-900 p-1.5 shrink-0"
+                              className="h-12 w-12 rounded-lg object-contain bg-neutral-900 p-1.5 shrink-0"
                             />
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h3 className="font-bold text-white truncate">{community.name}</h3>
-                              <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-800 rounded-full">{community.id}</span>
+                              <span className="text-xs text-neutral-500 px-2 py-0.5 bg-neutral-800 rounded-full">{community.id}</span>
                             </div>
-                            <p className="text-gray-400 text-sm mt-1 line-clamp-2">{community.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                            <p className="text-neutral-400 text-sm mt-1 line-clamp-2">{community.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-xs text-neutral-500">
                               {community.website && <span>Website</span>}
                               {community.meetup && <span>Meetup</span>}
                               {community.discord && <span>Discord</span>}
@@ -1543,28 +2027,28 @@ export default function AdminPage() {
               {/* Edit Community Modal */}
               {showEditCommunity && editingCommunity && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Community</h3>
                     <form onSubmit={handleSaveCommunity} className="space-y-5">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">Name</label>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">Name</label>
                         <input
                           type="text"
                           required
                           value={editingCommunity.name}
                           onChange={(e) => setEditingCommunity({ ...editingCommunity, name: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <label className="text-sm font-semibold text-gray-300">Logo</label>
+                          <label className="text-sm font-semibold text-neutral-300">Logo</label>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => setUseFileUpload(true)}
                               className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
-                                useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
                               }`}
                             >
                               <Upload className="h-3 w-3" />
@@ -1574,7 +2058,7 @@ export default function AdminPage() {
                               type="button"
                               onClick={() => setUseFileUpload(false)}
                               className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
-                                !useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                !useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
                               }`}
                             >
                               <LinkIcon className="h-3 w-3" />
@@ -1592,7 +2076,7 @@ export default function AdminPage() {
                                   const file = e.target.files?.[0]
                                   if (file) handleLogoUpload(file)
                                 }}
-                                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
+                                className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
                                 disabled={isUploadingLogo}
                               />
                               {isUploadingLogo && (
@@ -1602,13 +2086,13 @@ export default function AdminPage() {
                               )}
                             </div>
                             {editingCommunity.logo && (
-                              <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-800 border border-gray-700">
+                              <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-800 border border-neutral-700">
                                 <img 
                                   src={editingCommunity.logo} 
                                   alt="Logo preview" 
-                                  className="h-10 w-10 rounded object-contain bg-gray-700"
+                                  className="h-10 w-10 rounded object-contain bg-neutral-700"
                                 />
-                                <span className="text-xs text-gray-400 truncate flex-1">{editingCommunity.logo}</span>
+                                <span className="text-xs text-neutral-400 truncate flex-1">{editingCommunity.logo}</span>
                               </div>
                             )}
                           </div>
@@ -1619,129 +2103,129 @@ export default function AdminPage() {
                             value={editingCommunity.logo}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, logo: e.target.value })}
                             placeholder="https://..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">Description</label>
                         <textarea
                           required
                           rows={4}
                           value={editingCommunity.description}
                           onChange={(e) => setEditingCommunity({ ...editingCommunity, description: e.target.value })}
-                          className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Website</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
                           <input
                             type="url"
                             value={editingCommunity.website || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, website: e.target.value })}
                             placeholder="https://..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Meetup</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Meetup</label>
                           <input
                             type="url"
                             value={editingCommunity.meetup || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, meetup: e.target.value })}
                             placeholder="https://meetup.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Discord</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Discord</label>
                           <input
                             type="url"
                             value={editingCommunity.discord || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, discord: e.target.value })}
                             placeholder="https://discord.gg/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Lu.ma</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Lu.ma</label>
                           <input
                             type="url"
                             value={editingCommunity.luma || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, luma: e.target.value })}
                             placeholder="https://lu.ma/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Twitter</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Twitter</label>
                           <input
                             type="url"
                             value={editingCommunity.twitter || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, twitter: e.target.value })}
                             placeholder="https://twitter.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Instagram</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Instagram</label>
                           <input
                             type="url"
                             value={editingCommunity.instagram || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, instagram: e.target.value })}
                             placeholder="https://instagram.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">LinkedIn</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">LinkedIn</label>
                           <input
                             type="url"
                             value={editingCommunity.linkedin || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, linkedin: e.target.value })}
                             placeholder="https://linkedin.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">YouTube</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">YouTube</label>
                           <input
                             type="url"
                             value={editingCommunity.youtube || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, youtube: e.target.value })}
                             placeholder="https://youtube.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Twitch</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Twitch</label>
                           <input
                             type="url"
                             value={editingCommunity.twitch || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, twitch: e.target.value })}
                             placeholder="https://twitch.tv/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">Facebook</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Facebook</label>
                           <input
                             type="url"
                             value={editingCommunity.facebook || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, facebook: e.target.value })}
                             placeholder="https://facebook.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">GitHub</label>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">GitHub</label>
                           <input
                             type="url"
                             value={editingCommunity.github || ""}
                             onChange={(e) => setEditingCommunity({ ...editingCommunity, github: e.target.value })}
                             placeholder="https://github.com/..."
-                            className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
                         </div>
                       </div>
@@ -1752,7 +2236,7 @@ export default function AdminPage() {
                             setShowEditCommunity(false)
                             setEditingCommunity(null)
                           }}
-                          className="flex-1 rounded-xl border border-gray-700 px-4 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-colors"
+                          className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
                         >
                           Cancel
                         </button>
@@ -1775,6 +2259,497 @@ export default function AdminPage() {
                   </div>
                 </div>
               )}
+
+              {/* Create Community Modal */}
+              {showCreateCommunity && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Create New Community</h3>
+                    <form onSubmit={handleCreateCommunity} className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">Community ID *</label>
+                        <input
+                          type="text"
+                          required
+                          value={newCommunity.id}
+                          onChange={(e) => setNewCommunity({ ...newCommunity, id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                          placeholder="e.g., san-antonio-devs"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                        <p className="mt-1 text-xs text-neutral-500">Lowercase letters, numbers, and hyphens only. Cannot be changed later.</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={newCommunity.name}
+                          onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
+                          placeholder="e.g., San Antonio Developers"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-semibold text-neutral-300">Logo *</label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setUseFileUpload(true)}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
+                                useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                              }`}
+                            >
+                              <Upload className="h-3 w-3" />
+                              File
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setUseFileUpload(false)}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
+                                !useFileUpload ? 'bg-[#ef426f] text-white' : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                              }`}
+                            >
+                              <LinkIcon className="h-3 w-3" />
+                              URL
+                            </button>
+                          </div>
+                        </div>
+                        {useFileUpload ? (
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) handleNewLogoUpload(file)
+                                }}
+                                className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
+                                disabled={isUploadingNewLogo || !newCommunity.id}
+                              />
+                              {isUploadingNewLogo && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                  <Loader2 className="h-5 w-5 animate-spin text-[#ef426f]" />
+                                </div>
+                              )}
+                            </div>
+                            {!newCommunity.id && (
+                              <p className="text-xs text-yellow-400">Enter a community ID first to enable file upload</p>
+                            )}
+                            {newCommunity.logo && (
+                              <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-800 border border-neutral-700">
+                                <img 
+                                  src={newCommunity.logo} 
+                                  alt="Logo preview" 
+                                  className="h-10 w-10 rounded object-contain bg-neutral-700"
+                                />
+                                <span className="text-xs text-neutral-400 truncate flex-1">{newCommunity.logo}</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <input
+                            type="url"
+                            required
+                            value={newCommunity.logo}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, logo: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">Description *</label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={newCommunity.description}
+                          onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
+                          placeholder="Describe your community..."
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
+                          <input
+                            type="url"
+                            value={newCommunity.website || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, website: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Meetup</label>
+                          <input
+                            type="url"
+                            value={newCommunity.meetup || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, meetup: e.target.value })}
+                            placeholder="https://meetup.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Discord</label>
+                          <input
+                            type="url"
+                            value={newCommunity.discord || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, discord: e.target.value })}
+                            placeholder="https://discord.gg/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Lu.ma</label>
+                          <input
+                            type="url"
+                            value={newCommunity.luma || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, luma: e.target.value })}
+                            placeholder="https://lu.ma/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Twitter</label>
+                          <input
+                            type="url"
+                            value={newCommunity.twitter || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, twitter: e.target.value })}
+                            placeholder="https://twitter.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Instagram</label>
+                          <input
+                            type="url"
+                            value={newCommunity.instagram || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, instagram: e.target.value })}
+                            placeholder="https://instagram.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">LinkedIn</label>
+                          <input
+                            type="url"
+                            value={newCommunity.linkedin || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, linkedin: e.target.value })}
+                            placeholder="https://linkedin.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">YouTube</label>
+                          <input
+                            type="url"
+                            value={newCommunity.youtube || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, youtube: e.target.value })}
+                            placeholder="https://youtube.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Twitch</label>
+                          <input
+                            type="url"
+                            value={newCommunity.twitch || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, twitch: e.target.value })}
+                            placeholder="https://twitch.tv/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Facebook</label>
+                          <input
+                            type="url"
+                            value={newCommunity.facebook || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, facebook: e.target.value })}
+                            placeholder="https://facebook.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">GitHub</label>
+                          <input
+                            type="url"
+                            value={newCommunity.github || ""}
+                            onChange={(e) => setNewCommunity({ ...newCommunity, github: e.target.value })}
+                            placeholder="https://github.com/..."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCreateCommunity(false)
+                            setNewCommunity({
+                              id: "",
+                              name: "",
+                              logo: "",
+                              description: "",
+                              website: "",
+                              discord: "",
+                              meetup: "",
+                              luma: "",
+                              instagram: "",
+                              twitter: "",
+                              linkedin: "",
+                              youtube: "",
+                              twitch: "",
+                              facebook: "",
+                              github: "",
+                            })
+                          }}
+                          className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isCreatingCommunity}
+                          className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
+                        >
+                          {isCreatingCommunity ? (
+                            <>
+                              <Loader2 className="inline h-4 w-4 animate-spin mr-2" />
+                              Creating...
+                            </>
+                          ) : (
+                            "Create Community"
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* RSVPs Tab */}
+          {activeTab === "rsvps" && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-white">Event RSVPs</h2>
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Custom Community Filter Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowCommunityFilter(!showCommunityFilter)
+                        setShowEventFilter(false)
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 py-2 px-4 text-sm text-white hover:bg-neutral-700 transition-colors min-w-40 justify-between"
+                    >
+                      <span className="truncate">
+                        {selectedRsvpCommunity === 'all' 
+                          ? 'All Communities' 
+                          : communities.find(c => c.id === selectedRsvpCommunity)?.name || 'Select'}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${showCommunityFilter ? "rotate-180" : ""}`} />
+                    </button>
+                    {showCommunityFilter && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowCommunityFilter(false)} />
+                        <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl max-h-64 overflow-y-auto">
+                          <button
+                            onClick={() => {
+                              setSelectedRsvpCommunity('all')
+                              setShowCommunityFilter(false)
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                              selectedRsvpCommunity === 'all'
+                                ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                : "text-neutral-300 hover:bg-neutral-700"
+                            }`}
+                          >
+                            All Communities
+                          </button>
+                          {communities.map(community => (
+                            <button
+                              key={community.id}
+                              onClick={() => {
+                                setSelectedRsvpCommunity(community.id)
+                                setSelectedRsvpEvent('all') // Reset event filter when community changes
+                                setShowCommunityFilter(false)
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                                selectedRsvpCommunity === community.id
+                                  ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                  : "text-neutral-300 hover:bg-neutral-700"
+                              }`}
+                            >
+                              <span className="truncate">{community.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Custom Event Filter Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowEventFilter(!showEventFilter)
+                        setShowCommunityFilter(false)
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 py-2 px-4 text-sm text-white hover:bg-neutral-700 transition-colors min-w-40 justify-between"
+                    >
+                      <span className="truncate">
+                        {selectedRsvpEvent === 'all' 
+                          ? 'All Events' 
+                          : events.find(e => e.id === selectedRsvpEvent)?.title || 'Select'}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${showEventFilter ? "rotate-180" : ""}`} />
+                    </button>
+                    {showEventFilter && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowEventFilter(false)} />
+                        <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl max-h-64 overflow-y-auto">
+                          <button
+                            onClick={() => {
+                              setSelectedRsvpEvent('all')
+                              setShowEventFilter(false)
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                              selectedRsvpEvent === 'all'
+                                ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                : "text-neutral-300 hover:bg-neutral-700"
+                            }`}
+                          >
+                            All Events
+                          </button>
+                          {events
+                            .filter(e => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity))
+                            .map(event => (
+                              <button
+                                key={event.id}
+                                onClick={() => {
+                                  setSelectedRsvpEvent(event.id)
+                                  setShowEventFilter(false)
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left ${
+                                  selectedRsvpEvent === event.id
+                                    ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                    : "text-neutral-300 hover:bg-neutral-700"
+                                }`}
+                              >
+                                <span className="truncate">{event.title}</span>
+                              </button>
+                            ))}
+                          {events.filter(e => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity)).length === 0 && (
+                            <p className="px-4 py-2.5 text-sm text-neutral-500">No RSVP-enabled events</p>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleExportRsvps(selectedRsvpEvent)}
+                    disabled={isExportingRsvps || rsvps.length === 0}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
+                  >
+                    {isExportingRsvps ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ArrowLeft className="h-4 w-4 rotate-135" />
+                    )}
+                    Export CSV
+                  </button>
+                </div>
+              </div>
+
+              {(() => {
+                let filteredRsvps = rsvps
+                // Filter by community first
+                if (selectedRsvpCommunity !== 'all') {
+                  filteredRsvps = filteredRsvps.filter(r => r.communityId === selectedRsvpCommunity)
+                }
+                // Then filter by event
+                if (selectedRsvpEvent !== 'all') {
+                  filteredRsvps = filteredRsvps.filter(r => r.eventId === selectedRsvpEvent)
+                }
+                
+                if (filteredRsvps.length === 0) {
+                  return (
+                    <p className="text-neutral-400 text-center py-8">
+                      No RSVPs yet. Enable RSVP on an event to start collecting registrations.
+                    </p>
+                  )
+                }
+
+                // Group by event
+                const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
+                  if (!acc[rsvp.eventSlug]) {
+                    const event = events.find(e => e.id === rsvp.eventId)
+                    const community = communities.find(c => c.id === rsvp.communityId)
+                    acc[rsvp.eventSlug] = {
+                      eventTitle: event?.title || rsvp.eventSlug,
+                      communityName: community?.name || 'Unknown',
+                      rsvps: []
+                    }
+                  }
+                  acc[rsvp.eventSlug].rsvps.push(rsvp)
+                  return acc
+                }, {} as Record<string, { eventTitle: string; communityName: string; rsvps: EventRSVP[] }>)
+
+                return (
+                  <div className="space-y-6">
+                    {Object.entries(groupedByEvent).map(([slug, { eventTitle, communityName, rsvps: eventRsvps }]) => (
+                      <div key={slug} className="rounded-xl border border-neutral-800 bg-neutral-800/30 overflow-hidden">
+                        <div className="px-4 py-3 bg-neutral-800/50 border-b border-neutral-700 flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-3">
+                            <h3 className="font-semibold text-white">{eventTitle}</h3>
+                            <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
+                              {communityName}
+                            </span>
+                          </div>
+                          <span className="text-sm text-neutral-400">{eventRsvps.length} RSVPs</span>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-125">
+                            <thead>
+                              <tr className="border-b border-neutral-800">
+                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Name</th>
+                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Newsletter</th>
+                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Registered</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-800/50">
+                              {eventRsvps.map((rsvp) => (
+                                <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors">
+                                  <td className="py-3 px-4 text-sm font-medium text-white">{rsvp.firstName} {rsvp.lastName}</td>
+                                  <td className="py-3 px-4 text-sm text-neutral-400">{rsvp.email}</td>
+                                  <td className="py-3 px-4">
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                      rsvp.joinNewsletter
+                                        ? "bg-green-500/20 text-green-400"
+                                        : "bg-neutral-500/20 text-neutral-400"
+                                    }`}>
+                                      {rsvp.joinNewsletter ? "Opted In" : "No"}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm text-neutral-500">
+                                    {new Date(rsvp.submittedAt).toLocaleDateString()}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </div>
