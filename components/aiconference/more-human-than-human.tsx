@@ -256,24 +256,16 @@ export function MoreHumanThanHuman() {
     setError(null)
 
     try {
-      // Client-side MAGEN verification
+      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
       const clientResult = await verify()
+      console.log('[MAGEN] More-human-than-human verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
 
-      if (clientResult && clientResult.verdict !== 'verified') {
-        setError("Verification failed. Please try again.")
-        setIsSubmitting(false)
-        return
-      }
-
-      // Server-side re-verification
-      if (clientResult?.session_id) {
-        const serverResult = await verifyOnServer(clientResult.session_id)
-        if (serverResult.verified === false) {
-          setError("Verification failed. Please try again.")
-          setIsSubmitting(false)
-          return
-        }
-      }
+      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
+      // if (clientResult && clientResult.verdict !== 'verified') {
+      //   setError("Verification failed. Please try again.")
+      //   setIsSubmitting(false)
+      //   return
+      // }
 
       // Submit to API with verification data
       const response = await fetch('/api/call-for-speakers', {

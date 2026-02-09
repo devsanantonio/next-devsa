@@ -27,28 +27,13 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
     setIsLoading(true)
 
     try {
-      // Client-side MAGEN verification
+      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
       const clientResult = await verify()
+      console.log('[MAGEN] Access request verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
 
-      // If SDK is loaded but verdict is not verified, block
-      if (clientResult && clientResult.verdict !== 'verified') {
-        setError("Verification failed. Please try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // Server-side re-verification if we got a session
-      let serverVerified = true
-      if (clientResult?.session_id) {
-        const serverResult = await verifyOnServer(clientResult.session_id)
-        serverVerified = serverResult.verified !== false
-      }
-
-      if (!serverVerified) {
-        setError("Verification failed. Please try again.")
-        setIsLoading(false)
-        return
-      }
+      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
+      // if (clientResult && clientResult.verdict !== 'verified') { ... }
+      // if (!serverVerified) { ... }
 
       const response = await fetch('/api/access-request', {
         method: 'POST',

@@ -345,27 +345,13 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     setRsvpError('')
 
     try {
-      // Client-side MAGEN verification
+      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
       const clientResult = await verify()
+      console.log('[MAGEN] RSVP verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
 
-      if (clientResult && clientResult.verdict !== 'verified') {
-        setRsvpError('Verification failed. Please try again.')
-        setRsvpSubmitting(false)
-        return
-      }
-
-      // Server-side re-verification if we got a session
-      let serverVerified = true
-      if (clientResult?.session_id) {
-        const serverResult = await verifyOnServer(clientResult.session_id)
-        serverVerified = serverResult.verified !== false
-      }
-
-      if (!serverVerified) {
-        setRsvpError('Verification failed. Please try again.')
-        setRsvpSubmitting(false)
-        return
-      }
+      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
+      // if (clientResult && clientResult.verdict !== 'verified') { ... }
+      // if (!serverVerified) { ... }
 
       const response = await fetch('/api/rsvp', {
         method: 'POST',
