@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isMagenConfigured, verifySession } from '@/lib/magen';
+import { isMagenConfigured, startSession } from '@/lib/magen';
 
 export async function GET() {
   try {
@@ -8,22 +8,19 @@ export async function GET() {
     if (!configured) {
       return NextResponse.json({
         status: 'not_configured',
-        message: 'MAGEN API key or site ID not configured',
+        message: 'MAGEN API key, secret key, or site ID not configured',
         configured: false,
       });
     }
 
-    // Test connection with a dummy verify call
-    const testResult = await verifySession('health-check-test');
+    // Test connection by creating a real session
+    const session = await startSession();
 
-    // Even if the session doesn't exist, a non-network-error
-    // response means the API is reachable
-    if (testResult.error === 'Network error') {
+    if (!session) {
       return NextResponse.json({
         status: 'error',
-        message: 'Cannot reach MAGEN Trust API',
+        message: 'Cannot reach MAGEN backend',
         configured: true,
-        error: testResult.error,
       });
     }
 
@@ -31,6 +28,7 @@ export async function GET() {
       status: 'connected',
       message: 'MAGEN Trust is properly configured and reachable',
       configured: true,
+      testSessionId: session.sessionId,
     });
   } catch (error) {
     console.error('MAGEN health check error:', error);

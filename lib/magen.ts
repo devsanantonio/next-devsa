@@ -1,73 +1,136 @@
-// MAGEN Trust API - https://api.magentrust.ai
-// Official API docs: https://magentrust.ai
-const MAGEN_BASE_URL = 'https://api.magentrust.ai';
+// MAGEN Trust API — Supabase Edge Functions backend
+// https://magentrust.ai
+//
+// The SDK's `apiBaseUrl` config lets us point at whatever backend is live.
+// Right now the working backend is the Supabase Edge Functions deployment.
+// When the public api.magentrust.ai goes live, just change MAGEN_API_URL.
 
-// Get configured credentials
-function getMagenCredentials() {
-  const apiKey = process.env.MAGEN_API_KEY;
-  const siteId = process.env.MAGEN_SITE_ID;
-  return { apiKey, siteId };
+const DEFAULT_BASE_URL = 'https://nffcwzpxkdrvxopjiuvc.supabase.co/functions/v1';
+
+function getBaseUrl(): string {
+  return process.env.MAGEN_API_URL || DEFAULT_BASE_URL;
 }
 
-// Standard headers for all MAGEN API requests
+function getMagenCredentials() {
+  const apiKey = process.env.MAGEN_API_KEY;
+  const secretKey = process.env.MAGEN_SECRET_KEY;
+  const siteId = process.env.MAGEN_SITE_ID;
+  return { apiKey, secretKey, siteId };
+}
+
+// Auth headers for the Supabase MAGEN backend
 function getMagenHeaders() {
-  const { apiKey, siteId } = getMagenCredentials();
+  const { apiKey, secretKey } = getMagenCredentials();
   return {
-    'x-magen-key': apiKey || '',
-    'x-magen-site': siteId || '',
     'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey || ''}`,
+    'X-Magen-Secret': secretKey || '',
   };
 }
 
 // Check if Magen is properly configured
 export function isMagenConfigured(): boolean {
-  const { apiKey, siteId } = getMagenCredentials();
-  return !!(apiKey && !apiKey.includes('your_') && siteId && siteId.length > 0);
+  const { apiKey, secretKey, siteId } = getMagenCredentials();
+  return !!(
+    apiKey && !apiKey.includes('your_') &&
+    secretKey && secretKey.length > 0 &&
+    siteId && siteId.length > 0
+  );
 }
 
-// Official MAGEN Trust API response shape
-export interface MagenVerifyResponse {
-  session_id: string;
-  verdict: 'verified' | 'unverified' | 'review';
-  score: number;
-  risk_band: 'low' | 'medium' | 'high';
-  is_human: boolean;
-  sdk_version: string;
+// Supabase backend response shapes
+export interface MagenStartSessionResponse {
+  success: boolean;
+  data: {
+    sessionId: string;
+    sessionToken: string;
+    status: string;
+    expiresAt: string;
+  };
 }
 
-// Challenge response shape
-export interface MagenChallengeResponse {
-  challenge_id: string;
-  type: string;
-  expires_at: string;
+export interface MagenCheckResponse {
+  success: boolean;
+  data: {
+    sessionId: string;
+    status: string;
+    verified: boolean;
+    trustScore: number;
+    isHuman: boolean;
+    classification: string;         // "HUMAN" | "BOT" | "SUSPICIOUS"
+    tieredClassification: string;
+    classificationAction: string;
+    humanSignals: string[];
+    botSignals: string[];
+  };
 }
 
-// Result type for internal use
+// Internal result type used throughout the app
 export interface MagenVerificationResult {
   success: boolean;
   session_id?: string;
   verdict?: 'verified' | 'unverified' | 'review';
   score?: number;
-  risk_band?: 'low' | 'medium' | 'high';
   is_human?: boolean;
   error?: string;
 }
 
-// Verify a session via the official MAGEN Trust API
-// POST /v1/verify
-export async function verifySession(sessionId: string): Promise<MagenVerificationResult> {
-  const { apiKey, siteId } = getMagenCredentials();
+// Map Supabase classification → internal verdict
+function classificationToVerdict(classification: string): 'verified' | 'unverified' | 'review' {
+  switch (classification.toUpperCase()) {
+    case 'HUMAN': return 'verified';
+    case 'BOT': return 'unverified';
+    case 'SUSPICIOUS': return 'review';
+    default: return 'review';
+  }
+}
 
-  if (!apiKey || apiKey.includes('your_') || !siteId) {
+// Start a new verification session
+// POST /magen-verify-start
+export async function startSession(): Promise<{ sessionId: string } | null> {
+  const { siteId } = getMagenCredentials();
+  if (!isMagenConfigured()) {
+    console.log('MAGEN: Not configured, skipping session start');
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${getBaseUrl()}/magen-verify-start`, {
+      method: 'POST',
+      headers: getMagenHeaders(),
+      body: JSON.stringify({ action: 'start', siteId }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('MAGEN start-session error:', response.status, errorText);
+      return null;
+    }
+
+    const result: MagenStartSessionResponse = await response.json();
+    if (result.success && result.data?.sessionId) {
+      return { sessionId: result.data.sessionId };
+    }
+    return null;
+  } catch (error) {
+    console.error('MAGEN start-session error:', error);
+    return null;
+  }
+}
+
+// Verify (check) an existing session
+// POST /magen-verify-check
+export async function verifySession(sessionId: string): Promise<MagenVerificationResult> {
+  if (!isMagenConfigured()) {
     console.log('MAGEN: Not configured, skipping verification');
     return { success: false, error: 'MAGEN not configured' };
   }
 
   try {
-    const response = await fetch(`${MAGEN_BASE_URL}/v1/verify`, {
+    const response = await fetch(`${getBaseUrl()}/magen-verify-check`, {
       method: 'POST',
       headers: getMagenHeaders(),
-      body: JSON.stringify({ session_id: sessionId }),
+      body: JSON.stringify({ sessionId }),
     });
 
     if (!response.ok) {
@@ -76,45 +139,23 @@ export async function verifySession(sessionId: string): Promise<MagenVerificatio
       return { success: false, error: `Verification failed: ${response.status}` };
     }
 
-    const result: MagenVerifyResponse = await response.json();
+    const result: MagenCheckResponse = await response.json();
 
+    if (!result.success) {
+      return { success: false, error: 'Verification returned unsuccessful' };
+    }
+
+    const { data } = result;
     return {
       success: true,
-      session_id: result.session_id,
-      verdict: result.verdict,
-      score: result.score,
-      risk_band: result.risk_band,
-      is_human: result.is_human,
+      session_id: data.sessionId,
+      verdict: classificationToVerdict(data.classification),
+      score: data.trustScore,
+      is_human: data.isHuman,
     };
   } catch (error) {
     console.error('MAGEN verify error:', error);
     return { success: false, error: 'Network error' };
-  }
-}
-
-// Request an optional challenge for additional verification
-// GET /v1/challenge
-export async function requestChallenge(): Promise<MagenChallengeResponse | null> {
-  const { apiKey, siteId } = getMagenCredentials();
-
-  if (!apiKey || apiKey.includes('your_') || !siteId) {
-    return null;
-  }
-
-  try {
-    const response = await fetch(`${MAGEN_BASE_URL}/v1/challenge`, {
-      method: 'GET',
-      headers: getMagenHeaders(),
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('MAGEN challenge error:', error);
-    return null;
   }
 }
 

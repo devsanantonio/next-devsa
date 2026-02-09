@@ -3,16 +3,18 @@ import { verifySession, isVerified, shouldBlock } from '@/lib/magen';
 
 export async function POST(request: NextRequest) {
   try {
-    const { session_id } = await request.json();
+    const body = await request.json();
+    // Accept both session_id (from hook) and sessionId (camelCase)
+    const sessionId = body.session_id || body.sessionId;
 
-    if (!session_id) {
+    if (!sessionId) {
       return NextResponse.json(
         { error: 'session_id is required' },
         { status: 400 }
       );
     }
 
-    const result = await verifySession(session_id);
+    const result = await verifySession(sessionId);
 
     if (!result.success) {
       return NextResponse.json(
@@ -25,7 +27,6 @@ export async function POST(request: NextRequest) {
       session_id: result.session_id,
       verdict: result.verdict,
       score: result.score,
-      risk_band: result.risk_band,
       is_human: result.is_human,
       verified: isVerified(result),
       blocked: shouldBlock(result),
