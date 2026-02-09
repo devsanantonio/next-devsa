@@ -1,203 +1,188 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import { techCommunities } from "@/data/communities"
 import { partners } from "@/data/partners"
+import { techCommunities } from "@/data/communities"
+import { Loader2 } from "lucide-react"
 
-// Combine and shuffle communities and partners for the mosaic
-const allLogos = [...techCommunities.map(c => ({ ...c, type: 'community' as const })), ...partners.map(p => ({ ...p, type: 'partner' as const }))]
-
-// Deterministic pseudo-random function based on index (same on server and client)
-function seededOffset(index: number): number {
-  return ((index * 7 + 3) % 10)
+interface LogoItem {
+  id: string
+  name: string
+  logo: string
+  type: "community" | "partner"
 }
 
 export function GroupsHero() {
-  const headlinerIds = ["alamo-python", "defcongroup-sa", "greater-gaming-society"];
-  
-  const headliners = headlinerIds
-    .map(id => techCommunities.find(c => c.id === id))
-    .filter(Boolean);
-  
-  const otherCommunities = techCommunities.filter(c => !headlinerIds.includes(c.id));
-  
-  const section1Groups = otherCommunities.slice(0, 6);
-  const section2Groups = otherCommunities.slice(6, 12);
-  const section3Groups = otherCommunities.slice(12, 18);
+  const [allLogos, setAllLogos] = useState<LogoItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const sections = [
-    { headliner: headliners[0], groups: section1Groups },
-    { headliner: headliners[1], groups: section2Groups },
-    { headliner: headliners[2], groups: section3Groups },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/communities?includeStatic=true")
+        if (res.ok) {
+          const data = await res.json()
+          const communities: LogoItem[] = (data.communities || []).map(
+            (c: { id: string; name: string; logo: string }) => ({
+              id: c.id,
+              name: c.name,
+              logo: c.logo,
+              type: "community" as const,
+            })
+          )
+          const partnerLogos: LogoItem[] = partners.map((p) => ({
+            id: p.id,
+            name: p.name,
+            logo: p.logo,
+            type: "partner" as const,
+          }))
+          setAllLogos([...communities, ...partnerLogos])
+        } else {
+          fallbackToStatic()
+        }
+      } catch {
+        fallbackToStatic()
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    const fallbackToStatic = () => {
+      const communities: LogoItem[] = techCommunities.map((c) => ({
+        id: c.id,
+        name: c.name,
+        logo: c.logo,
+        type: "community" as const,
+      }))
+      const partnerLogos: LogoItem[] = partners.map((p) => ({
+        id: p.id,
+        name: p.name,
+        logo: p.logo,
+        type: "partner" as const,
+      }))
+      setAllLogos([...communities, ...partnerLogos])
+    }
+
+    fetchData()
+  }, [])
 
   return (
-    <section className="relative overflow-hidden bg-black border-b border-gray-800" data-bg-type="dark">
-      {/* Logo mosaic background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/80 to-black z-10" />
-        
-        {/* Animated floating logos */}
-        <div className="absolute inset-0">
-          {allLogos.map((logo, index) => {
-            // Create a scattered, organic layout with deterministic offsets
-            const row = Math.floor(index / 6)
-            const col = index % 6
-            const offsetX = (col * 16.66) + (row % 2 === 0 ? 8 : 0)
-            const offsetY = (row * 25) + seededOffset(index)
-            
-            return (
-              <motion.div
-                key={logo.id}
-                className="absolute"
-                style={{
-                  left: `${offsetX}%`,
-                  top: `${offsetY}%`,
-                }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ 
-                  opacity: [0.15, 0.3, 0.15],
-                  scale: [0.9, 1.1, 0.9],
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 4 + (index % 3),
-                  repeat: Infinity,
-                  delay: index * 0.2,
-                  ease: "easeInOut",
-                }}
-              >
-                <div className="relative h-12 w-12 md:h-16 md:w-16 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-500">
-                  <Image
-                    src={logo.logo}
-                    alt={logo.name}
-                    fill
-                    className="object-contain"
-                    sizes="64px"
-                  />
-                </div>
-              </motion.div>
-            )
-          })}
-        </div>
-      </div>
+    <section
+      className="relative overflow-hidden bg-black border-b border-gray-800 min-h-dvh flex flex-col items-center justify-center"
+      data-bg-type="dark"
+    >
+      {/* Subtle radial gradient background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-gray-900/50 via-black to-black" />
 
       {/* Main content */}
-      <div className="relative z-20 mx-auto max-w-6xl px-6 py-20 md:py-32">
+      <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="text-center max-w-4xl mx-auto"
         >
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1]">
+          <div className="flex items-center justify-center gap-2 mb-4 sm:mb-5">
+            <div className="h-1 w-8 rounded-full bg-[#ef426f]" />
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#ef426f]">
+              Building Together
+            </span>
+            <div className="h-1 w-8 rounded-full bg-[#ef426f]" />
+          </div>
+
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black tracking-tighter text-white leading-[0.95] mb-5 sm:mb-6">
             Partners +{" "}
             <span className="text-[#ef426f]">Communities</span>
           </h1>
-          <p className="mt-6 max-w-3xl text-lg font-medium leading-relaxed text-gray-400 md:text-xl mx-auto">
-            Our platform is bridging the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl font-medium leading-[1.7] text-white/70 max-w-3xl mx-auto">
+            Our platform is bridging the gap between passionate builders,
+            local partners, and the growing tech ecosystem in San Antonio.
           </p>
         </motion.div>
 
-        {/* Interactive logo showcase */}
+        {/* Logo showcase */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-16 md:mt-20"
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-12 sm:mt-16 md:mt-20 lg:mt-24 w-full max-w-6xl mx-auto"
         >
-          {/* Desktop: Two rows of logos with hover effects */}
-          <div className="hidden md:block">
-            <div className="flex flex-wrap justify-center gap-6">
-              {allLogos.slice(0, 12).map((logo) => (
-                <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
-                  <motion.div
-                    className="group relative"
-                    whileHover={{ scale: 1.2, zIndex: 10 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    <div className="relative h-14 w-14 rounded-xl bg-gray-900/80 p-2 border border-gray-800 backdrop-blur-sm transition-all duration-300 group-hover:border-[#ef426f] group-hover:bg-gray-800/90 group-hover:shadow-lg group-hover:shadow-[#ef426f]/20">
-                      <Image
-                        src={logo.logo}
-                        alt={logo.name}
-                        fill
-                        className="object-contain p-1.5 grayscale group-hover:grayscale-0 transition-all duration-300"
-                        sizes="56px"
-                      />
-                    </div>
-                    {/* Tooltip */}
-                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                      <div className="whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-lg">
-                        {logo.name}
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-white/40" />
             </div>
-            <div className="flex flex-wrap justify-center gap-6 mt-6">
-              {allLogos.slice(12).map((logo) => (
-                <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
-                  <motion.div
-                    className="group relative"
-                    whileHover={{ scale: 1.2, zIndex: 10 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    <div className="relative h-14 w-14 rounded-xl bg-gray-900/80 p-2 border border-gray-800 backdrop-blur-sm transition-all duration-300 group-hover:border-[#ef426f] group-hover:bg-gray-800/90 group-hover:shadow-lg group-hover:shadow-[#ef426f]/20">
-                      <Image
-                        src={logo.logo}
-                        alt={logo.name}
-                        fill
-                        className="object-contain p-1.5 grayscale group-hover:grayscale-0 transition-all duration-300"
-                        sizes="56px"
-                      />
-                    </div>
-                    {/* Tooltip */}
-                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                      <div className="whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-lg">
-                        {logo.name}
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Desktop: flowing grid */}
+              <div className="hidden md:block">
+                <div className="flex flex-wrap items-center justify-center gap-4 lg:gap-5 xl:gap-6">
+                  {allLogos.map((logo) => (
+                    <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
+                      <motion.div
+                        className="group relative"
+                        whileHover={{ scale: 1.15, zIndex: 10 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      >
+                        <div className="relative h-16 w-16 lg:h-20 lg:w-20 xl:h-24 xl:w-24 2xl:h-28 2xl:w-28 rounded-2xl bg-gray-900/80 p-2 lg:p-2.5 xl:p-3 border border-gray-800 backdrop-blur-sm transition-all duration-300 group-hover:border-[#ef426f] group-hover:bg-gray-800/90 group-hover:shadow-lg group-hover:shadow-[#ef426f]/20">
+                          <Image
+                            src={logo.logo}
+                            alt={logo.name}
+                            fill
+                            className="object-contain p-2 lg:p-2.5 xl:p-3 grayscale group-hover:grayscale-0 transition-all duration-300"
+                            sizes="(min-width: 1536px) 112px, (min-width: 1280px) 96px, (min-width: 1024px) 80px, 64px"
+                          />
+                        </div>
+                        {/* Tooltip */}
+                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                          <div className="whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-gray-900 shadow-lg">
+                            {logo.name}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
 
-          {/* Mobile: Static grid layout for easy tapping */}
-          <div className="md:hidden">
-            <p className="text-center text-xs font-medium tracking-widest text-gray-500 uppercase mb-6">
-              Tap to learn more
-            </p>
-            <div className="grid grid-cols-4 gap-3 px-2">
-              {allLogos.map((logo) => (
-                <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
-                  <div className="group relative aspect-square rounded-xl bg-gray-900/80 p-2 border border-gray-800 transition-all duration-200 active:scale-95 active:border-[#ef426f]">
-                    <Image
-                      src={logo.logo}
-                      alt={logo.name}
-                      fill
-                      className="object-contain p-2"
-                      sizes="80px"
-                    />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+              {/* Mobile: grid layout */}
+              <div className="md:hidden">
+                <p className="text-center text-[11px] font-black tracking-widest text-white/40 uppercase mb-5">
+                  Tap to learn more
+                </p>
+                <div className="grid grid-cols-4 gap-3 px-2">
+                  {allLogos.map((logo) => (
+                    <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
+                      <div className="group relative aspect-square rounded-xl bg-gray-900/80 p-2 border border-gray-800 transition-all duration-200 active:scale-95 active:border-[#ef426f]">
+                        <Image
+                          src={logo.logo}
+                          alt={logo.name}
+                          fill
+                          className="object-contain p-2.5"
+                          sizes="80px"
+                        />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </motion.div>
 
-        {/* Bridge metaphor - connection lines */}
+        {/* Bridge metaphor */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-12 flex items-center justify-center gap-4"
+          className="mt-10 sm:mt-12 lg:mt-16 flex items-center justify-center gap-4"
         >
           <div className="h-px flex-1 max-w-24 bg-linear-to-r from-transparent to-gray-600" />
-          <span className="text-sm font-semibold uppercase tracking-widest text-gray-500">Building Together</span>
+          <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white/40">
+            We&apos;re the bridge
+          </span>
           <div className="h-px flex-1 max-w-24 bg-linear-to-l from-transparent to-gray-600" />
         </motion.div>
       </div>

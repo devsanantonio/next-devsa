@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X } from "lucide-react"
 import { GlowingEffect } from "./glowing-effect"
-import { LinkedInIcon, InstagramIcon, TwitterIcon, FacebookIcon, GitHubIcon, DiscordIcon } from "./icons/social-icons"
+import { LinkedInIcon, InstagramIcon, TwitterIcon, FacebookIcon, GitHubIcon, DiscordIcon, YouTubeIcon } from "./icons/social-icons"
 
 interface SocialMediaMenuProps {
   isOpen: boolean
@@ -37,13 +37,13 @@ const socialMediaLinks = [
     color: "hover:text-blue-400",
     glowColor: "hover:shadow-blue-400/50",
   },
-  {
+  /* {
     name: "Facebook",
     icon: FacebookIcon,
     url: "https://www.facebook.com/p/DEVSA-61558461121201/",
     color: "hover:text-blue-700",
     glowColor: "hover:shadow-blue-700/50",
-  },
+  }, */
   {
     name: "GitHub",
     icon: GitHubIcon,
@@ -57,14 +57,14 @@ const socialMediaLinks = [
     url: "https://twitch.tv/devsatx",
     color: "hover:text-purple-600",
     glowColor: "hover:shadow-purple-500/50",
-  },
+  }, */
   {
     name: "YouTube",
     icon: YouTubeIcon,
     url: "https://youtube.com/@devsatx",
     color: "hover:text-red-600",
     glowColor: "hover:shadow-red-500/50",
-  }, */
+  },
 ]
 
 export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
@@ -105,9 +105,9 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mb-8 xs:mb-10 md:mb-12 lg:mb-16 flex flex-col items-center gap-4 xs:gap-6 md:px-10 max-w-7xl w-full"
+                className="mb-8 md:mb-12 flex flex-col items-center gap-4 xs:gap-6 md:px-10 max-w-7xl w-full"
               >
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <img
                     src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-community.svg"
                     alt="DEVSA Community"
@@ -115,10 +115,13 @@ export function SocialMediaMenu({ isOpen, onClose }: SocialMediaMenuProps) {
                   />
                 </div>
 
-                <div className="text-center">
-                  <h2 className="text-white tracking-tight text-balance text-base xs:text-lg sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-black leading-tight">
-                    <span className="text-[#FACB11]">STAY CONNECTED</span>
+                <div className="text-center max-w-2xl">
+                  <h2 className="text-white tracking-tight text-balance text-xl md:text-2xl lg:text-4xl xl:text-5xl font-black leading-tight mb-3 sm:mb-4">
+                    <span className="text-[#FACB11]">How do I stay connected?</span>
                   </h2>
+                  <p className="text-white/70 text-sm md:text-base lg:text-lg leading-relaxed font-medium text-balance">
+                    Many of the tech communities don&apos;t have their own web presence or social media of their own. DEVSA has become their voice online—sharing their events, amplifying their work, and connecting them with new members. Follow us to stay in the loop. <strong>We&apos;re the bridge for a reason.</strong>
+                  </p>
                 </div>
               </motion.div>
 

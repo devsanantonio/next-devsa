@@ -73,13 +73,6 @@ Your Direct Connection to the Tech Community`
             {/* Menu Items */}
             <div className="py-2">
               <Link
-                href="/events"
-                onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
-              >
-                {'>'} Events Calendar
-              </Link>
-              <Link
                 href="/coworking-space"
                 onClick={onClose}
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
@@ -87,18 +80,25 @@ Your Direct Connection to the Tech Community`
                 {'>'} Coworking Space
               </Link>
               <Link
+                href="/events"
+                onClick={onClose}
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+              >
+                {'>'} Events Calendar
+              </Link>
+              <Link
+                href="/jobs"
+                onClick={onClose}
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+              >
+                {'>'} Job Board
+              </Link>
+              <Link
                 href="/buildingtogether"
                 onClick={onClose}
                 className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
               >
                 {'>'} Partners & Communities
-              </Link>
-              <Link
-                href="/events/pysanantonio"
-                onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
-              >
-                {'>'} PySanAntonio
               </Link>
               <button
                 onClick={() => {
