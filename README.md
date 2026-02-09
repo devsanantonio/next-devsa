@@ -13,59 +13,80 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 ## Tech Stack
 
 - **Framework:** [Next.js 16](https://nextjs.org/) with App Router
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animation:** [Motion (Framer Motion)](https://motion.dev/)
-- **Database:** [Google Firestore](https://firebase.google.com/docs/firestore) - NoSQL cloud database
-- **Bot Protection:** [MAGEN](https://magenminer.io/) - Human-first verification
+- **Database:** [Google Firestore](https://firebase.google.com/docs/firestore) — NoSQL cloud database
+- **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google OAuth + Email/Password
+- **Email:** [Resend](https://resend.com/) — Transactional emails
+- **Bot Protection:** [MAGEN](https://magenminer.io/) — Human-first verification
+- **Storage:** [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) — File uploads
 - **Deployment:** [Vercel](https://vercel.com/)
 - **Analytics:** Vercel Analytics
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm (recommended) or npm
+- [Node.js](https://nodejs.org/) 18+
+- [pnpm](https://pnpm.io/) (recommended) or npm
+- A Firebase project with Firestore and Authentication enabled
+- A [Resend](https://resend.com/) account (for transactional emails)
 
-### Installation
+### 1. Clone the Repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/next-devsa.git
+git clone https://github.com/devsanantonio/next-devsa.git
 cd next-devsa
-
-# Install dependencies
-pnpm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your keys (see Environment Variables section)
-
-# Start development server
-pnpm dev
 ```
 
-The app will be running at [http://localhost:3000](http://localhost:3000)
+### 2. Install Dependencies
 
-### Environment Variables
+```bash
+pnpm install
+```
 
-Create a `.env.local` file with:
+### 3. Set Up Environment Variables
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your keys:
 
 ```env
-# Google Firestore - Service Account Key (as JSON string)
+# Firebase Client SDK
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+
+# Google Firestore — Service Account Key (JSON string)
 GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"your-project",...}
 
 # MAGEN (Bot Protection)
 MAGEN_API_KEY=your_magen_api_key
 MAGEN_SECRET_KEY=your_magen_secret_key
 
+# Resend (Email)
+RESEND_API_KEY=your_resend_api_key
+
 # Admin Setup (one-time use to create first admin)
 ADMIN_SETUP_SECRET=your_random_secret_for_initial_setup
 ```
 
-### Setting Up the First Admin
+### 4. Start the Dev Server
 
-After deploying, set up your first admin by making a POST request:
+```bash
+pnpm dev
+```
+
+The app will be running at [http://localhost:3000](http://localhost:3000).
+
+### 5. Setting Up the First Admin
+
+After deploying, create the first admin by making a POST request:
 
 ```bash
 curl -X POST https://your-domain.com/api/admin/setup \
@@ -75,75 +96,220 @@ curl -X POST https://your-domain.com/api/admin/setup \
 
 This only works once when no admins exist in the system.
 
+---
+
 ## Project Structure
 
 ```
 next-devsa/
-├── app/                      # Next.js App Router
-│   ├── page.tsx              # Homepage
-│   ├── layout.tsx            # Root layout with navbar/footer
-│   ├── globals.css           # Global styles & Tailwind
-│   ├── api/                  # API routes
-│   │   ├── magen/            # MAGEN bot protection endpoints
-│   │   ├── og/               # Open Graph image generation
-│   │   ├── admin/            # Admin API endpoints
-│   │   ├── newsletter/       # Newsletter subscription
-│   │   ├── events/           # Events CRUD
-│   │   └── access-request/   # Access request for organizers
-│   ├── events/               # Events pages
-│   │   ├── page.tsx          # Community calendar
-│   │   ├── community/[slug]/ # Dynamic community event pages
-│   │   ├── morehumanthanhuman/ # AI Conference page
-│   │   └── pysanantonio/     # PySA event page
-│   ├── admin/                # Protected admin pages
-│   │   ├── page.tsx          # Admin dashboard
-│   │   └── create-event/     # Create event page
-│   ├── coworking-space/      # Geekdom coworking page
-│   └── signin/               # Access request page
+├── app/                          # Next.js App Router
+│   ├── page.tsx                  # Homepage
+│   ├── layout.tsx                # Root layout (navbar + footer)
+│   ├── globals.css               # Global styles + Tailwind
+│   ├── robots.ts                 # SEO robots config
+│   ├── sitemap.ts                # Dynamic sitemap
+│   │
+│   ├── admin/                    # 🔒 Admin Dashboard
+│   │   ├── page.tsx              # Admin dashboard (events, communities, admins)
+│   │   └── create-event/         # Create new community event
+│   │       └── page.tsx
+│   │
+│   ├── jobs/                     # 💼 Job Board
+│   │   ├── page.tsx              # Jobs landing page (hero + listings)
+│   │   ├── layout.tsx            # Jobs layout (auth provider)
+│   │   ├── signin/               # Firebase Auth sign-in
+│   │   │   └── page.tsx
+│   │   ├── post/                 # Post a new job listing
+│   │   │   └── page.tsx
+│   │   ├── [slug]/               # Individual job detail page
+│   │   │   └── page.tsx
+│   │   ├── admin/                # Jobs super-admin panel
+│   │   │   └── page.tsx
+│   │   └── dashboard/            # Authenticated user dashboard
+│   │       ├── page.tsx          # Dashboard home (stats, activity)
+│   │       ├── profile/          # Edit user profile
+│   │       ├── messages/         # Direct messages
+│   │       └── notifications/    # Notification center
+│   │
+│   ├── buildingtogether/         # Partners + Communities hub
+│   │   ├── page.tsx              # Logo grid hero page
+│   │   └── [slug]/               # Individual community/partner page
+│   │       ├── page.tsx
+│   │       ├── group-page-client.tsx
+│   │       └── partner-page-client.tsx
+│   │
+│   ├── events/                   # Community Events
+│   │   ├── page.tsx              # Events calendar
+│   │   ├── [slug]/               # Dynamic event detail pages
+│   │   ├── morehumanthanhuman/   # AI Conference page
+│   │   └── pysanantonio/         # PySA event page
+│   │
+│   ├── coworking-space/          # Geekdom coworking page
+│   ├── devsatv/                  # DEVSA TV content page
+│   ├── signin/                   # Admin access request page
+│   │
+│   └── api/                      # API Routes
+│       ├── admin/                # Admin endpoints
+│       │   ├── auth/             # Admin authentication
+│       │   ├── data/             # Admin data management
+│       │   ├── migrate/          # Data migration utilities
+│       │   └── setup/            # First-time admin setup
+│       ├── auth/                 # Firebase Auth
+│       │   └── verify/           # Token verification
+│       ├── jobs/                 # Job listings CRUD
+│       │   ├── route.ts          # GET/POST jobs
+│       │   ├── admin/            # Jobs admin endpoints
+│       │   ├── applications/     # Job applications
+│       │   └── comments/         # Job comments/discussions
+│       ├── job-board/            # Job board user management
+│       │   ├── profile/          # User profile CRUD
+│       │   └── upload/           # Profile image uploads
+│       ├── communities/          # Communities CRUD
+│       ├── events/               # Events CRUD
+│       ├── messages/             # Direct messaging
+│       ├── notifications/        # Notifications
+│       ├── newsletter/           # Newsletter subscription
+│       ├── rsvp/                 # Event RSVP
+│       ├── ai-conference/        # AI Conference registration
+│       ├── call-for-speakers/    # Speaker submissions
+│       ├── access-request/       # Organizer access requests
+│       ├── upload/               # General file uploads
+│       ├── magen/                # MAGEN bot protection
+│       │   ├── health/           # Health check
+│       │   ├── start-session/    # Start verification session
+│       │   └── verify/           # Verify session
+│       └── og/                   # Open Graph image generation
+│           ├── buildingtogether/
+│           ├── coworking-space/
+│           ├── devsatv/
+│           ├── event/
+│           ├── events/
+│           └── morehumanthanhuman/
 │
-├── components/               # React components
-│   ├── hero-bridge.tsx       # Main hero section
-│   ├── hero-communities.tsx  # Community showcase grid
-│   ├── partner-section.tsx   # Partners carousel
-│   ├── magen-newsletter-cta.tsx # Community spotlight section
-│   ├── navbar.tsx            # Navigation bar
-│   ├── footer.tsx            # Site footer
-│   ├── access-request-form.tsx # Organizer access request form
-│   ├── events/               # Event-specific components
-│   ├── coworking-space/      # Coworking page components
-│   ├── pysa/                 # PySA event components
-│   ├── aiconference/         # AI Conference components
-│   └── icons/                # SVG icon components
+├── components/                   # React Components
+│   ├── navbar.tsx                # Site navigation
+│   ├── footer.tsx                # Site footer
+│   ├── hero-bridge.tsx           # Homepage hero
+│   ├── hero-communities.tsx      # Community showcase grid
+│   ├── partner-section.tsx       # Partners carousel
+│   ├── auth-provider.tsx         # Firebase Auth context provider
+│   ├── auth-button.tsx           # Auth button component
+│   ├── newsletter-form.tsx       # Newsletter signup
+│   ├── access-request-form.tsx   # Organizer access request
+│   ├── magen-newsletter-cta.tsx  # Community spotlight section
+│   ├── glowing-effect.tsx        # Glowing border effect
+│   ├── rich-text-editor.tsx      # Rich text editor
+│   ├── slide-out-menu.tsx        # Mobile slide-out menu
+│   ├── social-media-menu.tsx     # Social media links panel
+│   ├── terminal-dropdown.tsx     # Terminal-style dropdown
+│   ├── events-popup.tsx          # Events notification popup
+│   ├── jobs/                     # Job board components
+│   │   ├── jobs-navbar.tsx       # Jobs-specific navigation
+│   │   ├── job-card.tsx          # Job listing card
+│   │   ├── job-filters.tsx       # Search + filter controls
+│   │   ├── comment-section.tsx   # Job discussion thread
+│   │   ├── message-thread.tsx    # Direct message UI
+│   │   └── notification-bell.tsx # Notification indicator
+│   ├── events/                   # Event components
+│   ├── partners/                 # Partner/community components
+│   ├── coworking-space/          # Coworking page components
+│   ├── aiconference/             # AI Conference components
+│   ├── pysa/                     # PySA event components
+│   ├── devsatv/                  # DEVSA TV components
+│   └── icons/                    # SVG icon components
 │
-├── data/                     # Static data files
-│   ├── communities.ts        # Tech community listings
-│   ├── events.ts             # Community events
-│   ├── partners.ts           # Partner organizations
-│   └── pysa/                 # PySA event data
-│       ├── sessions.ts       # Conference sessions
-│       ├── speakers.ts       # Speaker information
-│       └── sponsors.ts       # Event sponsors
+├── data/                         # Static Data (fallback)
+│   ├── communities.ts            # Tech community listings
+│   ├── events.ts                 # Community events
+│   ├── partners.ts               # Partner organizations
+│   └── pysa/                     # PySA event data
+│       ├── sessions.ts
+│       ├── speakers.ts
+│       ├── faqs.ts
+│       └── partners.ts
 │
-├── lib/                      # Utility functions
-│   ├── firebase-admin.ts     # Firebase Admin SDK setup
-│   ├── magen.ts              # MAGEN bot protection
-│   └── utils.ts              # General utilities (cn, etc.)
-│   └── magen.ts              # MAGEN verification helpers
+├── lib/                          # Utilities + Config
+│   ├── firebase-admin.ts         # Firebase Admin SDK (server)
+│   ├── firebase.ts               # Firebase Client SDK (browser)
+│   ├── auth-middleware.ts        # Auth middleware helpers
+│   ├── magen.ts                  # MAGEN verification helpers
+│   ├── resend.ts                 # Resend email client
+│   ├── utils.ts                  # General utilities (cn, etc.)
+│   ├── emails/                   # Email templates
+│   │   ├── access-approved.ts
+│   │   ├── access-request-received.ts
+│   │   └── speaker-thank-you.ts
+│   └── hooks/                    # Custom React hooks
 │
-├── types/                    # TypeScript type definitions
-│   └── magen.d.ts            # MAGEN types
+├── types/                        # TypeScript Type Definitions
+│   └── magen.d.ts
 │
-└── public/                   # Static assets
+└── public/                       # Static Assets
 ```
+
+---
+
+## Key Features
+
+### Admin Dashboard (`/admin`)
+Protected dashboard for community organizers. Manage events, communities, and admin users. Requires approved admin access via Firestore.
+
+### Job Board (`/jobs`)
+Full-featured job board for the San Antonio tech ecosystem:
+- **For employers:** Post W2, 1099, or equity-based roles
+- **For job seekers:** Browse listings, filter by type/location, apply directly
+- **Dashboard:** Profile management, messaging, notifications
+- **Auth:** Firebase Authentication (Google OAuth + email/password)
+
+### Partners + Communities (`/buildingtogether`)
+Discover 20+ local tech communities and partner organizations. Data is sourced from Firestore with a static fallback.
+
+### Events (`/events`)
+Community event calendar with RSVP functionality. Includes special event pages for the AI Conference and PySA.
+
+---
 
 ## Contributing
 
-We welcome contributions from the San Antonio tech community! Here's how you can help:
+We welcome contributions from the San Antonio tech community!
+
+### How to Contribute
+
+1. **Fork** the repository on GitHub
+2. **Clone** your fork locally:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/next-devsa.git
+   cd next-devsa
+   ```
+3. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+4. **Install dependencies:**
+   ```bash
+   pnpm install
+   ```
+5. **Make your changes** and test locally:
+   ```bash
+   pnpm dev
+   ```
+6. **Run the linter:**
+   ```bash
+   pnpm lint
+   ```
+7. **Commit** with a clear message:
+   ```bash
+   git commit -m "Add: brief description of your change"
+   ```
+8. **Push** to your fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+9. **Open a Pull Request** on the [main repository](https://github.com/devsanantonio/next-devsa) with a description of your changes
 
 ### Adding a New Community
 
-1. Edit `data/communities.ts`
-2. Add your community object following the existing format:
+Communities are managed through the Admin Dashboard, but static fallback data lives in `data/communities.ts`:
 
 ```typescript
 {
@@ -151,7 +317,6 @@ We welcome contributions from the San Antonio tech community! Here's how you can
   name: "Your Community Name",
   description: "Brief description of your community",
   logo: "https://your-logo-url.png",
-  color: "#yourBrandColor",
   website: "https://your-website.com",
   meetup: "https://meetup.com/your-group",
   discord: "https://discord.gg/your-invite",
@@ -160,8 +325,7 @@ We welcome contributions from the San Antonio tech community! Here's how you can
 
 ### Adding a New Partner
 
-1. Edit `data/partners.ts`
-2. Add your partner organization:
+Edit `data/partners.ts`:
 
 ```typescript
 {
@@ -173,24 +337,18 @@ We welcome contributions from the San Antonio tech community! Here's how you can
 }
 ```
 
-### Pull Request Process
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/add-my-community`
-3. Make your changes
-4. Test locally with `pnpm dev`
-5. Commit with a clear message: `git commit -m "Add XYZ Community to listings"`
-6. Push to your fork: `git push origin feature/add-my-community`
-7. Open a Pull Request with a description of your changes
+---
 
 ## Development Commands
 
 ```bash
-pnpm dev          # Start development server with Turbopack
+pnpm dev          # Start dev server with Turbopack
 pnpm build        # Build for production
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
 ```
+
+---
 
 ## Connect With Us
 
