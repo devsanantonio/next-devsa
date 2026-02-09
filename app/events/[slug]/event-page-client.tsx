@@ -7,6 +7,7 @@ import { initialCommunityEvents } from "@/data/events"
 import Image from "next/image"
 import Link from "next/link"
 import { Calendar, MapPin, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
+import { useMagen } from "@/lib/hooks/use-magen"
 
 // Social icons for share buttons
 function XIcon({ className }: { className?: string }) {
@@ -178,8 +179,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
-  const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
   const [community, setCommunity] = useState<TechCommunity | null>(null)
+  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   // Update current time every minute for live "Happening Now" detection
   useEffect(() => {
@@ -187,24 +188,6 @@ export function EventPageClient({ slug }: EventPageClientProps) {
       setCurrentTime(new Date())
     }, 60000)
     return () => clearInterval(interval)
-  }, [])
-
-  // Start Magen session for bot protection
-  useEffect(() => {
-    const startMagenSession = async () => {
-      try {
-        const response = await fetch('/api/magen/start-session', {
-          method: 'POST',
-        })
-        if (response.ok) {
-          const data = await response.json()
-          setMagenSessionId(data?.sessionId || null)
-        }
-      } catch {
-        // Magen not available - continue without it
-      }
-    }
-    startMagenSession()
   }, [])
 
   useEffect(() => {
@@ -362,22 +345,26 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     setRsvpError('')
 
     try {
-      // Verify Magen session before proceeding (if available)
-      if (magenSessionId) {
-        const verifyResponse = await fetch('/api/magen/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: magenSessionId }),
-        })
-        
-        if (verifyResponse.ok) {
-          const verifyData = await verifyResponse.json()
-          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
-            setRsvpError('Verification failed. Please try again.')
-            setRsvpSubmitting(false)
-            return
-          }
-        }
+      // Client-side MAGEN verification
+      const clientResult = await verify()
+
+      if (clientResult && clientResult.verdict !== 'verified') {
+        setRsvpError('Verification failed. Please try again.')
+        setRsvpSubmitting(false)
+        return
+      }
+
+      // Server-side re-verification if we got a session
+      let serverVerified = true
+      if (clientResult?.session_id) {
+        const serverResult = await verifyOnServer(clientResult.session_id)
+        serverVerified = serverResult.verified !== false
+      }
+
+      if (!serverVerified) {
+        setRsvpError('Verification failed. Please try again.')
+        setRsvpSubmitting(false)
+        return
       }
 
       const response = await fetch('/api/rsvp', {
@@ -391,7 +378,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           lastName: rsvpForm.lastName,
           email: rsvpForm.email,
           joinNewsletter: rsvpForm.joinNewsletter,
-          magenSessionId
+          magenSessionId: clientResult?.session_id || null,
+          magenVerdict: clientResult?.verdict || null,
+          magenScore: clientResult?.score || null,
         })
       })
 
@@ -596,13 +585,13 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     )}
                     <button
                       type="submit"
-                      disabled={rsvpSubmitting}
+                      disabled={rsvpSubmitting || isVerifying}
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {rsvpSubmitting ? (
+                      {rsvpSubmitting || isVerifying ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Submitting...
+                          {isVerifying ? 'Verifying...' : 'Submitting...'}
                         </>
                       ) : (
                         'Submit RSVP'

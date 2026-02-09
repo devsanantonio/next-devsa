@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
 import { Calendar, MapPin, Send, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useMagen } from "@/lib/hooks/use-magen"
 
 const sessionFormats = [
   { id: "talk", label: "Talk (30-45 min)", description: "Standard presentation with Q&A" },
@@ -23,27 +24,7 @@ export function CallForSpeakers() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
-
-  // Start MAGEN verification session via our API route
-  useEffect(() => {
-    const startMagenSession = async () => {
-      try {
-        const response = await fetch('/api/magen/start-session', {
-          method: 'POST',
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setMagenSessionId(data?.sessionId || null)
-        }
-      } catch {
-        // MAGEN not available - form will still work without verification
-      }
-    }
-
-    startMagenSession()
-  }, [])
+  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -58,34 +39,34 @@ export function CallForSpeakers() {
     setError(null)
 
     try {
-      // Verify Magen session before proceeding (if available)
-      let verifiedHumanScore: number | undefined;
-      if (magenSessionId) {
-        const verifyResponse = await fetch('/api/magen/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: magenSessionId }),
-        })
-        
-        if (verifyResponse.ok) {
-          const verifyData = await verifyResponse.json()
-          verifiedHumanScore = verifyData.humanScore
-          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
-            setError("Verification failed. Please try again.")
-            setIsSubmitting(false)
-            return
-          }
+      // Client-side MAGEN verification
+      const clientResult = await verify()
+
+      if (clientResult && clientResult.verdict !== 'verified') {
+        setError("Verification failed. Please try again.")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Server-side re-verification
+      if (clientResult?.session_id) {
+        const serverResult = await verifyOnServer(clientResult.session_id)
+        if (serverResult.verified === false) {
+          setError("Verification failed. Please try again.")
+          setIsSubmitting(false)
+          return
         }
       }
 
-      // Submit to API with verified human score
+      // Submit to API with verification data
       const response = await fetch('/api/call-for-speakers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          magenSessionId,
-          magenHumanScore: verifiedHumanScore,
+          magenSessionId: clientResult?.session_id || null,
+          magenVerdict: clientResult?.verdict || null,
+          magenScore: clientResult?.score || null,
         }),
       })
 

@@ -1,158 +1,132 @@
-// Magen API base URL - configure via environment variable
-const MAGEN_BASE_URL = process.env.MAGEN_API_URL || 'https://api.magenminer.io/v1';
+// MAGEN Trust API - https://api.magentrust.ai
+// Official API docs: https://magentrust.ai
+const MAGEN_BASE_URL = 'https://api.magentrust.ai';
 
-// Get configured keys
-function getMagenKeys() {
+// Get configured credentials
+function getMagenCredentials() {
   const apiKey = process.env.MAGEN_API_KEY;
-  const secretKey = process.env.MAGEN_SECRET_KEY;
-  return { apiKey, secretKey };
+  const siteId = process.env.MAGEN_SITE_ID;
+  return { apiKey, siteId };
+}
+
+// Standard headers for all MAGEN API requests
+function getMagenHeaders() {
+  const { apiKey, siteId } = getMagenCredentials();
+  return {
+    'x-magen-key': apiKey || '',
+    'x-magen-site': siteId || '',
+    'Content-Type': 'application/json',
+  };
 }
 
 // Check if Magen is properly configured
 export function isMagenConfigured(): boolean {
-  const { apiKey, secretKey } = getMagenKeys();
-  return !!(apiKey && !apiKey.includes('your_') && secretKey && !secretKey.includes('your_'));
+  const { apiKey, siteId } = getMagenCredentials();
+  return !!(apiKey && !apiKey.includes('your_') && siteId && siteId.length > 0);
 }
 
-export interface MagenSession {
-  sessionId: string;
-  status?: string;
-  humanScore?: number;
-  classification?: 'human' | 'bot' | 'unknown';
+// Official MAGEN Trust API response shape
+export interface MagenVerifyResponse {
+  session_id: string;
+  verdict: 'verified' | 'unverified' | 'review';
+  score: number;
+  risk_band: 'low' | 'medium' | 'high';
+  is_human: boolean;
+  sdk_version: string;
 }
 
+// Challenge response shape
+export interface MagenChallengeResponse {
+  challenge_id: string;
+  type: string;
+  expires_at: string;
+}
+
+// Result type for internal use
 export interface MagenVerificationResult {
-  valid: boolean;
-  humanScore?: number;
-  classification?: 'human' | 'bot' | 'unknown';
-  sessionId?: string;
+  success: boolean;
+  session_id?: string;
+  verdict?: 'verified' | 'unverified' | 'review';
+  score?: number;
+  risk_band?: 'low' | 'medium' | 'high';
+  is_human?: boolean;
   error?: string;
 }
 
-// Start a new verification session
-export async function startVerificationSession(options: {
-  action: string;
-  userId?: string;
-  context?: string;
-}): Promise<{ success: boolean; sessionId?: string; error?: string }> {
-  const { apiKey, secretKey } = getMagenKeys();
-  
-  if (!apiKey || apiKey.includes('your_')) {
-    console.log('MAGEN: API key not configured, skipping verification');
-    return { success: false, error: 'MAGEN API key not configured' };
+// Verify a session via the official MAGEN Trust API
+// POST /v1/verify
+export async function verifySession(sessionId: string): Promise<MagenVerificationResult> {
+  const { apiKey, siteId } = getMagenCredentials();
+
+  if (!apiKey || apiKey.includes('your_') || !siteId) {
+    console.log('MAGEN: Not configured, skipping verification');
+    return { success: false, error: 'MAGEN not configured' };
   }
 
   try {
-    const response = await fetch(`${MAGEN_BASE_URL}/magen-verify-start`, {
+    const response = await fetch(`${MAGEN_BASE_URL}/v1/verify`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(secretKey && { 'X-Magen-Secret': secretKey }),
-      },
-      body: JSON.stringify({
-        action: options.action,
-        userId: options.userId,
-        context: options.context,
-      }),
+      headers: getMagenHeaders(),
+      body: JSON.stringify({ session_id: sessionId }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('MAGEN start session error:', response.status, errorText);
-      return { success: false, error: `Failed to start session: ${response.status}` };
+      console.error('MAGEN verify error:', response.status, errorText);
+      return { success: false, error: `Verification failed: ${response.status}` };
     }
 
-    const result = await response.json();
-    return { success: true, sessionId: result.data?.sessionId || result.sessionId };
+    const result: MagenVerifyResponse = await response.json();
+
+    return {
+      success: true,
+      session_id: result.session_id,
+      verdict: result.verdict,
+      score: result.score,
+      risk_band: result.risk_band,
+      is_human: result.is_human,
+    };
   } catch (error) {
-    console.error('MAGEN start session error:', error);
+    console.error('MAGEN verify error:', error);
     return { success: false, error: 'Network error' };
   }
 }
 
-// Check verification status for a session
-export async function checkVerification(sessionId: string): Promise<MagenVerificationResult> {
-  const { apiKey, secretKey } = getMagenKeys();
-  
-  if (!apiKey || apiKey.includes('your_')) {
-    return { valid: false, error: 'MAGEN API key not configured' };
-  }
+// Request an optional challenge for additional verification
+// GET /v1/challenge
+export async function requestChallenge(): Promise<MagenChallengeResponse | null> {
+  const { apiKey, siteId } = getMagenCredentials();
 
-  try {
-    const response = await fetch(`${MAGEN_BASE_URL}/magen-verify-check`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(secretKey && { 'X-Magen-Secret': secretKey }),
-      },
-      body: JSON.stringify({ sessionId }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('MAGEN check verification error:', response.status, errorText);
-      return { valid: false, error: `Verification check failed: ${response.status}` };
-    }
-
-    const result = await response.json();
-    const data = result.data || result;
-    
-    return {
-      valid: true,
-      sessionId: data.sessionId,
-      humanScore: data.humanScore,
-      classification: data.classification,
-    };
-  } catch (error) {
-    console.error('MAGEN check verification error:', error);
-    return { valid: false, error: 'Network error' };
-  }
-}
-
-// Get session details
-export async function getSession(sessionId: string): Promise<MagenSession | null> {
-  const { apiKey, secretKey } = getMagenKeys();
-  
-  if (!apiKey || apiKey.includes('your_')) {
+  if (!apiKey || apiKey.includes('your_') || !siteId) {
     return null;
   }
 
   try {
-    const response = await fetch(`${MAGEN_BASE_URL}/magen-verify-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(secretKey && { 'X-Magen-Secret': secretKey }),
-      },
-      body: JSON.stringify({ sessionId }),
+    const response = await fetch(`${MAGEN_BASE_URL}/v1/challenge`, {
+      method: 'GET',
+      headers: getMagenHeaders(),
     });
 
     if (!response.ok) {
       return null;
     }
 
-    const { data } = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error('MAGEN get session error:', error);
+    console.error('MAGEN challenge error:', error);
     return null;
   }
 }
 
-// Threshold configuration for different use cases
-export const MAGEN_THRESHOLDS = {
-  signup: 0.6,         // Allow most signups, flag suspicious
-  formSubmission: 0.7, // Standard protection for forms
-  login: 0.7,          // Standard protection
-  payment: 0.85,       // High confidence required
-  passwordReset: 0.9,  // Maximum protection
-} as const;
+// Verdict-based decision helpers
+export function isVerified(result: MagenVerificationResult): boolean {
+  return result.success && result.verdict === 'verified' && result.is_human === true;
+}
 
-// Legacy function for backwards compatibility
-export function verifyMagenToken(token: string): MagenVerificationResult {
-  // This is now handled by checkVerification with sessionId
-  return { valid: false, error: 'Use checkVerification with sessionId instead' };
+export function shouldBlock(result: MagenVerificationResult): boolean {
+  return result.success && (result.verdict === 'unverified' || result.is_human === false);
+}
+
+export function needsReview(result: MagenVerificationResult): boolean {
+  return result.success && result.verdict === 'review';
 }

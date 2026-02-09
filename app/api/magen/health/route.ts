@@ -1,38 +1,36 @@
 import { NextResponse } from 'next/server';
-import { isMagenConfigured, startVerificationSession } from '@/lib/magen';
+import { isMagenConfigured, verifySession } from '@/lib/magen';
 
 export async function GET() {
   try {
-    const isConfigured = isMagenConfigured();
-    
-    if (!isConfigured) {
+    const configured = isMagenConfigured();
+
+    if (!configured) {
       return NextResponse.json({
         status: 'not_configured',
-        message: 'MAGEN API key or secret key not configured',
+        message: 'MAGEN API key or site ID not configured',
         configured: false,
       });
     }
 
-    // Test the connection by starting a test session
-    const testResult = await startVerificationSession({
-      action: 'health-check',
-      context: 'api-health-check',
-    });
+    // Test connection with a dummy verify call
+    const testResult = await verifySession('health-check-test');
 
-    if (testResult.success && testResult.sessionId) {
+    // Even if the session doesn't exist, a non-network-error
+    // response means the API is reachable
+    if (testResult.error === 'Network error') {
       return NextResponse.json({
-        status: 'connected',
-        message: 'MAGEN is properly configured and connected',
+        status: 'error',
+        message: 'Cannot reach MAGEN Trust API',
         configured: true,
-        testSessionId: testResult.sessionId,
+        error: testResult.error,
       });
     }
 
     return NextResponse.json({
-      status: 'error',
-      message: testResult.error || 'Failed to connect to MAGEN',
+      status: 'connected',
+      message: 'MAGEN Trust is properly configured and reachable',
       configured: true,
-      error: testResult.error,
     });
   } catch (error) {
     console.error('MAGEN health check error:', error);

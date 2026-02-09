@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
-import { checkVerification, isMagenConfigured, MAGEN_THRESHOLDS } from '@/lib/magen';
+import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-thank-you';
 
@@ -8,7 +8,7 @@ import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-tha
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, eventSlug, communityId, firstName, lastName, email, joinNewsletter, magenSessionId } = body;
+    const { eventId, eventSlug, communityId, firstName, lastName, email, joinNewsletter, magenSessionId, magenVerdict, magenScore } = body;
 
     if (!eventId || !eventSlug || !communityId || !firstName || !lastName || !email) {
       return NextResponse.json(
@@ -17,17 +17,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify Magen session if configured
+    // Server-side MAGEN re-verification
     if (isMagenConfigured() && magenSessionId) {
-      const verifyResult = await checkVerification(magenSessionId);
-      if (verifyResult.valid && verifyResult.humanScore !== undefined) {
-        if (verifyResult.humanScore < MAGEN_THRESHOLDS.formSubmission) {
-          console.log('RSVP blocked by Magen:', { sessionId: magenSessionId, score: verifyResult.humanScore });
-          return NextResponse.json(
-            { error: 'Verification failed. Please try again.' },
-            { status: 403 }
-          );
-        }
+      const result = await verifySession(magenSessionId);
+      if (result.success && shouldBlock(result)) {
+        console.log('RSVP blocked by Magen:', { session_id: magenSessionId, verdict: result.verdict });
+        return NextResponse.json(
+          { error: 'Verification failed. Please try again.' },
+          { status: 403 }
+        );
       }
     }
 

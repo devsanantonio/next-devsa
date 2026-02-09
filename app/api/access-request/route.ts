@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MAGEN_THRESHOLDS } from '@/lib/magen';
+import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { AccessRequestReceivedEmail } from '@/lib/emails/access-request-received';
@@ -9,13 +9,14 @@ interface AccessRequestBody {
   email: string;
   communityOrg: string;
   magenSessionId?: string;
-  magenHumanScore?: number;
+  magenVerdict?: string;
+  magenScore?: number;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: AccessRequestBody = await request.json();
-    const { name, email, communityOrg, magenSessionId, magenHumanScore } = body;
+    const { name, email, communityOrg, magenSessionId, magenVerdict, magenScore } = body;
 
     // Validate required fields
     if (!name || !email || !communityOrg) {
@@ -34,16 +35,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check MAGEN human score (passed from frontend verification)
-    // Frontend has already verified and rejected low scores, but double-check here
-    const MAGEN_API_KEY = process.env.MAGEN_API_KEY;
-    let humanScore: number | undefined = magenHumanScore;
-
-    if (MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
-      // If we have a score from frontend, use it; otherwise it's undefined
-      if (humanScore !== undefined && humanScore < MAGEN_THRESHOLDS.formSubmission) {
+    // Server-side MAGEN re-verification
+    if (isMagenConfigured() && magenSessionId) {
+      const result = await verifySession(magenSessionId);
+      if (result.success && shouldBlock(result)) {
         return NextResponse.json(
-          { error: 'Verification failed', reason: 'Low confidence score' },
+          { error: 'Verification failed', reason: 'Unverified traffic' },
           { status: 403 }
         );
       }
@@ -96,7 +93,8 @@ export async function POST(request: NextRequest) {
       communityOrg,
       submittedAt: new Date(),
       magenSessionId: magenSessionId ?? null,
-      magenHumanScore: humanScore ?? null,
+      magenVerdict: magenVerdict ?? null,
+      magenScore: magenScore ?? null,
       status: 'pending',
     };
 

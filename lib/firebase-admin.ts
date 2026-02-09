@@ -90,7 +90,8 @@ export interface NewsletterSubscription {
   subscribedAt: Date;
   source?: string | null;
   magenSessionId?: string | null;
-  magenHumanScore?: number | null;
+  magenVerdict?: string | null;
+  magenScore?: number | null;
   status: 'active' | 'unsubscribed';
 }
 
@@ -104,7 +105,8 @@ export interface SpeakerSubmission {
   eventId?: string;
   submittedAt: Date;
   magenSessionId?: string | null;
-  magenHumanScore?: number | null;
+  magenVerdict?: string | null;
+  magenScore?: number | null;
   status: 'pending' | 'approved' | 'rejected';
 }
 
@@ -114,7 +116,8 @@ export interface AccessRequest {
   communityOrg: string;
   submittedAt: Date;
   magenSessionId?: string | null;
-  magenHumanScore?: number | null;
+  magenVerdict?: string | null;
+  magenScore?: number | null;
   status: 'pending' | 'approved' | 'rejected';
 }
 

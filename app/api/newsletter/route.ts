@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type NewsletterSubscription } from '@/lib/firebase-admin';
-import { MAGEN_THRESHOLDS } from '@/lib/magen';
+import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, source, magenSessionId, magenHumanScore } = body;
+    const { email, source, magenSessionId, magenVerdict, magenScore } = body;
 
     // Validate email
     if (!email) {
@@ -23,14 +23,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check MAGEN human score (passed from frontend verification)
-    // Frontend has already verified and rejected low scores, but double-check here
-    const MAGEN_API_KEY = process.env.MAGEN_API_KEY;
-    let humanScore: number | undefined = magenHumanScore;
-
-    if (MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
-      // If we have a score from frontend, validate it
-      if (humanScore !== undefined && humanScore < MAGEN_THRESHOLDS.formSubmission) {
+    // Server-side MAGEN re-verification
+    if (isMagenConfigured() && magenSessionId) {
+      const result = await verifySession(magenSessionId);
+      if (result.success && shouldBlock(result)) {
         return NextResponse.json(
           { error: 'Verification failed' },
           { status: 403 }
@@ -59,7 +55,8 @@ export async function POST(request: NextRequest) {
           subscribedAt: new Date(),
           source: source ?? null,
           magenSessionId: magenSessionId ?? null,
-          magenHumanScore: humanScore ?? null,
+          magenVerdict: magenVerdict ?? null,
+          magenScore: magenScore ?? null,
         });
         return NextResponse.json({
           success: true,
@@ -79,7 +76,8 @@ export async function POST(request: NextRequest) {
       subscribedAt: new Date(),
       source: source ?? null,
       magenSessionId: magenSessionId ?? null,
-      magenHumanScore: humanScore ?? null,
+      magenVerdict: magenVerdict ?? null,
+      magenScore: magenScore ?? null,
       status: 'active',
     };
 

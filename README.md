@@ -19,7 +19,7 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 - **Database:** [Google Firestore](https://firebase.google.com/docs/firestore) — NoSQL cloud database
 - **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google OAuth + Email/Password
 - **Email:** [Resend](https://resend.com/) — Transactional emails
-- **Bot Protection:** [MAGEN](https://magenminer.io/) — Human-first verification
+- **Bot Protection:** [MAGEN Trust](https://magentrust.ai/) — Human-first verification
 - **Storage:** [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) — File uploads
 - **Deployment:** [Vercel](https://vercel.com/)
 - **Analytics:** Vercel Analytics
@@ -65,9 +65,9 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 # Google Firestore — Service Account Key (JSON string)
 GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"your-project",...}
 
-# MAGEN (Bot Protection)
+# MAGEN Trust (Bot Protection)
 MAGEN_API_KEY=your_magen_api_key
-MAGEN_SECRET_KEY=your_magen_secret_key
+MAGEN_SITE_ID=your_site_id
 
 # Resend (Email)
 RESEND_API_KEY=your_resend_api_key

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Loader2, Mail, Building2, User, CheckCircle, AlertCircle } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useMagen } from "@/lib/hooks/use-magen"
 
 interface AccessRequestFormProps {
   onSuccess?: () => void
@@ -18,25 +19,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
-
-  // Start Magen session for bot protection
-  useEffect(() => {
-    const startMagenSession = async () => {
-      try {
-        const response = await fetch('/api/magen/start-session', {
-          method: 'POST',
-        })
-        if (response.ok) {
-          const data = await response.json()
-          setMagenSessionId(data?.sessionId || null)
-        }
-      } catch {
-        // Magen not available - continue without it
-      }
-    }
-    startMagenSession()
-  }, [])
+  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,25 +27,27 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
     setIsLoading(true)
 
     try {
-      // Verify Magen session before proceeding (if available)
-      // Using threshold 0.7 to match MAGEN_THRESHOLDS.formSubmission
-      let verifiedHumanScore: number | undefined;
-      if (magenSessionId) {
-        const verifyResponse = await fetch('/api/magen/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: magenSessionId }),
-        })
-        
-        if (verifyResponse.ok) {
-          const verifyData = await verifyResponse.json()
-          verifiedHumanScore = verifyData.humanScore
-          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
-            setError("Verification failed. Please try again.")
-            setIsLoading(false)
-            return
-          }
-        }
+      // Client-side MAGEN verification
+      const clientResult = await verify()
+
+      // If SDK is loaded but verdict is not verified, block
+      if (clientResult && clientResult.verdict !== 'verified') {
+        setError("Verification failed. Please try again.")
+        setIsLoading(false)
+        return
+      }
+
+      // Server-side re-verification if we got a session
+      let serverVerified = true
+      if (clientResult?.session_id) {
+        const serverResult = await verifyOnServer(clientResult.session_id)
+        serverVerified = serverResult.verified !== false
+      }
+
+      if (!serverVerified) {
+        setError("Verification failed. Please try again.")
+        setIsLoading(false)
+        return
       }
 
       const response = await fetch('/api/access-request', {
@@ -70,8 +55,9 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          magenSessionId,
-          magenHumanScore: verifiedHumanScore,
+          magenSessionId: clientResult?.session_id || null,
+          magenVerdict: clientResult?.verdict || null,
+          magenScore: clientResult?.score || null,
         }),
       })
 
@@ -205,13 +191,13 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isVerifying}
             className="w-full rounded-xl bg-[#ef426f] px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-sm"
           >
-            {isLoading ? (
+            {isLoading || isVerifying ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Submitting...</span>
+                <span>{isVerifying ? 'Verifying...' : 'Submitting...'}</span>
               </>
             ) : (
               <span>Submit Request</span>

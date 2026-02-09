@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MAGEN_THRESHOLDS } from '@/lib/magen';
+import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
@@ -12,14 +12,15 @@ interface SpeakerSubmissionRequest {
   sessionFormat: string;
   abstract: string;
   magenSessionId?: string;
-  magenHumanScore?: number;
+  magenVerdict?: string;
+  magenScore?: number;
   eventId?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SpeakerSubmissionRequest = await request.json();
-    const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, magenHumanScore, eventId } = body;
+    const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, magenVerdict, magenScore, eventId } = body;
 
     // Validate required fields
     if (!name || !email || !sessionTitle || !sessionFormat || !abstract) {
@@ -29,28 +30,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check MAGEN human score (passed from frontend verification)
-    // Frontend has already verified and rejected low scores, but double-check here
-    const MAGEN_API_KEY = process.env.MAGEN_API_KEY;
-    let humanScore: number | undefined = magenHumanScore;
-
-    if (MAGEN_API_KEY && !MAGEN_API_KEY.includes('your_')) {
-      // If we have a score from frontend, validate it
-      if (humanScore !== undefined && humanScore < MAGEN_THRESHOLDS.formSubmission) {
-        console.log('Low human score:', humanScore);
+    // Server-side MAGEN re-verification
+    if (isMagenConfigured() && magenSessionId) {
+      const result = await verifySession(magenSessionId);
+      if (result.success && shouldBlock(result)) {
+        console.log('MAGEN blocked submission:', { verdict: result.verdict, session_id: magenSessionId });
         return NextResponse.json(
-          { error: 'Verification failed', reason: 'Low confidence score' },
+          { error: 'Verification failed', reason: 'Unverified traffic' },
           { status: 403 }
         );
       }
-      if (humanScore !== undefined) {
-        console.log('MAGEN verification passed:', {
-          humanScore,
-          sessionId: magenSessionId,
-        });
+      if (result.success) {
+        console.log('MAGEN verification passed:', { verdict: result.verdict, session_id: magenSessionId });
       }
     } else {
-      // MAGEN not configured - proceeding without verification
       console.log('MAGEN verification skipped - not configured');
     }
 
@@ -66,7 +59,8 @@ export async function POST(request: NextRequest) {
       eventId: eventId || 'aiconference2026',
       submittedAt: new Date(),
       magenSessionId: magenSessionId ?? null,
-      magenHumanScore: humanScore ?? null,
+      magenVerdict: magenVerdict ?? null,
+      magenScore: magenScore ?? null,
       status: 'pending',
     };
 

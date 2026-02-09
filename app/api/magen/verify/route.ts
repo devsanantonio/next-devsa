@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkVerification } from '@/lib/magen';
+import { verifySession, isVerified, shouldBlock } from '@/lib/magen';
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId } = await request.json();
+    const { session_id } = await request.json();
 
-    if (!sessionId) {
+    if (!session_id) {
       return NextResponse.json(
-        { error: 'Session ID is required' },
+        { error: 'session_id is required' },
         { status: 400 }
       );
     }
 
-    const result = await checkVerification(sessionId);
+    const result = await verifySession(session_id);
 
-    if (!result.valid) {
+    if (!result.success) {
       return NextResponse.json(
         { error: result.error || 'Verification failed' },
         { status: 400 }
@@ -22,9 +22,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      valid: true,
-      humanScore: result.humanScore,
-      classification: result.classification,
+      session_id: result.session_id,
+      verdict: result.verdict,
+      score: result.score,
+      risk_band: result.risk_band,
+      is_human: result.is_human,
+      verified: isVerified(result),
+      blocked: shouldBlock(result),
     });
   } catch (error) {
     console.error('Magen verify error:', error);

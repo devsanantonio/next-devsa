@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Loader2, CheckCircle, Mail } from "lucide-react"
 import Link from "next/link"
+import { useMagen } from "@/lib/hooks/use-magen"
 
 interface NewsletterFormProps {
   source?: string
@@ -13,25 +14,7 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
-  const [magenSessionId, setMagenSessionId] = useState<string | null>(null)
-
-  // Start Magen session for bot protection
-  useEffect(() => {
-    const startMagenSession = async () => {
-      try {
-        const response = await fetch('/api/magen/start-session', {
-          method: 'POST',
-        })
-        if (response.ok) {
-          const data = await response.json()
-          setMagenSessionId(data?.sessionId || null)
-        }
-      } catch {
-        // Magen not available - continue without it
-      }
-    }
-    startMagenSession()
-  }, [])
+  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,24 +22,27 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
     setErrorMessage("")
 
     try {
-      // Verify Magen session before proceeding (if available)
-      let verifiedHumanScore: number | undefined;
-      if (magenSessionId) {
-        const verifyResponse = await fetch('/api/magen/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: magenSessionId }),
-        })
-        
-        if (verifyResponse.ok) {
-          const verifyData = await verifyResponse.json()
-          verifiedHumanScore = verifyData.humanScore
-          if (verifyData.humanScore !== undefined && verifyData.humanScore < 0.7) {
-            setStatus("error")
-            setErrorMessage("Verification failed. Please try again.")
-            return
-          }
-        }
+      // Client-side MAGEN verification
+      const clientResult = await verify()
+
+      // If SDK is loaded but verdict is not verified, block
+      if (clientResult && clientResult.verdict !== 'verified') {
+        setStatus("error")
+        setErrorMessage("Verification failed. Please try again.")
+        return
+      }
+
+      // Server-side re-verification if we got a session
+      let serverVerified = true
+      if (clientResult?.session_id) {
+        const serverResult = await verifyOnServer(clientResult.session_id)
+        serverVerified = serverResult.verified !== false
+      }
+
+      if (!serverVerified) {
+        setStatus("error")
+        setErrorMessage("Verification failed. Please try again.")
+        return
       }
 
       const response = await fetch('/api/newsletter', {
@@ -65,8 +51,9 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
         body: JSON.stringify({
           email,
           source,
-          magenSessionId,
-          magenHumanScore: verifiedHumanScore,
+          magenSessionId: clientResult?.session_id || null,
+          magenVerdict: clientResult?.verdict || null,
+          magenScore: clientResult?.score || null,
         }),
       })
 
@@ -110,13 +97,13 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
         </div>
         <button
           type="submit"
-          disabled={status === "loading"}
+          disabled={status === "loading" || isVerifying}
           className="rounded-lg bg-[#ef426f] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
         >
-          {status === "loading" ? (
+          {status === "loading" || isVerifying ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Subscribing...
+              {isVerifying ? 'Verifying...' : 'Subscribing...'}
             </>
           ) : (
             "Subscribe"
