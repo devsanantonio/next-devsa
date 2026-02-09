@@ -35,15 +35,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Server-side MAGEN re-verification
+    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
     if (isMagenConfigured() && magenSessionId) {
       const result = await verifySession(magenSessionId);
-      if (result.success && shouldBlock(result)) {
-        return NextResponse.json(
-          { error: 'Verification failed', reason: 'Unverified traffic' },
-          { status: 403 }
-        );
-      }
+      console.log('[MAGEN] Access request verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
+      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
+      // if (result.success && shouldBlock(result)) {
+      //   return NextResponse.json({ error: 'Verification failed', reason: 'Unverified traffic' }, { status: 403 });
+      // }
     }
 
     const normalizedEmail = email.toLowerCase();

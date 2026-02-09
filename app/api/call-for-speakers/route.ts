@@ -30,21 +30,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Server-side MAGEN re-verification
+    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
     if (isMagenConfigured() && magenSessionId) {
       const result = await verifySession(magenSessionId);
-      if (result.success && shouldBlock(result)) {
-        console.log('MAGEN blocked submission:', { verdict: result.verdict, session_id: magenSessionId });
-        return NextResponse.json(
-          { error: 'Verification failed', reason: 'Unverified traffic' },
-          { status: 403 }
-        );
-      }
-      if (result.success) {
-        console.log('MAGEN verification passed:', { verdict: result.verdict, session_id: magenSessionId });
-      }
+      console.log('[MAGEN] Speaker submission verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
+      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
+      // if (result.success && shouldBlock(result)) {
+      //   return NextResponse.json({ error: 'Verification failed', reason: 'Unverified traffic' }, { status: 403 });
+      // }
     } else {
-      console.log('MAGEN verification skipped - not configured');
+      console.log('[MAGEN] Verification skipped - not configured');
     }
 
     // Submit to Firestore (use null instead of undefined for Firestore compatibility)
