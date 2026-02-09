@@ -2,23 +2,48 @@ import { Metadata } from "next"
 import { EventPageClient } from "./event-page-client"
 import { techCommunities } from "@/data/communities"
 import { initialCommunityEvents } from "@/data/events"
+import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
 
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
 async function getEventBySlug(slug: string) {
-  // Try to fetch from Firestore API
+  // Query Firestore directly (avoids self-referencing fetch on Vercel)
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-    const response = await fetch(`${baseUrl}/api/events`, { cache: 'no-store' })
-    if (response.ok) {
-      const data = await response.json()
-      const event = data.events?.find((e: { slug: string }) => e.slug === slug)
-      if (event) return event
+    const db = getDb()
+    const snapshot = await db
+      .collection(COLLECTIONS.EVENTS)
+      .where('slug', '==', slug)
+      .where('status', '==', 'published')
+      .limit(1)
+      .get()
+
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0]
+      const data = doc.data() as Event
+      const community = techCommunities.find(c => c.id === data.communityId)
+      return {
+        id: doc.id,
+        title: data.title,
+        slug: data.slug,
+        date: data.date,
+        endTime: data.endTime,
+        location: data.location,
+        description: data.description,
+        url: data.url,
+        communityId: data.communityId,
+        organizerEmail: data.organizerEmail,
+        source: data.source,
+        status: data.status,
+        rsvpEnabled: data.rsvpEnabled,
+        communityName: community?.name || 'DEVSA Community',
+        createdAt: (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
+        updatedAt: (data.updatedAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
+      }
     }
   } catch (error) {
-    console.error("Error fetching event from API:", error)
+    console.error("Error fetching event from Firestore:", error)
   }
   
   // Fallback to static events

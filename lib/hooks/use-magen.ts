@@ -40,17 +40,28 @@ export function useMagen(): UseMagenReturn {
   useEffect(() => {
     const initSession = async () => {
       try {
+        console.log('[MAGEN Client] 🚀 Requesting session from /api/magen/start-session')
         const res = await fetch('/api/magen/start-session', { method: 'POST' })
-        if (!res.ok) return
+        console.log(`[MAGEN Client]    Response status: ${res.status}`)
+
+        if (!res.ok) {
+          console.warn('[MAGEN Client] ⚠️ start-session returned non-OK status')
+          return
+        }
 
         const data = await res.json()
+        console.log('[MAGEN Client]    Response data:', JSON.stringify(data))
+
         if (data.sessionId) {
           sessionIdRef.current = data.sessionId
           setIsReady(true)
+          console.log(`[MAGEN Client] ✅ Session ready: ${data.sessionId}`)
+        } else {
+          console.warn('[MAGEN Client] ⚠️ No sessionId in response — MAGEN may not be configured')
         }
-      } catch {
+      } catch (err) {
         // MAGEN not available — forms still work without it
-        console.log('MAGEN: Could not create session, continuing without verification')
+        console.log('[MAGEN Client] ❌ Could not create session, continuing without verification', err)
       }
     }
 
@@ -60,8 +71,12 @@ export function useMagen(): UseMagenReturn {
   // Verify the current session via our API route
   const verify = useCallback(async (): Promise<MagenClientResult | null> => {
     const sessionId = sessionIdRef.current
-    if (!sessionId) return null
+    if (!sessionId) {
+      console.warn('[MAGEN Client] ⚠️ verify() called but no sessionId — skipping')
+      return null
+    }
 
+    console.log(`[MAGEN Client] 🔍 Verifying session: ${sessionId}`)
     setIsVerifying(true)
     try {
       const res = await fetch('/api/magen/verify', {
@@ -70,9 +85,16 @@ export function useMagen(): UseMagenReturn {
         body: JSON.stringify({ session_id: sessionId }),
       })
 
-      if (!res.ok) return null
+      console.log(`[MAGEN Client]    Verify response status: ${res.status}`)
+
+      if (!res.ok) {
+        console.warn('[MAGEN Client] ⚠️ Verify returned non-OK status')
+        return null
+      }
 
       const data = await res.json()
+      console.log('[MAGEN Client] ✅ Verify result:', JSON.stringify(data, null, 2))
+
       const clientResult: MagenClientResult = {
         session_id: data.session_id || sessionId,
         verdict: data.verdict || 'review',
@@ -82,7 +104,7 @@ export function useMagen(): UseMagenReturn {
       setResult(clientResult)
       return clientResult
     } catch (error) {
-      console.error('MAGEN verify error:', error)
+      console.error('[MAGEN Client] ❌ Verify error:', error)
       return null
     } finally {
       setIsVerifying(false)

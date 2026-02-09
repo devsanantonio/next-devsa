@@ -90,30 +90,39 @@ function classificationToVerdict(classification: string): 'verified' | 'unverifi
 export async function startSession(): Promise<{ sessionId: string } | null> {
   const { siteId } = getMagenCredentials();
   if (!isMagenConfigured()) {
-    console.log('MAGEN: Not configured, skipping session start');
+    console.log('[MAGEN] ❌ Not configured — missing API key, secret, or site ID');
     return null;
   }
 
+  const url = `${getBaseUrl()}/magen-verify-start`;
+  console.log(`[MAGEN] 🚀 Starting session → POST ${url}`);
+  console.log(`[MAGEN]    siteId: ${siteId}`);
+
   try {
-    const response = await fetch(`${getBaseUrl()}/magen-verify-start`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: getMagenHeaders(),
       body: JSON.stringify({ action: 'start', siteId }),
     });
 
+    console.log(`[MAGEN]    Response status: ${response.status}`);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('MAGEN start-session error:', response.status, errorText);
+      console.error('[MAGEN] ❌ start-session error:', response.status, errorText);
       return null;
     }
 
     const result: MagenStartSessionResponse = await response.json();
+    console.log('[MAGEN] ✅ Session created:', JSON.stringify(result.data, null, 2));
+
     if (result.success && result.data?.sessionId) {
       return { sessionId: result.data.sessionId };
     }
+    console.warn('[MAGEN] ⚠️ Unexpected response shape:', JSON.stringify(result));
     return null;
   } catch (error) {
-    console.error('MAGEN start-session error:', error);
+    console.error('[MAGEN] ❌ start-session network error:', error);
     return null;
   }
 }
@@ -122,39 +131,58 @@ export async function startSession(): Promise<{ sessionId: string } | null> {
 // POST /magen-verify-check
 export async function verifySession(sessionId: string): Promise<MagenVerificationResult> {
   if (!isMagenConfigured()) {
-    console.log('MAGEN: Not configured, skipping verification');
+    console.log('[MAGEN] ❌ Not configured — skipping verification');
     return { success: false, error: 'MAGEN not configured' };
   }
 
+  const url = `${getBaseUrl()}/magen-verify-check`;
+  console.log(`[MAGEN] 🔍 Verifying session → POST ${url}`);
+  console.log(`[MAGEN]    sessionId: ${sessionId}`);
+
   try {
-    const response = await fetch(`${getBaseUrl()}/magen-verify-check`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: getMagenHeaders(),
       body: JSON.stringify({ sessionId }),
     });
 
+    console.log(`[MAGEN]    Response status: ${response.status}`);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('MAGEN verify error:', response.status, errorText);
+      console.error('[MAGEN] ❌ verify error:', response.status, errorText);
       return { success: false, error: `Verification failed: ${response.status}` };
     }
 
     const result: MagenCheckResponse = await response.json();
 
     if (!result.success) {
+      console.warn('[MAGEN] ⚠️ Verification unsuccessful:', JSON.stringify(result));
       return { success: false, error: 'Verification returned unsuccessful' };
     }
 
     const { data } = result;
-    return {
+    const mapped = {
       success: true,
       session_id: data.sessionId,
       verdict: classificationToVerdict(data.classification),
       score: data.trustScore,
       is_human: data.isHuman,
     };
+
+    console.log('[MAGEN] ✅ Verification result:', JSON.stringify({
+      sessionId: data.sessionId,
+      classification: data.classification,
+      trustScore: data.trustScore,
+      isHuman: data.isHuman,
+      verdict: mapped.verdict,
+      humanSignals: data.humanSignals,
+      botSignals: data.botSignals,
+    }, null, 2));
+
+    return mapped;
   } catch (error) {
-    console.error('MAGEN verify error:', error);
+    console.error('[MAGEN] ❌ verify network error:', error);
     return { success: false, error: 'Network error' };
   }
 }
