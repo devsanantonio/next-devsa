@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
+import { useEffect, useMemo, useState } from "react"
 
 const mediaItems = [
   {
@@ -47,6 +48,82 @@ const mediaItems = [
 ]
 
 export function HeroSection() {
+  const [status, setStatus] = useState<{
+    state: "open" | "closed" | "unknown"
+    updatedAt: number | null
+  }>({
+    state: "unknown",
+    updatedAt: null,
+  })
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch("/api/discord-status", { cache: "no-store" })
+        const data = await response.json()
+
+        if (!cancelled) {
+          const rawState = data?.state
+          const state =
+            rawState === "open" || rawState === "closed" || rawState === "unknown"
+              ? rawState
+              : "unknown"
+
+          setStatus({
+            state,
+            updatedAt: typeof data?.updatedAt === "number" ? data.updatedAt : null,
+          })
+        }
+      } catch {
+        if (!cancelled) {
+          setStatus({
+            state: "unknown",
+            updatedAt: null,
+          })
+        }
+      }
+    }
+
+    fetchStatus()
+
+    const timeTimer = setInterval(() => setNow(Date.now()), 60_000)
+    const refreshTimer = setInterval(fetchStatus, 60_000)
+
+    return () => {
+      cancelled = true
+      clearInterval(timeTimer)
+      clearInterval(refreshTimer)
+    }
+  }, [])
+
+  const lastUpdatedText = useMemo(() => {
+    if (!status.updatedAt) return "Update unavailable"
+
+    const elapsedMs = Math.max(0, now - status.updatedAt)
+    const elapsedMinutes = Math.floor(elapsedMs / 60_000)
+
+    if (elapsedMinutes < 1) return "Updated just now"
+    if (elapsedMinutes < 60) return `Updated ${elapsedMinutes}m ago`
+
+    const elapsedHours = Math.floor(elapsedMinutes / 60)
+    if (elapsedHours < 24) return `Updated ${elapsedHours}h ago`
+
+    const elapsedDays = Math.floor(elapsedHours / 24)
+    return `Updated ${elapsedDays}d ago`
+  }, [now, status.updatedAt])
+
+  const isOpen = status.state === "open"
+  const isClosed = status.state === "closed"
+  const statusLabel = isOpen ? "Open" : isClosed ? "Closed" : "Unknown"
+  const indicatorClass = isOpen
+    ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]"
+    : isClosed
+      ? "bg-red-500"
+      : "bg-gray-400"
+
   return (
     <section className="relative" data-testid="coworking-homepage-container-carousel" id="carousel" data-bg-type="light">
       <div className="-mt-px pt-[calc(1.5rem-var(--header-height))] md:pt-[calc(6rem-var(--header-height))] lg:pt-[calc(12rem-var(--header-height))] pb-6 md:pb-24 text-black bg-white">
@@ -90,6 +167,7 @@ export function HeroSection() {
                     and more!
                   </p>
                 </div>    
+
               </motion.div>
             </div>
           </div>
@@ -158,6 +236,21 @@ export function HeroSection() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6">
+        <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+          <span
+            aria-hidden="true"
+            className={`h-2.5 w-2.5 rounded-full ${indicatorClass}`}
+          />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-gray-900">
+              Coworking Space: {statusLabel}
+            </p>
+            <p className="text-xs text-gray-500">{lastUpdatedText}</p>
           </div>
         </div>
       </div>
