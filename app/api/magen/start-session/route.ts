@@ -7,7 +7,12 @@ export async function POST() {
   console.log('[MAGEN API] /start-session called');
 
   if (!isMagenConfigured()) {
-    console.log('[MAGEN API] ❌ Not configured');
+    console.log('[MAGEN API] ❌ Not configured — missing env vars:', {
+      MAGEN_API_KEY: !!process.env.MAGEN_API_KEY,
+      MAGEN_SECRET_KEY: !!process.env.MAGEN_SECRET_KEY,
+      MAGEN_SITE_ID: !!process.env.MAGEN_SITE_ID,
+      MAGEN_API_URL: process.env.MAGEN_API_URL || '(not set, using default)',
+    });
     return NextResponse.json({ configured: false, sessionId: null });
   }
 
