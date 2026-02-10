@@ -94,3 +94,56 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Delete a newsletter subscription (admin only)
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { subscriptionId, adminEmail } = body;
+
+    if (!subscriptionId || !adminEmail) {
+      return NextResponse.json(
+        { error: 'Subscription ID and admin email are required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDb();
+
+    // Verify admin permissions
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', adminEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    if (adminData.role !== 'superadmin' && adminData.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin or superadmin role required' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the subscription
+    await db.collection(COLLECTIONS.NEWSLETTER).doc(subscriptionId).delete();
+
+    return NextResponse.json({
+      success: true,
+      message: 'Subscription deleted successfully',
+    });
+  } catch (error) {
+    console.error('Newsletter deletion error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

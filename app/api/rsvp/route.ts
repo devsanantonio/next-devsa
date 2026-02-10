@@ -274,3 +274,56 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// Delete an RSVP (admin only)
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { rsvpId, adminEmail } = body;
+
+    if (!rsvpId || !adminEmail) {
+      return NextResponse.json(
+        { error: 'RSVP ID and admin email are required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDb();
+
+    // Verify admin permissions
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', adminEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
+    if (adminData.role !== 'superadmin' && adminData.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin or superadmin role required' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the RSVP
+    await db.collection(COLLECTIONS.EVENT_RSVPS).doc(rsvpId).delete();
+
+    return NextResponse.json({
+      success: true,
+      message: 'RSVP deleted successfully',
+    });
+  } catch (error) {
+    console.error('RSVP deletion error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

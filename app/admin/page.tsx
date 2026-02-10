@@ -184,6 +184,8 @@ export default function AdminPage() {
   const [editingCommunity, setEditingCommunity] = useState<Community | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
+  const [isDeletingNewsletter, setIsDeletingNewsletter] = useState<string | null>(null)
+  const [isDeletingRsvp, setIsDeletingRsvp] = useState<string | null>(null)
   const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
   const [isApprovingAccess, setIsApprovingAccess] = useState<string | null>(null)
   const [isMigrating, setIsMigrating] = useState(false)
@@ -534,6 +536,62 @@ export default function AdminPage() {
       setError("Failed to delete event")
     } finally {
       setIsDeleting(null)
+    }
+  }
+
+  const handleDeleteNewsletter = async (subscriptionId: string) => {
+    if (!confirm("Are you sure you want to delete this newsletter subscription?")) return
+    
+    setIsDeletingNewsletter(subscriptionId)
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscriptionId,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setNewsletter(prev => prev.filter(s => s.id !== subscriptionId))
+        setSuccessMessage("Newsletter subscription deleted")
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete subscription")
+      }
+    } catch {
+      setError("Failed to delete subscription")
+    } finally {
+      setIsDeletingNewsletter(null)
+    }
+  }
+
+  const handleDeleteRsvp = async (rsvpId: string) => {
+    if (!confirm("Are you sure you want to delete this RSVP?")) return
+    
+    setIsDeletingRsvp(rsvpId)
+    try {
+      const response = await fetch("/api/rsvp", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rsvpId,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setRsvps(prev => prev.filter(r => r.id !== rsvpId))
+        setSuccessMessage("RSVP deleted")
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete RSVP")
+      }
+    } catch {
+      setError("Failed to delete RSVP")
+    } finally {
+      setIsDeletingRsvp(null)
     }
   }
 
@@ -1205,14 +1263,15 @@ export default function AdminPage() {
                 <p className="text-neutral-400 text-center py-8">No newsletter subscriptions yet.</p>
               ) : (
                 <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-                  <table className="w-full min-w-150">
+                  <table className="w-full min-w-225">
                     <thead>
                       <tr className="border-b border-neutral-800">
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Community</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Event</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Status</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Subscribed At</th>
+                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Community</th>
+                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Event</th>
+                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Subscribed</th>
+                        <th className="text-right py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800/50">
@@ -1225,22 +1284,22 @@ export default function AdminPage() {
                         const community = event ? communities.find(c => c.id === event.communityId) : null
                         
                         return (
-                          <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors">
-                            <td className="py-4 px-4 text-sm font-medium text-white">{sub.email}</td>
-                            <td className="py-4 px-4">
+                          <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
+                            <td className="py-2.5 px-4 text-sm font-semibold text-white whitespace-nowrap">{sub.email}</td>
+                            <td className="py-2.5 px-4 whitespace-nowrap">
                               {community ? (
-                                <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
+                                <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#ef426f]">
                                   {community.name}
                                 </span>
                               ) : (
                                 <span className="text-sm text-neutral-500">—</span>
                               )}
                             </td>
-                            <td className="py-4 px-4 text-sm text-neutral-400">
+                            <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap max-w-50 truncate">
                               {event?.title || (sub.source || "Direct signup")}
                             </td>
-                            <td className="py-4 px-4">
-                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            <td className="py-2.5 px-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                                 sub.status === "active"
                                   ? "bg-green-500/20 text-green-400"
                                   : "bg-neutral-500/20 text-neutral-400"
@@ -1248,8 +1307,22 @@ export default function AdminPage() {
                                 {sub.status}
                               </span>
                             </td>
-                            <td className="py-4 px-4 text-sm text-neutral-400">
+                            <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">
                               {new Date(sub.subscribedAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                              <button
+                                onClick={() => handleDeleteNewsletter(sub.id)}
+                                disabled={isDeletingNewsletter === sub.id}
+                                className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                              >
+                                {isDeletingNewsletter === sub.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3 w-3" />
+                                )}
+                                Delete
+                              </button>
                             </td>
                           </tr>
                         )
@@ -2714,22 +2787,25 @@ export default function AdminPage() {
                           <span className="text-sm text-neutral-400">{eventRsvps.length} RSVPs</span>
                         </div>
                         <div className="overflow-x-auto">
-                          <table className="w-full min-w-125">
+                          <table className="w-full min-w-175">
                             <thead>
                               <tr className="border-b border-neutral-800">
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Name</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Newsletter</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Registered</th>
+                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Name</th>
+                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Newsletter</th>
+                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Registered</th>
+                                {hasAdminAccess(adminRole) && (
+                                  <th className="text-right py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                )}
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-800/50">
                               {eventRsvps.map((rsvp) => (
-                                <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors">
-                                  <td className="py-3 px-4 text-sm font-medium text-white">{rsvp.firstName} {rsvp.lastName}</td>
-                                  <td className="py-3 px-4 text-sm text-neutral-400">{rsvp.email}</td>
-                                  <td className="py-3 px-4">
-                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
+                                  <td className="py-2 px-4 text-sm font-semibold text-white whitespace-nowrap">{rsvp.firstName} {rsvp.lastName}</td>
+                                  <td className="py-2 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">{rsvp.email}</td>
+                                  <td className="py-2 px-4 whitespace-nowrap">
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
                                       rsvp.joinNewsletter
                                         ? "bg-green-500/20 text-green-400"
                                         : "bg-neutral-500/20 text-neutral-400"
@@ -2737,9 +2813,25 @@ export default function AdminPage() {
                                       {rsvp.joinNewsletter ? "Opted In" : "No"}
                                     </span>
                                   </td>
-                                  <td className="py-3 px-4 text-sm text-neutral-500">
+                                  <td className="py-2 px-4 text-sm font-medium text-neutral-500 whitespace-nowrap">
                                     {new Date(rsvp.submittedAt).toLocaleDateString()}
                                   </td>
+                                  {hasAdminAccess(adminRole) && (
+                                    <td className="py-2 px-4 text-right whitespace-nowrap">
+                                      <button
+                                        onClick={() => handleDeleteRsvp(rsvp.id)}
+                                        disabled={isDeletingRsvp === rsvp.id}
+                                        className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                                      >
+                                        {isDeletingRsvp === rsvp.id ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-3 w-3" />
+                                        )}
+                                        Delete
+                                      </button>
+                                    </td>
+                                  )}
                                 </tr>
                               ))}
                             </tbody>
