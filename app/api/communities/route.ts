@@ -27,14 +27,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ communities: [], source: 'firestore' });
     }
 
-    const communities = communitiesSnapshot.docs.map(doc => ({
+    const firestoreCommunities = communitiesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
       updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
     }));
 
-    return NextResponse.json({ communities, source: 'firestore' });
+    // When includeStatic=true, merge static communities that aren't already in Firestore
+    if (includeStatic) {
+      const firestoreIds = new Set(firestoreCommunities.map(c => c.id));
+      const missingStatic = techCommunities
+        .filter(c => !firestoreIds.has(c.id))
+        .map(c => ({ ...c, isStatic: true }));
+      const merged = [...firestoreCommunities, ...missingStatic]
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      return NextResponse.json({ communities: merged, source: 'merged' });
+    }
+
+    return NextResponse.json({ communities: firestoreCommunities, source: 'firestore' });
   } catch (error) {
     console.error('Communities fetch error:', error);
     // Fallback to static data on error

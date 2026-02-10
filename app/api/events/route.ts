@@ -3,14 +3,32 @@ import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 import { techCommunities } from '@/data/communities';
 import { initialCommunityEvents } from '@/data/events';
 
-// Valid community IDs for validation
-const validCommunityIds = new Set(techCommunities.map(c => c.id));
+// Helper to build a merged community lookup map from static + Firestore communities
+async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
+  const lookup = new Map<string, { name: string; logo: string }>();
+  // Add static communities first
+  techCommunities.forEach(c => lookup.set(c.id, { name: c.name, logo: c.logo }));
+  // Overlay with Firestore communities (includes new ones not in static list)
+  try {
+    const communitiesSnapshot = await db.collection(COLLECTIONS.COMMUNITIES).get();
+    communitiesSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      lookup.set(doc.id, { name: data.name || doc.id, logo: data.logo || '' });
+    });
+  } catch {
+    // Firestore unavailable - static fallback is fine
+  }
+  return lookup;
+}
 
 // Get all events
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     const includeAll = request.nextUrl.searchParams.get('includeAll') === 'true';
+    
+    // Build merged community lookup (static + Firestore)
+    const communityLookup = await buildCommunityLookup(db);
     
     // For admin dashboard, fetch all events including drafts
     // For public pages, only fetch published events
@@ -26,21 +44,22 @@ export async function GET(request: NextRequest) {
 
     const firestoreEvents = eventsSnapshot.docs.map(doc => {
       const data = doc.data();
-      const community = techCommunities.find(c => c.id === data.communityId);
+      const community = communityLookup.get(data.communityId);
       return {
         id: doc.id,
         ...data,
         communityName: community?.name || 'DEVSA Community',
+        communityLogo: community?.logo || '',
         isStatic: false, // Firestore events can be edited/deleted
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string; communityName: string; isStatic: boolean })[];
+    }) as (Event & { id: string; communityName: string; communityLogo: string; isStatic: boolean })[];
 
     // Also include static events from data/events.ts
     const staticEvents = initialCommunityEvents.map(event => {
-      const community = techCommunities.find(c => c.id === event.communityTag);
+      const community = communityLookup.get(event.communityTag);
       return {
         id: event.id,
         title: event.title,
@@ -51,6 +70,7 @@ export async function GET(request: NextRequest) {
         url: event.url,
         communityId: event.communityTag,
         communityName: community?.name || 'DEVSA Community',
+        communityLogo: community?.logo || '',
         source: event.source || 'manual',
         status: 'published' as const,
         isStatic: true, // Static events from data/events.ts cannot be edited/deleted via API
@@ -336,13 +356,15 @@ export async function PATCH(request: NextRequest) {
 
     // Action: audit - find all events with invalid communityIds
     if (action === 'audit') {
+      // Build merged community lookup for validation
+      const communityLookup = await buildCommunityLookup(db);
       const eventsSnapshot = await db.collection(COLLECTIONS.EVENTS).get();
       
       const auditResults = eventsSnapshot.docs.map(doc => {
         const data = doc.data();
         const communityId = data.communityId;
-        const isValid = validCommunityIds.has(communityId);
-        const community = techCommunities.find(c => c.id === communityId);
+        const isValid = communityLookup.has(communityId);
+        const community = communityLookup.get(communityId);
         
         return {
           id: doc.id,
@@ -365,7 +387,7 @@ export async function PATCH(request: NextRequest) {
           invalid: invalidEvents.length,
         },
         invalidEvents,
-        validCommunityIds: techCommunities.map(c => ({ id: c.id, name: c.name })),
+        validCommunityIds: Array.from(communityLookup.entries()).map(([id, c]) => ({ id, name: c.name })),
       });
     }
 
@@ -378,9 +400,11 @@ export async function PATCH(request: NextRequest) {
         );
       }
 
-      if (!validCommunityIds.has(newCommunityId)) {
+      // Build merged community lookup for validation
+      const communityLookup = await buildCommunityLookup(db);
+      if (!communityLookup.has(newCommunityId)) {
         return NextResponse.json(
-          { error: `Invalid newCommunityId. Must be one of: ${[...validCommunityIds].join(', ')}` },
+          { error: `Invalid newCommunityId. Must be one of: ${Array.from(communityLookup.keys()).join(', ')}` },
           { status: 400 }
         );
       }
@@ -398,7 +422,7 @@ export async function PATCH(request: NextRequest) {
         updatedAt: new Date(),
       });
 
-      const community = techCommunities.find(c => c.id === newCommunityId);
+      const community = communityLookup.get(newCommunityId);
 
       return NextResponse.json({
         success: true,

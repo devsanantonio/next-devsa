@@ -18,6 +18,8 @@ interface FirestoreEvent {
   description: string
   url?: string
   communityId: string
+  communityName?: string
+  communityLogo?: string
 }
 
 interface EventCalendarProps {
@@ -151,6 +153,8 @@ interface MergedEvent {
   description: string
   url?: string
   communityId: string
+  communityName?: string
+  communityLogo?: string
   slug?: string
   source: "firestore" | "static"
 }
@@ -196,6 +200,7 @@ END:VCALENDAR`
 export function CommunityEventsSection() {
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
+  const [allCommunities, setAllCommunities] = useState<typeof techCommunities>([...techCommunities])
   
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -210,22 +215,36 @@ export function CommunityEventsSection() {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch events from Firestore
+  // Fetch events from Firestore and communities from API
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/events')
-        if (response.ok) {
-          const data = await response.json()
+        const [eventsResponse, communitiesResponse] = await Promise.all([
+          fetch('/api/events'),
+          fetch('/api/communities?includeStatic=true'),
+        ])
+        if (eventsResponse.ok) {
+          const data = await eventsResponse.json()
           setFirestoreEvents(data.events || [])
         }
+        if (communitiesResponse.ok) {
+          const data = await communitiesResponse.json()
+          const fetched = data.communities || []
+          // Merge: API communities take precedence, then fill in any static ones not in API
+          const fetchedIds = new Set(fetched.map((c: { id: string }) => c.id))
+          const merged = [
+            ...fetched,
+            ...techCommunities.filter(c => !fetchedIds.has(c.id)),
+          ]
+          setAllCommunities(merged)
+        }
       } catch (error) {
-        console.error('Failed to fetch events:', error)
+        console.error('Failed to fetch data:', error)
       } finally {
         setIsLoadingEvents(false)
       }
     }
-    fetchEvents()
+    fetchData()
   }, [])
 
   // Merge Firestore events with static fallback events
@@ -244,6 +263,8 @@ export function CommunityEventsSection() {
           description: event.description,
           url: event.url,
           communityId: event.communityId,
+          communityName: event.communityName,
+          communityLogo: event.communityLogo,
           slug: event.slug,
           source: "firestore",
         })
@@ -421,7 +442,10 @@ export function CommunityEventsSection() {
               ) : (
                 <div className="space-y-5">
                   {filteredEvents.map((event, index) => {
-                    const community = techCommunities.find((c) => c.id === event.communityId)
+                    const community = allCommunities.find((c) => c.id === event.communityId)
+                    // Fallback to communityName/Logo from API response if community not found in merged list
+                    const displayName = community?.name || event.communityName || event.communityId
+                    const displayLogo = community?.logo || event.communityLogo
                     const isFirst = index === 0
                     const eventLink = event.slug 
                       ? `/events/${event.slug}`
@@ -466,11 +490,11 @@ export function CommunityEventsSection() {
 
                         {/* Content */}
                         <div className="flex gap-4">
-                          {community && (
+                          {displayLogo && (
                             <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-900 p-2 group-hover:bg-slate-950 transition-colors">
                               <Image
-                                src={community.logo}
-                                alt={community.name}
+                                src={displayLogo}
+                                alt={displayName}
                                 fill
                                 className="object-contain p-1"
                                 sizes="56px"
@@ -492,10 +516,10 @@ export function CommunityEventsSection() {
 
                         {/* Footer */}
                         <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
-                          {community && (
+                          {displayName && (
                             <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
                               <span className="h-2 w-2 rounded-full bg-[#ef426f]" />
-                              {community.name}
+                              {displayName}
                             </span>
                           )}
                           <div className="flex items-center gap-2">

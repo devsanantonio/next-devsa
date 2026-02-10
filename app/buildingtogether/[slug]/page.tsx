@@ -4,9 +4,29 @@ import { partners } from "@/data/partners"
 import { GroupPageClient } from "./group-page-client"
 import { PartnerPageClient } from "./partner-page-client"
 import { notFound } from "next/navigation"
+import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 
 interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+// Helper to check if a slug belongs to a community (static or Firestore)
+async function findCommunity(slug: string) {
+  // Check static list first
+  const staticCommunity = techCommunities.find((c) => c.id === slug)
+  if (staticCommunity) return staticCommunity
+
+  // Check Firestore for dynamically created communities
+  try {
+    const db = getDb()
+    const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(slug).get()
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() } as { id: string; name: string; logo: string; description: string }
+    }
+  } catch {
+    // Firestore unavailable - fall through
+  }
+  return null
 }
 
 export async function generateStaticParams() {
@@ -23,8 +43,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
   
-  // Check if it's a community
-  const community = techCommunities.find((c) => c.id === slug)
+  // Check if it's a community (static or Firestore)
+  const community = await findCommunity(slug)
   if (community) {
     const title = `${community.name} | DEVSA Tech Groups`
     const description = community.description.slice(0, 155) + (community.description.length > 155 ? "..." : "")
@@ -98,8 +118,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PartnerOrGroupPage({ params }: PageProps) {
   const { slug } = await params
   
-  // Check if it's a community
-  const community = techCommunities.find((c) => c.id === slug)
+  // Check if it's a community (static or Firestore)
+  const community = await findCommunity(slug)
   if (community) {
     return <GroupPageClient slug={slug} />
   }
