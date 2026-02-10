@@ -2,8 +2,8 @@
 
 import { motion } from "motion/react"
 import { useState, useEffect } from "react"
-import { ArrowRight } from "lucide-react"
-import { techCommunities, type TechCommunity } from "@/data/communities"
+import { ArrowRight, Loader2 } from "lucide-react"
+import { type TechCommunity } from "@/data/communities"
 import Link from "next/link"
 
 interface TestimonialCardProps {
@@ -106,6 +106,8 @@ function TestimonialCard({ community, index }: TestimonialCardProps) {
 
 export function HeroCommunities() {
   const [isMobile, setIsMobile] = useState(false)
+  const [communities, setCommunities] = useState<TechCommunity[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024)
@@ -113,9 +115,26 @@ export function HeroCommunities() {
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
+
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        const res = await fetch('/api/communities')
+        if (res.ok) {
+          const data = await res.json()
+          setCommunities(data.communities || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch communities:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchCommunities()
+  }, [])
   
   const initialCount = isMobile ? 8 : 9
-  const displayedCommunities = techCommunities.slice(0, initialCount)
+  const displayedCommunities = communities.slice(0, initialCount)
 
   return (
     <section 
@@ -189,6 +208,11 @@ export function HeroCommunities() {
       {/* Testimonial grid - white background container */}
       <div className="relative z-10 px-4 sm:px-6 pb-12">
         <div className="max-w-5xl mx-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-neutral-300" />
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {displayedCommunities.map((community, index) => (
               <TestimonialCard
@@ -198,6 +222,7 @@ export function HeroCommunities() {
               />
             ))}
           </div>
+          )}
         </div>
       </div>
 

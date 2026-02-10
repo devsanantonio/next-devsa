@@ -5,8 +5,8 @@ import { motion } from "motion/react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { techCommunities, type TechCommunity } from "@/data/communities"
-import { initialCommunityEvents, type CommunityEvent } from "@/data/events"
+import { type TechCommunity } from "@/data/communities"
+
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -65,11 +65,11 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
   const [community, setCommunity] = useState<TechCommunity | null>(null)
   const [isLoadingCommunity, setIsLoadingCommunity] = useState(true)
 
-  // Fetch community data from API (Firestore) with fallback to static
+  // Fetch community data from API (Firestore)
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const response = await fetch('/api/communities?includeStatic=true')
+        const response = await fetch('/api/communities')
         if (response.ok) {
           const data = await response.json()
           const communities = data.communities || []
@@ -77,21 +77,10 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
           
           if (foundCommunity) {
             setCommunity(foundCommunity)
-          } else {
-            // Fallback to static data
-            const staticCommunity = techCommunities.find((c) => c.id === slug)
-            setCommunity(staticCommunity || null)
           }
-        } else {
-          // Fallback to static data on API error
-          const staticCommunity = techCommunities.find((c) => c.id === slug)
-          setCommunity(staticCommunity || null)
         }
       } catch (error) {
         console.error('Failed to fetch community:', error)
-        // Fallback to static data
-        const staticCommunity = techCommunities.find((c) => c.id === slug)
-        setCommunity(staticCommunity || null)
       } finally {
         setIsLoadingCommunity(false)
       }
@@ -147,23 +136,6 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
           url: event.url,
         })
       })
-
-    // Add static events if no Firestore events
-    if (firestoreEvents.length === 0 && !isLoadingEvents) {
-      initialCommunityEvents
-        .filter(e => e.communityTag === slug)
-        .forEach(event => {
-          allCommunityEvents.push({
-            id: event.id,
-            title: event.title,
-            slug: event.slug,
-            date: event.date,
-            location: event.location,
-            description: event.description,
-            url: event.url,
-          })
-        })
-    }
 
     const upcoming = allCommunityEvents
       .filter(e => new Date(e.date) >= now)

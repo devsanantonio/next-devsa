@@ -29,7 +29,7 @@ import {
   LogOut,
   User
 } from "lucide-react"
-import { techCommunities as staticCommunities } from "@/data/communities"
+
 import { RichTextEditor } from "@/components/rich-text-editor"
 
 interface NewsletterSubscription {
@@ -130,11 +130,11 @@ const hasAdminAccess = (role: string | null | undefined): boolean => {
   return role === 'superadmin' || role === 'admin'
 }
 
-// Helper to get community name from id (fallback to static communities for initial render)
+// Helper to get community name from id
 const getCommunityName = (communityId: string | undefined, communityList?: Community[]): string => {
   if (!communityId) return "All Communities"
-  const list = communityList && communityList.length > 0 ? communityList : staticCommunities
-  const community = list.find(c => c.id === communityId)
+  if (!communityList || communityList.length === 0) return communityId
+  const community = communityList.find(c => c.id === communityId)
   return community?.name || communityId
 }
 
@@ -271,7 +271,7 @@ export default function AdminPage() {
       const [adminDataRes, eventsRes, communitiesRes] = await Promise.all([
         fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
         fetch('/api/events?includeAll=true'),
-        fetch('/api/communities?includeStatic=true')
+        fetch('/api/communities')
       ])
       
       const adminData = await adminDataRes.json()
@@ -1590,7 +1590,7 @@ export default function AdminPage() {
                             className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           >
                             <option value="">Select a community</option>
-                            {(communities.length > 0 ? communities : staticCommunities).map((community) => (
+                            {communities.map((community) => (
                               <option key={community.id} value={community.id}>
                                 {community.name}
                               </option>

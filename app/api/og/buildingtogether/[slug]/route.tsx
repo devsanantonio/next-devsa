@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
-import { techCommunities } from "@/data/communities"
 import { partners } from "@/data/partners"
+import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 
 export const runtime = "nodejs"
 
@@ -11,8 +11,17 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  // Check if it's a community
-  const community = techCommunities.find((c) => c.id === slug)
+  // Check if it's a community (from Firestore)
+  let community: { id: string; name: string; logo: string; description: string } | null = null
+  try {
+    const db = getDb()
+    const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(slug).get()
+    if (doc.exists) {
+      const data = doc.data()
+      community = { id: doc.id, name: data?.name, logo: data?.logo, description: data?.description }
+    }
+  } catch {}
+  
   if (community) {
     return new ImageResponse(
       (

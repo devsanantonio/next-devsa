@@ -3,8 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus, CalendarPlus } from "lucide-react"
-import { initialCommunityEvents } from "@/data/events"
-import { techCommunities } from "@/data/communities"
+import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -200,7 +199,7 @@ END:VCALENDAR`
 export function CommunityEventsSection() {
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
-  const [allCommunities, setAllCommunities] = useState<typeof techCommunities>([...techCommunities])
+  const [allCommunities, setAllCommunities] = useState<TechCommunity[]>([])
   
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -215,13 +214,13 @@ export function CommunityEventsSection() {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch events from Firestore and communities from API
+  // Fetch events and communities from API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [eventsResponse, communitiesResponse] = await Promise.all([
           fetch('/api/events'),
-          fetch('/api/communities?includeStatic=true'),
+          fetch('/api/communities'),
         ])
         if (eventsResponse.ok) {
           const data = await eventsResponse.json()
@@ -229,14 +228,7 @@ export function CommunityEventsSection() {
         }
         if (communitiesResponse.ok) {
           const data = await communitiesResponse.json()
-          const fetched = data.communities || []
-          // Merge: API communities take precedence, then fill in any static ones not in API
-          const fetchedIds = new Set(fetched.map((c: { id: string }) => c.id))
-          const merged = [
-            ...fetched,
-            ...techCommunities.filter(c => !fetchedIds.has(c.id)),
-          ]
-          setAllCommunities(merged)
+          setAllCommunities(data.communities || [])
         }
       } catch (error) {
         console.error('Failed to fetch data:', error)
@@ -247,49 +239,23 @@ export function CommunityEventsSection() {
     fetchData()
   }, [])
 
-  // Merge Firestore events with static fallback events
+  // All events come from Firestore API
   const allEvents: MergedEvent[] = useMemo(() => {
-    const events: MergedEvent[] = []
-
-    // Add Firestore events
-    if (firestoreEvents.length > 0) {
-      firestoreEvents.forEach((event) => {
-        events.push({
-          id: event.id,
-          title: event.title,
-          date: event.date,
-          endTime: event.endTime,
-          location: event.location,
-          description: event.description,
-          url: event.url,
-          communityId: event.communityId,
-          communityName: event.communityName,
-          communityLogo: event.communityLogo,
-          slug: event.slug,
-          source: "firestore",
-        })
-      })
-    }
-
-    // Add static events if no Firestore events exist (fallback)
-    if (firestoreEvents.length === 0 && !isLoadingEvents) {
-      initialCommunityEvents.forEach((event) => {
-        events.push({
-          id: event.id,
-          title: event.title,
-          date: event.date,
-          location: event.location,
-          description: event.description,
-          url: event.url,
-          communityId: event.communityTag,
-          slug: event.slug,
-          source: "static",
-        })
-      })
-    }
-
-    return events
-  }, [firestoreEvents, isLoadingEvents])
+    return firestoreEvents.map((event) => ({
+      id: event.id,
+      title: event.title,
+      date: event.date,
+      endTime: event.endTime,
+      location: event.location,
+      description: event.description,
+      url: event.url,
+      communityId: event.communityId,
+      communityName: event.communityName,
+      communityLogo: event.communityLogo,
+      slug: event.slug,
+      source: "firestore" as const,
+    }))
+  }, [firestoreEvents])
 
   // Helper function to get event status: "upcoming" | "happening" | "ended"
   const getEventStatus = (event: MergedEvent): "upcoming" | "happening" | "ended" => {

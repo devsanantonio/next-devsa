@@ -5,7 +5,6 @@ import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import { partners } from "@/data/partners"
-import { techCommunities } from "@/data/communities"
 import { Loader2 } from "lucide-react"
 
 interface LogoItem {
@@ -22,7 +21,7 @@ export function GroupsHero() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/communities?includeStatic=true")
+        const res = await fetch("/api/communities")
         if (res.ok) {
           const data = await res.json()
           const communities: LogoItem[] = (data.communities || []).map(
@@ -41,29 +40,23 @@ export function GroupsHero() {
           }))
           setAllLogos([...communities, ...partnerLogos])
         } else {
-          fallbackToStatic()
+          fallbackToPartners()
         }
       } catch {
-        fallbackToStatic()
+        fallbackToPartners()
       } finally {
         setIsLoading(false)
       }
     }
 
-    const fallbackToStatic = () => {
-      const communities: LogoItem[] = techCommunities.map((c) => ({
-        id: c.id,
-        name: c.name,
-        logo: c.logo,
-        type: "community" as const,
-      }))
+    const fallbackToPartners = () => {
       const partnerLogos: LogoItem[] = partners.map((p) => ({
         id: p.id,
         name: p.name,
         logo: p.logo,
         type: "partner" as const,
       }))
-      setAllLogos([...communities, ...partnerLogos])
+      setAllLogos(partnerLogos)
     }
 
     fetchData()

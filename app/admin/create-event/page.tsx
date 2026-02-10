@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { techCommunities as staticCommunities } from "@/data/communities"
+
 import { RichTextEditor } from "@/components/rich-text-editor"
 
 interface Community {
@@ -48,7 +48,7 @@ export default function AdminCreateEventPage() {
       try {
         const [authResponse, communitiesResponse] = await Promise.all([
           fetch(`/api/admin/auth?email=${encodeURIComponent(storedEmail)}`),
-          fetch('/api/communities?includeStatic=true')
+          fetch('/api/communities')
         ])
         
         const data = await authResponse.json()
@@ -59,8 +59,8 @@ export default function AdminCreateEventPage() {
           setAdminRole(data.role)
           setAdminCommunityId(data.communityId || null)
           
-          // Set communities from Firestore or static fallback
-          const communityList = communitiesData.communities || staticCommunities
+          // Set communities from Firestore
+          const communityList = communitiesData.communities || []
           setCommunities(communityList)
           
           // Auto-select community for organizers
@@ -171,7 +171,7 @@ export default function AdminCreateEventPage() {
                 className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
               >
                 <option value="">Select a community</option>
-                {(communities.length > 0 ? communities : staticCommunities).map((community) => (
+                {communities.map((community) => (
                   <option 
                     key={community.id} 
                     value={community.id}

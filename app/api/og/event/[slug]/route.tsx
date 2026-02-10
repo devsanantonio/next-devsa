@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
-import { techCommunities } from "@/data/communities"
 
 // Use Node.js runtime to access Firestore directly
 export const runtime = "nodejs"
@@ -20,13 +19,24 @@ async function getEventBySlug(slug: string) {
     if (!eventsSnapshot.empty) {
       const doc = eventsSnapshot.docs[0]
       const data = doc.data()
-      const community = techCommunities.find((c) => c.id === data.communityId)
+      
+      // Look up community name from Firestore
+      let communityName = "DEVSA Community"
+      if (data.communityId) {
+        try {
+          const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(data.communityId).get()
+          if (communityDoc.exists) {
+            communityName = communityDoc.data()?.name || communityName
+          }
+        } catch {}
+      }
+      
       return {
         title: data.title,
         date: data.date,
         location: data.location,
         communityId: data.communityId,
-        communityName: community?.name || "DEVSA Community",
+        communityName,
       }
     }
   } catch (error) {

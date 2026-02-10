@@ -1,7 +1,5 @@
 import { Metadata } from "next"
 import { EventPageClient } from "./event-page-client"
-import { techCommunities } from "@/data/communities"
-import { initialCommunityEvents } from "@/data/events"
 import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
 
 interface PageProps {
@@ -22,7 +20,18 @@ async function getEventBySlug(slug: string) {
     if (!snapshot.empty) {
       const doc = snapshot.docs[0]
       const data = doc.data() as Event
-      const community = techCommunities.find(c => c.id === data.communityId)
+      
+      // Look up community name from Firestore
+      let communityName = 'DEVSA Community'
+      if (data.communityId) {
+        try {
+          const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(data.communityId).get()
+          if (communityDoc.exists) {
+            communityName = communityDoc.data()?.name || communityName
+          }
+        } catch {}
+      }
+      
       return {
         id: doc.id,
         title: data.title,
@@ -37,22 +46,13 @@ async function getEventBySlug(slug: string) {
         source: data.source,
         status: data.status,
         rsvpEnabled: data.rsvpEnabled,
-        communityName: community?.name || 'DEVSA Community',
+        communityName,
         createdAt: (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       }
     }
   } catch (error) {
     console.error("Error fetching event from Firestore:", error)
-  }
-  
-  // Fallback to static events
-  const staticEvent = initialCommunityEvents.find(e => e.slug === slug)
-  if (staticEvent) {
-    return {
-      ...staticEvent,
-      communityId: staticEvent.communityTag,
-    }
   }
   
   return null
@@ -65,7 +65,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const event = await getEventBySlug(slug)
     
   if (event) {
-    const community = techCommunities.find((c) => c.id === event.communityId)
+    const community = event.communityId ? await (async () => {
+      try {
+        const db = getDb()
+        const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(event.communityId).get()
+        if (doc.exists) return doc.data() as { name: string }
+      } catch {}
+      return null
+    })() : null
     const eventDate = new Date(event.date).toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",

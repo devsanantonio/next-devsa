@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
-import { techCommunities } from '@/data/communities';
-import { initialCommunityEvents } from '@/data/events';
 
-// Helper to build a merged community lookup map from static + Firestore communities
+// Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
   const lookup = new Map<string, { name: string; logo: string }>();
-  // Add static communities first
-  techCommunities.forEach(c => lookup.set(c.id, { name: c.name, logo: c.logo }));
-  // Overlay with Firestore communities (includes new ones not in static list)
   try {
     const communitiesSnapshot = await db.collection(COLLECTIONS.COMMUNITIES).get();
     communitiesSnapshot.docs.forEach(doc => {
@@ -16,7 +11,7 @@ async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
       lookup.set(doc.id, { name: data.name || doc.id, logo: data.logo || '' });
     });
   } catch {
-    // Firestore unavailable - static fallback is fine
+    // Firestore unavailable
   }
   return lookup;
 }
@@ -57,41 +52,14 @@ export async function GET(request: NextRequest) {
       };
     }) as (Event & { id: string; communityName: string; communityLogo: string; isStatic: boolean })[];
 
-    // Also include static events from data/events.ts
-    const staticEvents = initialCommunityEvents.map(event => {
-      const community = communityLookup.get(event.communityTag);
-      return {
-        id: event.id,
-        title: event.title,
-        slug: event.slug,
-        date: event.date,
-        location: event.location,
-        description: event.description,
-        url: event.url,
-        communityId: event.communityTag,
-        communityName: community?.name || 'DEVSA Community',
-        communityLogo: community?.logo || '',
-        source: event.source || 'manual',
-        status: 'published' as const,
-        isStatic: true, // Static events from data/events.ts cannot be edited/deleted via API
-      };
-    });
-
-    // Merge events, preferring Firestore events over static ones with same slug
-    const firestoreSlugs = new Set(firestoreEvents.map(e => e.slug));
-    const mergedEvents = [
-      ...firestoreEvents,
-      ...staticEvents.filter(e => e.slug && !firestoreSlugs.has(e.slug)),
-    ];
-
     // Sort by date
-    mergedEvents.sort((a, b) => {
+    firestoreEvents.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       return dateA - dateB;
     });
 
-    return NextResponse.json({ events: mergedEvents });
+    return NextResponse.json({ events: firestoreEvents });
   } catch (error) {
     console.error('Events fetch error:', error);
     return NextResponse.json(

@@ -1,61 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
-import { techCommunities } from '@/data/communities';
 
-// GET - Fetch all communities (public) or with fallback to static data
+// GET - Fetch all communities (public)
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
-    const includeStatic = request.nextUrl.searchParams.get('includeStatic') === 'true';
     
     const communitiesSnapshot = await db
       .collection(COLLECTIONS.COMMUNITIES)
       .orderBy('name')
       .get();
 
-    // If no communities in Firestore, return static data as fallback
-    if (communitiesSnapshot.empty) {
-      if (includeStatic) {
-        return NextResponse.json({
-          communities: techCommunities.map(c => ({
-            ...c,
-            isStatic: true,
-          })),
-          source: 'static',
-        });
-      }
-      return NextResponse.json({ communities: [], source: 'firestore' });
-    }
+    const communities = communitiesSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
+      };
+    });
 
-    const firestoreCommunities = communitiesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
-      updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
-    }));
-
-    // When includeStatic=true, merge static communities that aren't already in Firestore
-    if (includeStatic) {
-      const firestoreIds = new Set(firestoreCommunities.map(c => c.id));
-      const missingStatic = techCommunities
-        .filter(c => !firestoreIds.has(c.id))
-        .map(c => ({ ...c, isStatic: true }));
-      const merged = [...firestoreCommunities, ...missingStatic]
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      return NextResponse.json({ communities: merged, source: 'merged' });
-    }
-
-    return NextResponse.json({ communities: firestoreCommunities, source: 'firestore' });
+    return NextResponse.json({ communities, source: 'firestore' });
   } catch (error) {
     console.error('Communities fetch error:', error);
-    // Fallback to static data on error
-    return NextResponse.json({
-      communities: techCommunities.map(c => ({
-        ...c,
-        isStatic: true,
-      })),
-      source: 'static-fallback',
-    });
+    return NextResponse.json(
+      { error: 'Failed to fetch communities' },
+      { status: 500 }
+    );
   }
 }
 

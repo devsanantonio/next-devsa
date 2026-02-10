@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import { techCommunities } from "@/data/communities"
 import { partners } from "@/data/partners"
 import { GroupPageClient } from "./group-page-client"
 import { PartnerPageClient } from "./partner-page-client"
@@ -10,13 +9,8 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-// Helper to check if a slug belongs to a community (static or Firestore)
+// Helper to check if a slug belongs to a community (Firestore)
 async function findCommunity(slug: string) {
-  // Check static list first
-  const staticCommunity = techCommunities.find((c) => c.id === slug)
-  if (staticCommunity) return staticCommunity
-
-  // Check Firestore for dynamically created communities
   try {
     const db = getDb()
     const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(slug).get()
@@ -30,13 +24,10 @@ async function findCommunity(slug: string) {
 }
 
 export async function generateStaticParams() {
-  const communityParams = techCommunities.map((community) => ({
-    slug: community.id,
-  }))
   const partnerParams = partners.map((partner) => ({
     slug: partner.id,
   }))
-  return [...communityParams, ...partnerParams]
+  return [...partnerParams]
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { techCommunities, type TechCommunity } from "@/data/communities"
-import { initialCommunityEvents } from "@/data/events"
+import { type TechCommunity } from "@/data/communities"
+
 import Image from "next/image"
 import Link from "next/link"
 import { Calendar, MapPin, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
@@ -206,34 +206,19 @@ export function EventPageClient({ slug }: EventPageClientProps) {
         console.error("Error fetching event:", error)
       }
       
-      // Fallback to static events
-      const staticEvent = initialCommunityEvents.find(e => e.slug === slug)
-      if (staticEvent) {
-        setEvent({
-          id: staticEvent.id,
-          title: staticEvent.title,
-          slug: staticEvent.slug || slug,
-          date: staticEvent.date,
-          location: staticEvent.location,
-          description: staticEvent.description,
-          url: staticEvent.url,
-          communityId: staticEvent.communityTag,
-        })
-      } else {
-        setEvent(null)
-      }
+      setEvent(null)
     }
     
     fetchEvent()
   }, [slug])
 
-  // Fetch community data from API (Firestore) with fallback to static
+  // Fetch community data from API (Firestore)
   useEffect(() => {
     if (!event) return
     
     const fetchCommunity = async () => {
       try {
-        const response = await fetch('/api/communities?includeStatic=true')
+        const response = await fetch('/api/communities')
         if (response.ok) {
           const data = await response.json()
           const communities = data.communities || []
@@ -241,17 +226,10 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           
           if (foundCommunity) {
             setCommunity(foundCommunity)
-            return
           }
         }
       } catch (error) {
         console.error("Error fetching community:", error)
-      }
-      
-      // Fallback to static communities
-      const staticCommunity = techCommunities.find(c => c.id === event.communityId)
-      if (staticCommunity) {
-        setCommunity(staticCommunity)
       }
     }
     

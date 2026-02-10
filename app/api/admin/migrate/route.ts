@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin, type Community, type Partner } from '@/lib/firebase-admin';
-import { techCommunities } from '@/data/communities';
+import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin, type Partner } from '@/lib/firebase-admin';
 import { partners } from '@/data/partners';
 
 // POST - Migrate static data to Firestore (super admin only)
@@ -26,43 +25,13 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
     const results = {
-      communities: { migrated: 0, skipped: 0, errors: 0 },
+      communities: { migrated: 0, skipped: 0, errors: 0, message: 'Communities are now managed in Firestore directly' },
       partners: { migrated: 0, skipped: 0, errors: 0 },
     };
 
-    // Migrate communities
+    // Communities are now fully managed in Firestore - no static migration needed
     if (!migrateType || migrateType === 'communities' || migrateType === 'all') {
-      for (const community of techCommunities) {
-        try {
-          const docRef = db.collection(COLLECTIONS.COMMUNITIES).doc(community.id);
-          const existing = await docRef.get();
-
-          if (existing.exists) {
-            results.communities.skipped++;
-            continue;
-          }
-
-          const communityData: Community = {
-            id: community.id,
-            name: community.name,
-            logo: community.logo,
-            description: community.description,
-            ...(community.website && { website: community.website }),
-            ...(community.discord && { discord: community.discord }),
-            ...(community.meetup && { meetup: community.meetup }),
-            ...(community.luma && { luma: community.luma }),
-            ...(community.instagram && { instagram: community.instagram }),
-            ...(community.twitter && { twitter: community.twitter }),
-            createdAt: new Date(),
-          };
-
-          await docRef.set(communityData);
-          results.communities.migrated++;
-        } catch (error) {
-          console.error(`Failed to migrate community ${community.id}:`, error);
-          results.communities.errors++;
-        }
-      }
+      // No-op: communities are already in Firestore
     }
 
     // Migrate partners
@@ -157,10 +126,6 @@ export async function GET(request: NextRequest) {
       firestore: {
         communities: communitiesSnapshot.size,
         partners: partnersSnapshot.size,
-      },
-      static: {
-        communities: techCommunities.length,
-        partners: partners.length,
       },
       isMigrated: communitiesSnapshot.size > 0 && partnersSnapshot.size > 0,
     });
