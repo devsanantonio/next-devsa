@@ -416,18 +416,13 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Event Ended
                 </span>
               )}
-              {event.eventType && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shrink-0 mt-1 leading-none ${
-                  event.eventType === 'in-person'
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                    : event.eventType === 'hybrid'
-                      ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              {event.eventType && event.eventType !== 'in-person' && (
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shrink-0 mt-1 leading-none ${
+                  event.eventType === 'hybrid'
+                    ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                    : 'bg-[#ef426f]/10 text-[#ef426f] border border-[#ef426f]/20'
                 }`}>
-                  {event.eventType === 'in-person' && '🏢'}
-                  {event.eventType === 'hybrid' && '🔀'}
-                  {event.eventType === 'virtual' && '💻'}
-                  {' '}{event.eventType}
+                  {event.eventType}
                 </span>
               )}
             </div>
