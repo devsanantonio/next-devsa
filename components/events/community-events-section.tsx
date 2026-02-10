@@ -19,6 +19,7 @@ interface FirestoreEvent {
   communityId: string
   communityName?: string
   communityLogo?: string
+  eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
 
 interface EventCalendarProps {
@@ -155,6 +156,7 @@ interface MergedEvent {
   communityName?: string
   communityLogo?: string
   slug?: string
+  eventType?: 'in-person' | 'hybrid' | 'virtual'
   source: "firestore" | "static"
 }
 
@@ -253,6 +255,7 @@ export function CommunityEventsSection() {
       communityName: event.communityName,
       communityLogo: event.communityLogo,
       slug: event.slug,
+      eventType: event.eventType,
       source: "firestore" as const,
     }))
   }, [firestoreEvents])
@@ -450,6 +453,20 @@ export function CommunityEventsSection() {
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Next Up
+                            </span>
+                          )}
+                          {event.eventType && (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider leading-none ${
+                              event.eventType === 'in-person'
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                : event.eventType === 'hybrid'
+                                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {event.eventType === 'in-person' && '🏢'}
+                              {event.eventType === 'hybrid' && '🔀'}
+                              {event.eventType === 'virtual' && '💻'}
+                              {' '}{event.eventType}
                             </span>
                           )}
                         </div>

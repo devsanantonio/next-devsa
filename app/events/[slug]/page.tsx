@@ -45,6 +45,7 @@ async function getEventBySlug(slug: string) {
         organizerEmail: data.organizerEmail,
         source: data.source,
         status: data.status,
+        eventType: data.eventType,
         rsvpEnabled: data.rsvpEnabled,
         communityName,
         createdAt: (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,

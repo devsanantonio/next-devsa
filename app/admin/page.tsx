@@ -86,6 +86,7 @@ interface CalendarEvent {
   status: string
   source?: string
   isStatic?: boolean
+  eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
 }
 
@@ -494,6 +495,7 @@ export default function AdminPage() {
           location: editingEvent.location,
           description: editingEvent.description,
           status: editingEvent.status,
+          eventType: editingEvent.eventType,
           rsvpEnabled: editingEvent.rsvpEnabled,
           organizerEmail: adminEmail,
         }),
@@ -1672,6 +1674,20 @@ export default function AdminPage() {
                               Static
                             </span>
                           )}
+                          {event.eventType && (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
+                              event.eventType === 'in-person'
+                                ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20'
+                                : event.eventType === 'hybrid'
+                                  ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
+                                  : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                            }`}>
+                              {event.eventType === 'in-person' && '🏢'}
+                              {event.eventType === 'hybrid' && '🔀'}
+                              {event.eventType === 'virtual' && '💻'}
+                              {' '}{event.eventType}
+                            </span>
+                          )}
                         </div>
                         <p className="text-neutral-400 text-sm mt-1">{event.communityName || event.communityId}</p>
                         <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-neutral-500">
@@ -1855,6 +1871,26 @@ export default function AdminPage() {
                           onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
+                      </div>
+                      {/* Event Format */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                          Event Format
+                        </label>
+                        <select
+                          value={editingEvent.eventType || 'in-person'}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, eventType: e.target.value as 'in-person' | 'hybrid' | 'virtual' })}
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        >
+                          <option value="in-person">🏢 In-Person</option>
+                          <option value="hybrid">🔀 Hybrid</option>
+                          <option value="virtual">💻 Virtual</option>
+                        </select>
+                        <p className="mt-2 text-xs text-neutral-500 leading-relaxed">
+                          {editingEvent.eventType === 'virtual' && 'Attendees will join via an online platform'}
+                          {editingEvent.eventType === 'hybrid' && 'Attendees can join in person or online'}
+                          {(!editingEvent.eventType || editingEvent.eventType === 'in-person') && 'Attendees will meet at the specified location'}
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">

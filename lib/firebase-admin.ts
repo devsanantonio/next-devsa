@@ -181,6 +181,7 @@ export interface Event {
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';
+  eventType?: 'in-person' | 'hybrid' | 'virtual';
   rsvpEnabled?: boolean;
   createdAt: Date;
   updatedAt?: Date;

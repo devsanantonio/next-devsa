@@ -34,6 +34,7 @@ export default function AdminCreateEventPage() {
     description: "",
     communityId: "",
     status: "published" as "published" | "draft",
+    eventType: "in-person" as "in-person" | "hybrid" | "virtual",
     rsvpEnabled: false,
   })
 
@@ -101,6 +102,7 @@ export default function AdminCreateEventPage() {
           description: formData.description,
           communityId: formData.communityId,
           status: formData.status,
+          eventType: formData.eventType,
           rsvpEnabled: formData.rsvpEnabled,
           organizerEmail: adminEmail,
         }),
@@ -263,6 +265,29 @@ export default function AdminCreateEventPage() {
                 placeholder="Geekdom, 110 E Houston St, San Antonio, TX"
                 className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
               />
+            </div>
+
+            {/* Event Type */}
+            <div>
+              <label htmlFor="eventType" className="block text-sm font-semibold text-gray-300 mb-2">
+                Event Format *
+              </label>
+              <select
+                id="eventType"
+                required
+                value={formData.eventType}
+                onChange={(e) => setFormData({ ...formData, eventType: e.target.value as "in-person" | "hybrid" | "virtual" })}
+                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+              >
+                <option value="in-person">🏢 In-Person</option>
+                <option value="hybrid">🔀 Hybrid</option>
+                <option value="virtual">💻 Virtual</option>
+              </select>
+              <p className="mt-2 text-xs text-gray-500 leading-relaxed">
+                {formData.eventType === "in-person" && "Attendees will meet at the specified location"}
+                {formData.eventType === "hybrid" && "Attendees can join in person or online"}
+                {formData.eventType === "virtual" && "Attendees will join via an online platform"}
+              </p>
             </div>
 
             {/* Description */}

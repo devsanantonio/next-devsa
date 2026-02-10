@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, description, communityId, status, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, description, communityId, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     if (!title || !date || !location || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
       communityId,
       organizerEmail: organizerEmail.toLowerCase(),
       status: status === 'draft' ? 'draft' : 'published',
+      eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
       createdAt: new Date(),
     };
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, description, status, rsvpEnabled, organizerEmail } = body;
+    const { eventId, title, date, endTime, location, description, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -206,6 +207,7 @@ export async function PUT(request: NextRequest) {
     if (description) updateData.description = description;
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
+    if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 
