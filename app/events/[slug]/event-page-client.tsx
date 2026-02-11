@@ -169,6 +169,12 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [event, setEvent] = useState<Event | null | undefined>(undefined)
   const [copied, setCopied] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [hasHistory, setHasHistory] = useState(false)
+
+  // Track whether the user navigated here from within the app
+  useEffect(() => {
+    setHasHistory(window.history.length > 1 && document.referrer.includes(window.location.origin))
+  }, [])
   
   // RSVP form state
   const [rsvpForm, setRsvpForm] = useState({
@@ -256,11 +262,11 @@ export function EventPageClient({ slug }: EventPageClientProps) {
             The event you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <button
-            onClick={() => router.back()}
+            onClick={() => hasHistory ? router.back() : router.push('/events')}
             className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
-            Go Back
+            {hasHistory ? 'Go Back' : 'All Events'}
           </button>
         </div>
       </main>
@@ -370,11 +376,11 @@ export function EventPageClient({ slug }: EventPageClientProps) {
         <div className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
           {/* Back button using router.back() */}
           <button
-            onClick={() => router.back()}
+            onClick={() => hasHistory ? router.back() : router.push('/events')}
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-8 cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {hasHistory ? 'Back' : 'All Events'}
           </button>
 
           {/* Event header */}
