@@ -48,6 +48,7 @@ const mediaItems = [
 ]
 
 export function HeroSection() {
+  const POLL_INTERVAL_MS = 120_000
   const [status, setStatus] = useState<{
     state: "open" | "closed" | "unknown"
     updatedAt: number | null
@@ -89,8 +90,8 @@ export function HeroSection() {
 
     fetchStatus()
 
-    const timeTimer = setInterval(() => setNow(Date.now()), 60_000)
-    const refreshTimer = setInterval(fetchStatus, 60_000)
+    const timeTimer = setInterval(() => setNow(Date.now()), POLL_INTERVAL_MS)
+    const refreshTimer = setInterval(fetchStatus, POLL_INTERVAL_MS)
 
     return () => {
       cancelled = true
