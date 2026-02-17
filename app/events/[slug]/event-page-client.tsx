@@ -41,6 +41,8 @@ interface Event {
   date: string
   endTime?: string
   location: string
+  venue?: string
+  address?: string
   description: string
   url?: string
   communityId: string
@@ -477,7 +479,16 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Location</p>
-                  <p className="text-base font-semibold text-slate-900 leading-relaxed">{event.location}</p>
+                  {event.venue ? (
+                    <>
+                      <p className="text-base font-semibold text-slate-900 leading-relaxed">{event.venue}</p>
+                      {event.address && (
+                        <p className="text-sm text-slate-500 mt-0.5">{event.address}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-base font-semibold text-slate-900 leading-relaxed">{event.location}</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -150,6 +150,8 @@ interface MergedEvent {
   date: string
   endTime?: string
   location: string
+  venue?: string
+  address?: string
   description: string
   url?: string
   communityId: string
@@ -249,6 +251,8 @@ export function CommunityEventsSection() {
       date: event.date,
       endTime: event.endTime,
       location: event.location,
+      venue: event.venue,
+      address: event.address,
       description: event.description,
       url: event.url,
       communityId: event.communityId,
@@ -484,7 +488,7 @@ export function CommunityEventsSection() {
                               {event.title}
                             </h3>
                             <p className="mt-2 text-sm font-semibold text-slate-500">
-                              📍 {event.location}
+                              📍 {event.venue || event.location}
                             </p>
                             <p className="mt-3 text-sm font-normal leading-6 text-slate-500 line-clamp-2">
                               {event.description}

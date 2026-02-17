@@ -73,14 +73,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, description, communityId, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, status, eventType, rsvpEnabled, organizerEmail } = body;
 
-    if (!title || !date || !location || !description || !communityId || !organizerEmail) {
+    if (!title || !date || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
+
+    // Compute location from venue + address if not provided directly
+    const computedLocation = location || (venue && address ? `${venue}, ${address}` : venue || address || '');
 
     // Verify organizer is an approved admin/organizer
     const db = getDb();
@@ -119,7 +122,9 @@ export async function POST(request: NextRequest) {
       slug,
       date,
       endTime, // Optional end time for "Happening Now" feature
-      location,
+      location: computedLocation,
+      venue: venue || '',
+      address: address || '',
       description,
       communityId,
       organizerEmail: organizerEmail.toLowerCase(),
@@ -150,7 +155,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, description, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -204,6 +209,18 @@ export async function PUT(request: NextRequest) {
     if (date) updateData.date = date;
     if (endTime) updateData.endTime = endTime;
     if (location) updateData.location = location;
+    if (typeof venue === 'string') updateData.venue = venue;
+    if (typeof address === 'string') updateData.address = address;
+    // Recompute location if venue or address changed
+    if (typeof venue === 'string' || typeof address === 'string') {
+      const newVenue = typeof venue === 'string' ? venue : eventData?.venue || '';
+      const newAddress = typeof address === 'string' ? address : eventData?.address || '';
+      if (newVenue && newAddress) {
+        updateData.location = `${newVenue}, ${newAddress}`;
+      } else {
+        updateData.location = newVenue || newAddress || location || eventData?.location || '';
+      }
+    }
     if (description) updateData.description = description;
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;

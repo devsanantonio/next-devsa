@@ -175,6 +175,8 @@ export interface Event {
   date: string;
   endTime?: string; // ISO string for event end time
   location: string;
+  venue?: string;
+  address?: string;
   description: string;
   url?: string;
   communityId: string;

@@ -39,6 +39,8 @@ async function getEventBySlug(slug: string) {
         date: data.date,
         endTime: data.endTime,
         location: data.location,
+        venue: data.venue,
+        address: data.address,
         description: data.description,
         url: data.url,
         communityId: data.communityId,

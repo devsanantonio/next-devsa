@@ -79,6 +79,8 @@ interface CalendarEvent {
   date: string
   endTime?: string
   location: string
+  venue?: string
+  address?: string
   description: string
   url?: string
   communityId: string
@@ -217,6 +219,7 @@ export default function AdminPage() {
   })
   const [isCreatingCommunity, setIsCreatingCommunity] = useState(false)
   const [isUploadingNewLogo, setIsUploadingNewLogo] = useState(false)
+  const [isDeletingCommunity, setIsDeletingCommunity] = useState<string | null>(null)
 
   // Helper to get community name from current communities state
   const getCommunityNameFromState = (communityId: string | undefined): string => {
@@ -475,7 +478,20 @@ export default function AdminPage() {
   }
 
   const handleEditEvent = (event: CalendarEvent) => {
-    setEditingEvent({ ...event })
+    // For backward compatibility: if venue/address are empty but location exists, 
+    // try to split the location into venue and address
+    const updatedEvent = { ...event }
+    if (!updatedEvent.venue && !updatedEvent.address && updatedEvent.location) {
+      const parts = updatedEvent.location.split(',')
+      if (parts.length >= 2) {
+        updatedEvent.venue = parts[0].trim()
+        updatedEvent.address = parts.slice(1).join(',').trim()
+      } else {
+        updatedEvent.venue = updatedEvent.location
+        updatedEvent.address = ''
+      }
+    }
+    setEditingEvent(updatedEvent)
     setShowEditEvent(true)
   }
 
@@ -492,7 +508,11 @@ export default function AdminPage() {
           title: editingEvent.title,
           date: editingEvent.date,
           endTime: editingEvent.endTime,
-          location: editingEvent.location,
+          venue: editingEvent.venue || '',
+          address: editingEvent.address || '',
+          location: editingEvent.venue && editingEvent.address
+            ? `${editingEvent.venue}, ${editingEvent.address}`
+            : editingEvent.venue || editingEvent.address || editingEvent.location,
           description: editingEvent.description,
           status: editingEvent.status,
           eventType: editingEvent.eventType,
@@ -822,6 +842,35 @@ export default function AdminPage() {
       setError("Failed to update community")
     } finally {
       setIsSavingCommunity(false)
+    }
+  }
+
+  const handleDeleteCommunity = async (communityId: string, communityName: string) => {
+    if (!confirm(`Are you sure you want to delete "${communityName}"? This action cannot be undone.`)) return
+
+    setIsDeletingCommunity(communityId)
+    setError(null)
+    try {
+      const response = await fetch("/api/communities", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: communityId,
+          adminEmail,
+        }),
+      })
+
+      if (response.ok) {
+        setSuccessMessage("Community deleted successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete community")
+      }
+    } catch {
+      setError("Failed to delete community")
+    } finally {
+      setIsDeletingCommunity(null)
     }
   }
 
@@ -1860,17 +1909,33 @@ export default function AdminPage() {
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                          Location
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingEvent.location}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
-                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Venue
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={editingEvent.venue || ''}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, venue: e.target.value })}
+                            placeholder="Geekdom"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Address
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={editingEvent.address || ''}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, address: e.target.value })}
+                            placeholder="110 E Houston St, San Antonio, TX"
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                        </div>
                       </div>
                       {/* Event Format */}
                       <div>
@@ -2119,12 +2184,27 @@ export default function AdminPage() {
                             </div>
                           </div>
                           {communitiesSource === 'firestore' && (
-                            <button
-                              onClick={() => handleEditCommunity(community)}
-                              className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors shrink-0"
-                            >
-                              Edit
-                            </button>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => handleEditCommunity(community)}
+                                className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
+                              >
+                                Edit
+                              </button>
+                              {hasAdminAccess(adminRole) && (
+                                <button
+                                  onClick={() => handleDeleteCommunity(community.id, community.name)}
+                                  disabled={isDeletingCommunity === community.id}
+                                  className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors disabled:opacity-50"
+                                >
+                                  {isDeletingCommunity === community.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    "Delete"
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

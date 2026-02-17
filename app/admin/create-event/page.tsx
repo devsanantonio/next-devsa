@@ -30,7 +30,8 @@ export default function AdminCreateEventPage() {
     date: "",
     time: "18:00",
     endTime: "20:00",
-    location: "",
+    venue: "",
+    address: "",
     description: "",
     communityId: "",
     status: "published" as "published" | "draft",
@@ -98,7 +99,11 @@ export default function AdminCreateEventPage() {
           title: formData.title,
           date: dateTime.toISOString(),
           endTime: endDateTime.toISOString(),
-          location: formData.location,
+          venue: formData.venue,
+          address: formData.address,
+          location: formData.venue && formData.address 
+            ? `${formData.venue}, ${formData.address}` 
+            : formData.venue || formData.address,
           description: formData.description,
           communityId: formData.communityId,
           status: formData.status,
@@ -251,20 +256,36 @@ export default function AdminCreateEventPage() {
               </div>
             </div>
 
-            {/* Location */}
-            <div>
-              <label htmlFor="location" className="block text-sm font-semibold text-gray-300 mb-2">
-                Location *
-              </label>
-              <input
-                type="text"
-                id="location"
-                required
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Geekdom, 110 E Houston St, San Antonio, TX"
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-              />
+            {/* Venue and Address */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="venue" className="block text-sm font-semibold text-gray-300 mb-2">
+                  Venue *
+                </label>
+                <input
+                  type="text"
+                  id="venue"
+                  required
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  placeholder="Geekdom"
+                  className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                />
+              </div>
+              <div>
+                <label htmlFor="address" className="block text-sm font-semibold text-gray-300 mb-2">
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  required
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="110 E Houston St, San Antonio, TX"
+                  className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                />
+              </div>
             </div>
 
             {/* Event Type */}

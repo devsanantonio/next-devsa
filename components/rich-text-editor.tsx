@@ -142,10 +142,17 @@ export function RichTextEditor({
     }
   }
 
-  const handleLinkSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLinkSubmit = () => {
     if (linkUrl.trim()) {
       applyFormatting('link', linkUrl.trim())
+    }
+  }
+
+  const handleLinkKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      e.stopPropagation()
+      handleLinkSubmit()
     }
   }
 
@@ -181,17 +188,19 @@ export function RichTextEditor({
           }}
         >
           {showLinkInput ? (
-            <form onSubmit={handleLinkSubmit} className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5">
               <input
                 type="url"
                 autoFocus
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
+                onKeyDown={handleLinkKeyDown}
                 placeholder="https://..."
                 className="w-48 px-2 py-1 text-sm rounded bg-neutral-800 border border-neutral-600 text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#ef426f]"
               />
               <button
-                type="submit"
+                type="button"
+                onClick={handleLinkSubmit}
                 className="p-1.5 rounded hover:bg-neutral-700 text-green-400 transition-colors"
                 title="Apply link"
               >
@@ -208,7 +217,7 @@ export function RichTextEditor({
               >
                 <X className="h-4 w-4" />
               </button>
-            </form>
+            </div>
           ) : (
             <>
               <button
