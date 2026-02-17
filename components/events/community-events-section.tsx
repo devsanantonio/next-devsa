@@ -14,6 +14,8 @@ interface FirestoreEvent {
   date: string
   endTime?: string
   location: string
+  venue?: string
+  address?: string
   description: string
   url?: string
   communityId: string
