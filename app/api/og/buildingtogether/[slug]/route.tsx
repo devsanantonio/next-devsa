@@ -5,6 +5,65 @@ import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 
 export const runtime = "nodejs"
 
+/* Shared header component style for OG images */
+function OgHeader({ label, dark = false }: { label: string; dark?: boolean }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        marginBottom: 48,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div
+          style={{
+            width: 6,
+            height: 32,
+            backgroundColor: "#ef426f",
+            borderRadius: 3,
+            display: "flex",
+          }}
+        />
+        <span
+          style={{
+            color: dark ? "#ffffff" : "#111827",
+            fontSize: 26,
+            fontWeight: 700,
+            letterSpacing: "0.02em",
+          }}
+        >
+          DEVSA
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: dark ? "rgba(239, 66, 111, 0.15)" : "#fef2f2",
+          border: "2px solid #ef426f",
+          borderRadius: 24,
+          padding: "8px 22px",
+        }}
+      >
+        <span
+          style={{
+            color: "#ef426f",
+            fontSize: 15,
+            fontWeight: 600,
+            letterSpacing: "0.01em",
+          }}
+        >
+          {label}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -32,46 +91,10 @@ export async function GET(
             display: "flex",
             flexDirection: "column",
             backgroundColor: "#111827",
-            padding: "48px 60px",
+            padding: "56px 64px",
           }}
         >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              marginBottom: 40,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <span style={{ color: "#ffffff", fontSize: 28, fontWeight: 600 }}>
-                DEVSA
-              </span>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "rgba(239, 66, 111, 0.15)",
-                border: "2px solid #ef426f",
-                borderRadius: 24,
-                padding: "8px 20px",
-              }}
-            >
-              <span style={{ color: "#ef426f", fontSize: 16, fontWeight: 600 }}>
-                Tech Group
-              </span>
-            </div>
-          </div>
+          <OgHeader label="Tech Group" dark />
 
           {/* Main content */}
           <div
@@ -90,9 +113,10 @@ export async function GET(
                 justifyContent: "center",
                 width: 200,
                 height: 200,
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
                 borderRadius: 24,
                 padding: 24,
+                border: "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
               <img
@@ -100,9 +124,7 @@ export async function GET(
                 alt={community.name}
                 width={160}
                 height={160}
-                style={{
-                  objectFit: "contain",
-                }}
+                style={{ objectFit: "contain" }}
               />
             </div>
 
@@ -116,12 +138,13 @@ export async function GET(
             >
               <h1
                 style={{
-                  fontSize: community.name.length > 25 ? 48 : 56,
+                  fontSize: community.name.length > 25 ? 48 : 58,
                   fontWeight: 800,
                   color: "#ffffff",
-                  lineHeight: 1.15,
+                  lineHeight: 1.2,
                   margin: 0,
-                  marginBottom: 20,
+                  marginBottom: 18,
+                  letterSpacing: "-0.02em",
                 }}
               >
                 {community.name}
@@ -129,15 +152,12 @@ export async function GET(
 
               <p
                 style={{
-                  fontSize: 22,
+                  fontSize: 21,
                   color: "#9ca3af",
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.55,
+                  fontWeight: 400,
                   maxWidth: 650,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
                 }}
               >
                 {community.description.slice(0, 200)}
@@ -154,29 +174,24 @@ export async function GET(
               justifyContent: "space-between",
               width: "100%",
               paddingTop: 24,
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+              borderTop: "2px solid rgba(255, 255, 255, 0.08)",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span style={{ color: "#9ca3af", fontSize: 18 }}>Building</span>
-              <span style={{ color: "#ffffff", fontSize: 18, fontWeight: 700 }}>Together</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+                Building
+              </span>
+              <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+                Together
+              </span>
             </div>
-            <span style={{ color: "#6b7280", fontSize: 16 }}>
+            <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
               devsa.community/buildingtogether/{slug}
             </span>
           </div>
         </div>
       ),
-      {
-        width: 1200,
-        height: 630,
-      }
+      { width: 1200, height: 630 }
     )
   }
 
@@ -192,46 +207,10 @@ export async function GET(
             display: "flex",
             flexDirection: "column",
             backgroundColor: "#ffffff",
-            padding: "48px 60px",
+            padding: "56px 64px",
           }}
         >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              marginBottom: 40,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <span style={{ color: "#111827", fontSize: 28, fontWeight: 600 }}>
-                DEVSA
-              </span>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "#fef2f2",
-                border: "2px solid #ef426f",
-                borderRadius: 24,
-                padding: "8px 20px",
-              }}
-            >
-              <span style={{ color: "#ef426f", fontSize: 16, fontWeight: 600 }}>
-                Partner
-              </span>
-            </div>
-          </div>
+          <OgHeader label="Partner" />
 
           {/* Main content */}
           <div
@@ -250,9 +229,10 @@ export async function GET(
                 justifyContent: "center",
                 width: 200,
                 height: 200,
-                backgroundColor: "#f3f4f6",
+                backgroundColor: "#f9fafb",
                 borderRadius: 24,
                 padding: 24,
+                border: "1px solid #f3f4f6",
               }}
             >
               <img
@@ -260,9 +240,7 @@ export async function GET(
                 alt={partner.name}
                 width={160}
                 height={160}
-                style={{
-                  objectFit: "contain",
-                }}
+                style={{ objectFit: "contain" }}
               />
             </div>
 
@@ -276,12 +254,13 @@ export async function GET(
             >
               <h1
                 style={{
-                  fontSize: partner.name.length > 25 ? 48 : 56,
+                  fontSize: partner.name.length > 25 ? 48 : 58,
                   fontWeight: 800,
                   color: "#111827",
-                  lineHeight: 1.15,
+                  lineHeight: 1.2,
                   margin: 0,
-                  marginBottom: 20,
+                  marginBottom: 18,
+                  letterSpacing: "-0.02em",
                 }}
               >
                 {partner.name}
@@ -289,15 +268,12 @@ export async function GET(
 
               <p
                 style={{
-                  fontSize: 22,
+                  fontSize: 21,
                   color: "#6b7280",
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.55,
+                  fontWeight: 400,
                   maxWidth: 650,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
                 }}
               >
                 {partner.description.slice(0, 200)}
@@ -314,29 +290,24 @@ export async function GET(
               justifyContent: "space-between",
               width: "100%",
               paddingTop: 24,
-              borderTop: "1px solid #e5e7eb",
+              borderTop: "2px solid #f3f4f6",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span style={{ color: "#6b7280", fontSize: 18 }}>Building</span>
-              <span style={{ color: "#111827", fontSize: 18, fontWeight: 700 }}>Together</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+                Building
+              </span>
+              <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+                Together
+              </span>
             </div>
-            <span style={{ color: "#9ca3af", fontSize: 16 }}>
+            <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
               devsa.community/buildingtogether/{slug}
             </span>
           </div>
         </div>
       ),
-      {
-        width: 1200,
-        height: 630,
-      }
+      { width: 1200, height: 630 }
     )
   }
 
@@ -348,17 +319,21 @@ export async function GET(
           height: "100%",
           width: "100%",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#111827",
+          gap: 16,
         }}
       >
-        <span style={{ color: "#ffffff", fontSize: 48 }}>DEVSA Community</span>
+        <span style={{ color: "#ef426f", fontSize: 28, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.4 }}>
+          DEVSA
+        </span>
+        <span style={{ color: "#ffffff", fontSize: 48, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+          Community
+        </span>
       </div>
     ),
-    {
-      width: 1200,
-      height: 630,
-    }
+    { width: 1200, height: 630 }
   )
 }

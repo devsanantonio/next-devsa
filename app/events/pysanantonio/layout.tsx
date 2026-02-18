@@ -26,17 +26,17 @@ export const metadata: Metadata = {
   publisher: "Alamo Python",
   metadataBase: new URL(siteUrl),
   alternates: {
-    canonical: "/pysananantonio",
+    canonical: "/events/pysanantonio",
   },
   openGraph: {
     title: "PySanAntonio 2025 | Python Conference",
     description:
       "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
-    url: `${siteUrl}/pysananantonio`,
-    siteName: "DEVSA Community",
+    url: `${siteUrl}/events/pysanantonio`,
+    siteName: "DEVSA",
     images: [
       {
-        url: `${siteUrl}/pysananantonio/opengraph-image.png`,
+        url: `${siteUrl}/api/og/pysanantonio`,
         width: 1200,
         height: 630,
         alt: "PySanAntonio 2025 - Python Conference in San Antonio",
@@ -51,8 +51,8 @@ export const metadata: Metadata = {
     title: "PySanAntonio 2025 | Python Conference",
     description:
       "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
-    images: [`${siteUrl}/pysananantonio/opengraph-image.png`],
-    creator: "@devsacommunity",
+    images: [`${siteUrl}/api/og/pysanantonio`],
+    creator: "@devsatx",
   },
   robots: {
     index: true,
@@ -126,7 +126,7 @@ export default function PySanAntonioLayout({ children }: { children: React.React
       "@type": "Organization",
       name: "Python Community",
     },
-    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/pysananantonio/opengraph-image.png`,
+    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/api/og/pysanantonio`,
   }
 
   return (

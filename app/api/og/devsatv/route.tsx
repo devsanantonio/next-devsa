@@ -12,9 +12,24 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#000000",
-          padding: "48px 60px",
+          padding: "56px 64px",
+          position: "relative",
         }}
       >
+        {/* Subtle gradient background */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "radial-gradient(ellipse at 20% 50%, rgba(239, 66, 111, 0.1) 0%, transparent 50%)",
+            display: "flex",
+          }}
+        />
+
         {/* Header */}
         <div
           style={{
@@ -22,17 +37,34 @@ export async function GET() {
             alignItems: "center",
             justifyContent: "space-between",
             width: "100%",
-            marginBottom: 40,
+            marginBottom: 48,
+            zIndex: 1,
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 12,
+              gap: 14,
             }}
           >
-            <span style={{ color: "#ffffff", fontSize: 28, fontWeight: 600 }}>
+            <div
+              style={{
+                width: 6,
+                height: 32,
+                backgroundColor: "#ef426f",
+                borderRadius: 3,
+                display: "flex",
+              }}
+            />
+            <span
+              style={{
+                color: "#ffffff",
+                fontSize: 26,
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+              }}
+            >
               DEVSA
             </span>
           </div>
@@ -41,13 +73,20 @@ export async function GET() {
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "rgba(239, 66, 111, 0.2)",
+              backgroundColor: "rgba(239, 66, 111, 0.15)",
               border: "2px solid #ef426f",
               borderRadius: 24,
-              padding: "8px 20px",
+              padding: "8px 22px",
             }}
           >
-            <span style={{ color: "#ef426f", fontSize: 16, fontWeight: 600 }}>
+            <span
+              style={{
+                color: "#ef426f",
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: "0.01em",
+              }}
+            >
               Content Engine
             </span>
           </div>
@@ -60,40 +99,34 @@ export async function GET() {
             flexDirection: "column",
             flex: 1,
             justifyContent: "center",
+            zIndex: 1,
           }}
         >
-          {/* Main title with gradient effect simulated */}
-          <div
+          {/* Main title */}
+          <h1
             style={{
-              display: "flex",
-              flexDirection: "column",
-              marginBottom: 24,
+              fontSize: 86,
+              fontWeight: 800,
+              color: "#ef426f",
+              lineHeight: 1.15,
+              margin: 0,
+              marginBottom: 20,
+              letterSpacing: "-0.02em",
             }}
           >
-            <h1
-              style={{
-                fontSize: 84,
-                fontWeight: 800,
-                background: "linear-gradient(90deg, #ef426f, #f97316)",
-                backgroundClip: "text",
-                color: "#ef426f",
-                lineHeight: 1,
-                margin: 0,
-              }}
-            >
-              DEVSA TV
-            </h1>
-          </div>
+            DEVSA TV
+          </h1>
 
           {/* Subtitle */}
           <p
             style={{
-              fontSize: 32,
+              fontSize: 30,
               color: "#9ca3af",
               margin: 0,
               marginBottom: 40,
               maxWidth: 800,
-              lineHeight: 1.4,
+              lineHeight: 1.5,
+              fontWeight: 400,
             }}
           >
             The Content Engine for San Antonio Tech
@@ -103,49 +136,58 @@ export async function GET() {
           <div
             style={{
               display: "flex",
-              gap: 24,
+              gap: 20,
             }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                gap: 10,
+                backgroundColor: "rgba(255, 255, 255, 0.06)",
                 borderRadius: 12,
                 padding: "12px 20px",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
-              <span style={{ color: "#ef426f", fontSize: 20 }}>🎬</span>
-              <span style={{ color: "#e5e7eb", fontSize: 18 }}>Documentary Production</span>
+              <span style={{ fontSize: 18 }}>🎬</span>
+              <span style={{ color: "#e5e7eb", fontSize: 17, fontWeight: 500, lineHeight: 1.4 }}>
+                Documentary Production
+              </span>
             </div>
 
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                gap: 10,
+                backgroundColor: "rgba(255, 255, 255, 0.06)",
                 borderRadius: 12,
                 padding: "12px 20px",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
-              <span style={{ color: "#ef426f", fontSize: 20 }}>🎤</span>
-              <span style={{ color: "#e5e7eb", fontSize: 18 }}>Community Stories</span>
+              <span style={{ fontSize: 18 }}>🎤</span>
+              <span style={{ color: "#e5e7eb", fontSize: 17, fontWeight: 500, lineHeight: 1.4 }}>
+                Community Stories
+              </span>
             </div>
 
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                gap: 10,
+                backgroundColor: "rgba(255, 255, 255, 0.06)",
                 borderRadius: 12,
                 padding: "12px 20px",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
-              <span style={{ color: "#ef426f", fontSize: 20 }}>🤝</span>
-              <span style={{ color: "#e5e7eb", fontSize: 18 }}>Sponsor-Ready</span>
+              <span style={{ fontSize: 18 }}>🤝</span>
+              <span style={{ color: "#e5e7eb", fontSize: 17, fontWeight: 500, lineHeight: 1.4 }}>
+                Sponsor-Ready
+              </span>
             </div>
           </div>
         </div>
@@ -158,7 +200,8 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             paddingTop: 24,
-            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+            borderTop: "2px solid rgba(255, 255, 255, 0.08)",
+            zIndex: 1,
           }}
         >
           <div
@@ -168,10 +211,14 @@ export async function GET() {
               gap: 8,
             }}
           >
-            <span style={{ color: "#6b7280", fontSize: 18 }}>Authentic</span>
-            <span style={{ color: "#ffffff", fontSize: 18, fontWeight: 700 }}>Community Content</span>
+            <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+              Authentic
+            </span>
+            <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+              Community Content
+            </span>
           </div>
-          <span style={{ color: "#6b7280", fontSize: 16 }}>
+          <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
             devsa.community/devsatv
           </span>
         </div>

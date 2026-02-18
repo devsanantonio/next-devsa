@@ -11,11 +11,11 @@ export async function GET() {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#111827",
+          backgroundColor: "#ffffff",
           padding: "56px 64px",
         }}
       >
-        {/* Header with DEVSA branding */}
+        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -43,7 +43,7 @@ export async function GET() {
             />
             <span
               style={{
-                color: "#ffffff",
+                color: "#111827",
                 fontSize: 26,
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -58,7 +58,7 @@ export async function GET() {
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "rgba(239, 66, 111, 0.15)",
+              backgroundColor: "#fef2f2",
               border: "2px solid #ef426f",
               borderRadius: 24,
               padding: "8px 22px",
@@ -72,7 +72,7 @@ export async function GET() {
                 letterSpacing: "0.01em",
               }}
             >
-              Tech Communities
+              Job Board
             </span>
           </div>
         </div>
@@ -91,116 +91,80 @@ export async function GET() {
             style={{
               fontSize: 74,
               fontWeight: 800,
-              color: "#ffffff",
+              color: "#111827",
               lineHeight: 1.2,
               margin: 0,
-              marginBottom: 20,
+              marginBottom: 8,
               letterSpacing: "-0.02em",
             }}
           >
-            Building Together
+            San Antonio
           </h1>
+          <h2
+            style={{
+              fontSize: 74,
+              fontWeight: 800,
+              color: "#ef426f",
+              lineHeight: 1.2,
+              margin: 0,
+              marginBottom: 24,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Tech Jobs
+          </h2>
 
           {/* Subtitle */}
           <p
             style={{
-              fontSize: 26,
-              color: "#9ca3af",
+              fontSize: 24,
+              color: "#6b7280",
               margin: 0,
-              marginBottom: 40,
+              marginBottom: 36,
               maxWidth: 800,
               lineHeight: 1.5,
               fontWeight: 400,
             }}
           >
-            Discover 20+ active tech-focused groups and partners in San Antonio
+            Find tech jobs and hiring opportunities. Connect with local companies, startups, and developers in the DEVSA community.
           </p>
 
-          {/* Feature cards */}
+          {/* Stats row */}
           <div
             style={{
               display: "flex",
-              gap: 28,
+              gap: 36,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-                borderRadius: 16,
-                padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <span
-                style={{
-                  color: "#ef426f",
-                  fontSize: 44,
-                  fontWeight: 800,
-                  marginBottom: 6,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                20+
-              </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Tech Groups
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke="#ef426f" strokeWidth="2" />
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="#ef426f" strokeWidth="2" />
+              </svg>
+              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
+                Full-time & Contract
               </span>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-                borderRadius: 16,
-                padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <span
-                style={{
-                  color: "#ef426f",
-                  fontSize: 44,
-                  fontWeight: 800,
-                  marginBottom: 6,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                10+
-              </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Partners
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#ef426f" strokeWidth="2" />
+                <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
+              </svg>
+              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
+                Remote & On-site
               </span>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-                borderRadius: 16,
-                padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <span
-                style={{
-                  color: "#ef426f",
-                  fontSize: 44,
-                  fontWeight: 800,
-                  marginBottom: 6,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                1
-              </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Community
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#ef426f" strokeWidth="2" />
+                <circle cx="9" cy="7" r="4" stroke="#ef426f" strokeWidth="2" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#ef426f" strokeWidth="2" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
+              </svg>
+              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
+                Community-Powered
               </span>
             </div>
           </div>
@@ -214,7 +178,7 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             paddingTop: 24,
-            borderTop: "2px solid rgba(255, 255, 255, 0.08)",
+            borderTop: "2px solid #f3f4f6",
           }}
         >
           <div
@@ -225,14 +189,14 @@ export async function GET() {
             }}
           >
             <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              San Antonio
+              Building
             </span>
-            <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              Tech Ecosystem
+            <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+              Together
             </span>
           </div>
-          <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-            devsa.community/buildingtogether
+          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
+            devsa.community/jobs
           </span>
         </div>
       </div>

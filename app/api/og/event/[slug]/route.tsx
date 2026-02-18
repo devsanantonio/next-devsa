@@ -107,7 +107,7 @@ export async function GET(
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          padding: "48px 60px",
+          padding: "56px 64px",
         }}
       >
         {/* Header with organizer branding */}
@@ -117,17 +117,33 @@ export async function GET(
             alignItems: "center",
             justifyContent: "space-between",
             width: "100%",
-            marginBottom: 40,
+            marginBottom: 48,
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 12,
+              gap: 14,
             }}
           >
-            <span style={{ color: "#111827", fontSize: 28, fontWeight: 600 }}>
+            <div
+              style={{
+                width: 6,
+                height: 32,
+                backgroundColor: "#ef426f",
+                borderRadius: 3,
+                display: "flex",
+              }}
+            />
+            <span
+              style={{
+                color: "#111827",
+                fontSize: 24,
+                fontWeight: 700,
+                letterSpacing: "0.01em",
+              }}
+            >
               {organizerName}
             </span>
           </div>
@@ -140,10 +156,17 @@ export async function GET(
               backgroundColor: "#fef2f2",
               border: "2px solid #ef426f",
               borderRadius: 24,
-              padding: "8px 20px",
+              padding: "8px 22px",
             }}
           >
-            <span style={{ color: "#ef426f", fontSize: 16, fontWeight: 600 }}>
+            <span
+              style={{
+                color: "#ef426f",
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: "0.01em",
+              }}
+            >
               Community Event
             </span>
           </div>
@@ -161,13 +184,14 @@ export async function GET(
           {/* Event title */}
           <h1
             style={{
-              fontSize: displayTitle.length > 50 ? 48 : displayTitle.length > 35 ? 56 : 64,
+              fontSize: displayTitle.length > 50 ? 48 : displayTitle.length > 35 ? 58 : 66,
               fontWeight: 800,
               color: "#111827",
-              lineHeight: 1.15,
+              lineHeight: 1.2,
               margin: 0,
-              marginBottom: 32,
+              marginBottom: 28,
               maxWidth: 950,
+              letterSpacing: "-0.02em",
             }}
           >
             {displayTitle}
@@ -178,7 +202,7 @@ export async function GET(
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 16,
+              gap: 14,
             }}
           >
             {/* Date and time */}
@@ -189,20 +213,14 @@ export async function GET(
                 gap: 12,
               }}
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                style={{ color: "#ef426f" }}
-              >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#ef426f" strokeWidth="2" />
                 <line x1="16" y1="2" x2="16" y2="6" stroke="#ef426f" strokeWidth="2" />
                 <line x1="8" y1="2" x2="8" y2="6" stroke="#ef426f" strokeWidth="2" />
                 <line x1="3" y1="10" x2="21" y2="10" stroke="#ef426f" strokeWidth="2" />
               </svg>
-              <span style={{ color: "#374151", fontSize: 22, fontWeight: 500 }}>
-                {formattedDate}{formattedTime && ` • ${formattedTime}`}
+              <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
+                {formattedDate}{formattedTime && ` · ${formattedTime} CST`}
               </span>
             </div>
 
@@ -214,17 +232,11 @@ export async function GET(
                 gap: 12,
               }}
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                style={{ color: "#ef426f" }}
-              >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#ef426f" strokeWidth="2" />
                 <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
               </svg>
-              <span style={{ color: "#374151", fontSize: 22, fontWeight: 500 }}>
+              <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
                 {location}
               </span>
             </div>
@@ -239,7 +251,7 @@ export async function GET(
             justifyContent: "space-between",
             width: "100%",
             paddingTop: 24,
-            borderTop: "1px solid #e5e7eb",
+            borderTop: "2px solid #f3f4f6",
           }}
         >
           <div
@@ -249,10 +261,14 @@ export async function GET(
               gap: 8,
             }}
           >
-            <span style={{ color: "#6b7280", fontSize: 18 }}>Building</span>
-            <span style={{ color: "#111827", fontSize: 18, fontWeight: 700 }}>Together</span>
+            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+              Building
+            </span>
+            <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
+              Together
+            </span>
           </div>
-          <span style={{ color: "#9ca3af", fontSize: 16 }}>
+          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
             devsa.community/events
           </span>
         </div>
