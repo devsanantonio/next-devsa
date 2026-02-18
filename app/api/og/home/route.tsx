@@ -119,7 +119,7 @@ export async function GET() {
           <h2
             style={{
               fontSize: 64,
-              fontWeight: 800,
+              fontWeight: 700,
               color: "#ef426f",
               lineHeight: 1.2,
               margin: 0,
@@ -127,7 +127,7 @@ export async function GET() {
               letterSpacing: "-0.02em",
             }}
           >
-            to San Antonio Tech
+            to the Tech Community
           </h2>
 
           <p
@@ -140,7 +140,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Meetups, workshops, coworking spaces, and career opportunities — all in one place.
+            Events, coworking space, local organizations, community partners, and networking opportunities — all in one place.
           </p>
         </div>
 
@@ -157,9 +157,9 @@ export async function GET() {
             <span
               style={{
                 color: "#ef426f",
-                fontSize: 28,
-                fontWeight: 800,
-                lineHeight: 1.2,
+                fontSize: 24,
+                fontWeight: 700,
+                lineHeight: 1.3,
                 letterSpacing: "-0.01em",
               }}
             >
@@ -170,30 +170,30 @@ export async function GET() {
                 color: "#6b7280",
                 fontSize: 15,
                 fontWeight: 500,
-                lineHeight: 1.4,
+                lineHeight: 1.5,
               }}
             >
-              Community Meetups
+              Coworking Space
             </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span
               style={{
                 color: "#ef426f",
-                fontSize: 28,
-                fontWeight: 800,
-                lineHeight: 1.2,
+                fontSize: 24,
+                fontWeight: 700,
+                lineHeight: 1.3,
                 letterSpacing: "-0.01em",
               }}
             >
-              Partners
+              Community Partners
             </span>
             <span
               style={{
                 color: "#6b7280",
                 fontSize: 15,
                 fontWeight: 500,
-                lineHeight: 1.4,
+                lineHeight: 1.5,
               }}
             >
               Local Organizations
@@ -203,23 +203,23 @@ export async function GET() {
             <span
               style={{
                 color: "#ef426f",
-                fontSize: 28,
-                fontWeight: 800,
-                lineHeight: 1.2,
+                fontSize: 24,
+                fontWeight: 700,
+                lineHeight: 1.3,
                 letterSpacing: "-0.01em",
               }}
             >
-              Jobs
+              Job Board
             </span>
             <span
               style={{
                 color: "#6b7280",
                 fontSize: 15,
                 fontWeight: 500,
-                lineHeight: 1.4,
+                lineHeight: 1.5,
               }}
             >
-              Career Opportunities
+              Networking Opportunities
             </span>
           </div>
         </div>
@@ -247,7 +247,7 @@ export async function GET() {
               style={{
                 color: "#6b7280",
                 fontSize: 17,
-                fontWeight: 400,
+                fontWeight: 500,
                 lineHeight: 1.4,
               }}
             >
