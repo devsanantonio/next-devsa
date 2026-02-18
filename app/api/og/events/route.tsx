@@ -196,9 +196,3 @@ export async function GET() {
     }
   )
 }
-    {
-      width: 1200,
-      height: 630,
-    }
-  )
-}
