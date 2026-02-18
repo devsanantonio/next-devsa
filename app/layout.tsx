@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     siteName: "DEVSA",
     images: [
       {
-        url: `${siteUrl}/opengraph-image.png`,
+        url: `${siteUrl}/api/og/home`,
         width: 1200,
         height: 630,
         alt: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
@@ -93,7 +93,7 @@ export const metadata: Metadata = {
     title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
     description:
       "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
-    images: [`${siteUrl}/opengraph-image.png`],
+    images: [`${siteUrl}/api/og/home`],
     creator: "@devsatx",
     site: "@devsatx",
   },
