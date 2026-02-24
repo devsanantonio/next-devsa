@@ -174,7 +174,7 @@ export function GroupsHero() {
         >
           <div className="h-px flex-1 max-w-24 bg-linear-to-r from-transparent to-gray-600" />
           <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white/40">
-            We&apos;re the bridge
+            We&apos;re the bridge for a reason
           </span>
           <div className="h-px flex-1 max-w-24 bg-linear-to-l from-transparent to-gray-600" />
         </motion.div>

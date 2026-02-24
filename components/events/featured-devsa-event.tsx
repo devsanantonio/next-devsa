@@ -196,7 +196,7 @@ export function FeaturedDevsaEvent() {
                     </h2>
                     
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#444] mb-4">
-                      DEVSA AI Conference 2026
+                      AI Conference powered by DEVSA
                     </p>
                     
                     <p className="text-[#999] text-sm leading-relaxed mb-3">

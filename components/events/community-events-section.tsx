@@ -21,7 +21,19 @@ interface FirestoreEvent {
   communityId: string
   communityName?: string
   communityLogo?: string
+  communityLogos?: string[]
   eventType?: 'in-person' | 'hybrid' | 'virtual'
+}
+
+// Strip markdown syntax for plain text preview in event cards
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')     // **bold** → bold
+    .replace(/\*(.+?)\*/g, '$1')          // *italic* → italic
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
+    .replace(/^[-*]\s+/gm, '')            // - bullet → bullet
+    .replace(/\n+/g, ' ')                 // newlines → spaces
+    .trim()
 }
 
 interface EventCalendarProps {
@@ -159,6 +171,7 @@ interface MergedEvent {
   communityId: string
   communityName?: string
   communityLogo?: string
+  communityLogos?: string[]
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   source: "firestore" | "static"
@@ -260,6 +273,7 @@ export function CommunityEventsSection() {
       communityId: event.communityId,
       communityName: event.communityName,
       communityLogo: event.communityLogo,
+      communityLogos: event.communityLogos,
       slug: event.slug,
       eventType: event.eventType,
       source: "firestore" as const,
@@ -417,10 +431,18 @@ export function CommunityEventsSection() {
               ) : (
                 <div className="space-y-5">
                   {filteredEvents.map((event, index) => {
-                    const community = allCommunities.find((c) => c.id === event.communityId)
-                    // Fallback to communityName/Logo from API response if community not found in merged list
-                    const displayName = community?.name || event.communityName || event.communityId
-                    const displayLogo = community?.logo || event.communityLogo
+                    // Support comma-separated communityIds for collaborative events
+                    const communityIds = (event.communityId || '').split(',').map(id => id.trim()).filter(Boolean)
+                    const eventCommunities = communityIds.map(id => {
+                      const c = allCommunities.find((c) => c.id === id)
+                      return { id, name: c?.name || event.communityName || id, logo: c?.logo || '' }
+                    })
+                    // Fallback to communityName/Logo from API response if no communities found
+                    if (eventCommunities.length === 0 && event.communityName) {
+                      eventCommunities.push({ id: event.communityId, name: event.communityName, logo: event.communityLogo || '' })
+                    }
+                    const primaryLogo = eventCommunities[0]?.logo || event.communityLogo
+                    const primaryName = eventCommunities[0]?.name || event.communityId
                     const isFirst = index === 0
                     const eventLink = event.slug 
                       ? `/events/${event.slug}`
@@ -474,11 +496,11 @@ export function CommunityEventsSection() {
 
                         {/* Content */}
                         <div className="flex gap-4">
-                          {displayLogo && (
+                          {primaryLogo && (
                             <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-900 p-2 group-hover:bg-slate-950 transition-colors">
                               <Image
-                                src={displayLogo}
-                                alt={displayName}
+                                src={primaryLogo}
+                                alt={primaryName}
                                 fill
                                 className="object-contain p-1"
                                 sizes="56px"
@@ -493,19 +515,26 @@ export function CommunityEventsSection() {
                               📍 {event.venue || event.location}
                             </p>
                             <p className="mt-3 text-sm font-normal leading-6 text-slate-500 line-clamp-2">
-                              {event.description}
+                              {stripMarkdown(event.description)}
                             </p>
                           </div>
                         </div>
 
                         {/* Footer */}
                         <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
-                          {displayName && (
-                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
-                              <span className="h-2 w-2 rounded-full bg-[#ef426f]" />
-                              {displayName}
-                            </span>
-                          )}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {eventCommunities.map((ec) => (
+                              <span key={ec.id} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+                                <span className="h-2 w-2 rounded-full bg-[#ef426f]" />
+                                {ec.name}
+                              </span>
+                            ))}
+                            {eventCommunities.length > 1 && (
+                              <span className="inline-flex items-center rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                                Collab
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2">
                             {/* Save to Calendar - inline buttons */}
                             <a

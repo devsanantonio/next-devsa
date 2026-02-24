@@ -21,8 +21,8 @@ async function getEventBySlug(slug: string) {
       const doc = snapshot.docs[0]
       const data = doc.data() as Event
       
-      // Look up community name from Firestore
-      let communityName = 'DEVSA Community'
+      // Look up community name from Firestore, fall back to stored communityName for custom events
+      let communityName = data.communityName || 'DEVSA Community'
       if (data.communityId) {
         try {
           const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(data.communityId).get()

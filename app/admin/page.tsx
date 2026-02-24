@@ -27,10 +27,22 @@ import {
   ChevronDown,
   Settings,
   LogOut,
-  User
+  User,
+  RocketIcon,
+  X
 } from "lucide-react"
 
 import { RichTextEditor } from "@/components/rich-text-editor"
+
+interface DevSASubscriber {
+  id: string
+  name: string
+  email: string
+  source: "luma" | "meetup"
+  subscribedAt: string
+  status: "active"
+  location?: string
+}
 
 interface NewsletterSubscription {
   id: string
@@ -123,7 +135,7 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps"
+type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -220,6 +232,15 @@ export default function AdminPage() {
   const [isCreatingCommunity, setIsCreatingCommunity] = useState(false)
   const [isUploadingNewLogo, setIsUploadingNewLogo] = useState(false)
   const [isDeletingCommunity, setIsDeletingCommunity] = useState<string | null>(null)
+  const [isDevsaAccordionOpen, setIsDevsaAccordionOpen] = useState(false)
+  const [devsaSourceFilter, setDevsaSourceFilter] = useState<"luma" | "meetup">("luma")
+  const [newsletterCommunityFilter, setNewsletterCommunityFilter] = useState<string>("all")
+  const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
+  const [devsaSubs, setDevsaSubs] = useState<DevSASubscriber[]>([])
+  const [editingDevsaSub, setEditingDevsaSub] = useState<DevSASubscriber | null>(null)
+  const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
+  const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
+  const [editEventCustomCommunityName, setEditEventCustomCommunityName] = useState("")
 
   // Helper to get community name from current communities state
   const getCommunityNameFromState = (communityId: string | undefined): string => {
@@ -315,6 +336,20 @@ export default function AdminPage() {
       if (rsvpsRes.ok) {
         const rsvpsData = await rsvpsRes.json()
         setRsvps(rsvpsData.rsvps || [])
+      }
+
+      // Fetch DevSA subscribers from Firestore (admin only)
+      const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
+      if (isAdmin) {
+        try {
+          const devsaRes = await fetch(`/api/admin/devsa-subscribers?adminEmail=${encodeURIComponent(email)}`)
+          if (devsaRes.ok) {
+            const devsaData = await devsaRes.json()
+            setDevsaSubs(devsaData.subscribers || [])
+          }
+        } catch {
+          // Silently fail — subscribers tab will show empty
+        }
       }
     } catch {
       setError("Failed to fetch data")
@@ -493,6 +528,18 @@ export default function AdminPage() {
     }
     setEditingEvent(updatedEvent)
     setShowEditEvent(true)
+    // Reset custom community state - check if event's community IDs are all known
+    const communityIds = (updatedEvent.communityId || '').split(',').filter(Boolean)
+    const allKnown = communityIds.length > 0 && communityIds.every(id => communities.some(c => c.id === id))
+    if (!allKnown && updatedEvent.communityId && communityIds.length === 1) {
+      // Single unknown community (custom/one-off)
+      setEditEventUseCustomCommunity(true)
+      setEditEventCustomCommunityName(updatedEvent.communityName || updatedEvent.communityId)
+    } else {
+      setEditEventUseCustomCommunity(false)
+      setEditEventCustomCommunityName("")
+    }
+    setShowEditEventCommunityDropdown(false)
   }
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
@@ -517,6 +564,8 @@ export default function AdminPage() {
           status: editingEvent.status,
           eventType: editingEvent.eventType,
           rsvpEnabled: editingEvent.rsvpEnabled,
+          communityId: editingEvent.communityId,
+          ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
       })
@@ -1219,6 +1268,21 @@ export default function AdminPage() {
                   <div className="absolute left-0 top-full mt-2 z-50 w-56 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl">
                     <button
                       onClick={() => {
+                        setActiveTab("devsa")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "devsa"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <RocketIcon className="h-4 w-4" />
+                      DEVSA Subscribers
+                      <span className="ml-auto text-xs text-neutral-500">{devsaSubs.length}</span>
+                    </button>
+                    <button
+                      onClick={() => {
                         setActiveTab("newsletter")
                         setShowAdminMenu(false)
                       }}
@@ -1309,79 +1373,329 @@ export default function AdminPage() {
           {/* Newsletter Tab - Admin Only */}
           {activeTab === "newsletter" && hasAdminAccess(adminRole) && (
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Newsletter Subscriptions</h2>
-              {newsletter.length === 0 ? (
-                <p className="text-neutral-400 text-center py-8">No newsletter subscriptions yet.</p>
-              ) : (
-                <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-                  <table className="w-full min-w-225">
-                    <thead>
-                      <tr className="border-b border-neutral-800">
-                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
-                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Community</th>
-                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Event</th>
-                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                        <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Subscribed</th>
-                        <th className="text-right py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800/50">
-                      {newsletter.map((sub) => {
-                        // Parse source to extract event slug (format: "event-rsvp:eventSlug" or other sources)
-                        const eventSlug = sub.source?.startsWith('event-rsvp:') 
-                          ? sub.source.replace('event-rsvp:', '') 
-                          : null
-                        const event = eventSlug ? events.find(e => e.slug === eventSlug) : null
-                        const community = event ? communities.find(c => c.id === event.communityId) : null
-                        
-                        return (
-                          <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
-                            <td className="py-2.5 px-4 text-sm font-semibold text-white whitespace-nowrap">{sub.email}</td>
-                            <td className="py-2.5 px-4 whitespace-nowrap">
-                              {community ? (
-                                <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#ef426f]">
-                                  {community.name}
-                                </span>
-                              ) : (
-                                <span className="text-sm text-neutral-500">—</span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap max-w-50 truncate">
-                              {event?.title || (sub.source || "Direct signup")}
-                            </td>
-                            <td className="py-2.5 px-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                                sub.status === "active"
-                                  ? "bg-green-500/20 text-green-400"
-                                  : "bg-neutral-500/20 text-neutral-400"
-                              }`}>
-                                {sub.status}
-                              </span>
-                            </td>
-                            <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">
-                              {new Date(sub.subscribedAt).toLocaleDateString()}
-                            </td>
-                            <td className="py-2.5 px-4 text-right whitespace-nowrap">
-                              <button
-                                onClick={() => handleDeleteNewsletter(sub.id)}
-                                disabled={isDeletingNewsletter === sub.id}
-                                className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-                              >
-                                {isDeletingNewsletter === sub.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-3 w-3" />
-                                )}
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-white">Newsletter Subscriptions</h2>
+                {/* Community Group Filter */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowNewsletterCommunityDropdown(!showNewsletterCommunityDropdown)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 transition-colors"
+                  >
+                    <Users className="h-4 w-4 text-neutral-400" />
+                    {newsletterCommunityFilter === "all" ? "All Groups" : getCommunityNameFromState(newsletterCommunityFilter)}
+                    <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showNewsletterCommunityDropdown ? "rotate-180" : ""}`} />
+                  </button>
+                  {showNewsletterCommunityDropdown && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowNewsletterCommunityDropdown(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-xl border border-neutral-700 bg-neutral-800 py-1 shadow-xl max-h-64 overflow-y-auto">
+                        <button
+                          onClick={() => { setNewsletterCommunityFilter("all"); setShowNewsletterCommunityDropdown(false) }}
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                            newsletterCommunityFilter === "all" ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
+                          }`}
+                        >
+                          All Groups
+                          <span className="ml-auto text-xs text-neutral-500">{newsletter.length}</span>
+                        </button>
+                        {communities.map(c => {
+                          const count = newsletter.filter(sub => {
+                            const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
+                            const ev = slug ? events.find(e => e.slug === slug) : null
+                            return ev?.communityId === c.id
+                          }).length
+                          return (
+                            <button
+                              key={c.id}
+                              onClick={() => { setNewsletterCommunityFilter(c.id); setShowNewsletterCommunityDropdown(false) }}
+                              className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                                newsletterCommunityFilter === c.id ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
+                              }`}
+                            >
+                              <span className="truncate">{c.name}</span>
+                              <span className="ml-auto text-xs text-neutral-500 shrink-0">{count}</span>
+                            </button>
+                          )
+                        })}
+                        <button
+                          onClick={() => { setNewsletterCommunityFilter("uncategorized"); setShowNewsletterCommunityDropdown(false) }}
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                            newsletterCommunityFilter === "uncategorized" ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
+                          }`}
+                        >
+                          Uncategorized
+                          <span className="ml-auto text-xs text-neutral-500">{newsletter.filter(sub => {
+                            const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
+                            const ev = slug ? events.find(e => e.slug === slug) : null
+                            return !ev
+                          }).length}</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
+              {(() => {
+                const filteredNewsletter = newsletterCommunityFilter === "all" 
+                  ? newsletter 
+                  : newsletter.filter(sub => {
+                      const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
+                      const ev = slug ? events.find(e => e.slug === slug) : null
+                      if (newsletterCommunityFilter === "uncategorized") return !ev
+                      return ev?.communityId === newsletterCommunityFilter
+                    })
+                return filteredNewsletter.length === 0 ? (
+                  <p className="text-neutral-400 text-center py-8">No newsletter subscriptions{newsletterCommunityFilter !== "all" ? " for this group" : ""} yet.</p>
+                ) : (
+                  <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-neutral-800">
+                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Community</th>
+                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Event</th>
+                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Subscribed</th>
+                          <th className="text-right py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-800/50">
+                        {filteredNewsletter.map((sub) => {
+                          const eventSlug = sub.source?.startsWith('event-rsvp:') 
+                            ? sub.source.replace('event-rsvp:', '') 
+                            : null
+                          const event = eventSlug ? events.find(e => e.slug === eventSlug) : null
+                          const community = event ? communities.find(c => c.id === event.communityId) : null
+                          
+                          return (
+                            <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
+                              <td className="py-2.5 px-4 text-sm font-semibold text-white whitespace-nowrap">{sub.email}</td>
+                              <td className="py-2.5 px-4 whitespace-nowrap">
+                                {community ? (
+                                  <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#ef426f]">
+                                    {community.name}
+                                  </span>
+                                ) : (
+                                  <span className="text-sm text-neutral-500">—</span>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap max-w-50 truncate">
+                                {event?.title || (sub.source || "Direct signup")}
+                              </td>
+                              <td className="py-2.5 px-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                                  sub.status === "active"
+                                    ? "bg-green-500/20 text-green-400"
+                                    : "bg-neutral-500/20 text-neutral-400"
+                                }`}>
+                                  {sub.status}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">
+                                {new Date(sub.subscribedAt).toLocaleDateString()}
+                              </td>
+                              <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                                <button
+                                  onClick={() => handleDeleteNewsletter(sub.id)}
+                                  disabled={isDeletingNewsletter === sub.id}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                                >
+                                  {isDeletingNewsletter === sub.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-3 w-3" />
+                                  )}
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+
+          {/* DevSA Newsletter Subscribers Tab - Admin & Super Admin Only */}
+          {activeTab === "devsa" && hasAdminAccess(adminRole) && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold tracking-tight text-white">Subscribers from {devsaSourceFilter === "luma" ? "Luma" : "Meetup"}</h2>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
+                      <Shield className="h-3 w-3" /> Admin Only
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(["luma", "meetup"] as const).map((source) => {
+                    const count = devsaSubs.filter(s => s.source === source).length
+                    return (
+                      <button
+                        key={source}
+                        onClick={() => setDevsaSourceFilter(source)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          devsaSourceFilter === source
+                            ? source === "luma" 
+                              ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                              : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                            : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700"
+                        }`}
+                      >
+                        {source === "luma" ? "Luma" : "Meetup"}
+                        <span className="text-[10px] opacity-70">({count})</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="overflow-hidden">
+                <table className="w-full table-fixed">
+                  <thead>
+                    <tr className="border-b border-neutral-800">
+                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[25%]">Name</th>
+                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[30%]">Email</th>
+                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[10%]">Source</th>
+                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[15%]">Subscribed</th>
+                      <th className="text-right py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[20%]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-800/50">
+                    {devsaSubs
+                      .filter(sub => sub.source === devsaSourceFilter)
+                      .sort((a, b) => {
+                        const parseDate = (d: string) => {
+                          if (d.includes('T')) return new Date(d).getTime()
+                          const parsed = new Date(d)
+                          return isNaN(parsed.getTime()) ? 0 : parsed.getTime()
+                        }
+                        return parseDate(b.subscribedAt) - parseDate(a.subscribedAt)
+                      })
+                      .map((sub) => (
+                      <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors">
+                        <td className="py-2 px-3 text-sm font-semibold text-white truncate">
+                          {editingDevsaSub?.id === sub.id ? (
+                            <input
+                              type="text"
+                              value={editingDevsaSub.name}
+                              onChange={(e) => setEditingDevsaSub({ ...editingDevsaSub, name: e.target.value })}
+                              className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-[#ef426f] focus:outline-none"
+                            />
+                          ) : (
+                            sub.name || "—"
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-sm text-neutral-300 truncate">
+                          {editingDevsaSub?.id === sub.id ? (
+                            <input
+                              type="email"
+                              value={editingDevsaSub.email}
+                              onChange={(e) => setEditingDevsaSub({ ...editingDevsaSub, email: e.target.value })}
+                              className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-[#ef426f] focus:outline-none"
+                            />
+                          ) : (
+                            sub.email || "—"
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            sub.source === "luma"
+                              ? "bg-purple-500/20 text-purple-400"
+                              : "bg-blue-500/20 text-blue-400"
+                          }`}>
+                            {sub.source === "luma" ? "Luma" : "Meetup"}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-xs text-neutral-400">
+                          {sub.subscribedAt.includes('T') 
+                            ? new Date(sub.subscribedAt).toLocaleDateString() 
+                            : sub.subscribedAt}
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          {editingDevsaSub?.id === sub.id ? (
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch('/api/admin/devsa-subscribers', {
+                                      method: 'PUT',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        adminEmail,
+                                        subscriberId: editingDevsaSub.id,
+                                        name: editingDevsaSub.name,
+                                        email: editingDevsaSub.email,
+                                      }),
+                                    })
+                                    if (res.ok) {
+                                      setDevsaSubs(prev => prev.map(s => s.id === editingDevsaSub.id ? editingDevsaSub : s))
+                                    } else {
+                                      setError('Failed to update subscriber')
+                                    }
+                                  } catch {
+                                    setError('Failed to update subscriber')
+                                  }
+                                  setEditingDevsaSub(null)
+                                }}
+                                className="inline-flex items-center gap-1 rounded-lg bg-green-500/20 px-2 py-1 text-xs font-semibold text-green-400 hover:bg-green-500/30 transition-colors"
+                              >
+                                <CheckCircle className="h-3 w-3" />
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingDevsaSub(null)}
+                                className="inline-flex items-center gap-1 rounded-lg bg-neutral-700/50 px-2 py-1 text-xs font-semibold text-neutral-400 hover:bg-neutral-700 transition-colors"
+                              >
+                                <XCircle className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => setEditingDevsaSub({ ...sub })}
+                                className="inline-flex items-center gap-1 rounded-lg bg-neutral-700/50 px-2 py-1 text-xs font-semibold text-neutral-300 hover:bg-neutral-700 transition-colors"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (confirm(`Remove ${sub.name || sub.email || 'this subscriber'}?`)) {
+                                    try {
+                                      const res = await fetch('/api/admin/devsa-subscribers', {
+                                        method: 'DELETE',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          adminEmail,
+                                          subscriberId: sub.id,
+                                        }),
+                                      })
+                                      if (res.ok) {
+                                        setDevsaSubs(prev => prev.filter(s => s.id !== sub.id))
+                                      } else {
+                                        setError('Failed to delete subscriber')
+                                      }
+                                    } catch {
+                                      setError('Failed to delete subscriber')
+                                    }
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -1835,6 +2149,138 @@ export default function AdminPage() {
                   <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Event</h3>
                     <form onSubmit={handleUpdateEvent} className="space-y-5">
+                      {/* Community selector - admin/superadmin only */}
+                      {hasAdminAccess(adminRole) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Community <span className="font-normal text-neutral-500">(select one or more)</span>
+                          </label>
+                          <div className="relative">
+                            {editEventUseCustomCommunity ? (
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={editEventCustomCommunityName}
+                                  onChange={(e) => {
+                                    setEditEventCustomCommunityName(e.target.value)
+                                    setEditingEvent({ ...editingEvent, communityId: e.target.value.toLowerCase().replace(/\s+/g, '-') })
+                                  }}
+                                  placeholder="e.g. Loveable, Microsoft, etc."
+                                  className="flex-1 rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditEventUseCustomCommunity(false)
+                                    setEditEventCustomCommunityName("")
+                                  }}
+                                  className="rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-neutral-400 hover:bg-neutral-700 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                {/* Selected communities chips */}
+                                {editingEvent.communityId && (
+                                  <div className="flex flex-wrap gap-2 mb-2">
+                                    {editingEvent.communityId.split(',').filter(Boolean).map((id) => {
+                                      const community = communities.find(c => c.id === id)
+                                      return (
+                                        <span
+                                          key={id}
+                                          className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f]/15 border border-[#ef426f]/30 px-3 py-1 text-xs font-semibold text-[#ef426f]"
+                                        >
+                                          {community?.name || id}
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const ids = editingEvent.communityId.split(',').filter(i => i !== id)
+                                              setEditingEvent({ ...editingEvent, communityId: ids.join(',') })
+                                            }}
+                                            className="hover:text-white transition-colors"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </button>
+                                        </span>
+                                      )
+                                    })}
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setShowEditEventCommunityDropdown(!showEditEventCommunityDropdown)}
+                                  className="w-full flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-left focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                                >
+                                  <span className="text-white">
+                                    {editingEvent.communityId
+                                      ? `${editingEvent.communityId.split(',').length} selected — click to add more`
+                                      : "Select communities"}
+                                  </span>
+                                  <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showEditEventCommunityDropdown ? "rotate-180" : ""}`} />
+                                </button>
+                                {showEditEventCommunityDropdown && (
+                                  <>
+                                    <div className="fixed inset-0 z-60" onClick={() => setShowEditEventCommunityDropdown(false)} />
+                                    <div className="absolute left-0 right-0 top-full mt-1 z-70 rounded-xl border border-neutral-700 bg-neutral-800 py-1 shadow-xl max-h-56 overflow-y-auto">
+                                      {communities.map((community) => {
+                                        const selectedIds = editingEvent.communityId.split(',').filter(Boolean)
+                                        const isSelected = selectedIds.includes(community.id)
+                                        return (
+                                          <button
+                                            key={community.id}
+                                            type="button"
+                                            onClick={() => {
+                                              const selectedIds = editingEvent.communityId.split(',').filter(Boolean)
+                                              if (isSelected) {
+                                                setEditingEvent({ ...editingEvent, communityId: selectedIds.filter(id => id !== community.id).join(',') })
+                                              } else {
+                                                setEditingEvent({ ...editingEvent, communityId: [...selectedIds, community.id].join(',') })
+                                              }
+                                            }}
+                                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                                              isSelected
+                                                ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                                : "text-neutral-300 hover:bg-neutral-700"
+                                            }`}
+                                          >
+                                            <span className={`flex items-center justify-center h-4 w-4 rounded border text-[10px] ${
+                                              isSelected
+                                                ? "bg-[#ef426f] border-[#ef426f] text-white"
+                                                : "border-neutral-600"
+                                            }`}>
+                                              {isSelected && "✓"}
+                                            </span>
+                                            <span className="truncate">{community.name}</span>
+                                          </button>
+                                        )
+                                      })}
+                                      <div className="border-t border-neutral-700 mt-1 pt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditEventUseCustomCommunity(true)
+                                            setShowEditEventCommunityDropdown(false)
+                                          }}
+                                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-amber-400 hover:bg-neutral-700 transition-colors"
+                                        >
+                                          <Users className="h-4 w-4" />
+                                          Custom / One-off Event
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          {editEventUseCustomCommunity && (
+                            <p className="mt-2 text-xs text-amber-400">
+                              Custom community name for partners or one-off events
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Event Title

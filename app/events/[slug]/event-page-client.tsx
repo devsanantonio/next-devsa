@@ -46,6 +46,9 @@ interface Event {
   description: string
   url?: string
   communityId: string
+  communityName?: string
+  communityLogo?: string
+  communityLogos?: string[]
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
 }
@@ -189,6 +192,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
   const [community, setCommunity] = useState<TechCommunity | null>(null)
+  const [allEventCommunities, setAllEventCommunities] = useState<TechCommunity[]>([])
   const { verify, verifyOnServer, isVerifying } = useMagen()
 
   // Update current time every minute for live "Happening Now" detection
@@ -221,7 +225,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     fetchEvent()
   }, [slug])
 
-  // Fetch community data from API (Firestore)
+  // Fetch community data from API (Firestore) - supports multi-community events
   useEffect(() => {
     if (!event) return
     
@@ -231,10 +235,28 @@ export function EventPageClient({ slug }: EventPageClientProps) {
         if (response.ok) {
           const data = await response.json()
           const communities = data.communities || []
-          const foundCommunity = communities.find((c: TechCommunity) => c.id === event.communityId)
+          // Support comma-separated communityIds for collaborative events
+          const communityIds = (event.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean)
+          const matched = communityIds
+            .map((id: string) => {
+              const found = communities.find((c: TechCommunity) => c.id === id)
+              if (found) return found
+              // For custom/one-off communities, build a placeholder from API data
+              if (event.communityName) {
+                return {
+                  id,
+                  name: event.communityName,
+                  logo: event.communityLogo || '',
+                  description: '',
+                } as TechCommunity
+              }
+              return null
+            })
+            .filter(Boolean) as TechCommunity[]
           
-          if (foundCommunity) {
-            setCommunity(foundCommunity)
+          if (matched.length > 0) {
+            setCommunity(matched[0]) // Primary community
+            setAllEventCommunities(matched)
           }
         }
       } catch (error) {
@@ -392,19 +414,48 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               <div 
                 className="p-6 sm:p-8 flex items-center gap-5 border-b border-slate-200"
               >
-              <div className="relative h-16 w-16 shrink-0 rounded-xl bg-slate-900 p-2.5 shadow-sm">
-                <Image
-                  src={community.logo}
-                  alt={community.name}
-                  fill
-                  className="object-contain p-1.5"
-                  sizes="64px"
-                />
-              </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Hosted by</span>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-1 leading-snug">{community.name}</h2>
-              </div>
+              {allEventCommunities.length > 1 ? (
+                <>
+                  <div className="flex -space-x-3">
+                    {allEventCommunities.map((c) => (
+                      <div key={c.id} className="relative h-14 w-14 shrink-0 rounded-xl bg-slate-900 p-2 shadow-sm ring-2 ring-white">
+                        <Image
+                          src={c.logo}
+                          alt={c.name}
+                          fill
+                          className="object-contain p-1"
+                          sizes="56px"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Hosted by</span>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-1 leading-snug">
+                      {allEventCommunities.map(c => c.name).join(' × ')}
+                    </h2>
+                    <span className="inline-flex items-center rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-600 mt-1">
+                      Collaborative Event
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="relative h-16 w-16 shrink-0 rounded-xl bg-slate-900 p-2.5 shadow-sm">
+                    <Image
+                      src={community.logo}
+                      alt={community.name}
+                      fill
+                      className="object-contain p-1.5"
+                      sizes="64px"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Hosted by</span>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-1 leading-snug">{community.name}</h2>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -685,28 +736,30 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           </div>
         </div>
 
-        {/* Community info */}
-        {community && (
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+        {/* Community info - show all communities for collaborative events */}
+        {allEventCommunities.length > 0 && (
+          <div className="space-y-6 mt-8">
+            {allEventCommunities.map((comm) => (
+          <div key={comm.id} className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
             <div className="flex items-center gap-4 mb-5">
               <div className="relative h-12 w-12 shrink-0 rounded-lg bg-slate-900 p-2 shadow-sm">
                 <Image
-                  src={community.logo}
-                  alt={community.name}
+                  src={comm.logo}
+                  alt={comm.name}
                   fill
                   className="object-contain p-1"
                   sizes="48px"
                 />
               </div>
-              <h3 className="text-lg font-bold tracking-tight text-slate-900">About {community.name}</h3>
+              <h3 className="text-lg font-bold tracking-tight text-slate-900">About {comm.name}</h3>
             </div>
-            <p className="text-[15px] text-slate-600 leading-relaxed mb-6">{community.description}</p>
+            <p className="text-[15px] text-slate-600 leading-relaxed mb-6">{comm.description}</p>
             
             {/* Community Links */}
             <div className="flex flex-wrap gap-2">
-              {community.website && (
+              {comm.website && (
                 <a
-                  href={community.website}
+                  href={comm.website}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
@@ -715,9 +768,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Website
                 </a>
               )}
-              {community.meetup && (
+              {comm.meetup && (
                 <a
-                  href={community.meetup}
+                  href={comm.meetup}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
@@ -728,9 +781,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Meetup
                 </a>
               )}
-              {community.luma && (
+              {comm.luma && (
                 <a
-                  href={community.luma}
+                  href={comm.luma}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
@@ -739,9 +792,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Lu.ma
                 </a>
               )}
-              {community.linkedin && (
+              {comm.linkedin && (
                 <a
-                  href={community.linkedin}
+                  href={comm.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-[#0077b5] hover:text-white hover:border-[#0077b5]"
@@ -750,9 +803,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   LinkedIn
                 </a>
               )}
-              {community.twitter && (
+              {comm.twitter && (
                 <a
-                  href={community.twitter}
+                  href={comm.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-900 hover:text-white hover:border-slate-900"
@@ -761,9 +814,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   X / Twitter
                 </a>
               )}
-              {community.instagram && (
+              {comm.instagram && (
                 <a
-                  href={community.instagram}
+                  href={comm.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-linear-to-r hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743] hover:text-white hover:border-transparent"
@@ -774,9 +827,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Instagram
                 </a>
               )}
-              {community.youtube && (
+              {comm.youtube && (
                 <a
-                  href={community.youtube}
+                  href={comm.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]"
@@ -787,9 +840,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   YouTube
                 </a>
               )}
-              {community.twitch && (
+              {comm.twitch && (
                 <a
-                  href={community.twitch}
+                  href={comm.twitch}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF]"
@@ -800,9 +853,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Twitch
                 </a>
               )}
-              {community.facebook && (
+              {comm.facebook && (
                 <a
-                  href={community.facebook}
+                  href={comm.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]"
@@ -813,9 +866,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   Facebook
                 </a>
               )}
-              {community.github && (
+              {comm.github && (
                 <a
-                  href={community.github}
+                  href={comm.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-900 hover:text-white hover:border-slate-900"
@@ -828,7 +881,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               )}
               {/* Always show Discord - link to DEVSA Discord where all organizers are */}
               <a
-                href={community.discord || DEVSA_DISCORD}
+                href={comm.discord || DEVSA_DISCORD}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2]"
@@ -837,6 +890,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 Discord
               </a>
             </div>
+          </div>
+            ))}
           </div>
         )}
         </div>

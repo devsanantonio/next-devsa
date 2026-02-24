@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const results = {
       communities: { migrated: 0, skipped: 0, errors: 0, message: 'Communities are now managed in Firestore directly' },
       partners: { migrated: 0, skipped: 0, errors: 0 },
+      devsaSubscribers: { migrated: 0, skipped: 0, errors: 0 },
     };
 
     // Communities are now fully managed in Firestore - no static migration needed
@@ -64,6 +65,13 @@ export async function POST(request: NextRequest) {
           results.partners.errors++;
         }
       }
+    }
+
+    // DevSA subscribers - already migrated to Firestore
+    if (!migrateType || migrateType === 'devsa-subscribers' || migrateType === 'all') {
+      const existingCount = (await db.collection(COLLECTIONS.DEVSA_SUBSCRIBERS).get()).size;
+      results.devsaSubscribers.skipped = existingCount;
+      results.devsaSubscribers.migrated = 0;
     }
 
     return NextResponse.json({
@@ -117,15 +125,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get counts
-    const [communitiesSnapshot, partnersSnapshot] = await Promise.all([
+    const [communitiesSnapshot, partnersSnapshot, devsaSubsSnapshot] = await Promise.all([
       db.collection(COLLECTIONS.COMMUNITIES).get(),
       db.collection(COLLECTIONS.PARTNERS).get(),
+      db.collection(COLLECTIONS.DEVSA_SUBSCRIBERS).get(),
     ]);
 
     return NextResponse.json({
       firestore: {
         communities: communitiesSnapshot.size,
         partners: partnersSnapshot.size,
+        devsaSubscribers: devsaSubsSnapshot.size,
       },
       isMigrated: communitiesSnapshot.size > 0 && partnersSnapshot.size > 0,
     });

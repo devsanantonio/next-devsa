@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, ChevronDown, Users, X } from "lucide-react"
 
 import { RichTextEditor } from "@/components/rich-text-editor"
 
@@ -24,6 +24,9 @@ export default function AdminCreateEventPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [communities, setCommunities] = useState<Community[]>([])
+  const [showCommunityDropdown, setShowCommunityDropdown] = useState(false)
+  const [useCustomCommunity, setUseCustomCommunity] = useState(false)
+  const [customCommunityName, setCustomCommunityName] = useState("")
 
   const [formData, setFormData] = useState({
     title: "",
@@ -106,6 +109,7 @@ export default function AdminCreateEventPage() {
             : formData.venue || formData.address,
           description: formData.description,
           communityId: formData.communityId,
+          ...(useCustomCommunity && customCommunityName ? { communityName: customCommunityName } : {}),
           status: formData.status,
           eventType: formData.eventType,
           rsvpEnabled: formData.rsvpEnabled,
@@ -167,27 +171,154 @@ export default function AdminCreateEventPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Community selection */}
             <div>
-              <label htmlFor="communityId" className="block text-sm font-semibold text-gray-300 mb-2">
-                Community *
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Community * <span className="font-normal text-gray-500">(select one or more for collaborative events)</span>
               </label>
-              <select
-                id="communityId"
-                required
-                value={formData.communityId}
-                onChange={(e) => setFormData({ ...formData, communityId: e.target.value })}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-              >
-                <option value="">Select a community</option>
-                {communities.map((community) => (
-                  <option 
-                    key={community.id} 
-                    value={community.id}
-                    disabled={!canSelectCommunity(community.id)}
-                  >
-                    {community.name}{!canSelectCommunity(community.id) ? " (not assigned)" : ""}
-                  </option>
-                ))}
-              </select>
+              {adminRole === "organizer" ? (
+                // Organizers: locked to their assigned community
+                <div className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white">
+                  {communities.find(c => c.id === formData.communityId)?.name || "No community assigned"}
+                </div>
+              ) : (
+                // Admin/Superadmin: multiselect dropdown with chips + custom option
+                <div className="relative">
+                  {useCustomCommunity ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={customCommunityName}
+                        onChange={(e) => {
+                          setCustomCommunityName(e.target.value)
+                          setFormData({ ...formData, communityId: e.target.value.toLowerCase().replace(/\s+/g, '-') })
+                        }}
+                        placeholder="e.g. Loveable, Microsoft, etc."
+                        className="flex-1 rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUseCustomCommunity(false)
+                          setCustomCommunityName("")
+                          setFormData({ ...formData, communityId: "" })
+                        }}
+                        className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-400 hover:bg-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Selected communities chips */}
+                      {formData.communityId && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {formData.communityId.split(',').filter(Boolean).map((id) => {
+                            const community = communities.find(c => c.id === id)
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f]/15 border border-[#ef426f]/30 px-3 py-1 text-xs font-semibold text-[#ef426f]"
+                              >
+                                {community?.name || id}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const ids = formData.communityId.split(',').filter(i => i !== id)
+                                    setFormData({ ...formData, communityId: ids.join(',') })
+                                  }}
+                                  className="hover:text-white transition-colors"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowCommunityDropdown(!showCommunityDropdown)}
+                        className="w-full flex items-center justify-between rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-left focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      >
+                        <span className={formData.communityId ? "text-white" : "text-gray-500"}>
+                          {formData.communityId
+                            ? `${formData.communityId.split(',').length} selected — click to add more`
+                            : "Select communities"}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showCommunityDropdown ? "rotate-180" : ""}`} />
+                      </button>
+                      {showCommunityDropdown && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowCommunityDropdown(false)} />
+                          <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-gray-700 bg-gray-800 py-1 shadow-xl max-h-56 overflow-y-auto">
+                            {communities.map((community) => {
+                              const selectedIds = formData.communityId.split(',').filter(Boolean)
+                              const isSelected = selectedIds.includes(community.id)
+                              return (
+                                <button
+                                  key={community.id}
+                                  type="button"
+                                  onClick={() => {
+                                    const selectedIds = formData.communityId.split(',').filter(Boolean)
+                                    if (isSelected) {
+                                      setFormData({ ...formData, communityId: selectedIds.filter(id => id !== community.id).join(',') })
+                                    } else {
+                                      setFormData({ ...formData, communityId: [...selectedIds, community.id].join(',') })
+                                    }
+                                  }}
+                                  className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                                    isSelected
+                                      ? "bg-[#ef426f]/20 text-[#ef426f]"
+                                      : "text-gray-300 hover:bg-gray-700"
+                                  }`}
+                                >
+                                  <span className={`flex items-center justify-center h-4 w-4 rounded border text-[10px] ${
+                                    isSelected
+                                      ? "bg-[#ef426f] border-[#ef426f] text-white"
+                                      : "border-gray-600"
+                                  }`}>
+                                    {isSelected && "✓"}
+                                  </span>
+                                  <span className="truncate">{community.name}</span>
+                                </button>
+                              )
+                            })}
+                            <div className="border-t border-gray-700 mt-1 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUseCustomCommunity(true)
+                                  setShowCommunityDropdown(false)
+                                  setFormData({ ...formData, communityId: "" })
+                                }}
+                                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-amber-400 hover:bg-gray-700 transition-colors"
+                              >
+                                <Users className="h-4 w-4" />
+                                Custom / One-off Event
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                  {/* Hidden required input for form validation */}
+                  <input
+                    type="text"
+                    required
+                    value={formData.communityId}
+                    onChange={() => {}}
+                    className="sr-only"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
+              {useCustomCommunity && (
+                <p className="mt-2 text-xs text-amber-400">
+                  This event will be created with a custom community name (e.g. for partners or one-off events)
+                </p>
+              )}
               {adminRole === "organizer" && (
                 <p className="mt-2 text-xs text-gray-500">
                   {adminCommunityId 

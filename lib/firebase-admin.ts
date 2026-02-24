@@ -82,6 +82,7 @@ export const COLLECTIONS = {
   CONVERSATIONS: 'conversations',
   MESSAGES: 'messages',
   NOTIFICATIONS: 'notifications',
+  DEVSA_SUBSCRIBERS: 'devsa_subscribers',
 } as const;
 
 // Types for Firestore documents
@@ -180,6 +181,7 @@ export interface Event {
   description: string;
   url?: string;
   communityId: string;
+  communityName?: string; // Display name for custom/one-off communities
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';

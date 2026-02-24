@@ -39,18 +39,24 @@ export async function GET(request: NextRequest) {
 
     const firestoreEvents = eventsSnapshot.docs.map(doc => {
       const data = doc.data();
-      const community = communityLookup.get(data.communityId);
+      // Support comma-separated communityIds for collaborative events
+      const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
+      const primaryCommunity = communityLookup.get(communityIds[0]);
+      // Build arrays of names/logos for all communities
+      const communityNames = communityIds.map((id: string) => communityLookup.get(id)?.name || data.communityName || id).join(', ');
+      const communityLogos = communityIds.map((id: string) => communityLookup.get(id)?.logo || '').filter(Boolean);
       return {
         id: doc.id,
         ...data,
-        communityName: community?.name || 'DEVSA Community',
-        communityLogo: community?.logo || '',
+        communityName: communityNames || 'DEVSA Community',
+        communityLogo: primaryCommunity?.logo || '',
+        communityLogos: communityLogos,
         isStatic: false, // Firestore events can be edited/deleted
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string; communityName: string; communityLogo: string; isStatic: boolean })[];
+    }) as (Event & { id: string; communityName: string; communityLogo: string; communityLogos: string[]; isStatic: boolean })[];
 
     // Sort by date
     firestoreEvents.sort((a, b) => {
@@ -73,7 +79,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     if (!title || !date || !description || !communityId || !organizerEmail) {
       return NextResponse.json(
@@ -127,6 +133,7 @@ export async function POST(request: NextRequest) {
       address: address || '',
       description,
       communityId,
+      ...(communityName ? { communityName } : {}),
       organizerEmail: organizerEmail.toLowerCase(),
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
@@ -155,7 +162,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -225,6 +232,8 @@ export async function PUT(request: NextRequest) {
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
+    if (communityId) updateData.communityId = communityId;
+    if (typeof communityName === 'string') updateData.communityName = communityName;
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 
