@@ -186,66 +186,57 @@ export function HeroBridge() {
       </div>
 
       {/* Foreground hero content — left aligned, capped at 50% */}
-      <div className="relative z-20 w-full md:max-w-[50%] flex flex-col items-start text-left pl-6 sm:pl-10 md:pl-16 lg:pl-20 py-20 md:py-28">
-        {/* Eyebrow label */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-amber-400 text-xs md:text-sm font-semibold tracking-[0.2em] uppercase mb-5 md:mb-6"
-        >
-          Building Together
-        </motion.p>
-
-        {/* Main heading */}
-        <motion.h2
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="font-black text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.08] sm:leading-[1.06] md:leading-[1.04]"
-        >
-          Find your people.<br />Build your future.
-        </motion.h2>
-
-        {/* Animated divider */}
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-12 md:w-16 h-0.75 mt-6 md:mt-8 mb-6 md:mb-8 bg-linear-to-r from-[#f59e0b] via-[#fbbf24] to-[#fcd34d] rounded-full origin-left"
-        />
-
-        {/* Supporting text */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-lg md:text-xl lg:text-2xl text-neutral-300 leading-[1.65] md:leading-[1.6] font-light text-balance"
-        >
-          DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in&nbsp;San&nbsp;Antonio.
-        </motion.p>
-
-        {/* CTA Buttons */}
+      <div className="relative z-20 w-full md:max-w-[55%] flex flex-col items-start text-left pl-6 sm:pl-10 md:pl-16 lg:pl-20 py-20 md:py-28">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-7 md:mt-9 flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5"
+          transition={{ duration: 0.6 }}
+          className="space-y-8"
         >
-          <Link
-            href="/coworking-space"
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-linear-to-r from-[#f59e0b] via-[#fbbf24] to-[#fcd34d] text-neutral-950 font-bold text-sm md:text-base tracking-tight shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-          >
-            Coworking Space
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
-          <Link
-            href="/events"
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full border border-neutral-500/40 bg-white/5 backdrop-blur-sm text-white font-semibold text-sm md:text-base tracking-tight hover:bg-white/10 hover:border-neutral-400/60 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-          >
-            Events Calendar
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
+          <div className="space-y-4">
+            <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
+              Building Together
+            </p>
+            <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              Find Your People.{" "}
+              <span className="text-white/50 font-light italic">Build Your</span>{" "}
+              Future.
+            </h2>
+          </div>
+
+          <div className="space-y-6 max-w-2xl">
+            <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+              DEVSA bridges the gap between{" "}
+              <strong className="font-semibold text-white">passionate builders</strong>,
+              local partners, and the growing tech ecosystem in San&nbsp;Antonio.
+            </p>
+
+            <p className="text-base md:text-lg text-white/50 leading-relaxed">
+              Discover{" "}
+              <span className="font-medium text-white/70">communities</span>,{" "}
+              <span className="font-medium text-white/70">events</span>, and{" "}
+              <span className="font-medium text-white/70">resources</span>{" "}
+              — all in one place.
+            </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-start gap-3">
+            <Link
+              href="/coworking-space"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
+            >
+              Coworking Space
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/events"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/10 bg-white/5 text-white font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/20"
+            >
+              Events Calendar
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>
