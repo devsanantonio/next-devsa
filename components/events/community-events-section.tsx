@@ -102,7 +102,7 @@ function EventCalendar({
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-[0.1em]">
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div key={day} className="py-2">
             {day}
@@ -409,7 +409,7 @@ export function CommunityEventsSection() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search events by name, location, or topic..."
-                  className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all leading-[1.5]"
+                  className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all leading-normal"
                 />
               </div>
 
@@ -483,7 +483,7 @@ export function CommunityEventsSection() {
                       >
                         {/* Date and badge row */}
                         <div className="mb-3 flex flex-wrap items-center gap-2.5">
-                          <time className="text-[13px] font-medium text-gray-500 uppercase tracking-[0.1em]">
+                          <time className="text-[13px] font-medium text-gray-500 uppercase tracking-widest">
                             {new Date(event.date).toLocaleDateString("en-US", {
                               weekday: "short",
                               month: "short",
@@ -492,18 +492,18 @@ export function CommunityEventsSection() {
                             })}
                           </time>
                           {eventStatus === "happening" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] text-white">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Happening Now
                             </span>
                           ) : isFirst && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] text-white">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Next Up
                             </span>
                           )}
                           {event.eventType && event.eventType !== 'in-person' && (
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] leading-none ${
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest leading-none ${
                               event.eventType === 'hybrid'
                                 ? 'bg-gray-100 text-gray-600 border border-gray-200'
                                 : 'bg-gray-100 text-gray-600 border border-gray-200'
@@ -530,7 +530,7 @@ export function CommunityEventsSection() {
                             <h3 className="text-lg font-semibold leading-[1.3] text-gray-900 group-hover:text-gray-600 transition-colors">
                               {event.title}
                             </h3>
-                            <p className="mt-1.5 text-[13px] font-normal text-gray-500 leading-[1.5]">
+                            <p className="mt-1.5 text-[13px] font-normal text-gray-500 leading-normal">
                               📍 {event.venue || event.location}
                             </p>
                             <p className="mt-2.5 text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
@@ -549,7 +549,7 @@ export function CommunityEventsSection() {
                               </span>
                             ))}
                             {eventCommunities.length > 1 && (
-                              <span className="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.1em] text-gray-500">
+                              <span className="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                                 Collab
                               </span>
                             )}
