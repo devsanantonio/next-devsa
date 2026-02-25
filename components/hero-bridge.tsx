@@ -7,32 +7,30 @@ import { ArrowRight } from "lucide-react"
 
 // Images-only from DevSA conferences — videos removed for performance
 const mediaItems = [
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay9.jpg", alt: "DevSA Replay Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_4381.jpg", alt: "DevSA Community" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg", alt: "DevSA Tech Day" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_3385.jpg", alt: "DevSA Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay13.jpg", alt: "DevSA Replay Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_4665.jpg", alt: "DevSA Community Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg", alt: "DevSA Community Space" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg.jpg", alt: "GDG San Antonio Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg", alt: "PySanAntonio Conference" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday.jpg", alt: "DevSA Tech Day" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay1.JPG", alt: "DevSA Replay Event" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_7186.jpg", alt: "DevSA Community" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_1484.jpg", alt: "DevSA Community Event" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa8.jpg", alt: "PySanAntonio Conference" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg4.jpg", alt: "GDG San Antonio" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday2.jpg", alt: "DevSA Tech Day" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg", alt: "DevSA Community Space" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_2756.jpg", alt: "DevSA Community" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay9.jpg", alt: "DevSA Replay Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg", alt: "PySanAntonio Conference" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay7.jpg", alt: "DevSA Replay Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_5006.jpg", alt: "DevSA Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday2.jpg", alt: "DevSA Tech Day" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "PySanAntonio After Party" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg4.jpg", alt: "GDG San Antonio" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday4.JPG", alt: "DevSA Tech Day" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6429.jpg", alt: "DevSA Community" },
   { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_4427.jpg", alt: "DevSA Community Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "PySanAntonio After Party" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_4665.jpg", alt: "DevSA Community Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay1.JPG", alt: "DevSA Replay Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg", alt: "PySanAntonio Conference" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday.jpg", alt: "DevSA Tech Day" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg", alt: "DevSA Tech Day" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/gdg.jpg", alt: "GDG San Antonio Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_3385.jpg", alt: "DevSA Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay13.jpg", alt: "DevSA Replay Event" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg", alt: "DevSA Community Space" },
+  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_2756.jpg", alt: "DevSA Community" },
 ]
+
 
 type MediaItem = (typeof mediaItems)[number]
 
