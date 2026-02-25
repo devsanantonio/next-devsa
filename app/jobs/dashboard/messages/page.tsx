@@ -104,7 +104,11 @@ function MessagesContent() {
         )
         if (existing) {
           setSelectedConversation(existing.id)
+          setMobileShowThread(true)
           loadMessages(existing.id)
+        } else {
+          // New conversation — show thread panel on mobile
+          setMobileShowThread(true)
         }
       }
     } catch {
@@ -130,9 +134,18 @@ function MessagesContent() {
     }
   }
 
+  // On mobile, track whether we're viewing a thread or the list
+  const [mobileShowThread, setMobileShowThread] = useState(false)
+
   const handleSelectConversation = (id: string) => {
     setSelectedConversation(id)
+    setMobileShowThread(true)
     loadMessages(id)
+  }
+
+  const handleMobileBack = () => {
+    setMobileShowThread(false)
+    setSelectedConversation(null)
   }
 
   const handleSendMessage = async (content: string) => {
@@ -230,7 +243,7 @@ function MessagesContent() {
   }
 
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-white pt-6">
 
       <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8">
         <Link
@@ -243,9 +256,9 @@ function MessagesContent() {
 
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-snug mb-6">Messages</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-          {/* Conversation List */}
-          <div className="md:col-span-1 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100dvh-200px)]">
+          {/* Conversation List — hidden on mobile when viewing a thread */}
+          <div className={`md:col-span-1 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col ${mobileShowThread ? "hidden md:flex" : "flex"}`}>
             <div className="p-3 border-b border-slate-200">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -304,20 +317,40 @@ function MessagesContent() {
             </div>
           </div>
 
-          {/* Message Thread */}
-          <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+          {/* Message Thread — hidden on mobile when viewing conversation list */}
+          <div className={`md:col-span-2 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col ${mobileShowThread ? "flex" : "hidden md:flex"}`}>
             {selectedConversation || (startWith && !selectedConversation) ? (
-              isLoadingMessages ? (
-                <div className="flex items-center justify-center flex-1">
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              <>
+                {/* Mobile back button */}
+                <div className="md:hidden flex items-center gap-2 px-4 py-3 border-b border-slate-200 bg-slate-50/50">
+                  <button
+                    onClick={handleMobileBack}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Conversations
+                  </button>
+                  {selectedConversation && (() => {
+                    const conv = conversations.find((c) => c.id === selectedConversation)
+                    return conv ? (
+                      <span className="ml-auto text-sm font-semibold text-slate-900 truncate">
+                        {getOtherParticipantName(conv)}
+                      </span>
+                    ) : null
+                  })()}
                 </div>
-              ) : (
-                <MessageThread
-                  messages={messages}
-                  currentUserUid={currentUserUid || ""}
-                  onSendMessage={handleSendMessage}
-                />
-              )
+                {isLoadingMessages ? (
+                  <div className="flex items-center justify-center flex-1">
+                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                  </div>
+                ) : (
+                  <MessageThread
+                    messages={messages}
+                    currentUserUid={currentUserUid || ""}
+                    onSendMessage={handleSendMessage}
+                  />
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center flex-1 p-8">
                 <MessageSquare className="h-12 w-12 text-slate-300 mb-4" />

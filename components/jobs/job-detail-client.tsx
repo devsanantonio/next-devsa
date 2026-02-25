@@ -219,7 +219,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
   }
 
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-white pt-6">
       <main className="mx-auto max-w-4xl px-5 sm:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link

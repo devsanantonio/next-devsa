@@ -23,6 +23,11 @@ import {
   Settings,
   ArrowLeft,
   Pencil,
+  MessageSquare,
+  Bell,
+  PenSquare,
+  Bookmark,
+  LayoutDashboard,
 } from "lucide-react"
 
 interface JobListing {
@@ -285,6 +290,22 @@ export default function DashboardPage() {
                         <Briefcase className="h-4 w-4 text-slate-400" />
                         Browse Jobs
                       </Link>
+                      <Link
+                        href="/jobs/dashboard/messages"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                      >
+                        <MessageSquare className="h-4 w-4 text-slate-400" />
+                        Messages
+                      </Link>
+                      <Link
+                        href="/jobs/dashboard/notifications"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                      >
+                        <Bell className="h-4 w-4 text-slate-400" />
+                        Notifications
+                      </Link>
                       {profile.isSuperAdmin && (
                         <Link
                           href="/jobs/admin"
@@ -295,15 +316,52 @@ export default function DashboardPage() {
                           Jobs Admin
                         </Link>
                       )}
+                    </div>
+
+                    {/* Role-specific links */}
+                    <div className="p-2 border-t border-slate-100">
+                      <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        {profile.isSuperAdmin ? "Admin Tools" : profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
+                      </p>
                       {(profile.role === "hiring" || profile.isSuperAdmin) && (
-                        <Link
-                          href="/jobs/post"
-                          onClick={() => setMenuOpen(false)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors sm:hidden"
-                        >
-                          <Plus className="h-4 w-4 text-slate-400" />
-                          Post a Job
-                        </Link>
+                        <>
+                          <Link
+                            href="/jobs/post"
+                            onClick={() => setMenuOpen(false)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
+                          >
+                            <PenSquare className="h-4 w-4" />
+                            Post a Job
+                          </Link>
+                          <Link
+                            href="/jobs/dashboard"
+                            onClick={() => setMenuOpen(false)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                          >
+                            <Briefcase className="h-4 w-4 text-slate-400" />
+                            My Listings
+                          </Link>
+                        </>
+                      )}
+                      {profile.role === "open-to-work" && (
+                        <>
+                          <Link
+                            href="/jobs/dashboard?tab=applications"
+                            onClick={() => setMenuOpen(false)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                          >
+                            <FileText className="h-4 w-4 text-slate-400" />
+                            My Applications
+                          </Link>
+                          <Link
+                            href="/jobs"
+                            onClick={() => setMenuOpen(false)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                          >
+                            <Bookmark className="h-4 w-4 text-slate-400" />
+                            Saved Jobs
+                          </Link>
+                        </>
                       )}
                     </div>
 

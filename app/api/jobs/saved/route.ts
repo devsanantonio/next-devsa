@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
     const snapshot = await db
       .collection(COLLECTIONS.SAVED_JOBS)
       .where('userUid', '==', result.uid)
-      .orderBy('savedAt', 'desc')
       .get();
 
     const savedJobs = snapshot.docs.map(doc => ({
@@ -20,6 +19,13 @@ export async function GET(request: NextRequest) {
       ...doc.data(),
       savedAt: doc.data().savedAt?.toDate?.()?.toISOString() || doc.data().savedAt,
     }));
+
+    // Sort in-memory to avoid requiring a composite index
+    savedJobs.sort((a, b) => {
+      const dateA = a.savedAt ? new Date(a.savedAt).getTime() : 0;
+      const dateB = b.savedAt ? new Date(b.savedAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
     return NextResponse.json({ savedJobs });
   } catch (error) {

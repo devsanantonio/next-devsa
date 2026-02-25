@@ -122,7 +122,7 @@ export function JobCard({
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-[13px] text-gray-400 leading-[1.4]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 pt-3 border-t border-gray-100 text-[13px] text-gray-400 leading-[1.4]">
             <span className="flex items-center gap-1.5 font-normal">
               <Clock className="h-3.5 w-3.5" />
               {timeAgo(createdAt)}

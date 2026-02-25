@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
 
       const messagesSnapshot = await db.collection(COLLECTIONS.MESSAGES)
         .where('conversationId', '==', conversationId)
-        .orderBy('createdAt', 'asc')
         .get();
 
       const messages = messagesSnapshot.docs.map(doc => ({
@@ -43,6 +42,13 @@ export async function GET(request: NextRequest) {
         createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
         readAt: doc.data().readAt?.toDate?.()?.toISOString() || doc.data().readAt,
       }));
+
+      // Sort in-memory to avoid requiring a composite index
+      messages.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateA - dateB;
+      });
 
       // Mark unread messages as read
       const unreadMessages = messagesSnapshot.docs.filter(
@@ -70,7 +76,6 @@ export async function GET(request: NextRequest) {
     // List all conversations for the current user
     const snapshot = await db.collection(COLLECTIONS.CONVERSATIONS)
       .where('participants', 'array-contains', result.uid)
-      .orderBy('lastMessageAt', 'desc')
       .get();
 
     const conversations = snapshot.docs.map(doc => ({
@@ -79,6 +84,13 @@ export async function GET(request: NextRequest) {
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
       lastMessageAt: doc.data().lastMessageAt?.toDate?.()?.toISOString() || doc.data().lastMessageAt,
     }));
+
+    // Sort in-memory to avoid requiring a composite index
+    conversations.sort((a, b) => {
+      const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
     return NextResponse.json({ conversations });
   } catch (error) {

@@ -13,6 +13,10 @@ import {
   Menu,
   X,
   Search,
+  FileText,
+  Bookmark,
+  LayoutDashboard,
+  PenSquare,
 } from "lucide-react"
 
 interface JobBoardProfile {
@@ -101,6 +105,14 @@ export function JobsNavbar() {
               >
                 Browse Jobs
               </Link>
+              {profile && (
+                <Link
+                  href="/jobs/dashboard"
+                  className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+                >
+                  Dashboard
+                </Link>
+              )}
               {profile?.role === "open-to-work" && (
                 <Link
                   href="/jobs/dashboard?tab=applications"
@@ -112,7 +124,7 @@ export function JobsNavbar() {
               {profile?.role === "hiring" && (
                 <Link
                   href="/jobs/post"
-                  className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+                  className="text-sm font-medium text-[#ef426f] hover:text-[#d93a60] transition-colors"
                 >
                   Post a Job
                 </Link>
@@ -192,7 +204,7 @@ export function JobsNavbar() {
                             onClick={() => setShowUserMenu(false)}
                             className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
                           >
-                            <Briefcase className="h-4 w-4" />
+                            <LayoutDashboard className="h-4 w-4" />
                             Dashboard
                           </Link>
                           <Link
@@ -201,7 +213,7 @@ export function JobsNavbar() {
                             className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
                           >
                             <User className="h-4 w-4" />
-                            Profile
+                            Edit Profile
                           </Link>
                           <Link
                             href="/jobs/dashboard/messages"
@@ -211,6 +223,60 @@ export function JobsNavbar() {
                             <MessageSquare className="h-4 w-4" />
                             Messages
                           </Link>
+                          <Link
+                            href="/jobs/dashboard/notifications"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                          >
+                            <Bell className="h-4 w-4" />
+                            Notifications
+                          </Link>
+                        </div>
+                        {/* Role-specific links */}
+                        <div className="p-2 border-t border-neutral-700">
+                          <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                            {profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
+                          </p>
+                          {profile.role === "hiring" && (
+                            <>
+                              <Link
+                                href="/jobs/post"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-[#ef426f] hover:bg-neutral-700/50 rounded-lg transition-colors"
+                              >
+                                <PenSquare className="h-4 w-4" />
+                                Post a Job
+                              </Link>
+                              <Link
+                                href="/jobs/dashboard"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                              >
+                                <Briefcase className="h-4 w-4" />
+                                My Listings
+                              </Link>
+                            </>
+                          )}
+                          {profile.role === "open-to-work" && (
+                            <>
+                              <Link
+                                href="/jobs/dashboard?tab=applications"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                              >
+                                <FileText className="h-4 w-4" />
+                                My Applications
+                              </Link>
+                              <Link
+                                href="/jobs"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                              >
+                                <Bookmark className="h-4 w-4" />
+                                Saved Jobs
+                              </Link>
+                            </>
+                          )}
                         </div>
                         <div className="p-2 border-t border-neutral-700">
                           <button
@@ -247,36 +313,115 @@ export function JobsNavbar() {
 
         {/* Mobile Menu */}
         {showMobileMenu && (
-          <div className="md:hidden border-t border-neutral-800 py-4 space-y-2">
+          <div className="md:hidden border-t border-neutral-800 py-4 space-y-1">
             <Link
               href="/jobs"
               onClick={() => setShowMobileMenu(false)}
-              className="block px-3 py-2 text-sm font-medium text-neutral-300 hover:text-white"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
             >
+              <Search className="h-4 w-4" />
               Browse Jobs
             </Link>
-            {profile?.role === "hiring" && (
-              <Link
-                href="/jobs/post"
-                onClick={() => setShowMobileMenu(false)}
-                className="block px-3 py-2 text-sm font-medium text-neutral-300 hover:text-white"
-              >
-                Post a Job
-              </Link>
+
+            {user && profile && (
+              <>
+                <div className="mx-4 my-2 border-t border-neutral-800" />
+                <p className="px-4 py-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  {profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
+                </p>
+                <Link
+                  href="/jobs/dashboard"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </Link>
+                <Link
+                  href="/jobs/dashboard/profile"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  Edit Profile
+                </Link>
+                <Link
+                  href="/jobs/dashboard/messages"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Messages
+                </Link>
+                <Link
+                  href="/jobs/dashboard/notifications"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                >
+                  <Bell className="h-4 w-4" />
+                  Notifications
+                  {unreadCount > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef426f] px-1.5 text-[10px] font-bold text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+                {profile.role === "hiring" && (
+                  <>
+                    <div className="mx-4 my-2 border-t border-neutral-800" />
+                    <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                      Hiring Tools
+                    </p>
+                    <Link
+                      href="/jobs/post"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[#ef426f] hover:text-[#d93a60] hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                    >
+                      <PenSquare className="h-4 w-4" />
+                      Post a Job
+                    </Link>
+                    <Link
+                      href="/jobs/dashboard"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      My Listings
+                    </Link>
+                  </>
+                )}
+                {profile.role === "open-to-work" && (
+                  <>
+                    <div className="mx-4 my-2 border-t border-neutral-800" />
+                    <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                      Job Seeker
+                    </p>
+                    <Link
+                      href="/jobs/dashboard?tab=applications"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                    >
+                      <FileText className="h-4 w-4" />
+                      My Applications
+                    </Link>
+                    <Link
+                      href="/jobs"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
+                    >
+                      <Bookmark className="h-4 w-4" />
+                      Saved Jobs
+                    </Link>
+                  </>
+                )}
+              </>
             )}
-            {profile?.role === "open-to-work" && (
-              <Link
-                href="/jobs/dashboard?tab=applications"
-                onClick={() => setShowMobileMenu(false)}
-                className="block px-3 py-2 text-sm font-medium text-neutral-300 hover:text-white"
-              >
-                My Applications
-              </Link>
-            )}
+
+            <div className="mx-4 my-2 border-t border-neutral-800" />
             <Link
               href="/"
               onClick={() => setShowMobileMenu(false)}
-              className="block px-3 py-2 text-sm font-medium text-neutral-500 hover:text-white"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
             >
               ← Back to DEVSA
             </Link>

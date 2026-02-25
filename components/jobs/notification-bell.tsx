@@ -61,7 +61,7 @@ export function NotificationBell({ notifications, unreadCount, onMarkRead }: Not
       {showDropdown && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 z-50 w-[calc(100vw-32px)] sm:w-80 max-w-80 rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-700">
               <h3 className="text-sm font-semibold text-white">Notifications</h3>
               {unreadCount > 0 && (

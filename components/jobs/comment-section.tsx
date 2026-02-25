@@ -155,7 +155,7 @@ export function CommentSection({
 
                 {/* Replies */}
                 {replies.length > 0 && (
-                  <div className="ml-11 space-y-3">
+                  <div className="ml-6 sm:ml-11 space-y-3">
                     {replies.map((reply) => (
                       <div key={reply.id} id={`comment-${reply.id}`} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                         <div className="flex items-start gap-3">

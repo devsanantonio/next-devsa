@@ -42,7 +42,7 @@ export function JobFilters({
       </div>
 
       {/* Filter Row */}
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1.5 text-[13px] text-gray-400 font-medium leading-normal">
           <SlidersHorizontal className="h-3.5 w-3.5" />
           Filters
@@ -52,7 +52,7 @@ export function JobFilters({
         <select
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal"
+          className="flex-1 sm:flex-none rounded-lg border border-gray-200 bg-white px-3 py-2 sm:py-1.5 text-sm sm:text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal min-w-0"
         >
           <option value="all">All Types</option>
           <option value="w2">W-2</option>
@@ -66,7 +66,7 @@ export function JobFilters({
         <select
           value={selectedLocation}
           onChange={(e) => onLocationChange(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal"
+          className="flex-1 sm:flex-none rounded-lg border border-gray-200 bg-white px-3 py-2 sm:py-1.5 text-sm sm:text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal min-w-0"
         >
           <option value="all">All Locations</option>
           <option value="remote">Remote</option>

@@ -29,13 +29,11 @@ export async function GET(request: NextRequest) {
       }
       snapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
         .where('jobId', '==', jobId)
-        .orderBy('createdAt', 'desc')
         .get();
     } else {
       // Open-to-work user viewing their own applications
       snapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
         .where('applicantUid', '==', result.uid)
-        .orderBy('createdAt', 'desc')
         .get();
     }
 
@@ -44,6 +42,13 @@ export async function GET(request: NextRequest) {
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
     }));
+
+    // Sort in-memory to avoid requiring a composite index
+    applications.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
     return NextResponse.json({ applications });
   } catch (error) {
