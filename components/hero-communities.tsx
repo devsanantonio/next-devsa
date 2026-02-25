@@ -205,27 +205,6 @@ export function HeroCommunities() {
         </div>
       </div>
 
-      {/* Testimonial grid - white background container */}
-      <div className="relative z-10 px-4 sm:px-6 pb-12">
-        <div className="max-w-5xl mx-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-neutral-300" />
-            </div>
-          ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {displayedCommunities.map((community, index) => (
-              <TestimonialCard
-                key={community.id}
-                community={community}
-                index={index}
-              />
-            ))}
-          </div>
-          )}
-        </div>
-      </div>
-
       {/* Bottom CTA */}
       <div className="relative z-10 px-6 py-20 border-t border-neutral-100">
         <motion.div

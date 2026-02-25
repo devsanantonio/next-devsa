@@ -15,17 +15,20 @@ export async function GET(request: NextRequest) {
     }
 
     const db = getDb();
+    // Avoid composite index requirement by sorting in-memory
     const snapshot = await db.collection(COLLECTIONS.JOB_COMMENTS)
       .where('jobId', '==', jobId)
-      .orderBy('createdAt', 'asc')
       .get();
 
-    const comments = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
-      updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
-    }));
+    const comments = snapshot.docs.map(doc => {
+      const data = doc.data();
+      const createdAt = data.createdAt?.toDate?.()?.toISOString() || data.createdAt;
+      const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt;
+      return { id: doc.id, ...data, createdAt, updatedAt };
+    });
+
+    // Sort by createdAt ascending in-memory
+    comments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     return NextResponse.json({ comments });
   } catch (error) {

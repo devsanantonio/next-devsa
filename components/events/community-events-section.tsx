@@ -79,30 +79,30 @@ function EventCalendar({
   }
 
   return (
-    <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="sticky top-6 rounded-xl border border-gray-200 bg-white p-5">
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-base font-bold text-slate-900">
+        <h3 className="text-sm font-semibold text-gray-900 leading-normal">
           {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h3>
-        <div className="flex gap-1">
+        <div className="flex gap-0.5">
           <button
             onClick={goToPreviousMonth}
-            className="rounded-lg p-2 hover:bg-slate-100 transition-colors"
+            className="rounded-lg p-1.5 hover:bg-gray-100 transition-colors"
             aria-label="Previous month"
           >
-            <ChevronLeft className="h-4 w-4 text-slate-500" />
+            <ChevronLeft className="h-4 w-4 text-gray-400" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="rounded-lg p-2 hover:bg-slate-100 transition-colors"
+            className="rounded-lg p-1.5 hover:bg-gray-100 transition-colors"
             aria-label="Next month"
           >
-            <ChevronRight className="h-4 w-4 text-slate-500" />
+            <ChevronRight className="h-4 w-4 text-gray-400" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-3 uppercase tracking-wide">
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-[0.1em]">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div key={day} className="py-2">
             {day}
@@ -126,12 +126,12 @@ function EventCalendar({
               key={day}
               onClick={() => handleDateClick(day)}
               disabled={!hasEvent}
-              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+              className={`aspect-square rounded-lg text-[13px] font-normal transition-all ${
                 isSelected
-                  ? "bg-[#ef426f] text-white shadow-lg shadow-[#ef426f]/30"
+                  ? "bg-gray-900 text-white"
                   : hasEvent
-                    ? "bg-[#ef426f]/10 text-[#ef426f] hover:bg-[#ef426f]/20 hover:scale-105"
-                    : "text-slate-300"
+                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "text-gray-300"
               } ${!hasEvent && "cursor-default"}`}
             >
               {day}
@@ -141,14 +141,14 @@ function EventCalendar({
       </div>
       
       {/* Legend */}
-      <div className="mt-5 pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-3 text-[11px] font-normal text-gray-400">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ef426f]/20" />
+            <span className="h-2 w-2 rounded-full bg-gray-200" />
             Has events
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ef426f]" />
+            <span className="h-2 w-2 rounded-full bg-gray-900" />
             Selected
           </span>
         </div>
@@ -332,87 +332,106 @@ export function CommunityEventsSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
-          <div className="flex items-center gap-3">
-            <h2 className="font-extrabold tracking-tight text-slate-900 text-4xl lg:text-5xl leading-[1.1]">
-              Community Calendar
-            </h2>
-            
-            {/* Easter egg plus button with inline Add Event */}
-            <motion.button
-              onClick={() => setShowAddEvent(!showAddEvent)}
-              className="relative inline-flex items-center gap-2 group"
-              whileTap={{ scale: 0.95 }}
-              aria-label="Add event"
-            >
-              <motion.div
-                animate={{ rotate: showAddEvent ? 45 : 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#ef426f] transition-colors"
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+                Community Calendar
+              </p>
+
+              {/* Easter egg plus button with inline Add Event */}
+              <motion.button
+                onClick={() => setShowAddEvent(!showAddEvent)}
+                className="relative inline-flex items-center gap-2 group"
+                whileTap={{ scale: 0.95 }}
+                aria-label="Add event"
               >
-                <Plus className="h-5 w-5 text-slate-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
-              </motion.div>
-              
-              {/* Animated "Add Event" text */}
-              <AnimatePresence>
-                {showAddEvent && (
-                  <motion.div
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: "auto", opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="overflow-hidden"
-                  >
-                    <Link
-                      href={getAddEventHref()}
-                      className="inline-flex items-center gap-1 whitespace-nowrap text-base font-semibold text-[#ef426f] hover:text-[#fbbf24] transition-colors"
+                <motion.div
+                  animate={{ rotate: showAddEvent ? 45 : 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="flex items-center justify-center w-7 h-7 rounded-full border-2 border-dashed border-gray-300 group-hover:border-[#ef426f] transition-colors"
+                >
+                  <Plus className="h-4 w-4 text-gray-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
+                </motion.div>
+                
+                {/* Animated "Add Event" text */}
+                <AnimatePresence>
+                  {showAddEvent && (
+                    <motion.div
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: "auto", opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="overflow-hidden"
                     >
-                      Add Event
-                      <span className="">→</span>
-                    </Link>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
+                      <Link
+                        href={getAddEventHref()}
+                        className="inline-flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-[#ef426f] hover:text-[#d93a60] transition-colors"
+                      >
+                        Add Event →
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
+
+            <h2 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              Find Your Next Event.{" "}
+              <span className="text-gray-600 font-light italic">Build Your</span>{" "}
+              Network.
+            </h2>
           </div>
-          <p className="mt-4 max-w-3xl font-normal text-slate-600 text-lg leading-8">
-            Discover communities that align with your interests. DEVSA is the central hub where local groups collaborate, exchange resources, and build a more connected tech ecosystem.
-          </p>
+
+          <div className="space-y-6 max-w-3xl mt-8">
+            <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
+              One calendar for every community. Stop hunting for links — DEVSA brings San Antonio&apos;s tech groups together in{" "}
+              <strong className="font-semibold text-gray-900">one place</strong>.
+            </p>
+
+            <p className="text-base md:text-lg text-gray-500 leading-relaxed">
+              Focus on{" "}
+              <span className="font-medium text-gray-700">building</span>,{" "}
+              <span className="font-medium text-gray-700">learning</span>, and{" "}
+              <span className="font-medium text-gray-700">connecting</span>{" "}
+              with the people shipping the future.
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
           {/* Left column: Search and Events */}
           <div className="space-y-6">
             {/* Search bar */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div>
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search events by name, location, or topic..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-base font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 transition-all"
+                  className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all leading-[1.5]"
                 />
               </div>
 
               {(search || selectedDate) && (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {selectedDate && (
                     <button
                       onClick={() => setSelectedDate(null)}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#ef426f]/10 border border-[#ef426f]/20 px-4 py-1.5 text-sm font-semibold text-[#ef426f] hover:bg-[#ef426f]/20 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                     >
-                      <CalendarIcon className="h-3.5 w-3.5" />
+                      <CalendarIcon className="h-3 w-3 text-gray-500" />
                       {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      <span className="ml-1">×</span>
+                      <span className="ml-0.5 text-gray-400">×</span>
                     </button>
                   )}
                   {search && (
                     <button
                       onClick={() => setSearch("")}
-                      className="inline-flex items-center gap-2 rounded-full bg-slate-100 border border-slate-200 px-4 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-600 hover:bg-gray-200 transition-colors"
                     >
                       &quot;{search}&quot;
-                      <span className="ml-1 text-slate-400">×</span>
+                      <span className="ml-0.5 text-gray-400">×</span>
                     </button>
                   )}
                 </div>
@@ -420,12 +439,12 @@ export function CommunityEventsSection() {
             </div>
 
             {/* Events list */}
-            <div className="min-h-100 max-h-175 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
+            <div className="min-h-100 max-h-175 overflow-y-auto rounded-xl border border-gray-200 p-4 sm:p-5">
               {filteredEvents.length === 0 ? (
                 <div className="flex h-full min-h-75 items-center justify-center">
                   <div className="text-center">
-                    <p className="text-base font-medium text-slate-500">No events found</p>
-                    <p className="mt-1 text-sm text-slate-400">Check back later for new events!</p>
+                    <p className="text-base font-normal text-gray-500">No events found</p>
+                    <p className="mt-1 text-sm font-normal text-gray-400">Check back later for new events!</p>
                   </div>
                 </div>
               ) : (
@@ -456,15 +475,15 @@ export function CommunityEventsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className={`group rounded-2xl border p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-lg ${
+                        className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                           eventStatus === "happening"
-                            ? "border-green-300 bg-green-50/50 hover:border-green-400"
-                            : "border-slate-200 bg-white hover:border-slate-300"
+                            ? "border-green-300 bg-green-50/30 hover:border-green-400"
+                            : "border-gray-200 bg-white hover:border-gray-300"
                         }`}
                       >
                         {/* Date and badge row */}
-                        <div className="mb-4 flex flex-wrap items-center gap-3">
-                          <time className="text-sm font-bold text-[#ef426f] uppercase tracking-wide">
+                        <div className="mb-3 flex flex-wrap items-center gap-2.5">
+                          <time className="text-[13px] font-medium text-gray-500 uppercase tracking-[0.1em]">
                             {new Date(event.date).toLocaleDateString("en-US", {
                               weekday: "short",
                               month: "short",
@@ -473,21 +492,21 @@ export function CommunityEventsSection() {
                             })}
                           </time>
                           {eventStatus === "happening" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Happening Now
                             </span>
                           ) : isFirst && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] text-white">
                               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                               Next Up
                             </span>
                           )}
                           {event.eventType && event.eventType !== 'in-person' && (
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider leading-none ${
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.1em] leading-none ${
                               event.eventType === 'hybrid'
-                                ? 'bg-slate-100 text-slate-600 border border-slate-200'
-                                : 'bg-[#ef426f]/10 text-[#ef426f] border border-[#ef426f]/20'
+                                ? 'bg-gray-100 text-gray-600 border border-gray-200'
+                                : 'bg-gray-100 text-gray-600 border border-gray-200'
                             }`}>
                               {event.eventType}
                             </span>
@@ -497,51 +516,51 @@ export function CommunityEventsSection() {
                         {/* Content */}
                         <div className="flex gap-4">
                           {primaryLogo && (
-                            <div className="relative hidden h-14 w-14 shrink-0 sm:block rounded-xl bg-slate-900 p-2 group-hover:bg-slate-950 transition-colors">
+                            <div className="relative hidden h-12 w-12 shrink-0 sm:block rounded-lg bg-gray-950 p-1.5">
                               <Image
                                 src={primaryLogo}
                                 alt={primaryName}
                                 fill
                                 className="object-contain p-1"
-                                sizes="56px"
+                                sizes="48px"
                               />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold leading-tight text-slate-900 group-hover:text-[#ef426f] transition-colors">
+                            <h3 className="text-lg font-semibold leading-[1.3] text-gray-900 group-hover:text-gray-600 transition-colors">
                               {event.title}
                             </h3>
-                            <p className="mt-2 text-sm font-semibold text-slate-500">
+                            <p className="mt-1.5 text-[13px] font-normal text-gray-500 leading-[1.5]">
                               📍 {event.venue || event.location}
                             </p>
-                            <p className="mt-3 text-sm font-normal leading-6 text-slate-500 line-clamp-2">
+                            <p className="mt-2.5 text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
                               {stripMarkdown(event.description)}
                             </p>
                           </div>
                         </div>
 
                         {/* Footer */}
-                        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-gray-100">
                           <div className="flex flex-wrap items-center gap-2">
                             {eventCommunities.map((ec) => (
-                              <span key={ec.id} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
-                                <span className="h-2 w-2 rounded-full bg-[#ef426f]" />
+                              <span key={ec.id} className="inline-flex items-center gap-1.5 text-[13px] font-normal text-gray-500">
+                                <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
                                 {ec.name}
                               </span>
                             ))}
                             {eventCommunities.length > 1 && (
-                              <span className="inline-flex items-center rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                              <span className="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.1em] text-gray-500">
                                 Collab
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             {/* Save to Calendar - inline buttons */}
                             <a
                               href={generateCalendarUrls(event).googleUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-105"
+                              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:border-gray-300"
                               title="Add to Google Calendar"
                             >
                               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -562,7 +581,7 @@ export function CommunityEventsSection() {
                                 a.click()
                                 URL.revokeObjectURL(url)
                               }}
-                              className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-105"
+                              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:border-gray-300"
                               title="Download .ics file (Apple/Outlook)"
                             >
                               <CalendarPlus className="h-4 w-4" />
@@ -570,7 +589,7 @@ export function CommunityEventsSection() {
                             {eventLink && (
                               <Link
                                 href={eventLink}
-                                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#ef426f] hover:scale-105"
+                                className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
                               >
                                 View Details →
                               </Link>

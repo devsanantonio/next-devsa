@@ -168,7 +168,7 @@ export default function JobsSignInPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-white pt-10">
       {/* Top bar — offset below the root layout navbar */}
       <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-5 py-3.5 sticky top-0 z-10">
         <div className="mx-auto max-w-md flex items-center justify-between">
@@ -180,7 +180,7 @@ export default function JobsSignInPage() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-md px-5 py-10 sm:py-16">
+      <main className="mx-auto max-w-sm px-5 py-10 sm:py-16">
         {step === "auth" && (
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">

@@ -82,6 +82,7 @@ export const COLLECTIONS = {
   CONVERSATIONS: 'conversations',
   MESSAGES: 'messages',
   NOTIFICATIONS: 'notifications',
+  SAVED_JOBS: 'saved_jobs',
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
 } as const;
 
@@ -301,7 +302,7 @@ export interface JobListing {
   companyLogo?: string;
   title: string;
   slug: string;
-  type: 'w2' | '1099' | 'equity' | 'other';
+  type: 'w2' | '1099' | 'equity' | 'internship' | 'other';
   locationType: 'remote' | 'onsite' | 'hybrid';
   location?: string;
   salaryRange?: string;
@@ -309,8 +310,9 @@ export interface JobListing {
   requirements?: string;
   tags: string[];
   communityId?: string;
-  status: 'draft' | 'published' | 'closed';
+  status: 'draft' | 'published' | 'closed' | 'expired';
   applicantCount: number;
+  expiresAt?: Date;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -375,4 +377,11 @@ export interface Notification {
   referenceId: string; // jobId or conversationId
   read: boolean;
   createdAt: Date;
+}
+
+export interface SavedJob {
+  id: string;
+  userUid: string;
+  jobId: string;
+  savedAt: Date;
 }

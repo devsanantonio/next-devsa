@@ -28,36 +28,37 @@ export function JobFilters({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by title, company, or keyword..."
-          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 shadow-sm leading-normal"
+          className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 leading-[1.5] font-normal"
         />
       </div>
 
       {/* Filter Row */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <SlidersHorizontal className="h-4 w-4" />
-          Filters:
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-1.5 text-[13px] text-gray-400 font-medium leading-normal">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filters
         </div>
 
         {/* Job Type Filter */}
         <select
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-[#ef426f] focus:outline-none shadow-sm"
+          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-[1.5] font-normal"
         >
           <option value="all">All Types</option>
           <option value="w2">W-2</option>
           <option value="1099">1099</option>
           <option value="equity">Equity</option>
+          <option value="internship">Internship</option>
           <option value="other">Other</option>
         </select>
 
@@ -65,7 +66,7 @@ export function JobFilters({
         <select
           value={selectedLocation}
           onChange={(e) => onLocationChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-[#ef426f] focus:outline-none shadow-sm"
+          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-[1.5] font-normal"
         >
           <option value="all">All Locations</option>
           <option value="remote">Remote</option>
@@ -76,7 +77,7 @@ export function JobFilters({
         {hasFilters && (
           <button
             onClick={clearFilters}
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[13px] text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors font-medium leading-normal"
           >
             <X className="h-3 w-3" />
             Clear

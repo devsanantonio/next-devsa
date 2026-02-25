@@ -1,201 +1,116 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { JobCard } from "@/components/jobs/job-card"
-import { JobFilters } from "@/components/jobs/job-filters"
-import { Briefcase, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/components/auth-provider"
+import { getDb, COLLECTIONS, type JobListing } from "@/lib/firebase-admin"
+import { JobListingsClient } from "@/components/jobs/job-listings-client"
 
-interface JobListingItem {
-  id: string
-  title: string
-  slug: string
-  companyName: string
-  companyLogo?: string
-  type: "w2" | "1099" | "equity" | "other"
-  locationType: "remote" | "onsite" | "hybrid"
-  location?: string
-  salaryRange?: string
-  tags: string[]
-  applicantCount: number
-  createdAt: string
+async function getPublishedListings() {
+  const db = getDb()
+  const snapshot = await db.collection(COLLECTIONS.JOB_LISTINGS).get()
+  const now = new Date()
+
+  const listings = snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as Omit<JobListing, "id">
+      const createdAt =
+        (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() ||
+        String(data.createdAt)
+      const expiresAt =
+        (data.expiresAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() ||
+        (data.expiresAt ? String(data.expiresAt) : undefined)
+
+      // Auto-expire
+      const isExpired = expiresAt ? new Date(expiresAt) < now : false
+      const status = data.status === "published" && isExpired ? "expired" : data.status
+
+      return {
+        id: doc.id,
+        title: data.title,
+        slug: data.slug,
+        companyName: data.companyName,
+        companyLogo: data.companyLogo || undefined,
+        type: data.type,
+        locationType: data.locationType,
+        location: data.location || undefined,
+        salaryRange: data.salaryRange || undefined,
+        tags: data.tags || [],
+        applicantCount: data.applicantCount ?? 0,
+        createdAt,
+        status,
+      }
+    })
+    .filter((l) => l.status === "published")
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 50)
+    // Strip status before sending to client
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .map(({ status, ...rest }) => rest)
+
+  return listings
 }
 
-export default function JobsPage() {
-  const { user } = useAuth()
-  const [listings, setListings] = useState<JobListingItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedType, setSelectedType] = useState("all")
-  const [selectedLocation, setSelectedLocation] = useState("all")
-
-  useEffect(() => {
-    fetchListings()
-  }, [])
-
-  const fetchListings = async () => {
-    try {
-      const res = await fetch("/api/jobs")
-      const data = await res.json()
-      setListings(data.listings || [])
-    } catch {
-      console.error("Failed to load listings")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Client-side filtering
-  const filteredListings = listings.filter((listing) => {
-    if (selectedType !== "all" && listing.type !== selectedType) return false
-    if (selectedLocation !== "all" && listing.locationType !== selectedLocation) return false
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return (
-        listing.title.toLowerCase().includes(q) ||
-        listing.companyName.toLowerCase().includes(q) ||
-        listing.tags.some((t) => t.toLowerCase().includes(q))
-      )
-    }
-    return true
-  })
+export default async function JobsPage() {
+  const listings = await getPublishedListings()
 
   return (
     <div className="w-full min-h-dvh bg-white">
       <main className="relative w-full">
-        {/* Hero Section — bg video fades from white to black */}
-        <section className="w-full min-h-dvh flex flex-col items-center justify-center px-5 sm:px-6 py-24 sm:py-16 relative overflow-hidden">
-          {/* Background Video */}
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-          >
-            <source src="https://devsa-assets.s3.us-east-2.amazonaws.com/jobs-bg.mp4" type="video/mp4" />
-          </video>
+        {/* Hero Section */}
+        <section className="w-full min-h-dvh flex flex-col justify-center px-5 sm:px-6 py-24 sm:py-16 relative overflow-hidden bg-white">
+          {/* Gradient from top-right corner */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(239,66,111,0.15)_0%,rgba(239,66,111,0.05)_40%,transparent_70%)]" />
 
-          {/* Dark overlay for WCAG text contrast */}
-          <div className="absolute inset-0 bg-black/50" />
+          {/* Content — left-aligned */}
+          <div className="relative z-10 w-full max-w-6xl mx-auto">
+            <div className="max-w-3xl">
+              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em] mb-4">
+                Find your next build
+              </p>
 
-          {/* Content overlay */}
-          <div className="relative z-10 w-full max-w-4xl mx-auto text-center">
-            <div className="flex items-center justify-center gap-2 mb-4 sm:mb-5">
-              <div className="h-1 w-8 rounded-full bg-[#ef426f]" />
-              <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#ef426f]">
-                DEVSA Community
-              </span>
-              <div className="h-1 w-8 rounded-full bg-[#ef426f]" />
-            </div>
+              <h1 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em] mb-8">
+                Where San Antonio{" "}
+                <span className="text-gray-600 font-light italic">Tech Talent</span>{" "}
+                Connects.
+              </h1>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-white leading-[0.95] mb-6 sm:mb-8">
-              Where San Antonio{" "}
-              <span className="text-[#ef426f]">Tech Talent</span>{" "}
-              Connects
-            </h1>
+              <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-2xl mb-10 sm:mb-12">
+                No middleman and no noise. DEVSA is the direct bridge between passionate builders and the local companies shaping our tech ecosystem.
+              </p>
 
-            <p className="text-lg sm:text-xl lg:text-2xl text-white/80 leading-[1.8] max-w-2xl mx-auto mb-10 sm:mb-12 font-medium">
-              Connecting passionate builders with local companies and the growing tech ecosystem.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <Link
-                href="/jobs/signin"
-                className="group w-full sm:w-auto relative inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-black text-slate-900 hover:bg-[#ef426f] hover:text-white transition-all duration-300 overflow-hidden"
-              >
-                <span className="transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-4">
-                  I&apos;m Hiring
-                </span>
-                <span className="absolute inset-0 flex items-center justify-center transition-all duration-300 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 font-black">
-                  Open to Work
-                </span>
-              </Link>
-              <a
-                href="#open-positions"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/50 px-7 py-4 text-sm font-bold text-white hover:border-white hover:bg-white/10 transition-all duration-200"
-              >
-                View Opportunities
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Scroll indicator */}
-          {listings.length > 0 && (
-            <div className="absolute z-10 bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-white/50 animate-bounce">
-              <span className="text-[11px] sm:text-xs font-bold tracking-wide uppercase">Browse Jobs</span>
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-              </svg>
-            </div>
-          )}
-        </section>
-
-        {/* Job Listings Section */}
-        <section id="open-positions" className="w-full bg-slate-50 border-t border-slate-200 px-5 sm:px-6 py-10 sm:py-16 scroll-mt-4">
-          <div className="mx-auto max-w-4xl">
-            <div className="flex items-center justify-between mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">
-                Open Positions
-              </h2>
-              {user && (
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                 <Link
-                  href="/jobs/post"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
+                  href="/jobs/signin?role=hiring"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-gray-900 px-7 py-4 text-sm font-bold text-white hover:bg-gray-800 transition-colors duration-200"
                 >
-                  Post a Job
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                  </svg>
+                  I&apos;m Hiring
                 </Link>
-              )}
+                <Link
+                  href="/jobs/signin?role=open-to-work"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#ef426f] px-7 py-4 text-sm font-bold text-white hover:bg-[#d93a60] transition-colors duration-200"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                  </svg>
+                  Open to Work
+                </Link>
+                <a
+                  href="#open-positions"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 px-7 py-4 text-sm font-bold text-gray-900 hover:border-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  View Opportunities
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </a>
+              </div>
             </div>
-
-            {/* Filters */}
-            <div className="mb-6 sm:mb-8">
-              <JobFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                selectedType={selectedType}
-                onTypeChange={setSelectedType}
-                selectedLocation={selectedLocation}
-                onLocationChange={setSelectedLocation}
-              />
-            </div>
-
-            {/* Listings */}
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-              </div>
-            ) : filteredListings.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Briefcase className="h-12 w-12 text-slate-300 mb-4" />
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 leading-snug">
-                  {searchQuery || selectedType !== "all" || selectedLocation !== "all"
-                    ? "No jobs match your filters"
-                    : "No jobs posted yet"}
-                </h3>
-                <p className="text-slate-500 text-[13px] sm:text-sm leading-relaxed max-w-md">
-                  {searchQuery || selectedType !== "all" || selectedLocation !== "all"
-                    ? "Try adjusting your search criteria or clearing filters."
-                    : "Be the first to post a job opportunity for the San Antonio tech community."}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-slate-500">
-                  {filteredListings.length} job{filteredListings.length !== 1 ? "s" : ""} found
-                </p>
-                {filteredListings.map((listing) => (
-                  <JobCard key={listing.id} {...listing} />
-                ))}
-              </div>
-            )}
           </div>
         </section>
+
+        {/* Job Listings — interactive client component */}
+        <JobListingsClient initialListings={listings} />
       </main>
     </div>
   )

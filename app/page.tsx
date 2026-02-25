@@ -13,7 +13,6 @@ export default function HomePage() {
         <HeroBridge />
         <PartnersSection />
         <HeroCommunities />
-        <MagenNewsletterCTA />
       </main>
       <EventsPopup />
     </div>

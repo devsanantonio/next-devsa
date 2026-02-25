@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         id: doc.id,
         createdAt: (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
+        expiresAt: (data.expiresAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.expiresAt,
       };
     });
 
@@ -34,6 +35,20 @@ export async function GET(request: NextRequest) {
       listings = listings.filter(l => l.status === status);
     }
     // status=all returns everything (for super admin overview)
+
+    // Auto-expire published listings past their expiresAt date
+    const now = new Date();
+    listings = listings.map(l => {
+      if (l.status === 'published' && l.expiresAt && new Date(l.expiresAt as unknown as string) < now) {
+        return { ...l, status: 'expired' as const };
+      }
+      return l;
+    });
+
+    // For public view, exclude expired listings unless looking at own or all
+    if (!authorUid && status === 'published') {
+      listings = listings.filter(l => l.status === 'published');
+    }
     if (type) {
       listings = listings.filter(l => l.type === type);
     }
@@ -67,7 +82,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, type, locationType, location, salaryRange, description, requirements, tags, communityId } = body;
+    const { title, type, locationType, location, salaryRange, description, requirements, tags, communityId, expiresInDays } = body;
 
     if (!title || !type || !locationType || !description) {
       return NextResponse.json(
@@ -78,6 +93,10 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
     const now = new Date();
+
+    // Default expiration: 60 days, or custom if provided (max 90 days)
+    const daysUntilExpiry = Math.min(expiresInDays || 60, 90);
+    const expiresAt = new Date(now.getTime() + daysUntilExpiry * 24 * 60 * 60 * 1000);
 
     // Generate slug from title
     const slug = title
@@ -103,6 +122,7 @@ export async function POST(request: NextRequest) {
       communityId: communityId || '',
       status: 'published',
       applicantCount: 0,
+      expiresAt,
       createdAt: now,
     };
 
@@ -130,7 +150,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, title, type, locationType, location, salaryRange, description, requirements, tags, status } = body;
+    const { id, title, type, locationType, location, salaryRange, description, requirements, tags, status, expiresInDays } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -168,6 +188,14 @@ export async function PUT(request: NextRequest) {
     if (requirements !== undefined) updateData.requirements = requirements;
     if (tags !== undefined) updateData.tags = tags;
     if (status !== undefined) updateData.status = status;
+    // When re-publishing (e.g. from expired/closed), refresh the expiration
+    if (expiresInDays !== undefined) {
+      const days = Math.min(expiresInDays || 60, 90);
+      updateData.expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    } else if (status === 'published' && (listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft')) {
+      // Auto-refresh expiration when re-publishing
+      updateData.expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+    }
 
     await docRef.update(updateData);
 

@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Settings,
   ArrowLeft,
+  Pencil,
 } from "lucide-react"
 
 interface JobListing {
@@ -379,6 +380,13 @@ export default function DashboardPage() {
                           <ExternalLink className="h-3.5 w-3.5" />
                           View
                         </Link>
+                        <Link
+                          href={`/jobs/edit?id=${job.id}`}
+                          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -475,6 +483,13 @@ export default function DashboardPage() {
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                         View
+                      </Link>
+                      <Link
+                        href={`/jobs/edit?id=${job.id}`}
+                        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit
                       </Link>
                     </div>
                   </div>
