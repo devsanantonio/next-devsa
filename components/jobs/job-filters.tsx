@@ -37,7 +37,7 @@ export function JobFilters({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by title, company, or keyword..."
-          className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 leading-[1.5] font-normal"
+          className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 leading-normal font-normal"
         />
       </div>
 
@@ -52,7 +52,7 @@ export function JobFilters({
         <select
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-[1.5] font-normal"
+          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal"
         >
           <option value="all">All Types</option>
           <option value="w2">W-2</option>
@@ -66,7 +66,7 @@ export function JobFilters({
         <select
           value={selectedLocation}
           onChange={(e) => onLocationChange(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-[1.5] font-normal"
+          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal"
         >
           <option value="all">All Locations</option>
           <option value="remote">Remote</option>

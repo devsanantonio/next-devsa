@@ -221,85 +221,147 @@ export function PartnersSection() {
     <>
       <section className="w-full bg-white py-8 md:py-16 relative overflow-hidden" data-bg-type="light">
         <div className="relative z-10">
-          <div className="max-w-6xl mx-auto px-4 md:px-8 mb-10 md:mb-14">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 mb-10 md:mb-14">
             {/* Section Heading */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="md:text-center space-y-6"
+              className="space-y-8"
             >
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
+              <div className="space-y-4">
+                <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
                   Our Strategic Partners
                 </p>
-                <h2 className="text-neutral-900 tracking-tight text-balance text-2xl md:text-4xl lg:text-5xl font-bold leading-tight max-w-4xl mx-auto">
-                  Connecting Our Ecosystem
+                <h2 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+                  Connecting Our{" "}
+                  <span className="text-gray-600 font-light italic">Ecosystem</span>.
                 </h2>
               </div>
-              <div className="max-w-3xl mx-auto">
-                <p className="text-base md:text-lg text-neutral-600 leading-relaxed md:text-balance">
-                  Thanks to the unwavering support of our partners, DEVSA has become the vital bridge in San Antonio for connecting passionate builders with key resources and organizations across the tech ecosystem.
+              <div className="space-y-6 max-w-3xl">
+                <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
+                  Thanks to the unwavering support of our partners, DEVSA has become the{" "}
+                  <strong className="font-semibold text-gray-900">vital bridge</strong> in San Antonio&apos;s tech ecosystem.
+                </p>
+                <p className="text-base md:text-lg text-gray-500 leading-relaxed">
+                  Connecting passionate{" "}
+                  <span className="font-medium text-gray-700">builders</span> with key{" "}
+                  <span className="font-medium text-gray-700">resources</span> and{" "}
+                  <span className="font-medium text-gray-700">organizations</span>.
                 </p>
               </div>
             </motion.div>
           </div>
 
           {/* Partner Logos Grid */}
-          <div className="w-full max-w-5xl mx-auto px-4 md:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 md:px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="flex flex-wrap justify-center gap-4 md:gap-5"
             >
-              {partners.map((partner, index) => (
-                <motion.div
-                  key={partner.id}
-                  initial={{ opacity: 0, scale: 0.9, rotate: 0 }}
-                  whileInView={{ opacity: 1, scale: 1, rotate: getRandomRotation(index) }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                  className="relative group cursor-pointer"
-                  onMouseEnter={() => setHoveredPartner(partner.id)}
-                  onMouseLeave={() => setHoveredPartner(null)}
-                  onClick={() => handlePartnerClick(partner)}
-                >
-                  {/* Logo Container */}
-                  <div 
-                    className={`relative w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 bg-neutral-950 rounded-xl border transition-all duration-300 flex items-center justify-center p-3 md:p-4 ${
-                      hoveredPartner === partner.id
-                        ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.3)]'
-                        : 'border-neutral-800 hover:border-neutral-700'
-                    }`}
-                  >
-                    {/* Confetti Celebration Effect - Only for Easter Eggs */}
-                    {partner.isEasterEgg && (
-                      <div className="absolute -inset-12 z-20 pointer-events-none">
-                        <ConfettiEffect isActive={hoveredPartner === partner.id} />
-                      </div>
-                    )}
-                    
-                    {/* Logo */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center">
-                      <Image
-                        src={partner.logo || "/placeholder.svg"}
-                        alt={partner.name}
-                        width={100}
-                        height={100}
-                        unoptimized
-                        className={`object-contain w-full h-full transition-all duration-300 ${
-                          hoveredPartner === partner.id 
-                            ? 'scale-105 brightness-110' 
-                            : 'scale-100'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+              <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em] mb-6">
+                Partners &amp; Supporters
+              </p>
+
+              {/* Desktop: horizontal wrap row */}
+              <div className="hidden md:block">
+                <div className="flex items-center gap-3 lg:gap-4 flex-wrap">
+                  {partners.map((partner, index) => {
+                    const invertIds = ['youth-code-jam', '434media', 'digital-canvas']
+                    const largerIds = ['geekdom', 'learn2ai', 'utsa', 'project-quest']
+                    const shouldInvert = invertIds.includes(partner.id)
+                    const isLarger = largerIds.includes(partner.id)
+
+                    return (
+                      <motion.div
+                        key={partner.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: index * 0.04 }}
+                        className="relative group cursor-pointer"
+                        onMouseEnter={() => setHoveredPartner(partner.id)}
+                        onMouseLeave={() => setHoveredPartner(null)}
+                        onClick={() => handlePartnerClick(partner)}
+                      >
+                        <div className="relative flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 transition-all duration-200 hover:bg-gray-100 hover:border-gray-200">
+                          {/* Confetti Celebration Effect - Only for Easter Eggs */}
+                          {partner.isEasterEgg && (
+                            <div className="absolute -inset-12 z-20 pointer-events-none">
+                              <ConfettiEffect isActive={hoveredPartner === partner.id} />
+                            </div>
+                          )}
+
+                          <div className={`relative z-10 shrink-0 ${isLarger ? 'h-10 w-10' : 'h-8 w-8'}`}>
+                            <Image
+                              src={partner.logo || "/placeholder.svg"}
+                              alt={partner.name}
+                              fill
+                              unoptimized
+                              className={`object-contain grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200${shouldInvert ? ' invert' : ''}`}
+                              sizes={isLarger ? '40px' : '32px'}
+                            />
+                          </div>
+                          <span className="relative z-10 text-sm font-medium text-gray-400 group-hover:text-gray-900 transition-colors duration-200 whitespace-nowrap">
+                            {partner.name}
+                          </span>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Mobile: compact 2-column grid */}
+              <div className="md:hidden">
+                <div className="grid grid-cols-2 gap-2">
+                  {partners.map((partner, index) => {
+                    const invertIds = ['youth-code-jam', '434media', 'digital-canvas']
+                    const largerIds = ['geekdom', 'learn2ai', 'utsa', 'project-quest']
+                    const shouldInvert = invertIds.includes(partner.id)
+                    const isLarger = largerIds.includes(partner.id)
+
+                    return (
+                      <motion.div
+                        key={partner.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: index * 0.03 }}
+                        className="relative group cursor-pointer"
+                        onMouseEnter={() => setHoveredPartner(partner.id)}
+                        onMouseLeave={() => setHoveredPartner(null)}
+                        onClick={() => handlePartnerClick(partner)}
+                      >
+                        <div className="relative flex items-center gap-2.5 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2.5 transition-all duration-200 active:bg-gray-100 active:border-gray-200">
+                          {partner.isEasterEgg && (
+                            <div className="absolute -inset-12 z-20 pointer-events-none">
+                              <ConfettiEffect isActive={hoveredPartner === partner.id} />
+                            </div>
+                          )}
+
+                          <div className={`relative z-10 shrink-0 ${isLarger ? 'h-9 w-9' : 'h-7 w-7'}`}>
+                            <Image
+                              src={partner.logo || "/placeholder.svg"}
+                              alt={partner.name}
+                              fill
+                              unoptimized
+                              className={`object-contain opacity-50${shouldInvert ? ' invert' : ''}`}
+                              sizes={isLarger ? '36px' : '28px'}
+                            />
+                          </div>
+                          <span className="relative z-10 text-xs font-medium text-gray-400 truncate leading-[1.4]">
+                            {partner.name}
+                          </span>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>

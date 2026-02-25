@@ -84,7 +84,7 @@ export function JobCard({
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-[#ef426f] transition-colors leading-[1.3] truncate">
             {title}
           </h3>
-          <p className="text-sm text-gray-500 mt-0.5 leading-[1.5] font-normal">{companyName}</p>
+          <p className="text-sm text-gray-500 mt-0.5 leading-normal font-normal">{companyName}</p>
 
           {/* Meta Info */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3">
@@ -109,7 +109,7 @@ export function JobCard({
               {tags.slice(0, 4).map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 font-normal leading-[1.5]"
+                  className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 font-normal leading-normal"
                 >
                   <Tag className="h-2.5 w-2.5 text-gray-400" />
                   {tag}
