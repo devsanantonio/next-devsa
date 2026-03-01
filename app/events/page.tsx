@@ -42,7 +42,6 @@ export const metadata: Metadata = {
 export default function EventsPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
-      <FeaturedDevsaEvent />
       <CommunityEventsSection />
       <FeaturedOnDemandEvent />
     </main>

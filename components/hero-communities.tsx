@@ -45,7 +45,7 @@ export function HeroCommunities() {
               <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
                 The Origin Story
               </p>
-              <h1 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              <h1 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Our Mission Started With a{" "}
                 <span className="text-gray-600 font-light italic">Simple</span>{" "}
                 Question.

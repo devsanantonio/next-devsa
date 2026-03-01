@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { X, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { upcomingDevsaEvent } from "@/data/events"
 
 export function EventsPopup() {
@@ -55,58 +56,37 @@ export function EventsPopup() {
             </button>
 
             {/* Accent gradient */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#ff9900] via-[#fbbf24] to-[#ff9900]" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#306998] via-[#FFD43B] to-[#306998]" />
+            
+            {/* Hero Image */}
+            <div className="bg-white flex items-center justify-center px-6 py-5">
+              <Image
+                src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pytexas2026_day_color.svg"
+                alt="PyTexas 2026"
+                width={280}
+                height={120}
+                className="object-contain w-full h-auto max-h-32"
+              />
+            </div>
             
             {/* Content */}
-            <div className="p-5">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-[#ff9900]/30">
-                  {upcomingDevsaEvent.video ? (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover"
-                    >
-                      <source src={upcomingDevsaEvent.video} type="video/mp4" />
-                    </video>
-                  ) : (
-                    <div className="absolute inset-0 bg-[#ff9900]/10" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#666] mb-1">
-                    Upcoming Event
-                  </p>
-                  <h3 className="text-base font-bold text-white leading-tight">
-                    {upcomingDevsaEvent.title}
-                  </h3>
-                </div>
-              </div>
-
-              <p className="text-sm text-[#999] leading-relaxed mb-4 line-clamp-2">
-                {upcomingDevsaEvent.description}
+            <div className="px-5 pt-4 pb-5">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#FFD43B] mb-1.5">
+                Celebrating 20 Years · Apr 17–19, 2026
               </p>
 
-              <div className="flex items-center justify-between">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-[#666]">
-                  {new Date(upcomingDevsaEvent.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    timeZone: "America/Chicago",
-                  })}
-                </p>
-                <Link
-                  href="/events"
-                  onClick={handleDismiss}
-                  className="inline-flex items-center gap-2 bg-[#fbbf24] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#ff9900] transition-colors"
-                >
-                  View Events
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+              <p className="text-[13px] font-normal text-[#aaa] leading-snug mb-4">
+                The largest gathering of Python developers in Texas. Three days of software development, data science, and community.
+              </p>
+
+              <Link
+                href="https://pretix.eu/pytexas/2026/"
+                onClick={handleDismiss}
+                className="inline-flex items-center gap-2 bg-[#FFD43B] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#306998] hover:text-white transition-colors"
+              >
+                Get Tickets
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </motion.div>

@@ -197,7 +197,7 @@ export function HeroBridge() {
             <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
               Building Together
             </p>
-            <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            <h2 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Find Your People.{" "}
               <span className="text-white/50 font-light italic">Build Your</span>{" "}
               Future.
@@ -205,13 +205,13 @@ export function HeroBridge() {
           </div>
 
           <div className="space-y-6 max-w-2xl">
-            <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+            <p className="text-balance text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
               DEVSA bridges the gap between{" "}
               <strong className="font-semibold text-white">passionate builders</strong>,
               local partners, and the growing tech ecosystem in San&nbsp;Antonio.
             </p>
 
-            <p className="text-base md:text-lg text-white/50 leading-relaxed">
+            <p className="text-balance text-base md:text-lg text-white/50 leading-relaxed">
               Discover{" "}
               <span className="font-medium text-white/70">communities</span>,{" "}
               <span className="font-medium text-white/70">events</span>, and{" "}

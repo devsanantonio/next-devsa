@@ -1,11 +1,11 @@
 "use client"
 import { motion } from "motion/react"
-import { Tv } from "lucide-react"
 import { upcomingDevsaEvent } from "@/data/events"
 import Link from "next/link"
+import Image from "next/image"
 
-// Aztec-inspired geometric pattern for background
-function AztecBackground() {
+// Python-inspired geometric pattern for background
+function PyTexasBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Grid pattern */}
@@ -13,46 +13,16 @@ function AztecBackground() {
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `
-            linear-gradient(#ff9900 1px, transparent 1px),
-            linear-gradient(90deg, #ff9900 1px, transparent 1px)
+            linear-gradient(#306998 1px, transparent 1px),
+            linear-gradient(90deg, #306998 1px, transparent 1px)
           `,
           backgroundSize: '60px 60px',
         }}
       />
       {/* Gradient overlays */}
-      <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-[#ff9900]/5 blur-[150px]" />
-      <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-[#00f2ff]/5 blur-[150px]" />
+      <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-[#306998]/5 blur-[150px]" />
+      <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-[#FFD43B]/5 blur-[150px]" />
     </div>
-  )
-}
-
-// Corner decoration component
-function AztecCorner({ position }: { position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }) {
-  const rotations = {
-    'top-left': 'rotate-0',
-    'top-right': 'rotate-90',
-    'bottom-right': 'rotate-180',
-    'bottom-left': '-rotate-90',
-  }
-  
-  return (
-    <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 ${rotations[position]}`}>
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <path d="M0 0h8v64H0z" fill="#333" />
-        <path d="M0 0h64v8H0z" fill="#333" />
-        <path d="M16 16h4v24h-4z" fill="#ff9900" opacity="0.6" />
-        <path d="M16 16h24v4H16z" fill="#ff9900" opacity="0.6" />
-        <path d="M28 28h2v12h-2z" fill="#00f2ff" opacity="0.4" />
-        <path d="M28 28h12v2H28z" fill="#00f2ff" opacity="0.4" />
-      </svg>
-    </div>
-  )
-}
-
-// Border decoration
-function AztecBorder() {
-  return (
-    <div className="mt-1.5 h-1 w-full bg-linear-to-r from-[#ff9900] via-[#00f2ff] to-[#ff9900] opacity-60" />
   )
 }
 
@@ -60,12 +30,11 @@ export function FeaturedDevsaEvent() {
   if (!upcomingDevsaEvent) {
     return (
       <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
-        <AztecBackground />
-        <AztecBorder />
+        <PyTexasBackground />
         <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
           <div className="mb-8">
             <h2 className="text-3xl font-extrabold tracking-tight text-[#e5e5e5] sm:text-4xl lg:text-5xl leading-[1.1]">
-              Featured <span className="text-[#ff9900]">Event</span>
+              Featured <span className="text-[#306998]">Event</span>
             </h2>
             <p className="mt-4 text-base font-normal leading-7 text-[#737373] sm:text-lg">
               Join us at this upcoming event to connect with the community and DEVSA team.
@@ -80,7 +49,6 @@ export function FeaturedDevsaEvent() {
             </div>
           </div>
         </div>
-        <AztecBorder />
       </section>
     )
   }
@@ -93,15 +61,9 @@ export function FeaturedDevsaEvent() {
     timeZone: "America/Chicago",
   })
 
-  // Split title for styling (first 2 words in accent color)
-  const titleWords = upcomingDevsaEvent.title.split(' ')
-  const titleFirst = titleWords.slice(0, 2).join(' ')
-  const titleRest = titleWords.slice(2).join(' ')
-
   return (
     <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
-      <AztecBackground />
-      <AztecBorder />
+      <PyTexasBackground />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
         <div className="mb-10">
@@ -111,7 +73,7 @@ export function FeaturedDevsaEvent() {
             viewport={{ once: true }}
             className="text-3xl font-extrabold tracking-tight text-[#e5e5e5] sm:text-4xl lg:text-5xl leading-[1.1]"
           >
-            Featured <span className="text-[#ff9900]">Event</span>
+            Featured <span className="text-[#306998]">Event</span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
@@ -136,13 +98,7 @@ export function FeaturedDevsaEvent() {
             rel={upcomingDevsaEvent.url?.startsWith("http") ? "noopener noreferrer" : undefined}
             className="group block"
           >
-            <div className="relative border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 group-hover:border-[#fbbf24]/50">
-              {/* Corner decorations */}
-              <div className="absolute top-0 left-0 z-20"><AztecCorner position="top-left" /></div>
-              <div className="absolute top-0 right-0 z-20"><AztecCorner position="top-right" /></div>
-              <div className="absolute bottom-0 left-0 z-20"><AztecCorner position="bottom-left" /></div>
-              <div className="absolute bottom-0 right-0 z-20"><AztecCorner position="bottom-right" /></div>
-
+            <div className="relative border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 group-hover:border-[#FFD43B]/50">
               <div className="grid lg:grid-cols-2">
                 {/* Visual side */}
                 <div className="relative h-56 sm:h-64 lg:h-auto lg:min-h-80 overflow-hidden">
@@ -158,13 +114,15 @@ export function FeaturedDevsaEvent() {
                     </video>
                   ) : (
                     <>
-                      <div className="absolute inset-0 bg-linear-to-br from-[#ff9900]/20 via-[#0a0a0a] to-[#00f2ff]/20" />
-                      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-[#ff9900]/30 blur-3xl rounded-full animate-pulse" />
-                          <Tv className="relative w-16 h-16 sm:w-20 sm:h-20 text-[#ff9900]/60" />
-                        </div>
+                      <div className="absolute inset-0 bg-white" />
+                      <div className="absolute inset-0 flex items-center justify-center p-8">
+                        <Image
+                          src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pytexas2026_day_color.svg"
+                          alt="PyTexas 2026"
+                          width={400}
+                          height={400}
+                          className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 object-contain transition-transform duration-700 group-hover:scale-105"
+                        />
                       </div>
                     </>
                   )}
@@ -174,16 +132,16 @@ export function FeaturedDevsaEvent() {
                   
                   {/* Status badge */}
                   <div className="absolute top-4 left-4 z-10">
-                    <span className="inline-flex items-center gap-2 bg-[#fbbf24] text-[#0a0a0a] font-semibold text-[10px] uppercase tracking-wider px-3 py-1.5">
-                      <span className="w-1.5 h-1.5 bg-[#0a0a0a] rounded-full animate-pulse" />
-                      Registration Open
+                    <span className="inline-flex items-center gap-2 bg-[#FFD43B] text-[#0a0a0a] font-semibold text-[10px] uppercase tracking-wider px-3 py-1.5">
+                      <span className="w-1.5 h-1.5 bg-[#306998] rounded-full animate-pulse" />
+                      Celebrating 20 Years
                     </span>
                   </div>
                 </div>
 
                 {/* Content side */}
                 <div className="relative p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
-                  <div className="absolute inset-0 bg-linear-to-br from-[#fbbf24]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-br from-[#FFD43B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   
                   <div className="relative">
                     <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#666] mb-3">
@@ -191,24 +149,24 @@ export function FeaturedDevsaEvent() {
                     </p>
                     
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white uppercase tracking-tight leading-none mb-1">
-                      <span className="text-[#fbbf24]">{titleFirst}</span>
-                      {titleRest && <span className="block">{titleRest}</span>}
+                      <span className="text-[#FFD43B]">PyTexas Conference</span>
+                      <span className="block">2026</span>
                     </h2>
                     
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#444] mb-4">
-                      AI Conference powered by DEVSA
+                      Celebrating 20 Years of Python in Texas
                     </p>
                     
                     <p className="text-[#999] text-sm leading-relaxed mb-3">
                       {upcomingDevsaEvent.description}
                     </p>
                     
-                    <p className="text-[#ff9900] text-xs font-medium italic leading-relaxed mb-6">
-                      Where local builders shape the future of AI in San Antonio
+                    <p className="text-[#306998] text-xs font-medium italic leading-relaxed mb-6">
+                      The largest gathering of Python developers in the state of Texas
                     </p>
 
                     <div className="flex items-center">
-                      <span className="inline-flex items-center gap-2 bg-[#fbbf24] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all group-hover:bg-[#ff9900]">
+                      <span className="inline-flex items-center gap-2 bg-[#FFD43B] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all group-hover:bg-[#306998] group-hover:text-white">
                         View Event
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M5 12h14M12 5l7 7-7 7" />
@@ -222,7 +180,6 @@ export function FeaturedDevsaEvent() {
           </Link>
         </motion.div>
       </div>
-      <AztecBorder />
     </section>
   )
 }

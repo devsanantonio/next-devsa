@@ -375,7 +375,7 @@ export function CommunityEventsSection() {
               </motion.button>
             </div>
 
-            <h2 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            <h2 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Find Your Next Event.{" "}
               <span className="text-gray-600 font-light italic">Build Your</span>{" "}
               Network.
@@ -383,7 +383,7 @@ export function CommunityEventsSection() {
           </div>
 
           <div className="space-y-6 max-w-3xl mt-8">
-            <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
+            <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
               One calendar for every community. Stop hunting for links — DEVSA brings San Antonio&apos;s tech groups together in{" "}
               <strong className="font-semibold text-gray-900">one place</strong>.
             </p>
