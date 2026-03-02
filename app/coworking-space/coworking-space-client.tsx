@@ -53,11 +53,11 @@ export function CoworkingSpaceClient() {
       instagram: "https://www.instagram.com/greatergamingsociety/",
     },
     {
-      name: "Ruben Garcia",
-      role: "Inspire Media Productions",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-ruben.JPG",
-      linkedin: "https://www.linkedin.com/in/ruben-garcia-1a5086251/",
-      instagram: "https://www.instagram.com/inspiremediapro/",
+      name: "Zaquariah Holland",
+      role: "ACM-SA",
+      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/admin-holland.png",
+      linkedin: "https://www.linkedin.com/in/zaquariah-holland/",
+      instagram: "https://www.instagram.com/acmsanantonio/",
     },
     {
       name: "Jesse Hernandez",

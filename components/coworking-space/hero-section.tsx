@@ -86,7 +86,7 @@ export function HeroSection() {
                     <span className="font-medium text-gray-700">Greater Gaming Society</span>,{" "}
                     <span className="font-medium text-gray-700">Alamo Python</span>,{" "}
                     <span className="font-medium text-gray-700">Dungo Digital</span>,{" "}
-                    <span className="font-medium text-gray-700">Inspire Media Productions</span>{" "}
+                    <span className="font-medium text-gray-700">ACM San Antonio</span>{" "}
                     and more!
                   </p>
                 </div>    

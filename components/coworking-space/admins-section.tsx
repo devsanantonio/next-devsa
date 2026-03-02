@@ -60,14 +60,14 @@ export function AdminsSection({ admins }: AdminsSectionProps) {
               transition={{ duration: 0.6, delay: index * 0.08 }}
               className="group bg-white rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              <div className="relative overflow-hidden aspect-[3/4] lg:aspect-[4/5]">
+              <div className="relative overflow-hidden aspect-3/4 lg:aspect-4/5">
                 <Image 
                   src={admin.image || "/placeholder.svg"} 
                   alt={admin.name} 
                   fill 
                   className="w-full h-full object-cover grayscale contrast-110 brightness-105 saturate-75 group-hover:contrast-100 group-hover:brightness-100 group-hover:saturate-100 transition-all duration-700 ease-out" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30 opacity-80 group-hover:opacity-40 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/30 opacity-80 group-hover:opacity-40 transition-opacity duration-300" />
                 
                 {/* Social Links Overlay */}
                 <div className="absolute bottom-3 left-3 right-3 lg:opacity-0 lg:translate-y-4 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 transition-all duration-300">
