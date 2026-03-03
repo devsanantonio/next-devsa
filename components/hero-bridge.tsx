@@ -224,14 +224,14 @@ export function HeroBridge() {
           <div className="flex flex-col sm:flex-row items-start gap-3">
             <Link
               href="/coworking-space"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
+              className="group w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
             >
               Coworking Space
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/events"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/10 bg-white/5 text-white font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/20"
+              className="group w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/10 bg-white/5 text-white font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/20"
             >
               Events Calendar
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
