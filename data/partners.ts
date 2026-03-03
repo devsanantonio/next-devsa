@@ -12,10 +12,10 @@ export const partners: Partner[] = [
   {
     id: "tech-bloc",
     name: "Tech Bloc",
-    logo: "https://ampd-asset.s3.us-east-2.amazonaws.com/techday/10Years_Red.svg",
+    logo: "https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/techday/10Years_Red.svg",
     description: "Building San Antonio's technology and innovation ecosystem.",
     website: "https://www.sanantoniotechday.com/",
-    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/techday/techbloc-anniversary.mov", // Replace with actual video URL
+    video: "https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/techday/techbloc-anniversary.mov", // Replace with actual video URL
     isEasterEgg: true,
   },
   {
@@ -75,7 +75,7 @@ export const partners: Partner[] = [
     description:
       "Master Prompt Engineering, Automation, and AI Strategy With Our Hands-On, Outcome-Driven Programs",
     website: "https://www.learn2ai.co/",
-    video: "https://ampd-asset.s3.us-east-2.amazonaws.com/Learn2AI+-+081825+G.mp4", // Replace with actual video URL
+    video: "https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/Learn2AI%20-%20081825%20G.mp4", // Replace with actual video URL
     isEasterEgg: true,
   },
 /*   {
