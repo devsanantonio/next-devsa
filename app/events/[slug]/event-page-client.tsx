@@ -246,7 +246,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 return {
                   id,
                   name: event.communityName,
-                  logo: event.communityLogo || '',
+                  logo: event.communityLogo || '/devsa-gradient.svg',
                   description: '',
                 } as TechCommunity
               }
@@ -420,7 +420,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     {allEventCommunities.map((c) => (
                       <div key={c.id} className="relative h-14 w-14 shrink-0 rounded-xl bg-slate-900 p-2 shadow-sm ring-2 ring-white">
                         <Image
-                          src={c.logo}
+                          src={c.logo || '/devsa-gradient.svg'}
                           alt={c.name}
                           fill
                           className="object-contain p-1"
@@ -441,12 +441,12 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 </>
               ) : (
                 <>
-                  <div className="relative h-16 w-16 shrink-0 rounded-xl bg-slate-900 p-2.5 shadow-sm">
+                  <div className={`relative h-16 w-16 shrink-0 rounded-xl shadow-sm overflow-hidden ${community.description ? 'bg-slate-900 p-2.5' : ''}`}>
                     <Image
-                      src={community.logo}
+                      src={community.logo || '/devsa-gradient.svg'}
                       alt={community.name}
                       fill
-                      className="object-contain p-1.5"
+                      className={community.description ? 'object-contain p-1.5' : 'object-cover'}
                       sizes="64px"
                     />
                   </div>
@@ -739,21 +739,29 @@ export function EventPageClient({ slug }: EventPageClientProps) {
         {/* Community info - show all communities for collaborative events */}
         {allEventCommunities.length > 0 && (
           <div className="space-y-6 mt-8">
-            {allEventCommunities.map((comm) => (
+            {allEventCommunities.map((comm) => {
+              const isCustomEvent = !comm.description
+              return (
           <div key={comm.id} className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
             <div className="flex items-center gap-4 mb-5">
-              <div className="relative h-12 w-12 shrink-0 rounded-lg bg-slate-900 p-2 shadow-sm">
+              <div className={`relative h-12 w-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${isCustomEvent ? '' : 'bg-slate-900 p-2'}`}>
                 <Image
-                  src={comm.logo}
+                  src={comm.logo || '/devsa-gradient.svg'}
                   alt={comm.name}
                   fill
-                  className="object-contain p-1"
+                  className={isCustomEvent ? 'object-cover' : 'object-contain p-1'}
                   sizes="48px"
                 />
               </div>
-              <h3 className="text-lg font-bold tracking-tight text-slate-900">About {comm.name}</h3>
+              <h3 className="text-lg font-bold tracking-tight text-slate-900">{isCustomEvent ? (<>Find Your People.<br />Build Your Future.</>) : `About ${comm.name}`}</h3>
             </div>
-            <p className="text-[15px] text-slate-600 leading-relaxed mb-6">{comm.description}</p>
+            {isCustomEvent ? (
+              <div className="mb-6">
+                <p className="text-base font-medium text-slate-600 leading-[1.8]">DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.</p>
+              </div>
+            ) : (
+              <p className="text-[15px] text-slate-600 leading-relaxed mb-6">{comm.description}</p>
+            )}
             
             {/* Community Links */}
             <div className="flex flex-wrap gap-2">
@@ -891,7 +899,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               </a>
             </div>
           </div>
-            ))}
+              )
+            })}
           </div>
         )}
         </div>
