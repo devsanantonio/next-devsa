@@ -16,19 +16,13 @@ import {
   MapPin,
   ExternalLink,
   FileText,
-  Shield,
-  UserCircle,
-  LogOut,
-  ChevronDown,
-  Settings,
   ArrowLeft,
   Pencil,
   MessageSquare,
-  Bell,
-  PenSquare,
-  Bookmark,
-  LayoutDashboard,
+  ChevronDown,
+  UserCircle,
 } from "lucide-react"
+import { UserDropdown } from "@/components/jobs/user-dropdown"
 
 interface JobListing {
   id: string
@@ -48,6 +42,9 @@ interface Application {
   jobId: string
   jobTitle: string
   companyName: string
+  applicantName?: string
+  applicantEmail?: string
+  applicantUid?: string
   status: string
   coverNote?: string
   createdAt: string
@@ -92,7 +89,9 @@ export default function DashboardPage() {
   const [allJobs, setAllJobs] = useState<JobListing[]>([])
   const [allApplications, setAllApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [expandedJob, setExpandedJob] = useState<string | null>(null)
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [expandedCoverNote, setExpandedCoverNote] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -141,12 +140,19 @@ export default function DashboardPage() {
         const allAppsData = await allAppsRes.json()
         setAllApplications(allAppsData.applications || [])
       } else if (verifyData.profile.role === "hiring") {
-        // Load my posted jobs
-        const jobsRes = await fetch(`/api/jobs?authorUid=${verifyData.profile.uid}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        // Load my posted jobs and all applications for my jobs
+        const [jobsRes, appsRes] = await Promise.all([
+          fetch(`/api/jobs?authorUid=${verifyData.profile.uid}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("/api/jobs/applications", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ])
         const jobsData = await jobsRes.json()
+        const appsData = await appsRes.json()
         setMyJobs(jobsData.listings || [])
+        setMyApplications(appsData.applications || [])
       } else {
         // Load my applications
         const appsRes = await fetch("/api/jobs/applications", {
@@ -172,6 +178,38 @@ export default function DashboardPage() {
     return d.toLocaleDateString()
   }
 
+  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    setUpdatingStatus(applicationId)
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const res = await fetch("/api/jobs/applications", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ applicationId, status: newStatus }),
+      })
+      if (res.ok) {
+        setMyApplications((prev) =>
+          prev.map((app) =>
+            app.id === applicationId ? { ...app, status: newStatus } : app
+          )
+        )
+        setAllApplications((prev) =>
+          prev.map((app) =>
+            app.id === applicationId ? { ...app, status: newStatus } : app
+          )
+        )
+      }
+    } catch {
+      console.error("Failed to update status")
+    } finally {
+      setUpdatingStatus(null)
+    }
+  }
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-dvh bg-white">
@@ -190,7 +228,7 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-5xl px-5 sm:px-6 py-8 sm:py-12 mt-6">
         {/* Back to Jobs */}
         <Link
-          href="/jobs"
+          href="/jobs#open-positions"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -216,173 +254,8 @@ export default function DashboardPage() {
               </Link>
             )}
 
-            {/* User Profile Dropdown — matches admin page style */}
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden shrink-0">
-                  {profile.profileImage ? (
-                    <img src={profile.profileImage} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <UserCircle className="h-4 w-4 text-white" />
-                  )}
-                </div>
-                <div className="text-left hidden sm:block">
-                  <p className="text-sm font-medium text-slate-900 leading-tight">Hello, {profile.displayName || profile.firstName || "there"}</p>
-                  <p className={`text-xs ${
-                    profile.isSuperAdmin ? "text-purple-600" :
-                    profile.role === "hiring" ? "text-blue-600" : "text-emerald-600"
-                  }`}>
-                    {profile.isSuperAdmin ? "Super Admin" : profile.role === "hiring" ? "Hiring" : "Open to Work"}
-                  </p>
-                </div>
-                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {menuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-                    {/* User Info Header */}
-                    <div className="px-4 py-4 border-b border-slate-100 bg-slate-50/50">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden shrink-0">
-                          {profile.profileImage ? (
-                            <img src={profile.profileImage} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <UserCircle className="h-5 w-5 text-white" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate leading-tight">{profile.displayName || `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "User"}</p>
-                          <p className="text-xs text-slate-400 truncate mt-0.5">{profile.email || user?.email}</p>
-                          <span className={`inline-flex items-center gap-1 mt-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            profile.isSuperAdmin
-                              ? "bg-purple-50 text-purple-700 border border-purple-200"
-                              : profile.role === "hiring"
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          }`}>
-                            {profile.isSuperAdmin ? "Super Admin" : profile.role === "hiring" ? "Hiring" : "Open to Work"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Menu Items */}
-                    <div className="p-2">
-                      <Link
-                        href="/jobs/dashboard/profile"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                      >
-                        <Settings className="h-4 w-4 text-slate-400" />
-                        Edit Profile
-                      </Link>
-                      <Link
-                        href="/jobs"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                      >
-                        <Briefcase className="h-4 w-4 text-slate-400" />
-                        Browse Jobs
-                      </Link>
-                      <Link
-                        href="/jobs/dashboard/messages"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                      >
-                        <MessageSquare className="h-4 w-4 text-slate-400" />
-                        Messages
-                      </Link>
-                      <Link
-                        href="/jobs/dashboard/notifications"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                      >
-                        <Bell className="h-4 w-4 text-slate-400" />
-                        Notifications
-                      </Link>
-                      {profile.isSuperAdmin && (
-                        <Link
-                          href="/jobs/admin"
-                          onClick={() => setMenuOpen(false)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-                        >
-                          <Shield className="h-4 w-4" />
-                          Jobs Admin
-                        </Link>
-                      )}
-                    </div>
-
-                    {/* Role-specific links */}
-                    <div className="p-2 border-t border-slate-100">
-                      <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        {profile.isSuperAdmin ? "Admin Tools" : profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
-                      </p>
-                      {(profile.role === "hiring" || profile.isSuperAdmin) && (
-                        <>
-                          <Link
-                            href="/jobs/post"
-                            onClick={() => setMenuOpen(false)}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
-                          >
-                            <PenSquare className="h-4 w-4" />
-                            Post a Job
-                          </Link>
-                          <Link
-                            href="/jobs/dashboard"
-                            onClick={() => setMenuOpen(false)}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                          >
-                            <Briefcase className="h-4 w-4 text-slate-400" />
-                            My Listings
-                          </Link>
-                        </>
-                      )}
-                      {profile.role === "open-to-work" && (
-                        <>
-                          <Link
-                            href="/jobs/dashboard?tab=applications"
-                            onClick={() => setMenuOpen(false)}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                          >
-                            <FileText className="h-4 w-4 text-slate-400" />
-                            My Applications
-                          </Link>
-                          <Link
-                            href="/jobs"
-                            onClick={() => setMenuOpen(false)}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                          >
-                            <Bookmark className="h-4 w-4 text-slate-400" />
-                            Saved Jobs
-                          </Link>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Sign Out */}
-                    <div className="p-2 border-t border-slate-100">
-                      <button
-                        onClick={async () => {
-                          setMenuOpen(false)
-                          await signOut()
-                          router.push("/jobs")
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+            {/* User Profile Dropdown */}
+            <UserDropdown profile={profile} />
           </div>
         </div>
 
@@ -484,76 +357,252 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Hiring: Job Listings */}
+        {/* Hiring: Stats + Job Listings + Applicants */}
         {profile.role === "hiring" && (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 p-4 sm:p-6">
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Your Job Listings</h2>
-                <p className="text-sm text-slate-500 mt-0.5">{myJobs.length} listing{myJobs.length !== 1 ? "s" : ""}</p>
-            </div>
-            {myJobs.length === 0 ? (
-              <div className="p-8 text-center">
-                <Briefcase className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">No jobs posted yet</h3>
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed">Create your first job listing to start finding talent.</p>
-                <Link
-                  href="/jobs/post"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d93a60]"
-                >
-                  <Plus className="h-4 w-4" />
-                  Post a Job
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-200">
-                {myJobs.map((job) => (
-                  <div key={job.id} className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Link
-                          href={`/jobs/${job.slug}`}
-                          className="text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors"
-                        >
-                          {job.title}
-                        </Link>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[job.status]}`}>
-                          {job.status}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-                        <span>{job.companyName}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {job.locationType}
-                          {job.location ? ` · ${job.location}` : ""}
-                        </span>
-                        <span>{timeAgo(job.createdAt)}</span>
-                      </div>
+          <div className="space-y-6 sm:space-y-8">
+            {/* Stats Overview */}
+            {myJobs.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                      <Briefcase className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1.5 text-sm text-slate-500">
-                        <Users className="h-4 w-4" />
-                        {job.applicantCount} applicant{job.applicantCount !== 1 ? "s" : ""}
-                      </span>
-                      <Link
-                        href={`/jobs/${job.slug}`}
-                        className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline font-medium"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        View
-                      </Link>
-                      <Link
-                        href={`/jobs/edit?id=${job.id}`}
-                        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Edit
-                      </Link>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900">{myJobs.length}</p>
+                      <p className="text-xs text-slate-500">Total Listings</p>
                     </div>
                   </div>
-                ))}
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+                      <Eye className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900">{myJobs.filter(j => j.status === "published").length}</p>
+                      <p className="text-xs text-slate-500">Active</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ef426f]/10">
+                      <Users className="h-5 w-5 text-[#ef426f]" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900">{myApplications.length}</p>
+                      <p className="text-xs text-slate-500">Applicants</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
+                      <Clock className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900">{myApplications.filter(a => a.status === "submitted").length}</p>
+                      <p className="text-xs text-slate-500">Pending Review</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Job Listings with expandable applicants */}
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-200 p-4 sm:p-6">
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Your Job Listings</h2>
+                <p className="text-sm text-slate-500 mt-0.5">{myJobs.length} listing{myJobs.length !== 1 ? "s" : ""}</p>
+              </div>
+              {myJobs.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Briefcase className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">No jobs posted yet</h3>
+                  <p className="text-sm text-slate-500 mb-6 leading-relaxed">Create your first job listing to start finding talent.</p>
+                  <Link
+                    href="/jobs/post"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d93a60]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Post a Job
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-200">
+                  {myJobs.map((job) => {
+                    const jobApps = myApplications.filter((a) => a.jobId === job.id)
+                    const isExpanded = expandedJob === job.id
+                    return (
+                      <div key={job.id}>
+                        <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Link
+                                href={`/jobs/${job.slug}`}
+                                className="text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors"
+                              >
+                                {job.title}
+                              </Link>
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[job.status]}`}>
+                                {job.status}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                              <span>{job.companyName}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {job.locationType}
+                                {job.location ? ` · ${job.location}` : ""}
+                              </span>
+                              <span>{timeAgo(job.createdAt)}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setExpandedJob(isExpanded ? null : job.id)}
+                              className={`inline-flex items-center gap-1.5 text-sm font-medium rounded-lg px-3 py-1.5 transition-colors ${
+                                jobApps.length > 0
+                                  ? "text-[#ef426f] bg-[#ef426f]/5 hover:bg-[#ef426f]/10"
+                                  : "text-slate-400 bg-slate-50"
+                              }`}
+                            >
+                              <Users className="h-4 w-4" />
+                              {jobApps.length} applicant{jobApps.length !== 1 ? "s" : ""}
+                              {jobApps.length > 0 && (
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                              )}
+                            </button>
+                            <Link
+                              href={`/jobs/${job.slug}`}
+                              className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline font-medium"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              View
+                            </Link>
+                            <Link
+                              href={`/jobs/edit?id=${job.id}`}
+                              className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 hover:underline font-medium"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              Edit
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Expanded Applicants */}
+                        {isExpanded && jobApps.length > 0 && (
+                          <div className="border-t border-slate-100 bg-slate-50/50 px-4 sm:px-6 py-4">
+                            <div className="space-y-3">
+                              {jobApps.map((app) => (
+                                <div
+                                  key={app.id}
+                                  className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm"
+                                >
+                                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                                    {/* Applicant Info */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2.5 mb-1">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 shrink-0">
+                                          <UserCircle className="h-5 w-5 text-slate-400" />
+                                        </div>
+                                        <div>
+                                          <p className="text-sm font-semibold text-slate-900">{app.applicantName || "Applicant"}</p>
+                                          {app.applicantEmail && (
+                                            <p className="text-xs text-slate-500">{app.applicantEmail}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <p className="text-xs text-slate-400 mt-2">Applied {timeAgo(app.createdAt)}</p>
+
+                                      {/* Cover Note */}
+                                      {app.coverNote && (
+                                        <div className="mt-3">
+                                          <button
+                                            onClick={() => setExpandedCoverNote(expandedCoverNote === app.id ? null : app.id)}
+                                            className="text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center gap-1 transition-colors"
+                                          >
+                                            <FileText className="h-3 w-3" />
+                                            Cover Note
+                                            <ChevronDown className={`h-3 w-3 transition-transform ${expandedCoverNote === app.id ? "rotate-180" : ""}`} />
+                                          </button>
+                                          {expandedCoverNote === app.id && (
+                                            <div className="mt-2 rounded-lg bg-slate-50 border border-slate-100 p-3">
+                                              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{app.coverNote}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Status + Actions */}
+                                    <div className="flex flex-col items-end gap-2.5 shrink-0">
+                                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${statusColors[app.status]}`}>
+                                        {statusIcons[app.status]}
+                                        {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                                      </span>
+                                      <div className="flex items-center gap-1.5">
+                                        {app.status === "submitted" && (
+                                          <button
+                                            onClick={() => updateApplicationStatus(app.id, "viewed")}
+                                            disabled={updatingStatus === app.id}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                          >
+                                            <Eye className="h-3 w-3" />
+                                            Mark Viewed
+                                          </button>
+                                        )}
+                                        {(app.status === "submitted" || app.status === "viewed") && (
+                                          <button
+                                            onClick={() => updateApplicationStatus(app.id, "shortlisted")}
+                                            disabled={updatingStatus === app.id}
+                                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                                          >
+                                            <CheckCircle className="h-3 w-3" />
+                                            Shortlist
+                                          </button>
+                                        )}
+                                        {app.status !== "rejected" && (
+                                          <button
+                                            onClick={() => updateApplicationStatus(app.id, "rejected")}
+                                            disabled={updatingStatus === app.id}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors disabled:opacity-50"
+                                          >
+                                            <XCircle className="h-3 w-3" />
+                                            Reject
+                                          </button>
+                                        )}
+                                      </div>
+                                      {/* Message applicant */}
+                                      {app.applicantUid && (
+                                        <Link
+                                          href={`/jobs/dashboard/messages?startWith=${app.applicantUid}&jobId=${app.jobId}`}
+                                          className="inline-flex items-center gap-1 text-xs font-medium text-[#ef426f] hover:underline"
+                                        >
+                                          <MessageSquare className="h-3 w-3" />
+                                          Message
+                                        </Link>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {isExpanded && jobApps.length === 0 && (
+                          <div className="border-t border-slate-100 bg-slate-50/50 px-4 sm:px-6 py-6 text-center">
+                            <p className="text-sm text-slate-400">No applications received yet for this listing.</p>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

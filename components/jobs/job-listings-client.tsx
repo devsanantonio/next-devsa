@@ -1,19 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { JobCard } from "@/components/jobs/job-card"
 import { JobFilters } from "@/components/jobs/job-filters"
+import { UserDropdown } from "@/components/jobs/user-dropdown"
 import {
   Briefcase,
-  User,
-  ChevronDown,
-  LayoutDashboard,
-  MessageSquare,
-  Bell,
-  PenSquare,
-  FileText,
-  Bookmark,
-  LogOut,
+  Plus,
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
@@ -52,11 +45,11 @@ export function JobListingsClient({
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedType, setSelectedType] = useState("all")
   const [selectedLocation, setSelectedLocation] = useState("all")
+  const [selectedDatePosted, setSelectedDatePosted] = useState("all")
+  const [sortBy, setSortBy] = useState("newest")
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set())
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set())
   const [profile, setProfile] = useState<JobBoardProfile | null>(null)
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (user) {
@@ -66,17 +59,6 @@ export function JobListingsClient({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowUserMenu(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [])
 
   const loadProfile = async () => {
     try {
@@ -99,7 +81,6 @@ export function JobListingsClient({
   const handleSignOut = async () => {
     await signOut()
     setProfile(null)
-    setShowUserMenu(false)
   }
 
   const fetchSavedJobs = async () => {
@@ -158,20 +139,35 @@ export function JobListingsClient({
     }
   }
 
-  // Client-side filtering
-  const filteredListings = listings.filter((listing) => {
-    if (selectedType !== "all" && listing.type !== selectedType) return false
-    if (selectedLocation !== "all" && listing.locationType !== selectedLocation) return false
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return (
-        listing.title.toLowerCase().includes(q) ||
-        listing.companyName.toLowerCase().includes(q) ||
-        listing.tags.some((t) => t.toLowerCase().includes(q))
-      )
-    }
-    return true
-  })
+  // Client-side filtering & sorting
+  const filteredListings = listings
+    .filter((listing) => {
+      if (selectedType !== "all" && listing.type !== selectedType) return false
+      if (selectedLocation !== "all" && listing.locationType !== selectedLocation) return false
+      if (selectedDatePosted !== "all") {
+        const daysAgo = parseInt(selectedDatePosted)
+        const cutoff = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+        if (new Date(listing.createdAt) < cutoff) return false
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        return (
+          listing.title.toLowerCase().includes(q) ||
+          listing.companyName.toLowerCase().includes(q) ||
+          listing.tags.some((t) => t.toLowerCase().includes(q))
+        )
+      }
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      if (sortBy === "applicants") return b.applicantCount - a.applicantCount
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(tag)
+  }
 
   return (
     <section id="open-positions" className="w-full bg-slate-50 border-t border-slate-200 px-5 sm:px-6 py-12 sm:py-20 scroll-mt-4">
@@ -186,131 +182,18 @@ export function JobListingsClient({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Persistent Post a Job CTA for hiring managers */}
+            {profile?.role === "hiring" && (
+              <Link
+                href="/jobs/post"
+                className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors shadow-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Post a Job
+              </Link>
+            )}
             {user && profile ? (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50 transition-colors shadow-sm"
-                >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ef426f] overflow-hidden">
-                    {profile.profileImage ? (
-                      <img src={profile.profileImage} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <User className="h-3.5 w-3.5 text-white" />
-                    )}
-                  </div>
-                  <span className="hidden sm:block font-medium text-gray-900">
-                    {profile.firstName}
-                  </span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
-                </button>
-
-                {showUserMenu && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                    <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden">
-                      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                        <p className="text-sm font-semibold text-gray-900">{profile.firstName} {profile.lastName}</p>
-                        <span className={`inline-flex items-center mt-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          profile.role === "hiring"
-                            ? "bg-purple-100 text-purple-700"
-                            : "bg-green-100 text-green-700"
-                        }`}>
-                          {profile.role === "hiring" ? "Hiring" : "Open to Work"}
-                        </span>
-                      </div>
-                      <div className="p-1.5">
-                        <Link
-                          href="/jobs/dashboard"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <LayoutDashboard className="h-4 w-4 text-gray-400" />
-                          Dashboard
-                        </Link>
-                        <Link
-                          href="/jobs/dashboard/profile"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <User className="h-4 w-4 text-gray-400" />
-                          Edit Profile
-                        </Link>
-                        <Link
-                          href="/jobs/dashboard/messages"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <MessageSquare className="h-4 w-4 text-gray-400" />
-                          Messages
-                        </Link>
-                        <Link
-                          href="/jobs/dashboard/notifications"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <Bell className="h-4 w-4 text-gray-400" />
-                          Notifications
-                        </Link>
-                      </div>
-                      <div className="p-1.5 border-t border-gray-100">
-                        <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-                          {profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
-                        </p>
-                        {profile.role === "hiring" && (
-                          <>
-                            <Link
-                              href="/jobs/post"
-                              onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-sm text-[#ef426f] font-medium hover:bg-pink-50 rounded-lg transition-colors"
-                            >
-                              <PenSquare className="h-4 w-4" />
-                              Post a Job
-                            </Link>
-                            <Link
-                              href="/jobs/dashboard"
-                              onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              <Briefcase className="h-4 w-4 text-gray-400" />
-                              My Listings
-                            </Link>
-                          </>
-                        )}
-                        {profile.role === "open-to-work" && (
-                          <>
-                            <Link
-                              href="/jobs/dashboard?tab=applications"
-                              onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              <FileText className="h-4 w-4 text-gray-400" />
-                              My Applications
-                            </Link>
-                            <Link
-                              href="/jobs"
-                              onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              <Bookmark className="h-4 w-4 text-gray-400" />
-                              Saved Jobs
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                      <div className="p-1.5 border-t border-gray-100">
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Sign out
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <UserDropdown profile={profile} />
             ) : (
               <Link
                 href="/jobs/signin"
@@ -331,6 +214,11 @@ export function JobListingsClient({
             onTypeChange={setSelectedType}
             selectedLocation={selectedLocation}
             onLocationChange={setSelectedLocation}
+            selectedDatePosted={selectedDatePosted}
+            onDatePostedChange={setSelectedDatePosted}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            resultCount={filteredListings.length}
           />
         </div>
 
@@ -339,21 +227,18 @@ export function JobListingsClient({
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Briefcase className="h-12 w-12 text-gray-300 mb-5" />
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 leading-[1.3]">
-              {searchQuery || selectedType !== "all" || selectedLocation !== "all"
+              {searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
                 ? "No jobs match your filters"
                 : "No jobs posted yet"}
             </h3>
             <p className="text-gray-500 text-sm leading-[1.6] max-w-md font-normal">
-              {searchQuery || selectedType !== "all" || selectedLocation !== "all"
+              {searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
                 ? "Try adjusting your search criteria or clearing filters."
                 : "Be the first to post a job opportunity for the San Antonio tech community."}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-gray-500 font-medium leading-normal">
-              {filteredListings.length} job{filteredListings.length !== 1 ? "s" : ""} found
-            </p>
             {filteredListings.map((listing) => (
               <JobCard
                 key={listing.id}
@@ -361,6 +246,7 @@ export function JobListingsClient({
                 isSaved={savedJobIds.has(listing.id)}
                 hasApplied={appliedJobIds.has(listing.id)}
                 onToggleSave={user ? handleToggleSave : undefined}
+                onTagClick={handleTagClick}
               />
             ))}
           </div>

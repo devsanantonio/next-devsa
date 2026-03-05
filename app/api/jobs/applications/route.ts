@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type JobApplication, type Notification } from '@/lib/firebase-admin';
 import { verifyJobBoardUser } from '@/lib/auth-middleware';
+import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { NewApplicationEmail } from '@/lib/emails/new-application';
+import { ApplicationStatusEmail } from '@/lib/emails/application-status';
 
 // GET - Get applications (for job author: all apps on their job, for applicant: their own apps)
 export async function GET(request: NextRequest) {
@@ -19,7 +22,7 @@ export async function GET(request: NextRequest) {
         .orderBy('createdAt', 'desc')
         .get();
     } else if (jobId && (result.profile?.role === 'hiring' || result.isSuperAdmin)) {
-      // Hiring manager viewing applicants for their job (or super admin)
+      // Hiring manager viewing applicants for a specific job (or super admin)
       const jobDoc = await db.collection(COLLECTIONS.JOB_LISTINGS).doc(jobId).get();
       if (!jobDoc.exists || (jobDoc.data()?.authorUid !== result.uid && !result.isSuperAdmin)) {
         return NextResponse.json(
@@ -30,6 +33,28 @@ export async function GET(request: NextRequest) {
       snapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
         .where('jobId', '==', jobId)
         .get();
+    } else if (!jobId && result.profile?.role === 'hiring') {
+      // Hiring manager viewing ALL applications across their jobs
+      const myJobs = await db.collection(COLLECTIONS.JOB_LISTINGS)
+        .where('authorUid', '==', result.uid)
+        .get();
+      const myJobIds = myJobs.docs.map(doc => doc.id);
+      if (myJobIds.length === 0) {
+        return NextResponse.json({ applications: [] });
+      }
+      // Firestore 'in' queries support max 30 values
+      const chunks: string[][] = [];
+      for (let i = 0; i < myJobIds.length; i += 30) {
+        chunks.push(myJobIds.slice(i, i + 30));
+      }
+      const allDocs: FirebaseFirestore.QueryDocumentSnapshot[] = [];
+      for (const chunk of chunks) {
+        const chunkSnapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
+          .where('jobId', 'in', chunk)
+          .get();
+        allDocs.push(...chunkSnapshot.docs);
+      }
+      snapshot = { docs: allDocs } as unknown as FirebaseFirestore.QuerySnapshot;
     } else {
       // Open-to-work user viewing their own applications
       snapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
@@ -144,6 +169,34 @@ export async function POST(request: NextRequest) {
     };
     await db.collection(COLLECTIONS.NOTIFICATIONS).add(notification);
 
+    // Send email notification to the hiring manager
+    if (isResendConfigured() && resend) {
+      try {
+        const hiringManagerDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(jobData.authorUid).get();
+        const hiringManager = hiringManagerDoc.data();
+        if (hiringManager?.email) {
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+          await resend.emails.send({
+            from: EMAIL_FROM,
+            to: hiringManager.email,
+            subject: `New applicant for "${jobData.title}" — DEVSA Job Board`,
+            html: NewApplicationEmail({
+              hiringManagerName: hiringManager.displayName || `${hiringManager.firstName || ''} ${hiringManager.lastName || ''}`.trim(),
+              applicantName: application.applicantName,
+              applicantEmail: application.applicantEmail,
+              jobTitle: jobData.title,
+              companyName: jobData.companyName || '',
+              coverNote: coverNote || undefined,
+              dashboardUrl: `${siteUrl}/jobs/dashboard`,
+            }),
+          });
+        }
+      } catch (emailError) {
+        // Don't fail the application if email fails
+        console.error('Failed to send application notification email:', emailError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Application submitted successfully',
@@ -217,6 +270,37 @@ export async function PUT(request: NextRequest) {
       createdAt: new Date(),
     };
     await db.collection(COLLECTIONS.NOTIFICATIONS).add(notification);
+
+    // Send email notification for shortlisted / rejected
+    if ((status === 'shortlisted' || status === 'rejected') && isResendConfigured()) {
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+        const applicantDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(appData.applicantUid).get();
+        const applicantEmail = applicantDoc.exists ? applicantDoc.data()?.email : null;
+        const jobData = jobDoc.data();
+
+        if (applicantEmail) {
+          const subject = status === 'shortlisted'
+            ? `You've been shortlisted for ${appData.jobTitle}`
+            : `Update on your application for ${appData.jobTitle}`;
+
+          await resend.emails.send({
+            from: EMAIL_FROM,
+            to: applicantEmail,
+            subject,
+            html: ApplicationStatusEmail({
+              applicantName: applicantDoc.data()?.firstName || '',
+              jobTitle: appData.jobTitle || 'a position',
+              companyName: jobData?.companyName || '',
+              status,
+              dashboardUrl: `${siteUrl}/jobs/dashboard`,
+            }),
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send status email:', emailError);
+      }
+    }
 
     return NextResponse.json({
       success: true,

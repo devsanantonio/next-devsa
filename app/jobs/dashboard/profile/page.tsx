@@ -17,6 +17,12 @@ import {
   User,
   ArrowLeft,
   CheckCircle,
+  Building2,
+  MapPin,
+  Calendar,
+  Heart,
+  Code,
+  Users,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -55,6 +61,13 @@ interface Profile {
   bio: string
   companyName: string
   companyLogo: string
+  companyDescription: string
+  companySize: string
+  industry: string
+  companyLocation: string
+  foundedYear: string
+  benefits: string[]
+  techStack: string[]
   workHistory: WorkHistory[]
   education: Education[]
   projectSpotlights: ProjectSpotlight[]
@@ -104,6 +117,13 @@ export default function ProfileEditorPage() {
           bio: data.profile.bio || "",
           companyName: data.profile.companyName || "",
           companyLogo: data.profile.companyLogo || "",
+          companyDescription: data.profile.companyDescription || "",
+          companySize: data.profile.companySize || "",
+          industry: data.profile.industry || "",
+          companyLocation: data.profile.companyLocation || "",
+          foundedYear: data.profile.foundedYear || "",
+          benefits: data.profile.benefits || [],
+          techStack: data.profile.techStack || [],
           profileImage: data.profile.profileImage || "",
           workHistory: data.profile.workHistory || [],
           education: data.profile.education || [],
@@ -280,6 +300,94 @@ export default function ProfileEditorPage() {
         )}
 
         <div className="space-y-6">
+          {/* === Hiring Manager: single compact contact card instead of separate photo + personal sections === */}
+          {profile.role === "hiring" ? (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <User className="h-5 w-5 text-slate-400" />
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Your Contact Details</h2>
+              </div>
+              <p className="text-sm text-slate-500 mb-5">Candidates see this when viewing your job listings.</p>
+              <div className="flex items-center gap-5 mb-5">
+                <div className="relative shrink-0">
+                  <div className="h-16 w-16 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                    {profile.profileImage ? (
+                      <img src={profile.profileImage} alt="Profile" className="h-full w-full object-cover" />
+                    ) : (
+                      <User className="h-7 w-7 text-slate-400" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">First Name</label>
+                      <input
+                        value={profile.firstName}
+                        onChange={(e) => updateField("firstName", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Last Name</label>
+                      <input
+                        value={profile.lastName}
+                        onChange={(e) => updateField("lastName", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <label className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer">
+                  {uploadingField === "profileImage" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" />
+                  )}
+                  Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFileUpload("profileImage", file)
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Display Name</label>
+                  <input
+                    value={profile.displayName}
+                    onChange={(e) => updateField("displayName", e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
+                  <input
+                    value={profile.phone}
+                    onChange={(e) => updateField("phone", e.target.value)}
+                    placeholder="(210) 555-0000"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Bio</label>
+                  <textarea
+                    value={profile.bio}
+                    onChange={(e) => updateField("bio", e.target.value)}
+                    rows={3}
+                    placeholder="Your title / role at the company (e.g. Engineering Manager, Recruiter)..."
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
+                  />
+                </div>
+              </div>
+            </section>
+          ) : (
+            <>
           {/* Profile Image */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
@@ -362,52 +470,241 @@ export default function ProfileEditorPage() {
                   value={profile.bio}
                   onChange={(e) => updateField("bio", e.target.value)}
                   rows={4}
-                  placeholder="Tell hiring managers about yourself..."
+                  placeholder={profile.role === "hiring" ? "Tell candidates about yourself and your role at the company..." : "Tell hiring managers about yourself..."}
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
                 />
               </div>
             </div>
           </section>
+            </>
+          )}
 
           {/* Company Info (Hiring only) */}
           {profile.role === "hiring" && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Briefcase className="h-5 w-5 text-slate-400" />
-                <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Information</h2>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name</label>
-                  <input
-                    value={profile.companyName}
-                    onChange={(e) => updateField("companyName", e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
-                  />
+            <>
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Building2 className="h-5 w-5 text-slate-400" />
+                  <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Information</h2>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Logo</label>
-                  <div className="flex items-center gap-4">
-                    {profile.companyLogo && (
-                      <img src={profile.companyLogo} alt="Logo" className="h-12 w-12 rounded-lg object-contain bg-slate-100 p-1" />
-                    )}
-                    <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer">
-                      {uploadingField === "companyLogo" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      Upload Logo
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name</label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) handleFileUpload("companyLogo", file)
-                        }}
+                        value={profile.companyName}
+                        onChange={(e) => updateField("companyName", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Industry</label>
+                      <select
+                        value={profile.industry}
+                        onChange={(e) => updateField("industry", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                      >
+                        <option value="">Select Industry</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Education">Education</option>
+                        <option value="Government">Government</option>
+                        <option value="Defense & Cybersecurity">Defense & Cybersecurity</option>
+                        <option value="Energy">Energy</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Retail & E-Commerce">Retail & E-Commerce</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Media & Entertainment">Media & Entertainment</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Nonprofit">Nonprofit</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Size</label>
+                      <select
+                        value={profile.companySize}
+                        onChange={(e) => updateField("companySize", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                      >
+                        <option value="">Select Size</option>
+                        <option value="1-10">1-10 employees</option>
+                        <option value="11-50">11-50 employees</option>
+                        <option value="51-200">51-200 employees</option>
+                        <option value="201-500">201-500 employees</option>
+                        <option value="501-1000">501-1,000 employees</option>
+                        <option value="1000+">1,000+ employees</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Founded Year</label>
+                      <input
+                        value={profile.foundedYear}
+                        onChange={(e) => updateField("foundedYear", e.target.value)}
+                        placeholder="e.g. 2018"
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      Headquarters Location
                     </label>
+                    <input
+                      value={profile.companyLocation}
+                      onChange={(e) => updateField("companyLocation", e.target.value)}
+                      placeholder="e.g. San Antonio, TX"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">About the Company</label>
+                    <textarea
+                      value={profile.companyDescription}
+                      onChange={(e) => updateField("companyDescription", e.target.value)}
+                      rows={4}
+                      placeholder="Describe your company's mission, culture, and what makes it a great place to work..."
+                      className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Logo</label>
+                    <div className="flex items-center gap-4">
+                      {profile.companyLogo && (
+                        <img src={profile.companyLogo} alt="Logo" className="h-12 w-12 rounded-lg object-contain bg-slate-100 p-1" />
+                      )}
+                      <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer">
+                        {uploadingField === "companyLogo" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        Upload Logo
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) handleFileUpload("companyLogo", file)
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
+
+              {/* Benefits & Perks */}
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-slate-400" />
+                    <h2 className="text-lg font-bold text-slate-900 leading-tight">Benefits & Perks</h2>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">Select all benefits your company offers. Candidates look for this.</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Health Insurance",
+                    "Dental & Vision",
+                    "401(k) / Retirement",
+                    "Remote Work",
+                    "Hybrid Schedule",
+                    "Flexible Hours",
+                    "Unlimited PTO",
+                    "Paid Parental Leave",
+                    "Stock Options / Equity",
+                    "Professional Development",
+                    "Tuition Reimbursement",
+                    "Relocation Assistance",
+                    "Gym / Wellness",
+                    "Free Meals / Snacks",
+                    "Company Events",
+                    "Home Office Stipend",
+                  ].map((benefit) => {
+                    const isSelected = profile.benefits.includes(benefit)
+                    return (
+                      <button
+                        key={benefit}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setProfile({ ...profile, benefits: profile.benefits.filter((b) => b !== benefit) })
+                          } else {
+                            setProfile({ ...profile, benefits: [...profile.benefits, benefit] })
+                          }
+                        }}
+                        className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
+                          isSelected
+                            ? "bg-[#ef426f]/10 text-[#ef426f] border-[#ef426f]/30"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        {benefit}
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
+
+              {/* Tech Stack */}
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Code className="h-5 w-5 text-slate-400" />
+                    <h2 className="text-lg font-bold text-slate-900 leading-tight">Tech Stack</h2>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">What technologies does your team use? Helps developers find the right fit.</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {profile.techStack.map((tech, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-3 py-1.5 text-sm text-slate-700 font-medium">
+                      {tech}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfile({ ...profile, techStack: profile.techStack.filter((_, idx) => idx !== i) })
+                        }}
+                        className="text-slate-400 hover:text-red-500 ml-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    id="tech-stack-input"
+                    placeholder="e.g. React, Python, AWS..."
+                    className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        const input = e.currentTarget
+                        const val = input.value.trim()
+                        if (val && !profile.techStack.includes(val)) {
+                          setProfile({ ...profile, techStack: [...profile.techStack, val] })
+                          input.value = ""
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById("tech-stack-input") as HTMLInputElement
+                      const val = input?.value.trim()
+                      if (val && !profile.techStack.includes(val)) {
+                        setProfile({ ...profile, techStack: [...profile.techStack, val] })
+                        input.value = ""
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" /> Add
+                  </button>
+                </div>
+              </section>
+            </>
           )}
 
           {/* Social Links */}
@@ -456,6 +753,9 @@ export default function ProfileEditorPage() {
             </div>
           </section>
 
+          {/* === Job Seeker Sections (open-to-work only) === */}
+          {profile.role === "open-to-work" && (
+            <>
           {/* Project Spotlights */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
@@ -642,6 +942,8 @@ export default function ProfileEditorPage() {
               </div>
             )}
           </section>
+            </>
+          )}
 
           {/* Save Button (bottom) */}
           <div className="flex justify-end pt-4 gap-2">

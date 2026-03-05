@@ -23,18 +23,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ unreadCount });
     }
 
-    // Get recent notifications (last 50)
+    // Get recent notifications (no orderBy to avoid composite index requirement)
     const snapshot = await db.collection(COLLECTIONS.NOTIFICATIONS)
       .where('recipientUid', '==', result.uid)
-      .orderBy('createdAt', 'desc')
       .limit(50)
       .get();
 
-    const notifications = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
-    }));
+    const notifications = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
+      }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return NextResponse.json({ notifications, unreadCount });
   } catch (error) {

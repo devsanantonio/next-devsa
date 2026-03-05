@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MapPin, Clock, DollarSign, Building2, Tag, Bookmark, BookmarkCheck } from "lucide-react"
+import { MapPin, Clock, DollarSign, Building2, Tag, Bookmark, BookmarkCheck, Sparkles } from "lucide-react"
 
 interface JobCardProps {
   id: string
@@ -17,6 +17,7 @@ interface JobCardProps {
   isSaved?: boolean
   hasApplied?: boolean
   onToggleSave?: (jobId: string) => void
+  onTagClick?: (tag: string) => void
 }
 
 const typeLabels: Record<string, { label: string; className: string }> = {
@@ -49,8 +50,15 @@ export function JobCard({
   isSaved,
   hasApplied,
   onToggleSave,
+  onTagClick,
 }: JobCardProps) {
   const typeInfo = typeLabels[type] || typeLabels.other
+
+  const isNew = () => {
+    const posted = new Date(createdAt)
+    const diffHours = (Date.now() - posted.getTime()) / (1000 * 60 * 60)
+    return diffHours < 48
+  }
 
   const timeAgo = (date: string) => {
     const now = new Date()
@@ -81,9 +89,17 @@ export function JobCard({
 
         <div className="flex-1 min-w-0">
           {/* Title & Company */}
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-[#ef426f] transition-colors leading-[1.3] truncate">
-            {title}
-          </h3>
+          <div className="flex items-start gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-[#ef426f] transition-colors leading-[1.3] truncate">
+              {title}
+            </h3>
+            {isNew() && (
+              <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700 uppercase tracking-wide">
+                <Sparkles className="h-2.5 w-2.5" />
+                New
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 mt-0.5 leading-normal font-normal">{companyName}</p>
 
           {/* Meta Info */}
@@ -107,13 +123,23 @@ export function JobCard({
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {tags.slice(0, 4).map((tag) => (
-                <span
+                <button
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 font-normal leading-normal"
+                  type="button"
+                  onClick={(e) => {
+                    if (onTagClick) {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onTagClick(tag)
+                    }
+                  }}
+                  className={`inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 font-normal leading-normal ${
+                    onTagClick ? "hover:bg-[#ef426f]/10 hover:text-[#ef426f] cursor-pointer transition-colors" : ""
+                  }`}
                 >
                   <Tag className="h-2.5 w-2.5 text-gray-400" />
                   {tag}
-                </span>
+                </button>
               ))}
               {tags.length > 4 && (
                 <span className="text-xs text-gray-400 font-normal">+{tags.length - 4}</span>

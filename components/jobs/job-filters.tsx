@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, SlidersHorizontal, X } from "lucide-react"
+import { Search, SlidersHorizontal, X, ArrowUpDown } from "lucide-react"
 
 interface JobFiltersProps {
   searchQuery: string
@@ -9,6 +9,11 @@ interface JobFiltersProps {
   onTypeChange: (type: string) => void
   selectedLocation: string
   onLocationChange: (location: string) => void
+  selectedDatePosted: string
+  onDatePostedChange: (value: string) => void
+  sortBy: string
+  onSortChange: (value: string) => void
+  resultCount: number
 }
 
 export function JobFilters({
@@ -18,13 +23,19 @@ export function JobFilters({
   onTypeChange,
   selectedLocation,
   onLocationChange,
+  selectedDatePosted,
+  onDatePostedChange,
+  sortBy,
+  onSortChange,
+  resultCount,
 }: JobFiltersProps) {
-  const hasFilters = searchQuery || selectedType !== "all" || selectedLocation !== "all"
+  const hasFilters = searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
 
   const clearFilters = () => {
     onSearchChange("")
     onTypeChange("all")
     onLocationChange("all")
+    onDatePostedChange("all")
   }
 
   return (
@@ -36,7 +47,7 @@ export function JobFilters({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search by title, company, or keyword..."
+          placeholder="Search by title, company, tag, or keyword..."
           className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 leading-normal font-normal"
         />
       </div>
@@ -74,6 +85,20 @@ export function JobFilters({
           <option value="hybrid">Hybrid</option>
         </select>
 
+        {/* Date Posted Filter */}
+        <select
+          value={selectedDatePosted}
+          onChange={(e) => onDatePostedChange(e.target.value)}
+          className="flex-1 sm:flex-none rounded-lg border border-gray-200 bg-white px-3 py-2 sm:py-1.5 text-sm sm:text-[13px] text-gray-700 focus:border-gray-400 focus:outline-none leading-normal font-normal min-w-0"
+        >
+          <option value="all">Any Time</option>
+          <option value="1">Last 24 hours</option>
+          <option value="3">Last 3 days</option>
+          <option value="7">Last 7 days</option>
+          <option value="14">Last 14 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+
         {hasFilters && (
           <button
             onClick={clearFilters}
@@ -83,6 +108,25 @@ export function JobFilters({
             Clear
           </button>
         )}
+      </div>
+
+      {/* Results bar with count + sort */}
+      <div className="flex items-center justify-between pt-1">
+        <p className="text-sm text-gray-500 font-medium leading-normal">
+          {resultCount} job{resultCount !== 1 ? "s" : ""} found
+        </p>
+        <div className="flex items-center gap-1.5">
+          <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
+          <select
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="rounded-lg border-0 bg-transparent py-0 pr-6 pl-0 text-[13px] text-gray-600 font-medium focus:outline-none focus:ring-0 cursor-pointer"
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="applicants">Most applicants</option>
+          </select>
+        </div>
       </div>
     </div>
   )

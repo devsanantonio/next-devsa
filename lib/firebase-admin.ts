@@ -289,6 +289,13 @@ export interface JobBoardUser {
   projectSpotlights: ProjectSpotlight[];
   companyName?: string; // for hiring role
   companyLogo?: string; // for hiring role
+  companyDescription?: string; // for hiring role
+  companySize?: string; // for hiring role
+  industry?: string; // for hiring role
+  companyLocation?: string; // for hiring role
+  foundedYear?: string; // for hiring role
+  benefits?: string[]; // for hiring role
+  techStack?: string[]; // for hiring role
   isActive: boolean;
   createdAt: Date;
   updatedAt?: Date;

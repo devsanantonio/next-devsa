@@ -144,6 +144,13 @@ export async function PUT(request: NextRequest) {
       projectSpotlights,
       companyName,
       companyLogo,
+      companyDescription,
+      companySize,
+      industry,
+      companyLocation,
+      foundedYear,
+      benefits,
+      techStack,
     } = body;
 
     // Accept social links as top-level OR nested under socialLinks
@@ -170,6 +177,13 @@ export async function PUT(request: NextRequest) {
     if (projectSpotlights !== undefined) updateData.projectSpotlights = projectSpotlights;
     if (companyName !== undefined) updateData.companyName = companyName;
     if (companyLogo !== undefined) updateData.companyLogo = companyLogo;
+    if (companyDescription !== undefined) updateData.companyDescription = companyDescription;
+    if (companySize !== undefined) updateData.companySize = companySize;
+    if (industry !== undefined) updateData.industry = industry;
+    if (companyLocation !== undefined) updateData.companyLocation = companyLocation;
+    if (foundedYear !== undefined) updateData.foundedYear = foundedYear;
+    if (benefits !== undefined) updateData.benefits = benefits;
+    if (techStack !== undefined) updateData.techStack = techStack;
 
     await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(result.uid).update(updateData);
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 import { CommentSection } from "@/components/jobs/comment-section"
@@ -19,6 +19,14 @@ import {
   User,
   Bookmark,
   BookmarkCheck,
+  Share2,
+  Link2,
+  Check,
+  Pencil,
+  XCircle,
+  BarChart3,
+  CalendarClock,
+  Users,
 } from "lucide-react"
 
 interface JobDetail {
@@ -79,6 +87,10 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
   const [hasApplied, setHasApplied] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [userProfile, setUserProfile] = useState<{ uid: string; role: string } | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showStickyApply, setShowStickyApply] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadComments()
@@ -89,9 +101,21 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     if (user) {
       loadUserProfile()
       checkSavedStatus()
+      checkAppliedStatus()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  // Sticky apply bar: show when the header CTA scrolls out of view
+  useEffect(() => {
+    if (!headerRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyApply(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(headerRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   const loadComments = async () => {
     try {
@@ -134,6 +158,28 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     } catch {
       // silently fail
     }
+  }
+
+  const checkAppliedStatus = async () => {
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const res = await fetch(`/api/jobs/applications?jobId=${job.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.applications?.length > 0) {
+        setHasApplied(true)
+      }
+    } catch {
+      // silently fail
+    }
+  }
+
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   const handleToggleSave = async () => {
@@ -223,7 +269,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
       <main className="mx-auto max-w-4xl px-5 sm:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
-          href="/jobs"
+          href="/jobs#open-positions"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -232,6 +278,14 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
 
         {/* Job Header */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 mb-5 shadow-sm">
+          {/* Status banner for closed/expired listings */}
+          {(job.status === "closed" || (job.expiresAt && new Date(job.expiresAt) < new Date())) && (
+            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 mb-5 text-sm font-medium text-amber-700">
+              <XCircle className="h-4 w-4 shrink-0" />
+              {job.status === "closed" ? "This listing has been closed by the employer." : "This listing has expired."}
+            </div>
+          )}
+
           <div className="flex items-start gap-4 mb-5 sm:mb-6">
             <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-xl bg-slate-100 overflow-hidden">
               {job.companyLogo ? (
@@ -244,20 +298,63 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 leading-snug">{job.title}</h1>
               <p className="text-base sm:text-lg text-slate-500 mt-1 leading-relaxed">{job.companyName}</p>
             </div>
-            {/* Bookmark button */}
-            {user && (
-              <button
-                onClick={handleToggleSave}
-                className="shrink-0 p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                title={isSaved ? "Unsave job" : "Save job"}
-              >
-                {isSaved ? (
-                  <BookmarkCheck className="h-5 w-5 text-[#ef426f]" />
-                ) : (
-                  <Bookmark className="h-5 w-5 text-slate-400" />
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Share button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                  title="Share job"
+                >
+                  <Share2 className="h-5 w-5 text-slate-400" />
+                </button>
+                {showShareMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-lg z-20 py-1">
+                    <button
+                      onClick={() => { copyLink(); setShowShareMenu(false) }}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
+                      {copied ? "Copied!" : "Copy link"}
+                    </button>
+                    <a
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}&text=${encodeURIComponent(`Check out this job: ${job.title} at ${job.companyName}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowShareMenu(false)}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Share on X
+                    </a>
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowShareMenu(false)}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Share on LinkedIn
+                    </a>
+                  </div>
                 )}
-              </button>
-            )}
+              </div>
+              {/* Bookmark button */}
+              {user && (
+                <button
+                  onClick={handleToggleSave}
+                  className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                  title={isSaved ? "Unsave job" : "Save job"}
+                >
+                  {isSaved ? (
+                    <BookmarkCheck className="h-5 w-5 text-[#ef426f]" />
+                  ) : (
+                    <Bookmark className="h-5 w-5 text-slate-400" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Meta */}
@@ -285,6 +382,18 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
               <Clock className="h-3.5 w-3.5" />
               Posted {timeAgo(job.createdAt)}
             </span>
+            {job.expiresAt && (
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-medium ${
+                new Date(job.expiresAt) < new Date()
+                  ? "bg-red-50 text-red-600 border border-red-200"
+                  : "bg-slate-100 text-slate-500 border border-slate-200"
+              }`}>
+                <CalendarClock className="h-3.5 w-3.5" />
+                {new Date(job.expiresAt) < new Date()
+                  ? "Expired"
+                  : `Expires ${new Date(job.expiresAt).toLocaleDateString()}`}
+              </span>
+            )}
           </div>
 
           {/* Tags */}
@@ -300,11 +409,15 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
           )}
 
           {/* Apply CTA */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div ref={headerRef} className="flex flex-wrap items-center gap-3">
             {hasApplied ? (
               <div className="inline-flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-6 py-3 text-sm font-semibold text-green-700">
                 <CheckCircle className="h-4 w-4" />
                 Applied
+              </div>
+            ) : job.status === "closed" || (job.expiresAt && new Date(job.expiresAt) < new Date()) ? (
+              <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-400">
+                No longer accepting applications
               </div>
             ) : userProfile?.role === "open-to-work" ? (
               <button
@@ -333,11 +446,45 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
             )}
 
             <span className="text-sm text-slate-500">
-              <User className="inline h-3.5 w-3.5 mr-1" />
+              <Users className="inline h-3.5 w-3.5 mr-1" />
               {job.applicantCount} applicant{job.applicantCount !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
+
+        {/* Hiring Manager Actions - only visible to the job owner */}
+        {userProfile && job.authorUid === userProfile.uid && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-8 mb-5 shadow-sm">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-1 leading-snug flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-slate-400" />
+              Manage Listing
+            </h2>
+            <p className="text-sm text-slate-500 mb-4">You posted this job. Here are quick actions.</p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/jobs/edit?id=${job.id}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit Listing
+              </Link>
+              <Link
+                href="/jobs/dashboard"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <Users className="h-4 w-4" />
+                View Applicants ({job.applicantCount})
+              </Link>
+              <Link
+                href="/jobs/dashboard/messages"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Messages
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Job Description */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 mb-5 shadow-sm">
@@ -441,6 +588,24 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
           </div>
         )}
       </main>
+
+      {/* Sticky Apply Bar - shown when CTA scrolls out of view */}
+      {showStickyApply && !hasApplied && userProfile?.role === "open-to-work" && job.status !== "closed" && !(job.expiresAt && new Date(job.expiresAt) < new Date()) && (
+        <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-slate-200 z-40">
+          <div className="mx-auto max-w-4xl flex items-center justify-between px-5 py-3">
+            <div className="min-w-0 mr-4">
+              <p className="text-sm font-semibold text-slate-900 truncate">{job.title}</p>
+              <p className="text-xs text-slate-500 truncate">{job.companyName}</p>
+            </div>
+            <button
+              onClick={() => setShowApplyModal(true)}
+              className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
+            >
+              Apply Now
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
