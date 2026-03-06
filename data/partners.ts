@@ -37,7 +37,7 @@ export const partners: Partner[] = [
     name: "434 MEDIA",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/434media-light.svg",
     description: "Connecting Enterprises by leveraging networks to connect people, places and things through creative media and smart marketing.",
-    website: "https://www.434media.org/",
+    website: "https://www.434media.com/",
   },
   {
     id: "aicowboys",
@@ -78,21 +78,6 @@ export const partners: Partner[] = [
     video: "https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/Learn2AI%20-%20081825%20G.mp4", // Replace with actual video URL
     isEasterEgg: true,
   },
-/*   {
-    id: "nucleate-san-antonio",
-    name: "Nucleate San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/nucleate.svg",
-    description: "Nucleate is a student-led organization that represents the largest global community of bio-innovators.",
-    website: "https://nucleate.org/",
-  }, */
- /*  {
-    id: "emergeandrise",
-    name: "Emerge and Rise",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-77-emerge.png",
-    description:
-      "At Emerge and Rise™, we strengthen our San Antonio community by building up the businesses within it. We work with small and mid-sized companies (SMEs) that are ready to grow but may not know where to start, or even what's possible. From uncovering funding opportunities and improving digital skills to navigating hiring, mindset, and strategy, we meet business owners where they are.",
-    website: "https://emergeandrise.org/",
-  }, */
   {
     id: "launchsa",
     name: "LaunchSA",
@@ -108,11 +93,4 @@ export const partners: Partner[] = [
     description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
     website: "https://questsa.org/",
   },
-/*   {
-    id: "cosa",
-    name: "City of San Antonio",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/cosa-black.png",
-    description: "Since 1992, Project QUEST has worked to meet the pace of innovation. Today, we connect San Antonians to emerging careers in healthcare, manufacturing and trades, and information technology. Our nationally-recognized workforce and skills training program has helped thousands find amazing in-demand careers.",
-    website: "https://www.sanantonio.gov/Innovation/Home",
-  }, */
 ]
