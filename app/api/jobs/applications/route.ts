@@ -272,7 +272,7 @@ export async function PUT(request: NextRequest) {
     await db.collection(COLLECTIONS.NOTIFICATIONS).add(notification);
 
     // Send email notification for shortlisted / rejected
-    if ((status === 'shortlisted' || status === 'rejected') && isResendConfigured()) {
+    if ((status === 'shortlisted' || status === 'rejected') && isResendConfigured() && resend) {
       try {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
         const applicantDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(appData.applicantUid).get();
