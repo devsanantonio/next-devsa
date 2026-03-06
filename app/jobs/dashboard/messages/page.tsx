@@ -245,7 +245,7 @@ function MessagesContent() {
   return (
     <div className="min-h-dvh bg-white pt-6">
 
-      <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8">
+      <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8 pt-20 lg:pt-8">
         <Link
           href="/jobs/dashboard"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"

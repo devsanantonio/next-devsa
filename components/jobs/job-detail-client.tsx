@@ -265,7 +265,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
   }
 
   return (
-    <div className="min-h-dvh bg-white pt-6">
+    <div className="min-h-dvh bg-white pt-20 lg:pt-6">
       <main className="mx-auto max-w-4xl px-5 sm:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
@@ -561,7 +561,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
                 </div>
 
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Your profile information will be shared with the hiring manager.
+                  Your name, email, and cover note will be shared with the hiring manager.
                 </p>
 
                 <div className="flex gap-3 pt-2">

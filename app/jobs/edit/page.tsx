@@ -218,14 +218,7 @@ export default function EditJobPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      <main className="mx-auto max-w-3xl px-5 sm:px-6 py-8 sm:py-12">
-        <Link
-          href="/jobs/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Link>
+      <main className="mx-auto max-w-3xl px-5 sm:px-6 py-8 sm:py-12 pt-20 lg:pt-8">
 
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">

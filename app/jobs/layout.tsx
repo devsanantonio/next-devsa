@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { AuthProvider } from "@/components/auth-provider"
+import { JobsLayoutShell } from "@/components/jobs/jobs-layout-shell"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
@@ -55,5 +56,9 @@ export default function JobsLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <AuthProvider>{children}</AuthProvider>
+  return (
+    <AuthProvider>
+      <JobsLayoutShell>{children}</JobsLayoutShell>
+    </AuthProvider>
+  )
 }

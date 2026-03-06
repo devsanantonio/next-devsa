@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react"
 import { JobCard } from "@/components/jobs/job-card"
 import { JobFilters } from "@/components/jobs/job-filters"
-import { UserDropdown } from "@/components/jobs/user-dropdown"
-import {
-  Briefcase,
-  Plus,
-} from "lucide-react"
+import { Briefcase, Search } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 
@@ -34,13 +30,12 @@ interface JobBoardProfile {
   profileImage?: string
   companyName?: string
 }
-
 export function JobListingsClient({
   initialListings,
 }: {
   initialListings: JobListingItem[]
 }) {
-  const { user, getIdToken, signOut } = useAuth()
+  const { user, getIdToken } = useAuth()
   const [listings] = useState<JobListingItem[]>(initialListings)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedType, setSelectedType] = useState("all")
@@ -76,11 +71,6 @@ export function JobListingsClient({
     } catch {
       // silently fail
     }
-  }
-
-  const handleSignOut = async () => {
-    await signOut()
-    setProfile(null)
   }
 
   const fetchSavedJobs = async () => {
@@ -169,41 +159,63 @@ export function JobListingsClient({
     setSearchQuery(tag)
   }
 
+  const isSignedIn = !!user && !!profile
+
   return (
-    <section id="open-positions" className="w-full bg-slate-50 border-t border-slate-200 px-5 sm:px-6 py-12 sm:py-20 scroll-mt-4">
-      <div className="mx-auto max-w-4xl">
-        <div className="flex items-center justify-between mb-8 sm:mb-10">
-          <div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-[-0.02em] text-gray-900 leading-[1.1]">
+    <div>
+      {/* Hero — only visible when not signed in */}
+      {!isSignedIn && (
+        <section className="w-full px-4 sm:px-6 pt-24 sm:pt-28 pb-10 sm:pb-14">
+          <div className="mx-auto max-w-7xl">
+            <div className="space-y-4">
+              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+                Find your next build
+              </p>
+              <h1 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+                Where San Antonio{" "}
+                <span className="text-gray-600 font-light italic">Tech Talent</span>{" "}
+                Connects.
+              </h1>
+            </div>
+            <div className="max-w-3xl mt-8">
+              <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
+                No middleman and no noise. DEVSA is the direct bridge between passionate builders and the local companies shaping our tech ecosystem.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-10">
+              <Link
+                href="/jobs/signin?role=hiring"
+                className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
+              >
+                <Briefcase className="h-4 w-4" />
+                I&apos;m Hiring
+              </Link>
+              <Link
+                href="/jobs/signin?role=open-to-work"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
+              >
+                <Search className="h-4 w-4" />
+                Open to Work
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Job Listings */}
+      <section id="open-positions" className={`w-full px-4 sm:px-6 scroll-mt-4 ${isSignedIn ? "pt-6 lg:pt-20 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto" : ""}`}>
+        <div className="mx-auto max-w-7xl pb-16 sm:pb-24">
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 leading-[1.2]">
               Open Positions
             </h2>
-            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed font-normal">
-              Browse opportunities from the San Antonio tech community
-            </p>
+            <span className="text-sm font-medium text-gray-400 leading-normal tabular-nums">
+              {filteredListings.length}
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Persistent Post a Job CTA for hiring managers */}
-            {profile?.role === "hiring" && (
-              <Link
-                href="/jobs/post"
-                className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors shadow-sm"
-              >
-                <Plus className="h-4 w-4" />
-                Post a Job
-              </Link>
-            )}
-            {user && profile ? (
-              <UserDropdown profile={profile} />
-            ) : (
-              <Link
-                href="/jobs/signin"
-                className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
 
         {/* Filters */}
         <div className="mb-6 sm:mb-8">
@@ -224,14 +236,14 @@ export function JobListingsClient({
 
         {/* Listings */}
         {filteredListings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Briefcase className="h-12 w-12 text-gray-300 mb-5" />
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 leading-[1.3]">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Briefcase className="h-10 w-10 text-gray-300 mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1.5 leading-[1.3]">
               {searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
                 ? "No jobs match your filters"
                 : "No jobs posted yet"}
             </h3>
-            <p className="text-gray-500 text-sm leading-[1.6] max-w-md font-normal">
+            <p className="text-gray-500 text-sm leading-normal max-w-sm font-normal">
               {searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
                 ? "Try adjusting your search criteria or clearing filters."
                 : "Be the first to post a job opportunity for the San Antonio tech community."}
@@ -253,5 +265,6 @@ export function JobListingsClient({
         )}
       </div>
     </section>
+    </div>
   )
 }

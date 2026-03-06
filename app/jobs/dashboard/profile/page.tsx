@@ -9,7 +9,7 @@ import {
   Plus,
   X,
   Upload,
-  Camera,
+  Trash2,
   Briefcase,
   GraduationCap,
   FolderOpen,
@@ -23,7 +23,12 @@ import {
   Heart,
   Code,
   Users,
+  Award,
+  FileText,
+  Target,
+  Sparkles,
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 interface WorkHistory {
@@ -47,6 +52,20 @@ interface ProjectSpotlight {
   url?: string
   imageUrl?: string
   videoUrl?: string
+}
+
+interface Certification {
+  name: string
+  issuer: string
+  year: string
+}
+
+interface JobPreferences {
+  desiredTitle: string
+  desiredTypes: string[]
+  desiredLocations: string[]
+  desiredSalary: string
+  openToRelocation: boolean
 }
 
 interface Profile {
@@ -75,11 +94,17 @@ interface Profile {
   github: string
   twitter: string
   website: string
+  skills: string[]
+  certifications: Certification[]
+  resumeUrl: string
+  jobPreferences: JobPreferences
 }
 
 const emptyWorkHistory: WorkHistory = { company: "", title: "", startDate: "", endDate: "", description: "" }
 const emptyEducation: Education = { institution: "", degree: "", field: "", year: "" }
 const emptyProject: ProjectSpotlight = { title: "", description: "", url: "", imageUrl: "", videoUrl: "" }
+const emptyCertification: Certification = { name: "", issuer: "", year: "" }
+const emptyJobPreferences: JobPreferences = { desiredTitle: "", desiredTypes: [], desiredLocations: [], desiredSalary: "", openToRelocation: false }
 
 export default function ProfileEditorPage() {
   const router = useRouter()
@@ -90,6 +115,7 @@ export default function ProfileEditorPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
   const [uploadingField, setUploadingField] = useState<string | null>(null)
+  const [uploadingResume, setUploadingResume] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/jobs/signin")
@@ -132,6 +158,10 @@ export default function ProfileEditorPage() {
           github: data.profile.github || data.profile.socialLinks?.github || "",
           twitter: data.profile.twitter || data.profile.socialLinks?.twitter || "",
           website: data.profile.website || data.profile.socialLinks?.website || "",
+          skills: data.profile.skills || [],
+          certifications: data.profile.certifications || [],
+          resumeUrl: data.profile.resumeUrl || "",
+          jobPreferences: data.profile.jobPreferences || { ...emptyJobPreferences },
         })
       }
     } catch {
@@ -257,6 +287,51 @@ export default function ProfileEditorPage() {
     setProfile({ ...profile, projectSpotlights: profile.projectSpotlights.filter((_, idx) => idx !== i) })
   }
 
+  const addCertification = () => {
+    if (profile) setProfile({ ...profile, certifications: [...profile.certifications, { ...emptyCertification }] })
+  }
+
+  const updateCertification = (i: number, field: keyof Certification, value: string) => {
+    if (!profile) return
+    const updated = [...profile.certifications]
+    updated[i] = { ...updated[i], [field]: value }
+    setProfile({ ...profile, certifications: updated })
+  }
+
+  const removeCertification = (i: number) => {
+    if (!profile) return
+    setProfile({ ...profile, certifications: profile.certifications.filter((_, idx) => idx !== i) })
+  }
+
+  const updateJobPreference = (field: keyof JobPreferences, value: string | string[] | boolean) => {
+    if (!profile) return
+    setProfile({ ...profile, jobPreferences: { ...profile.jobPreferences, [field]: value } })
+  }
+
+  const handleResumeUpload = async (file: File) => {
+    setUploadingResume(true)
+    try {
+      const token = await getIdToken()
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", "resume")
+
+      const res = await fetch("/api/job-board/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await res.json()
+      if (data.url && profile) {
+        setProfile({ ...profile, resumeUrl: data.url })
+      }
+    } catch {
+      console.error("Resume upload failed")
+    } finally {
+      setUploadingResume(false)
+    }
+  }
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-dvh bg-white">
@@ -272,16 +347,8 @@ export default function ProfileEditorPage() {
   return (
     <div className="min-h-dvh bg-white">
 
-      <main className="mx-auto max-w-3xl px-5 sm:px-6 py-8 sm:py-12 mt-6">
-        <Link
-          href="/jobs/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Link>
-
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
+      <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8 sm:py-12 md:pt-20 lg:pt-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8 md:pt-10">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">Edit Profile</h1>
             <p className="text-sm sm:text-base text-slate-500 mt-1.5 leading-relaxed">
@@ -309,14 +376,31 @@ export default function ProfileEditorPage() {
               </div>
               <p className="text-sm text-slate-500 mb-5">Candidates see this when viewing your job listings.</p>
               <div className="flex items-center gap-5 mb-5">
-                <div className="relative shrink-0">
+                <div className="relative shrink-0 group">
                   <div className="h-16 w-16 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
                     {profile.profileImage ? (
                       <img src={profile.profileImage} alt="Profile" className="h-full w-full object-cover" />
                     ) : (
-                      <User className="h-7 w-7 text-slate-400" />
+                      <Image src="/devsa-gradient.svg" alt="Default avatar" width={64} height={64} className="h-full w-full object-cover" />
                     )}
                   </div>
+                  {uploadingField === "profileImage" ? (
+                    <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/50 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                      <label className="flex items-center justify-center h-7 w-7 rounded-full bg-white/90 hover:bg-white cursor-pointer transition-colors" title={profile.profileImage ? "Replace photo" : "Add photo"}>
+                        <Upload className="h-3.5 w-3.5 text-slate-700" />
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload("profileImage", file) }} />
+                      </label>
+                      {profile.profileImage && (
+                        <button onClick={() => setProfile({ ...profile, profileImage: "" })} className="flex items-center justify-center h-7 w-7 rounded-full bg-white/90 hover:bg-white transition-colors" title="Remove photo">
+                          <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -338,23 +422,6 @@ export default function ProfileEditorPage() {
                     </div>
                   </div>
                 </div>
-                <label className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer">
-                  {uploadingField === "profileImage" ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Camera className="h-3.5 w-3.5" />
-                  )}
-                  Photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleFileUpload("profileImage", file)
-                    }}
-                  />
-                </label>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -388,92 +455,327 @@ export default function ProfileEditorPage() {
             </section>
           ) : (
             <>
-          {/* Profile Image */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <Camera className="h-5 w-5 text-slate-400" />
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Profile Photo</h2>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <div className="h-24 w-24 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                  {profile.profileImage ? (
-                    <img src={profile.profileImage} alt="Profile" className="h-full w-full object-cover" />
-                  ) : (
-                    <User className="h-10 w-10 text-slate-400" />
-                  )}
-                </div>
-              </div>
-              <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
-                {uploadingField === "profileImage" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-                Upload Photo
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleFileUpload("profileImage", file)
-                  }}
-                />
-              </label>
-            </div>
-          </section>
-
-          {/* Personal Info */}
+          {/* Compact Contact Card (matching the hiring manager pattern) */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <User className="h-5 w-5 text-slate-400" />
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Personal Information</h2>
+              <h2 className="text-lg font-bold text-slate-900 leading-tight">About You</h2>
+            </div>
+            <p className="text-sm text-slate-500 mb-5">This is your personal info used when applying to jobs.</p>
+            <div className="flex items-center gap-5 mb-5">
+              <div className="relative shrink-0 group">
+                <div className="h-16 w-16 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {profile.profileImage ? (
+                    <img src={profile.profileImage} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <Image src="/devsa-gradient.svg" alt="Default avatar" width={64} height={64} className="h-full w-full object-cover" />
+                  )}
+                </div>
+                {uploadingField === "profileImage" ? (
+                  <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-white" />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/50 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                    <label className="flex items-center justify-center h-7 w-7 rounded-full bg-white/90 hover:bg-white cursor-pointer transition-colors" title={profile.profileImage ? "Replace photo" : "Add photo"}>
+                      <Upload className="h-3.5 w-3.5 text-slate-700" />
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload("profileImage", file) }} />
+                    </label>
+                    {profile.profileImage && (
+                      <button onClick={() => setProfile({ ...profile, profileImage: "" })} className="flex items-center justify-center h-7 w-7 rounded-full bg-white/90 hover:bg-white transition-colors" title="Remove photo">
+                        <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">First Name</label>
+                    <input
+                      value={profile.firstName}
+                      onChange={(e) => updateField("firstName", e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Last Name</label>
+                    <input
+                      value={profile.lastName}
+                      onChange={(e) => updateField("lastName", e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
-                <input
-                  value={profile.firstName}
-                  onChange={(e) => updateField("firstName", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
-                <input
-                  value={profile.lastName}
-                  onChange={(e) => updateField("lastName", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Display Name</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Display Name</label>
                 <input
                   value={profile.displayName}
                   onChange={(e) => updateField("displayName", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
                 <input
                   value={profile.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
                   placeholder="(210) 555-0000"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Headline</label>
                 <textarea
                   value={profile.bio}
                   onChange={(e) => updateField("bio", e.target.value)}
-                  rows={4}
-                  placeholder="Tell hiring managers about yourself..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
+                  rows={3}
+                  placeholder="e.g. Full-stack developer with 5 years of experience in React & Node.js, passionate about building accessible web apps..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
+                />
+                <p className="text-xs text-slate-400 mt-1">Write a brief summary of your skills and what you&apos;re looking for. This is the first thing hiring managers see.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Job Preferences */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="h-5 w-5 text-slate-400" />
+              <h2 className="text-lg font-bold text-slate-900 leading-tight">Job Preferences</h2>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">Help us match you with the right opportunities.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Desired Job Title</label>
+                <input
+                  value={profile.jobPreferences.desiredTitle}
+                  onChange={(e) => updateJobPreference("desiredTitle", e.target.value)}
+                  placeholder="e.g. Senior Frontend Developer, DevOps Engineer..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Job Type</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "w2", label: "W-2 (Full-time)" },
+                    { value: "1099", label: "1099 (Contract)" },
+                    { value: "equity", label: "Equity / Co-founder" },
+                    { value: "internship", label: "Internship" },
+                  ].map((type) => {
+                    const isSelected = profile.jobPreferences.desiredTypes.includes(type.value)
+                    return (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => {
+                          const current = profile.jobPreferences.desiredTypes
+                          updateJobPreference(
+                            "desiredTypes",
+                            isSelected ? current.filter((t) => t !== type.value) : [...current, type.value]
+                          )
+                        }}
+                        className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
+                          isSelected
+                            ? "bg-[#ef426f]/10 text-[#ef426f] border-[#ef426f]/30"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        {type.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Work Location</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "remote", label: "Remote" },
+                    { value: "onsite", label: "On-site" },
+                    { value: "hybrid", label: "Hybrid" },
+                  ].map((loc) => {
+                    const isSelected = profile.jobPreferences.desiredLocations.includes(loc.value)
+                    return (
+                      <button
+                        key={loc.value}
+                        type="button"
+                        onClick={() => {
+                          const current = profile.jobPreferences.desiredLocations
+                          updateJobPreference(
+                            "desiredLocations",
+                            isSelected ? current.filter((l) => l !== loc.value) : [...current, loc.value]
+                          )
+                        }}
+                        className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
+                          isSelected
+                            ? "bg-[#ef426f]/10 text-[#ef426f] border-[#ef426f]/30"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        {loc.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Desired Salary Range</label>
+                  <input
+                    value={profile.jobPreferences.desiredSalary}
+                    onChange={(e) => updateJobPreference("desiredSalary", e.target.value)}
+                    placeholder="e.g. $80k - $120k"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-3 pt-5">
+                  <button
+                    type="button"
+                    onClick={() => updateJobPreference("openToRelocation", !profile.jobPreferences.openToRelocation)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      profile.jobPreferences.openToRelocation ? "bg-[#ef426f]" : "bg-slate-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        profile.jobPreferences.openToRelocation ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <label className="text-sm text-slate-700">Open to relocation</label>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Resume Upload */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="h-5 w-5 text-slate-400" />
+              <h2 className="text-lg font-bold text-slate-900 leading-tight">Resume</h2>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">Upload your resume so hiring managers can learn more about your experience.</p>
+            {profile.resumeUrl ? (
+              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <FileText className="h-8 w-8 text-[#ef426f] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900">Resume uploaded</p>
+                  <a
+                    href={profile.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#ef426f] hover:underline truncate block"
+                  >
+                    View current resume
+                  </a>
+                </div>
+                <label className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+                  {uploadingResume ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  Replace
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleResumeUpload(file)
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setProfile({ ...profile, resumeUrl: "" })}
+                  className="text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 cursor-pointer hover:border-[#ef426f]/30 hover:bg-[#ef426f]/5 transition-colors">
+                {uploadingResume ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
+                ) : (
+                  <Upload className="h-8 w-8 text-slate-400" />
+                )}
+                <div className="text-center">
+                  <p className="text-sm font-medium text-slate-700">Upload your resume</p>
+                  <p className="text-xs text-slate-400 mt-1">PDF, DOC, or DOCX (max 5MB)</p>
+                </div>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleResumeUpload(file)
+                  }}
+                />
+              </label>
+            )}
+          </section>
+
+          {/* Skills */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-slate-400" />
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Skills</h2>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">Add your technical and professional skills. Hiring managers filter candidates by skills.</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {profile.skills.map((skill, i) => (
+                <span key={i} className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-3 py-1.5 text-sm text-slate-700 font-medium">
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfile({ ...profile, skills: profile.skills.filter((_, idx) => idx !== i) })
+                    }}
+                    className="text-slate-400 hover:text-red-500 ml-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                id="skills-input"
+                placeholder="e.g. React, TypeScript, Python, AWS, Figma..."
+                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    const input = e.currentTarget
+                    const val = input.value.trim()
+                    if (val && !profile.skills.includes(val)) {
+                      setProfile({ ...profile, skills: [...profile.skills, val] })
+                      input.value = ""
+                    }
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById("skills-input") as HTMLInputElement
+                  const val = input?.value.trim()
+                  if (val && !profile.skills.includes(val)) {
+                    setProfile({ ...profile, skills: [...profile.skills, val] })
+                    input.value = ""
+                  }
+                }}
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                <Plus className="h-4 w-4" /> Add
+              </button>
             </div>
           </section>
             </>
@@ -756,89 +1058,27 @@ export default function ProfileEditorPage() {
           {/* === Job Seeker Sections (open-to-work only) === */}
           {profile.role === "open-to-work" && (
             <>
-          {/* Project Spotlights */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <FolderOpen className="h-5 w-5 text-slate-400" />
-                <h2 className="text-lg font-bold text-slate-900 leading-tight">Project Spotlights</h2>
-              </div>
-              <button onClick={addProject} className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline">
-                <Plus className="h-4 w-4" /> Add
-              </button>
-            </div>
-            {profile.projectSpotlights.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No projects added yet</p>
-            ) : (
-              <div className="space-y-4">
-                {profile.projectSpotlights.map((item, i) => (
-                  <div key={i} className="rounded-xl border border-slate-200 p-4 relative">
-                    <button
-                      onClick={() => removeProject(i)}
-                      className="absolute top-3 right-3 text-slate-400 hover:text-red-500"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          value={item.title}
-                          onChange={(e) => updateProject(i, "title", e.target.value)}
-                          placeholder="Project Title"
-                          className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
-                        />
-                        <input
-                          value={item.url || ""}
-                          onChange={(e) => updateProject(i, "url", e.target.value)}
-                          placeholder="Project URL"
-                          className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
-                        />
-                      </div>
-                      <textarea
-                        value={item.description}
-                        onChange={(e) => updateProject(i, "description", e.target.value)}
-                        placeholder="Project description..."
-                        rows={2}
-                        className="w-full rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 resize-none"
-                      />
-                      <div className="flex items-center gap-3">
-                        {item.imageUrl && (
-                          <img src={item.imageUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
-                        )}
-                        <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer">
-                          {uploadingField === "projectImage" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-                          Upload Image
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) handleFileUpload("projectImage", file, i)
-                            }}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
           {/* Work History */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="h-5 w-5 text-slate-400" />
-                <h2 className="text-lg font-bold text-slate-900 leading-tight">Work History</h2>
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Work Experience</h2>
               </div>
               <button onClick={addWorkHistory} className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline">
                 <Plus className="h-4 w-4" /> Add
               </button>
             </div>
+            <p className="text-sm text-slate-500 mb-4">List your most relevant positions. Start with your current or most recent role.</p>
             {profile.workHistory.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No work history added yet</p>
+              <button
+                onClick={addWorkHistory}
+                className="w-full flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 cursor-pointer hover:border-[#ef426f]/30 hover:bg-[#ef426f]/5 transition-colors"
+              >
+                <Briefcase className="h-8 w-8 text-slate-300" />
+                <span className="text-sm font-medium text-slate-500">Add your first work experience</span>
+                <span className="text-xs text-slate-400">Profiles with experience get 2x more responses</span>
+              </button>
             ) : (
               <div className="space-y-4">
                 {profile.workHistory.map((item, i) => (
@@ -854,32 +1094,32 @@ export default function ProfileEditorPage() {
                         value={item.company}
                         onChange={(e) => updateWorkHistory(i, "company", e.target.value)}
                         placeholder="Company"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.title}
                         onChange={(e) => updateWorkHistory(i, "title", e.target.value)}
                         placeholder="Job Title"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.startDate}
                         onChange={(e) => updateWorkHistory(i, "startDate", e.target.value)}
                         placeholder="Start Date (e.g. Jan 2020)"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.endDate}
                         onChange={(e) => updateWorkHistory(i, "endDate", e.target.value)}
                         placeholder="End Date (or Present)"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <textarea
                         value={item.description}
                         onChange={(e) => updateWorkHistory(i, "description", e.target.value)}
-                        placeholder="Description..."
+                        placeholder="What did you accomplish? Use bullet points for impact (e.g. Built a REST API serving 10k requests/day)..."
                         rows={2}
-                        className="sm:col-span-2 rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 resize-none"
+                        className="sm:col-span-2 rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 resize-none"
                       />
                     </div>
                   </div>
@@ -899,8 +1139,15 @@ export default function ProfileEditorPage() {
                 <Plus className="h-4 w-4" /> Add
               </button>
             </div>
+            <p className="text-sm text-slate-500 mb-4">Include degrees, bootcamps, and relevant certifications programs.</p>
             {profile.education.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No education added yet</p>
+              <button
+                onClick={addEducation}
+                className="w-full flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 cursor-pointer hover:border-[#ef426f]/30 hover:bg-[#ef426f]/5 transition-colors"
+              >
+                <GraduationCap className="h-8 w-8 text-slate-300" />
+                <span className="text-sm font-medium text-slate-500">Add your education</span>
+              </button>
             ) : (
               <div className="space-y-4">
                 {profile.education.map((item, i) => (
@@ -915,27 +1162,161 @@ export default function ProfileEditorPage() {
                       <input
                         value={item.institution}
                         onChange={(e) => updateEducation(i, "institution", e.target.value)}
-                        placeholder="Institution"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        placeholder="Institution (e.g. UTSA, Codeup)"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.degree}
                         onChange={(e) => updateEducation(i, "degree", e.target.value)}
-                        placeholder="Degree (e.g. B.S.)"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        placeholder="Degree (e.g. B.S., Certificate)"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.field}
                         onChange={(e) => updateEducation(i, "field", e.target.value)}
                         placeholder="Field of Study"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
                       <input
                         value={item.year}
                         onChange={(e) => updateEducation(i, "year", e.target.value)}
                         placeholder="Year (e.g. 2022)"
-                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
                       />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Certifications */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-slate-400" />
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Certifications</h2>
+              </div>
+              <button onClick={addCertification} className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline">
+                <Plus className="h-4 w-4" /> Add
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">AWS, Google Cloud, Azure, CompTIA, or any industry certifications you hold.</p>
+            {profile.certifications.length === 0 ? (
+              <button
+                onClick={addCertification}
+                className="w-full flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 cursor-pointer hover:border-[#ef426f]/30 hover:bg-[#ef426f]/5 transition-colors"
+              >
+                <Award className="h-8 w-8 text-slate-300" />
+                <span className="text-sm font-medium text-slate-500">Add a certification</span>
+              </button>
+            ) : (
+              <div className="space-y-4">
+                {profile.certifications.map((item, i) => (
+                  <div key={i} className="rounded-xl border border-slate-200 p-4 relative">
+                    <button
+                      onClick={() => removeCertification(i)}
+                      className="absolute top-3 right-3 text-slate-400 hover:text-red-500"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <input
+                        value={item.name}
+                        onChange={(e) => updateCertification(i, "name", e.target.value)}
+                        placeholder="Certification Name"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                      />
+                      <input
+                        value={item.issuer}
+                        onChange={(e) => updateCertification(i, "issuer", e.target.value)}
+                        placeholder="Issuing Organization"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                      />
+                      <input
+                        value={item.year}
+                        onChange={(e) => updateCertification(i, "year", e.target.value)}
+                        placeholder="Year Earned"
+                        className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Project Spotlights */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="h-5 w-5 text-slate-400" />
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Project Spotlights</h2>
+              </div>
+              <button onClick={addProject} className="inline-flex items-center gap-1 text-sm text-[#ef426f] hover:underline">
+                <Plus className="h-4 w-4" /> Add
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">Showcase your best work. Side projects, open source, or anything you&apos;re proud of.</p>
+            {profile.projectSpotlights.length === 0 ? (
+              <button
+                onClick={addProject}
+                className="w-full flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 cursor-pointer hover:border-[#ef426f]/30 hover:bg-[#ef426f]/5 transition-colors"
+              >
+                <FolderOpen className="h-8 w-8 text-slate-300" />
+                <span className="text-sm font-medium text-slate-500">Add a project</span>
+                <span className="text-xs text-slate-400">Show hiring managers what you can build</span>
+              </button>
+            ) : (
+              <div className="space-y-4">
+                {profile.projectSpotlights.map((item, i) => (
+                  <div key={i} className="rounded-xl border border-slate-200 p-4 relative">
+                    <button
+                      onClick={() => removeProject(i)}
+                      className="absolute top-3 right-3 text-slate-400 hover:text-red-500"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          value={item.title}
+                          onChange={(e) => updateProject(i, "title", e.target.value)}
+                          placeholder="Project Title"
+                          className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        />
+                        <input
+                          value={item.url || ""}
+                          onChange={(e) => updateProject(i, "url", e.target.value)}
+                          placeholder="Project URL"
+                          className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10"
+                        />
+                      </div>
+                      <textarea
+                        value={item.description}
+                        onChange={(e) => updateProject(i, "description", e.target.value)}
+                        placeholder="What does this project do? What technologies did you use?"
+                        rows={2}
+                        className="w-full rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 resize-none"
+                      />
+                      <div className="flex items-center gap-3">
+                        {item.imageUrl && (
+                          <img src={item.imageUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                        )}
+                        <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer">
+                          {uploadingField === "projectImage" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                          Upload Image
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleFileUpload("projectImage", file, i)
+                            }}
+                          />
+                        </label>
+                      </div>
                     </div>
                   </div>
                 ))}

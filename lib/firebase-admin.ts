@@ -296,9 +296,27 @@ export interface JobBoardUser {
   foundedYear?: string; // for hiring role
   benefits?: string[]; // for hiring role
   techStack?: string[]; // for hiring role
+  skills?: string[]; // for open-to-work role
+  certifications?: CertificationEntry[]; // for open-to-work role
+  resumeUrl?: string; // for open-to-work role
+  jobPreferences?: JobPreferences; // for open-to-work role
   isActive: boolean;
   createdAt: Date;
   updatedAt?: Date;
+}
+
+export interface CertificationEntry {
+  name: string;
+  issuer: string;
+  year: string;
+}
+
+export interface JobPreferences {
+  desiredTitle?: string;
+  desiredTypes?: string[]; // w2, 1099, equity, internship
+  desiredLocations?: string[]; // remote, onsite, hybrid
+  desiredSalary?: string;
+  openToRelocation?: boolean;
 }
 
 export interface JobListing {

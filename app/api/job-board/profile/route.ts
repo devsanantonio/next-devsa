@@ -49,6 +49,10 @@ export async function GET(request: NextRequest) {
         workHistory: profile.workHistory,
         education: profile.education,
         projectSpotlights: profile.projectSpotlights,
+        skills: profile.skills,
+        certifications: profile.certifications,
+        resumeUrl: profile.resumeUrl,
+        jobPreferences: profile.jobPreferences,
         isActive: profile.isActive,
       },
     });
@@ -151,6 +155,10 @@ export async function PUT(request: NextRequest) {
       foundedYear,
       benefits,
       techStack,
+      skills,
+      certifications,
+      resumeUrl,
+      jobPreferences,
     } = body;
 
     // Accept social links as top-level OR nested under socialLinks
@@ -184,6 +192,10 @@ export async function PUT(request: NextRequest) {
     if (foundedYear !== undefined) updateData.foundedYear = foundedYear;
     if (benefits !== undefined) updateData.benefits = benefits;
     if (techStack !== undefined) updateData.techStack = techStack;
+    if (skills !== undefined) (updateData as Record<string, unknown>).skills = skills;
+    if (certifications !== undefined) (updateData as Record<string, unknown>).certifications = certifications;
+    if (resumeUrl !== undefined) (updateData as Record<string, unknown>).resumeUrl = resumeUrl;
+    if (jobPreferences !== undefined) (updateData as Record<string, unknown>).jobPreferences = jobPreferences;
 
     await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(result.uid).update(updateData);
 
