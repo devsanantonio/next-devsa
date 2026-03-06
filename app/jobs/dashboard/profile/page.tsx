@@ -470,7 +470,7 @@ export default function ProfileEditorPage() {
                   value={profile.bio}
                   onChange={(e) => updateField("bio", e.target.value)}
                   rows={4}
-                  placeholder={profile.role === "hiring" ? "Tell candidates about yourself and your role at the company..." : "Tell hiring managers about yourself..."}
+                  placeholder="Tell hiring managers about yourself..."
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
                 />
               </div>
