@@ -18,6 +18,7 @@ import {
   X,
   CheckCheck,
   ArrowLeft,
+  Search,
 } from "lucide-react"
 
 interface NotificationItem {
@@ -76,10 +77,12 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationsLoaded, setNotificationsLoaded] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   // Fetch unread count on mount
   useEffect(() => {
     fetchUnreadCount()
+    fetchUnreadMessages()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -108,6 +111,20 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
       })
       const data = await res.json()
       setUnreadCount(data.unreadCount || 0)
+    } catch {
+      // silently fail
+    }
+  }
+
+  const fetchUnreadMessages = async () => {
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const res = await fetch("/api/messages?countOnly=true", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      setUnreadMessages(data.unreadCount || 0)
     } catch {
       // silently fail
     }
@@ -319,7 +336,14 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <div className="relative">
+                  <MessageSquare className="h-4 w-4 text-gray-400" />
+                  {unreadMessages > 0 && (
+                    <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef426f] px-1 text-[9px] font-bold text-white leading-none">
+                      {unreadMessages > 9 ? "9+" : unreadMessages}
+                    </span>
+                  )}
+                </div>
                 Messages
               </Link>
               <button
@@ -377,6 +401,14 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
               )}
               {profile.role === "open-to-work" && (
                 <>
+                  <Link
+                    href="/jobs#open-positions"
+                    onClick={handleLinkClick}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
+                  >
+                    <Search className="h-4 w-4" />
+                    Browse Jobs
+                  </Link>
                   <Link
                     href="/jobs/dashboard?tab=applications"
                     onClick={handleLinkClick}

@@ -57,9 +57,12 @@ export async function GET(request: NextRequest) {
       snapshot = { docs: allDocs } as unknown as FirebaseFirestore.QuerySnapshot;
     } else {
       // Open-to-work user viewing their own applications
-      snapshot = await db.collection(COLLECTIONS.JOB_APPLICATIONS)
-        .where('applicantUid', '==', result.uid)
-        .get();
+      let query = db.collection(COLLECTIONS.JOB_APPLICATIONS)
+        .where('applicantUid', '==', result.uid);
+      if (jobId) {
+        query = query.where('jobId', '==', jobId);
+      }
+      snapshot = await query.get();
     }
 
     const applications = snapshot.docs.map(doc => ({

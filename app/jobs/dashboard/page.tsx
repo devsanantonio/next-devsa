@@ -22,8 +22,6 @@ import {
   UserCircle,
   Heart,
   Search,
-  User,
-  BookmarkCheck,
   Send,
   Trash2,
 } from "lucide-react"
@@ -87,15 +85,6 @@ interface SavedJob {
   status?: string
 }
 
-interface Conversation {
-  id: string
-  participantNames: Record<string, string>
-  participantImages: Record<string, string>
-  lastMessage: string
-  lastMessageAt: string
-  jobId?: string
-}
-
 const statusColors: Record<string, string> = {
   submitted: "text-blue-700 bg-blue-50 border border-blue-200",
   viewed: "text-amber-700 bg-amber-50 border border-amber-200",
@@ -127,7 +116,6 @@ export default function DashboardPage() {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
   const [expandedCoverNote, setExpandedCoverNote] = useState<string | null>(null)
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([])
-  const [conversations, setConversations] = useState<Conversation[]>([])
   const [fullProfile, setFullProfile] = useState<UserProfile | null>(null)
   const [applicationFilter, setApplicationFilter] = useState<string>("all")
   const [removingSavedJob, setRemovingSavedJob] = useState<string | null>(null)
@@ -193,8 +181,8 @@ export default function DashboardPage() {
         setMyJobs(jobsData.listings || [])
         setMyApplications(appsData.applications || [])
       } else {
-        // Load my applications, saved jobs, full profile, and recent conversations
-        const [appsRes, savedRes, profileRes, convRes] = await Promise.all([
+        // Load my applications, saved jobs, and full profile
+        const [appsRes, savedRes, profileRes] = await Promise.all([
           fetch("/api/jobs/applications", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -202,9 +190,6 @@ export default function DashboardPage() {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetch("/api/job-board/profile", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch("/api/messages", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ])
@@ -239,9 +224,6 @@ export default function DashboardPage() {
 
         const profileData = await profileRes.json()
         if (profileData.profile) setFullProfile(profileData.profile)
-
-        const convData = await convRes.json()
-        setConversations((convData.conversations || []).slice(0, 3))
       }
     } catch {
       console.error("Failed to load dashboard")
@@ -759,81 +741,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/jobs#open-positions"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
-              >
-                <Search className="h-4 w-4" />
-                Browse Jobs
-              </Link>
-              <Link
-                href="/jobs/dashboard/profile"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <User className="h-4 w-4" />
-                Edit Profile
-              </Link>
-              <Link
-                href="/jobs/dashboard/messages"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Messages
-                {conversations.length > 0 && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ef426f] text-[10px] font-bold text-white">
-                    {conversations.length}
-                  </span>
-                )}
-              </Link>
-            </div>
 
-            {/* Recent Messages */}
-            {conversations.length > 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-200 p-4 sm:p-6 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900 leading-tight">Recent Messages</h2>
-                    <p className="text-sm text-slate-500 mt-0.5">From hiring managers</p>
-                  </div>
-                  <Link
-                    href="/jobs/dashboard/messages"
-                    className="text-sm font-medium text-[#ef426f] hover:underline"
-                  >
-                    View All
-                  </Link>
-                </div>
-                <div className="divide-y divide-slate-200">
-                  {conversations.map((conv) => {
-                    const otherName = Object.entries(conv.participantNames)
-                      .find(([uid]) => uid !== profile.uid)?.[1] || "Unknown"
-                    const otherImage = Object.entries(conv.participantImages)
-                      .find(([uid]) => uid !== profile.uid)?.[1]
-                    return (
-                      <Link
-                        key={conv.id}
-                        href={`/jobs/dashboard/messages?conversation=${conv.id}`}
-                        className="flex items-center gap-3 p-4 sm:px-6 hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 shrink-0 overflow-hidden">
-                          {otherImage ? (
-                            <img src={otherImage} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <UserCircle className="h-5 w-5 text-slate-400" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{otherName}</p>
-                          <p className="text-xs text-slate-500 truncate">{conv.lastMessage}</p>
-                        </div>
-                        <span className="text-xs text-slate-400 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Saved Jobs */}
             {savedJobs.length > 0 && (

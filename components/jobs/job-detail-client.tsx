@@ -168,7 +168,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      if (data.applications?.length > 0) {
+      if (data.applications?.some((a: { jobId: string }) => a.jobId === job.id)) {
         setHasApplied(true)
       }
     } catch {

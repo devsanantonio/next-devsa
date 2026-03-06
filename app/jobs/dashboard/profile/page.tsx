@@ -187,8 +187,8 @@ export default function ProfileEditorPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setSaveMessage("Profile saved successfully!")
-        setTimeout(() => setSaveMessage(""), 3000)
+        router.push("/jobs/dashboard")
+        return
       } else {
         setSaveMessage("Failed to save profile")
       }
@@ -1324,6 +1324,16 @@ export default function ProfileEditorPage() {
             )}
           </section>
             </>
+          )}
+
+          {/* Save feedback (bottom, near button) */}
+          {saveMessage && (
+            <div className={`rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2 ${
+              saveMessage.includes("success") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {saveMessage.includes("success") && <CheckCircle className="h-4 w-4 shrink-0" />}
+              {saveMessage}
+            </div>
           )}
 
           {/* Save Button (bottom) */}

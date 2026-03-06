@@ -73,6 +73,24 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Unread message count only
+    const countOnly = request.nextUrl.searchParams.get('countOnly');
+    if (countOnly === 'true') {
+      const convosSnap = await db.collection(COLLECTIONS.CONVERSATIONS)
+        .where('participants', 'array-contains', result.uid)
+        .get();
+      let unreadCount = 0;
+      for (const convoDoc of convosSnap.docs) {
+        const msgsSnap = await db.collection(COLLECTIONS.MESSAGES)
+          .where('conversationId', '==', convoDoc.id)
+          .get();
+        unreadCount += msgsSnap.docs.filter(
+          doc => doc.data().senderUid !== result.uid && !doc.data().readAt
+        ).length;
+      }
+      return NextResponse.json({ unreadCount });
+    }
+
     // List all conversations for the current user
     const snapshot = await db.collection(COLLECTIONS.CONVERSATIONS)
       .where('participants', 'array-contains', result.uid)
