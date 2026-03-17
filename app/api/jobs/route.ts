@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getDb, COLLECTIONS, type JobListing } from '@/lib/firebase-admin';
 import { verifyJobBoardUser } from '@/lib/auth-middleware';
 import { shareJobToDiscord } from '@/lib/discord';
@@ -162,6 +163,8 @@ export async function POST(request: NextRequest) {
       }).catch((err) => console.error('LinkedIn share failed:', err));
     }
 
+    revalidatePath('/jobs');
+
     return NextResponse.json({
       success: true,
       id: docRef.id,
@@ -267,6 +270,8 @@ export async function PUT(request: NextRequest) {
       }).catch((err) => console.error('LinkedIn share failed:', err));
     }
 
+    revalidatePath('/jobs');
+
     return NextResponse.json({
       success: true,
       message: 'Listing updated successfully',
@@ -316,6 +321,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     await docRef.delete();
+
+    revalidatePath('/jobs');
 
     return NextResponse.json({
       success: true,
