@@ -86,7 +86,7 @@ export function ShopClient({ products }: ShopClientProps) {
                   href="https://www.python.org/psf/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-gray-600 underline underline-offset-2 decoration-gray-300 hover:text-gray-900 transition-colors"
+                  className="font-semibold text-[#306998] underline underline-offset-2 decoration-2 decoration-[#FFD43B] hover:text-[#24507a] transition-colors"
                 >
                   Python Software Foundation
                 </a>{" "}

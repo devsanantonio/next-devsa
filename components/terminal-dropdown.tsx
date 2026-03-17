@@ -94,16 +94,6 @@ Find your people. Build your future.`
                 {'>'} Community Calendar
               </Link>
               <Link
-                href="/jobs"
-                onClick={onClose}
-                className="flex items-center gap-2 px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
-              >
-                {'>'} Job Board
-                <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-400 border border-amber-500/30">
-                  Testing
-                </span>
-              </Link>
-              <Link
                 href="/shop"
                 onClick={onClose}
                 className="flex items-center gap-2 px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
