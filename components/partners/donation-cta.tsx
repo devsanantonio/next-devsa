@@ -81,7 +81,7 @@ export function DonationCta() {
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
                 Every dollar goes directly toward workshops,{" "}
                 <strong className="font-semibold text-white">
-                free community events
+                community events
                 </strong>
                 , and the resources that keep San
                 Antonio&apos;s tech scene growing.

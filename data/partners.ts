@@ -35,7 +35,7 @@ export const partners: Partner[] = [
   {
     id: "434media",
     name: "434 MEDIA",
-    logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/434media-light.svg",
+    logo: "https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/434media-light.svg",
     description: "Connecting Enterprises by leveraging networks to connect people, places and things through creative media and smart marketing.",
     website: "https://www.434media.com/",
   },
@@ -58,7 +58,7 @@ export const partners: Partner[] = [
     id: "digital-canvas",
     name: "Digital Canvas",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/digital-canvas-ymas.svg",
-    description: "The creative layer of 434 Media - blending creativity with community impact through innovative storytelling and design.",
+    description: "Powered by 434 MEDIA x DEVSA, Digital Canvas designs and produces conferences, workshops, and AI-driven experiences that help organizations connect creativity, community, and technology — at scale.",
     website: "https://www.digitalcanvas.community/",
   },
   {

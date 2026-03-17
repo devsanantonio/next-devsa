@@ -2,9 +2,8 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
-import Link from "next/link"
 import { partners, type Partner } from "@/data/partners"
-import { ArrowRight, ExternalLink, X } from "lucide-react"
+import { ExternalLink, X } from "lucide-react"
 import { useState, useEffect } from "react"
 
 // Generate random rotation angles for logo variety
@@ -129,7 +128,7 @@ function PartnerModal({ partner, isOpen, onClose }: PartnerModalProps) {
         onClick={onClose}
       >
         <div 
-          className={isEasterEgg ? 'w-full max-w-3xl' : 'w-80'}
+          className={isEasterEgg ? 'w-full max-w-3xl' : 'w-full max-w-xs md:max-w-sm'}
           onClick={(e) => e.stopPropagation()}
         >
           <div className={`bg-slate-950 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-2xl ${
@@ -175,11 +174,11 @@ function PartnerModal({ partner, isOpen, onClose }: PartnerModalProps) {
                   </button>
                 </div>
 
-                <div className="p-5 space-y-3">
-                  <h3 className="text-white text-xl font-bold tracking-tight">
+                <div className="p-5 md:p-6 space-y-3">
+                  <h3 className="text-white text-lg md:text-xl font-semibold leading-snug tracking-tight">
                     {partner.name}
                   </h3>
-                  <p className="text-neutral-400 leading-relaxed text-sm">{partner.description}</p>
+                  <p className="text-neutral-400 text-sm md:text-base leading-[1.6] md:leading-[1.7] font-normal">{partner.description}</p>
 
                   {partner.website && (
                     <a
