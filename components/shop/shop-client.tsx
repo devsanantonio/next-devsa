@@ -141,7 +141,7 @@ export function ShopClient({ products }: ShopClientProps) {
           >
             <div className="space-y-4 max-w-3xl">
               <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em]">
-                Community Collection 2026
+                Community Collection
               </p>
               <h2 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Your Logo.{" "}

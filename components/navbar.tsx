@@ -69,19 +69,6 @@ export function Navbar() {
                   Community Calendar
                 </Link>
                 <Link
-                  href="/jobs"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] leading-tight font-normal tracking-wide transition-colors ${
-                    pathname.startsWith("/jobs")
-                      ? "text-white bg-white/10"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  Job Board
-                  <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-400 border border-amber-500/30">
-                    Testing
-                  </span>
-                </Link>
-                <Link
                   href="/shop"
                   className={`px-3 py-1.5 rounded-lg text-[13px] leading-tight font-normal tracking-wide transition-colors ${
                     isShopPage
