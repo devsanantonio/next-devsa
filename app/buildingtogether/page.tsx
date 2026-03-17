@@ -1,5 +1,8 @@
 import { Metadata } from "next"
 import { GroupsHero } from "@/components/partners/groups-hero"
+import { LogoShowcase } from "@/components/partners/logo-showcase"
+import { MeetTheTeam } from "@/components/partners/meet-the-team"
+import { DonationCta } from "@/components/partners/donation-cta"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
@@ -33,6 +36,9 @@ export default function GroupsPage() {
   return (
     <main className="min-h-screen bg-black">
       <GroupsHero />
+      <LogoShowcase />
+      <MeetTheTeam />
+      <DonationCta />
     </main>
   )
 }

@@ -1,74 +1,40 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "motion/react"
-import Image from "next/image"
-import Link from "next/link"
-import { partners } from "@/data/partners"
-import { Loader2 } from "lucide-react"
+import { useState, useRef } from "react"
+import { motion, AnimatePresence } from "motion/react"
+import { Play, X } from "lucide-react"
 
-interface LogoItem {
-  id: string
-  name: string
-  logo: string
-  type: "community" | "partner"
-}
+const VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
+const HERO_IMAGE_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9726.jpg"
 
 export function GroupsHero() {
-  const [allLogos, setAllLogos] = useState<LogoItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/communities")
-        if (res.ok) {
-          const data = await res.json()
-          const communities: LogoItem[] = (data.communities || []).map(
-            (c: { id: string; name: string; logo: string }) => ({
-              id: c.id,
-              name: c.name,
-              logo: c.logo,
-              type: "community" as const,
-            })
-          )
-          const partnerLogos: LogoItem[] = partners.map((p) => ({
-            id: p.id,
-            name: p.name,
-            logo: p.logo,
-            type: "partner" as const,
-          }))
-          setAllLogos([...communities, ...partnerLogos])
-        } else {
-          fallbackToPartners()
-        }
-      } catch {
-        fallbackToPartners()
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    const fallbackToPartners = () => {
-      const partnerLogos: LogoItem[] = partners.map((p) => ({
-        id: p.id,
-        name: p.name,
-        logo: p.logo,
-        type: "partner" as const,
-      }))
-      setAllLogos(partnerLogos)
-    }
-
-    fetchData()
-  }, [])
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const modalVideoRef = useRef<HTMLVideoElement>(null)
 
   return (
+    <>
+    {/* Hero with video background */}
     <section
-      className="relative overflow-hidden bg-black border-b border-gray-800 min-h-dvh flex flex-col items-center justify-center"
+      className="relative overflow-hidden bg-black min-h-dvh flex flex-col items-center justify-center"
       data-bg-type="dark"
     >
-      {/* Subtle radial gradient background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-gray-900/50 via-black to-black" />
+      {/* Background image */}
+      <img
+        src={HERO_IMAGE_URL}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover grayscale"
+      />
+
+      {/* Dark overlay — heavy left for text readability, fading right to reveal video */}
+      <div className="absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/85 to-transparent z-10" />
+      <div className="absolute inset-0 bg-linear-to-b from-neutral-950/70 via-transparent to-neutral-950/70 z-10" />
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.15) 65%, transparent 100%)",
+        }}
+      />
 
       {/* Main content */}
       <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 flex flex-col">
@@ -103,77 +69,65 @@ export function GroupsHero() {
               <span className="font-medium text-white/70">builders</span>{" "}
               across San Antonio&apos;s tech landscape.
             </p>
+
+            <button
+              onClick={() => setShowVideoModal(true)}
+              className="inline-flex items-center gap-3 group cursor-pointer"
+            >
+              <span className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border border-white/20 group-hover:bg-white/20 group-hover:border-white/30 transition-all duration-300">
+                <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+              </span>
+              <span className="text-sm font-medium text-white/60 group-hover:text-white/90 transition-colors">
+                Watch the Video
+              </span>
+            </button>
           </div>
         </motion.div>
-
-        {/* Logo showcase */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12 sm:mt-16 md:mt-20 w-full"
-        >
-          <p className="text-sm md:text-base font-medium text-white/30 uppercase tracking-[0.2em] mb-6">
-            Partners &amp; Communities
-          </p>
-
-          {isLoading ? (
-            <div className="flex items-start py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-white/30" />
-            </div>
-          ) : (
-            <>
-              {/* Desktop: horizontal scroll row */}
-              <div className="hidden md:block overflow-hidden">
-                <div className="flex items-center gap-3 lg:gap-4 flex-wrap">
-                  {allLogos.map((logo) => (
-                    <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
-                      <div className="group relative flex items-center gap-3 rounded-xl bg-white/4 border border-white/6 px-4 py-3 transition-all duration-200 hover:bg-white/8 hover:border-white/12">
-                        <div className="relative h-8 w-8 shrink-0">
-                          <Image
-                            src={logo.logo}
-                            alt={logo.name}
-                            fill
-                            className="object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200"
-                            sizes="32px"
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-white/50 group-hover:text-white/90 transition-colors duration-200 whitespace-nowrap">
-                          {logo.name}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mobile: compact list */}
-              <div className="md:hidden">
-                <div className="grid grid-cols-2 gap-2">
-                  {allLogos.map((logo) => (
-                    <Link key={logo.id} href={`/buildingtogether/${logo.id}`}>
-                      <div className="group flex items-center gap-2.5 rounded-lg bg-white/4 border border-white/6 px-3 py-2.5 transition-all duration-200 active:bg-white/8 active:border-white/12">
-                        <div className="relative h-7 w-7 shrink-0">
-                          <Image
-                            src={logo.logo}
-                            alt={logo.name}
-                            fill
-                            className="object-contain opacity-60"
-                            sizes="28px"
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-white/50 truncate leading-[1.4]">
-                          {logo.name}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </motion.div>
       </div>
+      {/* Bottom fade into logo showcase */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black to-transparent z-20" />
     </section>
+
+    {/* Video Modal */}
+    <AnimatePresence>
+      {showVideoModal && (
+        <motion.div
+          key="video-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
+          onClick={() => setShowVideoModal(false)}
+        >
+          <motion.div
+            key="video-player"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-5xl aspect-video"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowVideoModal(false)}
+              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <video
+              ref={modalVideoRef}
+              autoPlay
+              controls
+              playsInline
+              className="w-full h-full rounded-xl"
+            >
+              <source src={VIDEO_URL} type="video/mp4" />
+            </video>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   )
 }

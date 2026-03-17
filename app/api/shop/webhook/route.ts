@@ -5,6 +5,7 @@ import type { PrintifyAddress } from "@/lib/printify";
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin";
 import { resend, EMAIL_FROM, isResendConfigured } from "@/lib/resend";
 import { OrderConfirmationEmail } from "@/lib/emails/order-confirmation";
+import { DonationThankYouEmail } from "@/lib/emails/donation-thank-you";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -40,6 +41,41 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
 
+    // Handle donations
+    if (
+      session.payment_status === "paid" &&
+      session.metadata?.type === "donation"
+    ) {
+      const donorName = session.metadata.donor_name || "";
+      const donorEmail =
+        session.metadata.donor_email || session.customer_email || "";
+      const amountCents = session.amount_total || 0;
+      const amountDollars = (amountCents / 100).toFixed(2);
+
+      console.log(
+        `Donation received: $${amountDollars} from ${donorName || "Anonymous"} (${donorEmail || "no email"})`
+      );
+
+      if (donorEmail && isResendConfigured() && resend) {
+        try {
+          await resend.emails.send({
+            from: EMAIL_FROM,
+            to: donorEmail,
+            subject: `Thank you for your donation to DEVSA!`,
+            html: DonationThankYouEmail({
+              name: donorName || "Friend",
+              amount: amountDollars,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Failed to send donation thank-you email:", emailErr);
+        }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // Handle shop orders
     if (session.payment_status === "paid" && session.metadata) {
       const shipping = JSON.parse(
         session.metadata.shipping || "{}"
