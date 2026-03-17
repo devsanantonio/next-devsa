@@ -4,22 +4,18 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
-import { Loader2, ArrowLeft, Briefcase, Search } from "lucide-react"
-
-type Step = "auth" | "role"
+import { Loader2, ArrowLeft } from "lucide-react"
 
 export default function JobsSignInPage() {
   const router = useRouter()
   const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, getIdToken, loading } = useAuth()
 
-  const [step, setStep] = useState<Step>("auth")
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<"hiring" | "open-to-work" | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
 
   // Auto-redirect if user already has an active session
@@ -47,8 +43,8 @@ export default function JobsSignInPage() {
           router.replace("/jobs/dashboard")
           return
         }
-        // Has auth but no profile — show role selection
-        setStep("role")
+        // No profile yet — auto-create as hiring manager and go to post form
+        await autoCreateProfile(token)
       } catch {
         // Fall through to sign-in form
       } finally {
@@ -58,6 +54,30 @@ export default function JobsSignInPage() {
     checkExisting()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading])
+  const autoCreateProfile = async (token: string) => {
+    try {
+      const res = await fetch("/api/job-board/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          role: "hiring",
+          displayName: user?.displayName || displayName || "User",
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        router.push("/jobs/post")
+      } else {
+        router.push("/jobs/dashboard")
+      }
+    } catch {
+      router.push("/jobs/dashboard")
+    }
+  }
+
   const handleGoogleSignIn = async () => {
     setError("")
     setIsSubmitting(true)
@@ -110,7 +130,6 @@ export default function JobsSignInPage() {
     try {
       const token = await getIdToken()
       if (!token) {
-        setStep("role")
         return
       }
       const res = await fetch("/api/auth/verify", {
@@ -122,40 +141,14 @@ export default function JobsSignInPage() {
       if (data.hasProfile) {
         router.push("/jobs/dashboard")
       } else {
-        setStep("role")
+        // Auto-create hiring profile and redirect to post form
+        const token = await getIdToken()
+        if (token) {
+          await autoCreateProfile(token)
+        }
       }
     } catch {
-      setStep("role")
-    }
-  }
-
-  const handleCreateProfile = async () => {
-    if (!selectedRole) return
-    setIsSubmitting(true)
-    setError("")
-    try {
-      const token = await getIdToken()
-      const res = await fetch("/api/job-board/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          role: selectedRole,
-          displayName: user?.displayName || displayName || "User",
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        router.push("/jobs/dashboard/profile")
-      } else {
-        setError(data.error || "Failed to create profile")
-      }
-    } catch {
-      setError("Failed to create profile")
-    } finally {
-      setIsSubmitting(false)
+      // Fall through
     }
   }
 
@@ -176,19 +169,20 @@ export default function JobsSignInPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Jobs
           </Link>
-          <span className="text-sm font-semibold text-slate-900 tracking-wide">Building Together</span>
+          <span className="text-sm font-semibold text-slate-900 tracking-wide">The Opportunity Pipeline</span>
         </div>
       </div>
 
       <main className="mx-auto max-w-sm px-5 py-10 sm:py-16">
-        {step === "auth" && (
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2] mb-2">
-                Welcome to DEVSA Jobs
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-2">
+                Post Once. Reach Every Developer.
               </h1>
-              <p className="text-sm sm:text-base text-slate-500 leading-[1.6]">
-                {isSignUp ? "Create your account to get started" : "Sign in to your account"}
+              <p className="text-base text-slate-500 leading-[1.6] text-balance">
+                {isSignUp
+                  ? "Create your account to post jobs across our website, Discord, and LinkedIn — free during our Community Launch."
+                  : "Sign in to post and manage listings shared across our website, Discord, and LinkedIn."}
               </p>
             </div>
 
@@ -295,82 +289,6 @@ export default function JobsSignInPage() {
               </button>
             </p>
           </div>
-        )}
-
-        {step === "role" && (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2] mb-2">
-                Choose your role
-              </h1>
-              <p className="text-sm sm:text-base text-slate-500 leading-[1.6]">How would you like to use DEVSA Jobs?</p>
-            </div>
-
-            <div className="space-y-3 sm:space-y-4">
-              <button
-                onClick={() => setSelectedRole("hiring")}
-                className={`w-full rounded-2xl border p-5 sm:p-6 text-left transition-all ${
-                  selectedRole === "hiring"
-                    ? "border-[#ef426f] bg-[#ef426f]/5 shadow-md"
-                    : "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                    selectedRole === "hiring" ? "bg-[#ef426f]/10" : "bg-slate-100"
-                  }`}>
-                    <Briefcase className={`h-6 w-6 ${selectedRole === "hiring" ? "text-[#ef426f]" : "text-slate-500"}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 leading-snug">I&apos;m Hiring</h3>
-                    <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
-                      Post job listings, review candidates, and manage your talent pipeline.
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setSelectedRole("open-to-work")}
-                className={`w-full rounded-2xl border p-5 sm:p-6 text-left transition-all ${
-                  selectedRole === "open-to-work"
-                    ? "border-[#ef426f] bg-[#ef426f]/5 shadow-md"
-                    : "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                    selectedRole === "open-to-work" ? "bg-[#ef426f]/10" : "bg-slate-100"
-                  }`}>
-                    <Search className={`h-6 w-6 ${selectedRole === "open-to-work" ? "text-[#ef426f]" : "text-slate-500"}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 leading-snug">I&apos;m Open to Work</h3>
-                    <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
-                      Build your profile, browse opportunities, and connect with hiring managers.
-                    </p>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {error && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 leading-normal">{error}</p>
-            )}
-
-            <button
-              onClick={handleCreateProfile}
-              disabled={!selectedRole || isSubmitting}
-              className="w-full rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-              ) : (
-                "Continue"
-              )}
-            </button>
-          </div>
-        )}
       </main>
     </div>
   )

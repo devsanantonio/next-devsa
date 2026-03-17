@@ -377,7 +377,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
 
             <div className="px-3 py-1 mt-1 border-t border-gray-100">
               <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                {profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
+                {profile.role === "hiring" ? "Hiring Tools" : "Browse"}
               </p>
               {(profile.role === "hiring" || profile.isSuperAdmin) && (
                 <>

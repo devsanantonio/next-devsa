@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type JobListing } from '@/lib/firebase-admin';
 import { verifyJobBoardUser } from '@/lib/auth-middleware';
+import { shareJobToDiscord } from '@/lib/discord';
+import { shareJobToLinkedIn } from '@/lib/linkedin';
 
 // GET - List job listings (public, with optional filters)
 export async function GET(request: NextRequest) {
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, type, locationType, location, salaryRange, description, requirements, tags, communityId, expiresInDays } = body;
+    const { title, type, locationType, location, salaryRange, description, requirements, applicationUrl, equityRange, startupStage, tags, communityId, expiresInDays, status: requestedStatus } = body;
 
     if (!title || !type || !locationType || !description) {
       return NextResponse.json(
@@ -118,9 +120,12 @@ export async function POST(request: NextRequest) {
       salaryRange: salaryRange || '',
       description,
       requirements: requirements || '',
+      applicationUrl: applicationUrl || '',
+      equityRange: type === 'equity' ? equityRange || '' : '',
+      startupStage: type === 'equity' ? startupStage || '' : '',
       tags: tags || [],
       communityId: communityId || '',
-      status: 'published',
+      status: requestedStatus === 'draft' ? 'draft' : 'published',
       applicantCount: 0,
       expiresAt,
       createdAt: now,
@@ -128,11 +133,36 @@ export async function POST(request: NextRequest) {
 
     const docRef = await db.collection(COLLECTIONS.JOB_LISTINGS).add(listing);
 
-    return NextResponse.json({
-      success: true,
-      message: 'Job listing created successfully',
+    // Share to Discord when publishing (fire-and-forget)
+    if (listing.status === 'published') {
+      shareJobToDiscord({
+        title: listing.title,
+        companyName: listing.companyName,
+        slug,
+        type: listing.type,
+        locationType: listing.locationType,
+        location: listing.location || undefined,
+        salaryRange: listing.salaryRange || undefined,
+        equityRange: listing.equityRange || undefined,
+        startupStage: listing.startupStage || undefined,
+        tags: listing.tags,
+        description: listing.description || undefined,
+      }).catch((err) => console.error('Discord share failed:', err));
+
+      shareJobToLinkedIn({
+        title: listing.title,
+        companyName: listing.companyName,
+        slug,
+        type: listing.type,
+        locationType: listing.locationType,
+        location: listing.location || undefined,
+        salaryRange: listing.salaryRange || undefined,
+        description: listing.description || undefined,
+        tags: listing.tags,
+      }).catch((err) => console.error('LinkedIn share failed:', err));
       id: docRef.id,
       slug,
+      shared: listing.status === 'published' ? { discord: true } : undefined,
     });
   } catch (error) {
     console.error('Create listing error:', error);
@@ -150,7 +180,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, title, type, locationType, location, salaryRange, description, requirements, tags, status, expiresInDays } = body;
+    const { id, title, type, locationType, location, salaryRange, description, requirements, applicationUrl, equityRange, startupStage, tags, status, expiresInDays } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -186,6 +216,9 @@ export async function PUT(request: NextRequest) {
     if (salaryRange !== undefined) updateData.salaryRange = salaryRange;
     if (description !== undefined) updateData.description = description;
     if (requirements !== undefined) updateData.requirements = requirements;
+    if (applicationUrl !== undefined) updateData.applicationUrl = applicationUrl;
+    if (equityRange !== undefined) updateData.equityRange = equityRange;
+    if (startupStage !== undefined) updateData.startupStage = startupStage;
     if (tags !== undefined) updateData.tags = tags;
     if (status !== undefined) updateData.status = status;
     // When re-publishing (e.g. from expired/closed), refresh the expiration
@@ -198,6 +231,37 @@ export async function PUT(request: NextRequest) {
     }
 
     await docRef.update(updateData);
+
+    // Share to Discord when re-publishing from a non-published state (fire-and-forget)
+    const wasNotPublished = listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft';
+    if (status === 'published' && wasNotPublished) {
+      const merged = { ...listing, ...updateData };
+      shareJobToDiscord({
+        title: merged.title,
+        companyName: merged.companyName,
+        slug: listing.slug,
+        type: merged.type,
+        locationType: merged.locationType,
+        location: merged.location || undefined,
+        salaryRange: merged.salaryRange || undefined,
+        equityRange: merged.equityRange || undefined,
+        startupStage: merged.startupStage || undefined,
+        tags: merged.tags || [],
+        description: merged.description || undefined,
+      }).catch((err) => console.error('Discord share failed:', err));
+
+      shareJobToLinkedIn({
+        title: merged.title,
+        companyName: merged.companyName,
+        slug: listing.slug,
+        type: merged.type,
+        locationType: merged.locationType,
+        location: merged.location || undefined,
+        salaryRange: merged.salaryRange || undefined,
+        description: merged.description || undefined,
+        tags: merged.tags || [],
+      }).catch((err) => console.error('LinkedIn share failed:', err));
+    }
 
     return NextResponse.json({
       success: true,

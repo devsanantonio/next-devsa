@@ -43,6 +43,9 @@ interface JobDetail {
   salaryRange?: string
   description: string
   requirements?: string
+  applicationUrl?: string
+  equityRange?: string
+  startupStage?: string
   tags: string[]
   applicantCount: number
   status: string
@@ -66,7 +69,7 @@ interface Comment {
 const typeLabels: Record<string, string> = {
   w2: "W-2 Employment",
   "1099": "1099 Contract",
-  equity: "Equity / Startup",
+  equity: "Co-founder / Equity",
   internship: "Internship / Apprenticeship",
   other: "Other",
 }
@@ -378,6 +381,23 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
                 {job.salaryRange}
               </span>
             )}
+            {job.equityRange && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs sm:text-sm text-emerald-700">
+                {job.equityRange} equity
+              </span>
+            )}
+            {job.startupStage && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 border border-violet-200 px-3 py-1 text-xs sm:text-sm text-violet-700">
+                {{
+                  idea: "Idea / Pre-product",
+                  mvp: "MVP / Prototype",
+                  "pre-seed": "Pre-seed",
+                  seed: "Seed",
+                  "series-a": "Series A+",
+                  revenue: "Revenue / Bootstrapped",
+                }[job.startupStage] || job.startupStage}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs sm:text-sm text-slate-500">
               <Clock className="h-3.5 w-3.5" />
               Posted {timeAgo(job.createdAt)}
@@ -502,6 +522,22 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(job.requirements) }}
               />
             </>
+          )}
+
+          {job.applicationUrl && (
+            <div className="mt-8 rounded-xl bg-slate-50 border border-slate-200 p-4 sm:p-5">
+              <p className="text-sm font-semibold text-slate-900 mb-1">Apply Externally</p>
+              <p className="text-xs text-slate-500 mb-3">This company also accepts applications through their own careers page.</p>
+              <a
+                href={job.applicationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Apply on Company Site
+              </a>
+            </div>
           )}
         </div>
 

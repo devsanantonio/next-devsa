@@ -6,28 +6,30 @@ import { JobsLayoutShell } from "@/components/jobs/jobs-layout-shell"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
 export const metadata: Metadata = {
-  title: "Jobs - San Antonio Tech Job Board",
+  title: "The Opportunity Pipeline — Post Once, Reach Every Developer",
   description:
-    "Find tech jobs and hiring opportunities in San Antonio. Connect with local companies, startups, and developers building the future of the Alamo City tech ecosystem.",
+    "Post once and your listing is automatically shared across our website, Discord, and LinkedIn — reaching developers, designers, and engineers across San Antonio, the I-35 corridor, and the Rio Grande Valley. Free during our Community Launch.",
   keywords: [
     "San Antonio tech jobs",
     "DEVSA jobs",
-    "developer jobs SA",
-    "tech hiring San Antonio",
-    "software engineer jobs",
+    "post tech jobs San Antonio",
+    "hire developers San Antonio",
+    "tech hiring South Texas",
+    "I-35 corridor jobs",
+    "Rio Grande Valley tech jobs",
     "startup jobs San Antonio",
-    "contract work tech",
-    "remote tech jobs",
-    "San Antonio startups",
-    "tech careers Texas",
+    "New Braunfels tech jobs",
+    "San Marcos tech jobs",
+    "local job board Texas",
+    "free job posting San Antonio",
   ],
   alternates: {
     canonical: "/jobs",
   },
   openGraph: {
-    title: "DEVSA Jobs - San Antonio Tech Job Board",
+    title: "Post Once. Reach Every Developer in South Texas.",
     description:
-      "Find tech jobs and hiring opportunities in San Antonio. Connect with local companies, startups, and developers in the DEVSA community.",
+      "Your listing is automatically shared across our website, Discord, and LinkedIn. Free during our Community Launch. DEVSA is a 501(c)(3) nonprofit bridging 20+ tech community groups and local talent.",
     url: `${siteUrl}/jobs`,
     siteName: "DEVSA",
     images: [
@@ -35,16 +37,16 @@ export const metadata: Metadata = {
         url: `${siteUrl}/api/og/jobs`,
         width: 1200,
         height: 630,
-        alt: "DEVSA Jobs - San Antonio Tech Job Board",
+        alt: "DEVSA — Post Once, Reach Every Developer in South Texas",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DEVSA Jobs - San Antonio Tech Job Board",
+    title: "Post Once. Reach Every Developer in South Texas.",
     description:
-      "Find tech jobs and hiring opportunities in San Antonio. Connect with local companies, startups, and developers in the DEVSA community.",
+      "Your listing is automatically shared across our website, Discord, and LinkedIn. Free during our Community Launch. DEVSA is a 501(c)(3) nonprofit bridging 20+ tech community groups and local talent.",
     images: [`${siteUrl}/api/og/jobs`],
     creator: "@devsatx",
     site: "@devsatx",

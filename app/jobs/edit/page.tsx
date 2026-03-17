@@ -18,7 +18,7 @@ import Link from "next/link"
 const jobTypes = [
   { value: "w2", label: "W-2 Employment" },
   { value: "1099", label: "1099 Contract" },
-  { value: "equity", label: "Equity / Startup" },
+  { value: "equity", label: "Co-founder / Equity" },
   { value: "internship", label: "Internship / Apprenticeship" },
   { value: "other", label: "Other" },
 ]
@@ -39,6 +39,9 @@ interface JobData {
   salaryRange?: string
   description: string
   requirements?: string
+  applicationUrl?: string
+  equityRange?: string
+  startupStage?: string
   tags: string[]
   status: string
   authorUid: string
@@ -63,6 +66,9 @@ export default function EditJobPage() {
   const [salaryRange, setSalaryRange] = useState("")
   const [description, setDescription] = useState("")
   const [requirements, setRequirements] = useState("")
+  const [applicationUrl, setApplicationUrl] = useState("")
+  const [equityRange, setEquityRange] = useState("")
+  const [startupStage, setStartupStage] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -106,6 +112,9 @@ export default function EditJobPage() {
       setSalaryRange(found.salaryRange || "")
       setDescription(found.description || "")
       setRequirements(found.requirements || "")
+      setApplicationUrl(found.applicationUrl || "")
+      setEquityRange(found.equityRange || "")
+      setStartupStage(found.startupStage || "")
       setTags(found.tags || [])
     } catch {
       setError("Failed to load job")
@@ -146,6 +155,9 @@ export default function EditJobPage() {
           salaryRange: salaryRange || undefined,
           description: description || "<p>No description provided.</p>",
           requirements: requirements || undefined,
+          applicationUrl: applicationUrl || undefined,
+          equityRange: type === "equity" ? equityRange || undefined : undefined,
+          startupStage: type === "equity" ? startupStage || undefined : undefined,
           tags,
           ...(newStatus && { status: newStatus }),
           // Refresh expiration when re-publishing
@@ -291,6 +303,35 @@ export default function EditJobPage() {
                   </select>
                 </div>
               </div>
+              {type === "equity" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Equity Range</label>
+                    <input
+                      value={equityRange}
+                      onChange={(e) => setEquityRange(e.target.value)}
+                      placeholder="e.g. 5-15%"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Startup Stage</label>
+                    <select
+                      value={startupStage}
+                      onChange={(e) => setStartupStage(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm appearance-none"
+                    >
+                      <option value="">Select stage...</option>
+                      <option value="idea">Idea / Pre-product</option>
+                      <option value="mvp">MVP / Prototype</option>
+                      <option value="pre-seed">Pre-seed</option>
+                      <option value="seed">Seed</option>
+                      <option value="series-a">Series A+</option>
+                      <option value="revenue">Revenue / Bootstrapped</option>
+                    </select>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
@@ -316,14 +357,14 @@ export default function EditJobPage() {
 
           {/* Description */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 leading-tight">Job Description</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-4 leading-tight">Job Details</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the role, responsibilities, and what makes this opportunity unique..."
+                  placeholder="Describe the role, day-to-day responsibilities, team structure, and what makes this opportunity unique..."
                   rows={8}
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
                 />
@@ -334,10 +375,20 @@ export default function EditJobPage() {
                 <textarea
                   value={requirements}
                   onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="List skills, qualifications, and experience required..."
+                  placeholder="List must-have skills, preferred qualifications, years of experience, and any certifications..."
                   rows={5}
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm resize-none"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Application URL</label>
+                <input
+                  value={applicationUrl}
+                  onChange={(e) => setApplicationUrl(e.target.value)}
+                  placeholder="https://your-company.com/careers/apply"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 sm:py-3 px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/10 shadow-sm"
+                />
+                <p className="text-xs text-slate-400 mt-1.5">Link to your external application page (optional).</p>
               </div>
             </div>
           </section>

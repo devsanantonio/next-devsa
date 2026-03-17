@@ -335,6 +335,9 @@ export interface JobListing {
   salaryRange?: string;
   description: string;
   requirements?: string;
+  applicationUrl?: string;
+  equityRange?: string;
+  startupStage?: string;
   tags: string[];
   communityId?: string;
   status: 'draft' | 'published' | 'closed' | 'expired';

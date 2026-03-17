@@ -61,7 +61,7 @@ export function ShopClient({ products }: ShopClientProps) {
               <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em]">
                 Official Merch
               </p>
-              <h1 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              <h1 className="font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Community Threads.{" "}
                 <span className="text-gray-400 font-light italic">Wear the</span>{" "}
                 Source.
@@ -69,18 +69,18 @@ export function ShopClient({ products }: ShopClientProps) {
             </div>
 
             <div className="space-y-6 max-w-3xl mt-8">
-              <p className="text-xl md:text-2xl text-gray-500 leading-snug font-normal">
+              <p className="text-xl md:text-2xl text-gray-500 leading-[1.4] font-normal">
                 Bridging the gap between code and community with high-fidelity threads designed to keep our resources available and our connections strong.
               </p>
 
-              <p className="text-base md:text-lg text-gray-400 leading-normal font-light">
+              <p className="text-base md:text-lg text-gray-400 leading-[1.6] font-normal">
                 Print-on-demand apparel — designed in{" "}
                 <span className="font-medium text-gray-600">San Antonio</span>,{" "}
                 shipped to{" "}
                 <span className="font-medium text-gray-600">your door</span>.
               </p>
 
-              <p className="text-sm text-gray-400 leading-normal font-light">
+              <p className="text-sm text-gray-400 leading-[1.6] font-normal">
                 Special thanks to the{" "}
                 <a
                   href="https://www.python.org/psf/"
@@ -143,18 +143,18 @@ export function ShopClient({ products }: ShopClientProps) {
               <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em]">
                 Community Collection
               </p>
-              <h2 className="font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              <h2 className="font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Your Logo.{" "}
                 <span className="text-gray-400 font-light italic">Remixed</span>{" "}
               </h2>
             </div>
 
             <div className="space-y-6 max-w-3xl mt-8">
-              <p className="text-xl md:text-2xl text-gray-500 leading-snug font-normal">
+              <p className="text-xl md:text-2xl text-gray-500 leading-[1.4] font-normal">
                 Part of our mission is spotlighting the groups that power San Antonio. 
                 Submit your logo and let our team remix it into a fresh, production-ready design for the DEVSA store.
               </p>
-              <p className="text-base md:text-lg text-gray-400 leading-normal font-light">
+              <p className="text-base md:text-lg text-gray-400 leading-[1.6] font-normal">
                 We&apos;ll handle the{" "}
                 <span className="font-medium text-gray-600">design</span>,{" "}
                 the{" "}
