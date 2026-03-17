@@ -160,6 +160,10 @@ export async function POST(request: NextRequest) {
         description: listing.description || undefined,
         tags: listing.tags,
       }).catch((err) => console.error('LinkedIn share failed:', err));
+    }
+
+    return NextResponse.json({
+      success: true,
       id: docRef.id,
       slug,
       shared: listing.status === 'published' ? { discord: true } : undefined,
