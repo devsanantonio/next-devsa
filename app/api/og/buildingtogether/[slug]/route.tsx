@@ -6,7 +6,7 @@ import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 export const runtime = "nodejs"
 
 /* Shared header component style for OG images */
-function OgHeader({ label, dark = false }: { label: string; dark?: boolean }) {
+function OgHeader({ label }: { label: string }) {
   return (
     <div
       style={{
@@ -29,7 +29,7 @@ function OgHeader({ label, dark = false }: { label: string; dark?: boolean }) {
         />
         <span
           style={{
-            color: dark ? "#ffffff" : "#111827",
+            color: "#111827",
             fontSize: 26,
             fontWeight: 700,
             letterSpacing: "0.02em",
@@ -43,7 +43,7 @@ function OgHeader({ label, dark = false }: { label: string; dark?: boolean }) {
         style={{
           display: "flex",
           alignItems: "center",
-          backgroundColor: dark ? "rgba(239, 66, 111, 0.15)" : "#fef2f2",
+          backgroundColor: "#fef2f2",
           border: "2px solid #ef426f",
           borderRadius: 24,
           padding: "8px 22px",
@@ -90,11 +90,11 @@ export async function GET(
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#111827",
+            backgroundColor: "#ffffff",
             padding: "56px 64px",
           }}
         >
-          <OgHeader label="Tech Group" dark />
+          <OgHeader label="Tech Group" />
 
           {/* Main content */}
           <div
@@ -113,10 +113,10 @@ export async function GET(
                 justifyContent: "center",
                 width: 200,
                 height: 200,
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "#f9fafb",
                 borderRadius: 24,
                 padding: 24,
-                border: "1px solid rgba(255, 255, 255, 0.08)",
+                border: "1px solid #f3f4f6",
               }}
             >
               <img
@@ -140,7 +140,7 @@ export async function GET(
                 style={{
                   fontSize: community.name.length > 25 ? 48 : 58,
                   fontWeight: 800,
-                  color: "#ffffff",
+                  color: "#111827",
                   lineHeight: 1.2,
                   margin: 0,
                   marginBottom: 18,
@@ -153,7 +153,7 @@ export async function GET(
               <p
                 style={{
                   fontSize: 21,
-                  color: "#9ca3af",
+                  color: "#6b7280",
                   margin: 0,
                   lineHeight: 1.55,
                   fontWeight: 400,
@@ -174,18 +174,13 @@ export async function GET(
               justifyContent: "space-between",
               width: "100%",
               paddingTop: 24,
-              borderTop: "2px solid rgba(255, 255, 255, 0.08)",
+              borderTop: "2px solid #f3f4f6",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Building
-              </span>
-              <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-                Together
-              </span>
-            </div>
-            <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
+            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 500, lineHeight: 1.4 }}>
+              Find your people. Build your future.
+            </span>
+            <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
               devsa.community/buildingtogether/{slug}
             </span>
           </div>
@@ -322,15 +317,18 @@ export async function GET(
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#111827",
+          backgroundColor: "#ffffff",
           gap: 16,
         }}
       >
         <span style={{ color: "#ef426f", fontSize: 28, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.4 }}>
           DEVSA
         </span>
-        <span style={{ color: "#ffffff", fontSize: 48, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+        <span style={{ color: "#111827", fontSize: 48, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
           Community
+        </span>
+        <span style={{ color: "#9ca3af", fontSize: 20, fontWeight: 400, lineHeight: 1.4 }}>
+          Find your people. Build your future.
         </span>
       </div>
     ),

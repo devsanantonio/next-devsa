@@ -44,25 +44,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
           height: "100%",
           width: "100%",
           display: "flex",
-          backgroundColor: "#111827",
+          backgroundColor: "#ffffff",
           padding: "56px 64px",
-          position: "relative",
         }}
       >
-        {/* Radial gradient accent */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: 600,
-            height: 600,
-            background:
-              "radial-gradient(ellipse at 100% 0%, rgba(239, 66, 111, 0.12) 0%, transparent 60%)",
-            display: "flex",
-          }}
-        />
-
         {/* Left side — text content */}
         <div
           style={{
@@ -70,7 +55,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
             flexDirection: "column",
             flex: 1,
             justifyContent: "space-between",
-            zIndex: 1,
             paddingRight: 48,
           }}
         >
@@ -93,7 +77,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
             />
             <span
               style={{
-                color: "#ffffff",
+                color: "#111827",
                 fontSize: 26,
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -115,7 +99,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
               style={{
                 fontSize: 52,
                 fontWeight: 800,
-                color: "#ffffff",
+                color: "#111827",
                 lineHeight: 1.1,
                 margin: 0,
                 letterSpacing: "-0.02em",
@@ -141,7 +125,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
               <p
                 style={{
                   fontSize: 20,
-                  color: "#9ca3af",
+                  color: "#6b7280",
                   margin: 0,
                   maxWidth: 500,
                   lineHeight: 1.5,
@@ -156,7 +140,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
           {/* Footer */}
           <span
             style={{
-              color: "#6b7280",
+              color: "#9ca3af",
               fontSize: 16,
               fontWeight: 500,
             }}

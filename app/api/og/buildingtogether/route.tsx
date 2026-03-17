@@ -11,7 +11,7 @@ export async function GET() {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#111827",
+          backgroundColor: "#ffffff",
           padding: "56px 64px",
         }}
       >
@@ -43,7 +43,7 @@ export async function GET() {
             />
             <span
               style={{
-                color: "#ffffff",
+                color: "#111827",
                 fontSize: 26,
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -58,7 +58,7 @@ export async function GET() {
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "rgba(239, 66, 111, 0.15)",
+              backgroundColor: "#fef2f2",
               border: "2px solid #ef426f",
               borderRadius: 24,
               padding: "8px 22px",
@@ -91,7 +91,7 @@ export async function GET() {
             style={{
               fontSize: 74,
               fontWeight: 800,
-              color: "#ffffff",
+              color: "#111827",
               lineHeight: 1.2,
               margin: 0,
               marginBottom: 20,
@@ -105,7 +105,7 @@ export async function GET() {
           <p
             style={{
               fontSize: 26,
-              color: "#9ca3af",
+              color: "#6b7280",
               margin: 0,
               marginBottom: 40,
               maxWidth: 800,
@@ -127,10 +127,10 @@ export async function GET() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backgroundColor: "#f9fafb",
                 borderRadius: 16,
                 padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
+                border: "1px solid #f3f4f6",
               }}
             >
               <span
@@ -145,7 +145,7 @@ export async function GET() {
               >
                 20+
               </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+              <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
                 Tech Groups
               </span>
             </div>
@@ -154,10 +154,10 @@ export async function GET() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backgroundColor: "#f9fafb",
                 borderRadius: 16,
                 padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
+                border: "1px solid #f3f4f6",
               }}
             >
               <span
@@ -172,7 +172,7 @@ export async function GET() {
               >
                 10+
               </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+              <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
                 Partners
               </span>
             </div>
@@ -181,10 +181,10 @@ export async function GET() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backgroundColor: "#f9fafb",
                 borderRadius: 16,
                 padding: "24px 32px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
+                border: "1px solid #f3f4f6",
               }}
             >
               <span
@@ -199,7 +199,7 @@ export async function GET() {
               >
                 1
               </span>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
+              <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
                 Community
               </span>
             </div>
@@ -214,24 +214,20 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             paddingTop: 24,
-            borderTop: "2px solid rgba(255, 255, 255, 0.08)",
+            borderTop: "2px solid #f3f4f6",
           }}
         >
-          <div
+          <span
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
+              color: "#9ca3af",
+              fontSize: 17,
+              fontWeight: 500,
+              lineHeight: 1.4,
             }}
           >
-            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              San Antonio
-            </span>
-            <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              Tech Ecosystem
-            </span>
-          </div>
-          <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
+            Find your people. Build your future.
+          </span>
+          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
             devsa.community/buildingtogether
           </span>
         </div>

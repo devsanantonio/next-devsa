@@ -11,25 +11,10 @@ export async function GET() {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#111827",
+          backgroundColor: "#ffffff",
           padding: "56px 64px",
-          position: "relative",
         }}
       >
-        {/* Radial gradient accent */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: 600,
-            height: 600,
-            background:
-              "radial-gradient(ellipse at 100% 0%, rgba(239, 66, 111, 0.12) 0%, transparent 60%)",
-            display: "flex",
-          }}
-        />
-
         {/* Header */}
         <div
           style={{
@@ -38,7 +23,6 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             marginBottom: 48,
-            zIndex: 1,
           }}
         >
           <div
@@ -59,7 +43,7 @@ export async function GET() {
             />
             <span
               style={{
-                color: "#ffffff",
+                color: "#111827",
                 fontSize: 26,
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -74,8 +58,8 @@ export async function GET() {
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "rgba(239, 66, 111, 0.1)",
-              border: "2px solid rgba(239, 66, 111, 0.3)",
+              backgroundColor: "#fef2f2",
+              border: "2px solid #ef426f",
               borderRadius: 24,
               padding: "8px 22px",
             }}
@@ -100,21 +84,20 @@ export async function GET() {
             flexDirection: "column",
             flex: 1,
             justifyContent: "center",
-            zIndex: 1,
           }}
         >
           <h1
             style={{
               fontSize: 64,
               fontWeight: 800,
-              color: "#ffffff",
+              color: "#111827",
               lineHeight: 1.1,
               margin: 0,
               marginBottom: 8,
               letterSpacing: "-0.02em",
             }}
           >
-            Community Vibes.
+            Community Threads.
           </h1>
           <h2
             style={{
@@ -134,7 +117,7 @@ export async function GET() {
           <p
             style={{
               fontSize: 22,
-              color: "#9ca3af",
+              color: "#6b7280",
               margin: 0,
               maxWidth: 750,
               lineHeight: 1.55,
@@ -145,36 +128,37 @@ export async function GET() {
           </p>
         </div>
 
-        {/* Footer row */}
+        {/* Footer */}
         <div
           style={{
             display: "flex",
-            gap: 48,
-            zIndex: 1,
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingTop: 24,
+            borderTop: "2px solid #f3f4f6",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 20,
-                fontWeight: 700,
-                lineHeight: 1.3,
-              }}
-            >
-              devsa.community/shop
-            </span>
-            <span
-              style={{
-                color: "#6b7280",
-                fontSize: 15,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}
-            >
-              San Antonio Developer Community
-            </span>
-          </div>
+          <span
+            style={{
+              color: "#9ca3af",
+              fontSize: 17,
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}
+          >
+            Find your people. Build your future.
+          </span>
+          <span
+            style={{
+              color: "#9ca3af",
+              fontSize: 15,
+              fontWeight: 400,
+              lineHeight: 1.4,
+            }}
+          >
+            devsa.community/shop
+          </span>
         </div>
       </div>
     ),

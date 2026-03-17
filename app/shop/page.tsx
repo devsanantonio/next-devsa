@@ -7,7 +7,7 @@ const BASE_URL = "https://devsa.community";
 export const metadata: Metadata = {
   title: "Shop | DEVSA – Official Community Merch",
   description:
-    "Community vibes, wear the source. Print-on-demand apparel designed in San Antonio — bridging the gap between code and community.",
+    "Community threads, wear the source. Print-on-demand apparel designed in San Antonio — bridging the gap between code and community.",
   openGraph: {
     title: "Shop | DEVSA – Official Community Merch",
     description:

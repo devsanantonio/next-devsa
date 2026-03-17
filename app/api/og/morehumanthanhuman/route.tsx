@@ -11,25 +11,10 @@ export async function GET() {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#0a0a0a",
+          backgroundColor: "#ffffff",
           padding: "56px 64px",
-          position: "relative",
         }}
       >
-        {/* Background gradient effect */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "radial-gradient(ellipse at 30% 20%, rgba(239, 66, 111, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(239, 66, 111, 0.08) 0%, transparent 40%)",
-            display: "flex",
-          }}
-        />
-
         {/* Header */}
         <div
           style={{
@@ -38,7 +23,6 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             marginBottom: 48,
-            zIndex: 1,
           }}
         >
           <div
@@ -59,7 +43,7 @@ export async function GET() {
             />
             <span
               style={{
-                color: "#ffffff",
+                color: "#111827",
                 fontSize: 26,
                 fontWeight: 700,
                 letterSpacing: "0.02em",
@@ -73,7 +57,7 @@ export async function GET() {
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "rgba(239, 66, 111, 0.15)",
+              backgroundColor: "#fef2f2",
               border: "2px solid #ef426f",
               borderRadius: 24,
               padding: "8px 22px",
@@ -99,15 +83,13 @@ export async function GET() {
             flexDirection: "column",
             flex: 1,
             justifyContent: "center",
-            zIndex: 1,
           }}
         >
-          {/* Main title */}
           <h1
             style={{
               fontSize: 78,
               fontWeight: 800,
-              color: "#ffffff",
+              color: "#111827",
               lineHeight: 1.15,
               margin: 0,
               marginBottom: 8,
@@ -130,11 +112,10 @@ export async function GET() {
             Than Human
           </h2>
 
-          {/* Subtitle */}
           <p
             style={{
               fontSize: 24,
-              color: "#9ca3af",
+              color: "#6b7280",
               margin: 0,
               marginBottom: 36,
               maxWidth: 700,
@@ -159,7 +140,7 @@ export async function GET() {
                 <line x1="8" y1="2" x2="8" y2="6" stroke="#ef426f" strokeWidth="2" />
                 <line x1="3" y1="10" x2="21" y2="10" stroke="#ef426f" strokeWidth="2" />
               </svg>
-              <span style={{ color: "#e5e7eb", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
+              <span style={{ color: "#111827", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
                 February 28, 2026
               </span>
             </div>
@@ -169,7 +150,7 @@ export async function GET() {
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#ef426f" strokeWidth="2" />
                 <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
               </svg>
-              <span style={{ color: "#e5e7eb", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
+              <span style={{ color: "#111827", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
                 Geekdom, San Antonio
               </span>
             </div>
@@ -184,25 +165,20 @@ export async function GET() {
             justifyContent: "space-between",
             width: "100%",
             paddingTop: 24,
-            borderTop: "2px solid rgba(255, 255, 255, 0.08)",
-            zIndex: 1,
+            borderTop: "2px solid #f3f4f6",
           }}
         >
-          <div
+          <span
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
+              color: "#9ca3af",
+              fontSize: 17,
+              fontWeight: 500,
+              lineHeight: 1.4,
             }}
           >
-            <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              Call for
-            </span>
-            <span style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              Speakers Open
-            </span>
-          </div>
-          <span style={{ color: "#6b7280", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
+            Find your people. Build your future.
+          </span>
+          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
             devsa.community/events/morehumanthanhuman
           </span>
         </div>
