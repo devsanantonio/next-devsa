@@ -24,7 +24,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     (o) => o.type === "color" || o.name.toLowerCase() === "colors"
   );
   const sizeOption = product.options.find(
-    (o) => o.name.toLowerCase() === "sizes" || o.name.toLowerCase() === "size"
+    (o) => o.type === "size" || o.name.toLowerCase() === "sizes" || o.name.toLowerCase() === "size"
   );
 
   const [selectedColorId, setSelectedColorId] = useState<number | null>(
