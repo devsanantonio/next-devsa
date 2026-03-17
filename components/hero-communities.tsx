@@ -203,7 +203,7 @@ export function HeroCommunities() {
             transition={{ duration: 0.6 }}
             className="space-y-8"
           >
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-3xl">
               <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
                 Stay Connected
               </p>

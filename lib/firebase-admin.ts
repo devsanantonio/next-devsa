@@ -84,6 +84,8 @@ export const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
   SAVED_JOBS: 'saved_jobs',
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
+  MERCH_SUBMISSIONS: 'merch_submissions',
+  FAILED_ORDERS: 'failed_orders',
 } as const;
 
 // Types for Firestore documents

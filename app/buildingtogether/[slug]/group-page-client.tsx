@@ -122,9 +122,12 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
       url?: string
     }> = []
 
-    // Add Firestore events
+    // Add Firestore events (supports comma-separated communityId for collab events)
     firestoreEvents
-      .filter(e => e.communityId === slug)
+      .filter(e => {
+        const ids = (e.communityId || '').split(',').map((id: string) => id.trim())
+        return ids.includes(slug)
+      })
       .forEach(event => {
         allCommunityEvents.push({
           id: event.id,

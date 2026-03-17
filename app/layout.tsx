@@ -6,6 +6,8 @@ import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Footer } from "@/components/footer"
+import { CartProvider } from "@/components/shop/cart-context"
+import { CartSlideOut } from "@/components/shop/cart-slide-out"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -172,9 +174,12 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <Navbar />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <CartSlideOut />
+          </CartProvider>
           <Analytics />
         </Suspense>
       </body>

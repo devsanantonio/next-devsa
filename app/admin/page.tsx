@@ -135,7 +135,7 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps"
+type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps" | "merch"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -237,6 +237,7 @@ export default function AdminPage() {
   const [newsletterCommunityFilter, setNewsletterCommunityFilter] = useState<string>("all")
   const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
   const [devsaSubs, setDevsaSubs] = useState<DevSASubscriber[]>([])
+  const [merchSubmissions, setMerchSubmissions] = useState<{id: string; communityName: string; contactName: string; contactEmail: string; description: string; logoUrl: string; status: string; submittedAt: string}[]>([])
   const [editingDevsaSub, setEditingDevsaSub] = useState<DevSASubscriber | null>(null)
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
@@ -349,6 +350,15 @@ export default function AdminPage() {
           }
         } catch {
           // Silently fail — subscribers tab will show empty
+        }
+        try {
+          const merchRes = await fetch('/api/shop/merch-submissions')
+          if (merchRes.ok) {
+            const merchData = await merchRes.json()
+            setMerchSubmissions(merchData.submissions || [])
+          }
+        } catch {
+          // Silently fail
         }
       }
     } catch {
@@ -1244,7 +1254,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setShowAdminMenu(!showAdminMenu)}
                 className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  ["newsletter", "speakers", "access", "admins"].includes(activeTab)
+                  ["newsletter", "speakers", "access", "admins", "merch"].includes(activeTab)
                     ? "bg-[#ef426f] text-white"
                     : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
                 }`}
@@ -1345,6 +1355,25 @@ export default function AdminPage() {
                       <UserCheck className="h-4 w-4" />
                       Manage Admins
                       <span className="ml-auto text-xs text-neutral-500">{admins.length}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab("merch")
+                        setShowAdminMenu(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        activeTab === "merch"
+                          ? "bg-[#ef426f]/20 text-[#ef426f]"
+                          : "text-neutral-300 hover:bg-neutral-700"
+                      }`}
+                    >
+                      <Upload className="h-4 w-4" />
+                      Merch Submissions
+                      {merchSubmissions.filter(s => s.status === "pending").length > 0 && (
+                        <span className="ml-auto inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                          {merchSubmissions.filter(s => s.status === "pending").length}
+                        </span>
+                      )}
                     </button>
                   </div>
                 </>
@@ -3404,6 +3433,90 @@ export default function AdminPage() {
                   </div>
                 )
               })()}
+            </div>
+          )}
+
+          {/* Merch Submissions Tab - Admin Only */}
+          {activeTab === "merch" && hasAdminAccess(adminRole) && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold tracking-tight text-white">Merch Submissions</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
+                    <Shield className="h-3 w-3" /> Admin Only
+                  </span>
+                </div>
+                <span className="text-sm text-neutral-400">
+                  {merchSubmissions.filter(s => s.status === "pending").length} pending
+                </span>
+              </div>
+
+              {merchSubmissions.length === 0 ? (
+                <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-12 text-center">
+                  <Upload className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
+                  <p className="text-neutral-400 text-sm">No submissions yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {merchSubmissions.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className={`rounded-xl border p-5 transition-colors ${
+                        sub.status === "pending"
+                          ? "border-emerald-500/30 bg-emerald-500/5"
+                          : "border-neutral-800 bg-neutral-900/50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-5">
+                        {/* Logo Preview */}
+                        <div className="shrink-0 w-16 h-16 rounded-lg border border-neutral-700 bg-neutral-800 flex items-center justify-center overflow-hidden">
+                          <img
+                            src={sub.logoUrl}
+                            alt={sub.communityName}
+                            className="w-12 h-12 object-contain"
+                          />
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-white font-semibold text-sm">{sub.communityName}</h3>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                              sub.status === "pending"
+                                ? "bg-emerald-500/20 text-emerald-400"
+                                : sub.status === "approved"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : "bg-neutral-500/20 text-neutral-400"
+                            }`}>
+                              {sub.status}
+                            </span>
+                          </div>
+                          <p className="text-neutral-400 text-xs mb-1">
+                            {sub.contactName} &middot; {sub.contactEmail}
+                          </p>
+                          {sub.description && (
+                            <p className="text-neutral-500 text-xs leading-relaxed mt-1">{sub.description}</p>
+                          )}
+                          <p className="text-neutral-600 text-[11px] mt-2">
+                            Submitted {new Date(sub.submittedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+
+                        {/* Logo URL */}
+                        <a
+                          href={sub.logoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          View SVG
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

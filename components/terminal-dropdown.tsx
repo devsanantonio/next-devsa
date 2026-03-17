@@ -21,14 +21,14 @@ export function TerminalDropdown({ isOpen, onClose, onSocialMenuOpen }: Terminal
 ██████╔╝███████╗ ╚████╔╝ ███████║██║  ██║
 ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
 
-Your Direct Connection to the Tech Community`
+Find your people. Build your future.`
 
   if (!isOpen) return null
 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40 lg:hidden" onClick={onClose} />
       
       <AnimatePresence>
         <motion.div
@@ -36,7 +36,7 @@ Your Direct Connection to the Tech Community`
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className={`absolute right-0 top-full mt-2 z-50 bg-black border-2 border-rose-600 rounded-lg shadow-2xl overflow-hidden w-80`}
+          className={`absolute right-0 top-full mt-2 z-50 bg-black border-2 border-rose-600 rounded-lg shadow-2xl overflow-hidden w-80 lg:hidden`}
 
         >
           {/* Unified Terminal Menu */}
@@ -50,7 +50,7 @@ Your Direct Connection to the Tech Community`
                     <div className="w-2 h-2 bg-[#ef426f] rounded-full"></div>
                     <div className="w-2 h-2 bg-[#ff8200] rounded-full"></div>
                   </div>
-                  <span className="text-[#ef426f] text-xs font-mono">
+                  <span className="text-[#ef426f] text-xs font-medium font-mono leading-normal">
                     {currentUser}@devsa.community
                   </span>
                 </div>
@@ -73,23 +73,30 @@ Your Direct Connection to the Tech Community`
             {/* Menu Items */}
             <div className="py-2">
               <Link
+                href="/buildingtogether"
+                onClick={onClose}
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
+              >
+                {'>'} Building Together
+              </Link>
+              <Link
                 href="/coworking-space"
                 onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
               >
                 {'>'} Coworking Space
               </Link>
               <Link
                 href="/events"
                 onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
               >
-                {'>'} Events Calendar
+                {'>'} Community Calendar
               </Link>
               <Link
                 href="/jobs"
                 onClick={onClose}
-                className="flex items-center gap-2 px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+                className="flex items-center gap-2 px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
               >
                 {'>'} Job Board
                 <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-400 border border-amber-500/30">
@@ -97,18 +104,21 @@ Your Direct Connection to the Tech Community`
                 </span>
               </Link>
               <Link
-                href="/buildingtogether"
+                href="/shop"
                 onClick={onClose}
-                className="block px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-sm text-left"
+                className="flex items-center gap-2 px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 border-b border-[#ef426f]/30 font-mono text-[13px] font-normal leading-normal text-left"
               >
-                {'>'} Partners & Communities
+                {'>'} Shop
+                <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
+                  New
+                </span>
               </Link>
               <button
                 onClick={() => {
                   onSocialMenuOpen()
                   onClose()
                 }}
-                className="w-full text-left px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 font-mono text-sm"
+                className="w-full text-left px-4 py-3 text-[#ef426f] hover:bg-rose-900/20 transition-colors duration-150 font-mono text-[13px] font-normal leading-normal"
               >
                 {'>'} Stay Connected
               </button>
