@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
         openToWorkUsers: users.filter((u) => u.role === 'open-to-work').length,
         totalJobs: jobs.length,
         publishedJobs: jobs.filter((j) => j.status === 'published').length,
+        pendingJobs: jobs.filter((j) => j.status === 'pending').length,
         draftJobs: jobs.filter((j) => j.status === 'draft').length,
         closedJobs: jobs.filter((j) => j.status === 'closed').length,
         totalApplications: applications.length,

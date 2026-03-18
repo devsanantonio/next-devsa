@@ -218,3 +218,59 @@ export async function shareJobToDiscord(job: DiscordJobPayload): Promise<void> {
     }),
   });
 }
+
+export interface DigestEvent {
+  title: string;
+  slug: string;
+  date: string;
+  location?: string;
+  venue?: string;
+  communityName?: string;
+  eventType?: string;
+}
+
+export async function shareEventsDigestToDiscord(events: DigestEvent[]): Promise<void> {
+  if (!isEventsDiscordConfigured() || events.length === 0) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+
+  const eventLines = events.map(event => {
+    const eventUrl = `${siteUrl}/events/${event.slug}`;
+    const eventDate = new Date(event.date);
+    const dateStr = eventDate.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+    const timeStr = eventDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+    const typeEmoji = event.eventType === 'virtual' ? '💻' : event.eventType === 'hybrid' ? '🔀' : '📍';
+    const locationDisplay = event.venue || event.location;
+
+    let line = `${typeEmoji} **[${event.title}](${eventUrl})**\n`;
+    line += `  📅 ${dateStr} at ${timeStr}`;
+    if (locationDisplay) line += ` · ${locationDisplay}`;
+    if (event.communityName) line += `\n  👥 ${event.communityName}`;
+    return line;
+  }).join('\n\n');
+
+  await fetch(DISCORD_EVENTS_WEBHOOK_URL!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content: `📆 **${events.length} new community event${events.length !== 1 ? 's' : ''} added to the calendar**`,
+      embeds: [
+        {
+          title: 'Upcoming Community Events',
+          url: `${siteUrl}/events`,
+          description: eventLines,
+          color: 0x10b981,
+          footer: { text: 'DEVSA Events · devsa.community/events' },
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }),
+  });
+}

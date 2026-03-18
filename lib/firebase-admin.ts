@@ -190,6 +190,8 @@ export interface Event {
   status?: 'draft' | 'published' | 'cancelled';
   eventType?: 'in-person' | 'hybrid' | 'virtual';
   rsvpEnabled?: boolean;
+  sharedToDiscord?: boolean;
+  sharedToLinkedIn?: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -340,7 +342,7 @@ export interface JobListing {
   startupStage?: string;
   tags: string[];
   communityId?: string;
-  status: 'draft' | 'published' | 'closed' | 'expired';
+  status: 'draft' | 'pending' | 'published' | 'closed' | 'expired' | 'rejected';
   applicantCount: number;
   expiresAt?: Date;
   createdAt: Date;

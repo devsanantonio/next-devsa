@@ -126,7 +126,8 @@ export async function POST(request: NextRequest) {
       startupStage: type === 'equity' ? startupStage || '' : '',
       tags: tags || [],
       communityId: communityId || '',
-      status: requestedStatus === 'draft' ? 'draft' : 'published',
+      // Jobs require admin approval before publishing — set to 'pending' unless saving as draft
+      status: requestedStatus === 'draft' ? 'draft' : 'pending',
       applicantCount: 0,
       expiresAt,
       createdAt: now,
@@ -134,42 +135,13 @@ export async function POST(request: NextRequest) {
 
     const docRef = await db.collection(COLLECTIONS.JOB_LISTINGS).add(listing);
 
-    // Share to Discord when publishing (fire-and-forget)
-    if (listing.status === 'published') {
-      shareJobToDiscord({
-        title: listing.title,
-        companyName: listing.companyName,
-        slug,
-        type: listing.type,
-        locationType: listing.locationType,
-        location: listing.location || undefined,
-        salaryRange: listing.salaryRange || undefined,
-        equityRange: listing.equityRange || undefined,
-        startupStage: listing.startupStage || undefined,
-        tags: listing.tags,
-        description: listing.description || undefined,
-      }).catch((err) => console.error('Discord share failed:', err));
-
-      shareJobToLinkedIn({
-        title: listing.title,
-        companyName: listing.companyName,
-        slug,
-        type: listing.type,
-        locationType: listing.locationType,
-        location: listing.location || undefined,
-        salaryRange: listing.salaryRange || undefined,
-        description: listing.description || undefined,
-        tags: listing.tags,
-      }).catch((err) => console.error('LinkedIn share failed:', err));
-    }
-
     revalidatePath('/jobs');
 
     return NextResponse.json({
       success: true,
       id: docRef.id,
       slug,
-      shared: listing.status === 'published' ? { discord: true } : undefined,
+      status: listing.status,
     });
   } catch (error) {
     console.error('Create listing error:', error);
@@ -227,20 +199,30 @@ export async function PUT(request: NextRequest) {
     if (equityRange !== undefined) updateData.equityRange = equityRange;
     if (startupStage !== undefined) updateData.startupStage = startupStage;
     if (tags !== undefined) updateData.tags = tags;
-    if (status !== undefined) updateData.status = status;
+    if (status !== undefined) {
+      // Only super admins can approve (transition to published)
+      if (status === 'published' && listing.status === 'pending' && !result.isSuperAdmin) {
+        return NextResponse.json(
+          { error: 'Only admins can approve pending listings' },
+          { status: 403 }
+        );
+      }
+      updateData.status = status;
+    }
     // When re-publishing (e.g. from expired/closed), refresh the expiration
     if (expiresInDays !== undefined) {
       const days = Math.min(expiresInDays || 60, 90);
       updateData.expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    } else if (status === 'published' && (listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft')) {
-      // Auto-refresh expiration when re-publishing
+    } else if (status === 'published' && (listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft' || listing.status === 'pending')) {
+      // Auto-refresh expiration when publishing/re-publishing
       updateData.expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
     }
 
     await docRef.update(updateData);
 
-    // Share to Discord when re-publishing from a non-published state (fire-and-forget)
-    const wasNotPublished = listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft';
+    // Share to Discord/LinkedIn only when an admin approves a pending listing
+    // or re-publishes from a non-published state
+    const wasNotPublished = listing.status === 'pending' || listing.status === 'expired' || listing.status === 'closed' || listing.status === 'draft';
     if (status === 'published' && wasNotPublished) {
       const merged = { ...listing, ...updateData };
       shareJobToDiscord({

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
-import { shareEventToDiscord } from '@/lib/discord';
-import { shareEventToLinkedIn } from '@/lib/linkedin';
 
 // Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
@@ -140,40 +138,12 @@ export async function POST(request: NextRequest) {
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
+      sharedToDiscord: false,
+      sharedToLinkedIn: false,
       createdAt: new Date(),
     };
 
     const docRef = await db.collection(COLLECTIONS.EVENTS).add(event);
-
-    // Share to Discord community-events channel (fire-and-forget)
-    if (event.status === 'published') {
-      const communityLookup = await buildCommunityLookup(db);
-      const communityIds = communityId.split(',').map((id: string) => id.trim()).filter(Boolean);
-      const communityNames = communityIds.map((id: string) => communityLookup.get(id)?.name || communityName || id).join(', ');
-
-      shareEventToDiscord({
-        title: event.title,
-        slug,
-        date: event.date,
-        endTime: event.endTime,
-        location: event.location,
-        venue: event.venue,
-        description: event.description,
-        communityName: communityNames,
-        eventType: event.eventType,
-      }).catch(err => console.error('Discord event share failed:', err));
-
-      shareEventToLinkedIn({
-        title: event.title,
-        slug,
-        date: event.date,
-        location: event.location,
-        venue: event.venue,
-        description: event.description,
-        communityName: communityNames,
-        eventType: event.eventType,
-      }).catch(err => console.error('LinkedIn event share failed:', err));
-    }
 
     return NextResponse.json({
       success: true,
@@ -269,36 +239,13 @@ export async function PUT(request: NextRequest) {
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 
-    // Share to Discord when publishing a draft/cancelled event
+    // If publishing a draft, mark as not yet shared so the daily digest picks it up
     const wasPublished = eventData?.status === 'published';
     if (status === 'published' && !wasPublished) {
-      const merged = { ...eventData, ...updateData };
-      const communityLookup = await buildCommunityLookup(db);
-      const cIds = (merged.communityId as string || '').split(',').map((id: string) => id.trim()).filter(Boolean);
-      const cNames = cIds.map((id: string) => communityLookup.get(id)?.name || (merged.communityName as string) || id).join(', ');
-
-      shareEventToDiscord({
-        title: merged.title as string,
-        slug: eventData?.slug || eventId,
-        date: merged.date as string,
-        endTime: merged.endTime as string | undefined,
-        location: merged.location as string | undefined,
-        venue: merged.venue as string | undefined,
-        description: merged.description as string,
-        communityName: cNames,
-        eventType: merged.eventType as string | undefined,
-      }).catch(err => console.error('Discord event share failed:', err));
-
-      shareEventToLinkedIn({
-        title: merged.title as string,
-        slug: eventData?.slug || eventId,
-        date: merged.date as string,
-        location: merged.location as string | undefined,
-        venue: merged.venue as string | undefined,
-        description: merged.description as string,
-        communityName: cNames,
-        eventType: merged.eventType as string | undefined,
-      }).catch(err => console.error('LinkedIn event share failed:', err));
+      await db.collection(COLLECTIONS.EVENTS).doc(eventId).update({
+        sharedToDiscord: false,
+        sharedToLinkedIn: false,
+      });
     }
 
     return NextResponse.json({

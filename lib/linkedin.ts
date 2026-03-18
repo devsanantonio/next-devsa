@@ -182,3 +182,47 @@ async function postToLinkedIn(data: LinkedInPostData): Promise<void> {
     throw new Error(`LinkedIn API error ${response.status}: ${errorText}`);
   }
 }
+
+export interface DigestEvent {
+  title: string;
+  slug: string;
+  date: string;
+  location?: string;
+  venue?: string;
+  communityName?: string;
+  eventType?: string;
+}
+
+export async function shareEventsDigestToLinkedIn(events: DigestEvent[]): Promise<void> {
+  if (!isLinkedInConfigured() || events.length === 0) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+  const eventsUrl = `${siteUrl}/events`;
+
+  let commentary = `📆 ${events.length} new community event${events.length !== 1 ? 's' : ''} added to the DEVSA calendar!\n\n`;
+
+  for (const event of events) {
+    const eventDate = new Date(event.date);
+    const dateStr = eventDate.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+    const locationDisplay = event.venue || event.location;
+
+    commentary += `📍 ${event.title}\n`;
+    commentary += `   📅 ${dateStr}`;
+    if (locationDisplay) commentary += ` · ${locationDisplay}`;
+    if (event.communityName) commentary += ` · ${event.communityName}`;
+    commentary += '\n\n';
+  }
+
+  commentary += `👉 See all events: ${eventsUrl}`;
+
+  await postToLinkedIn({
+    commentary,
+    articleUrl: eventsUrl,
+    articleTitle: `${events.length} New Community Events on DEVSA`,
+    articleDescription: 'Check out the latest community events in San Antonio and beyond.',
+  });
+}

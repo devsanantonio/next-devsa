@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Eye,
   XCircle,
+  AlertCircle,
 } from "lucide-react"
 
 interface AdminUser {
@@ -64,12 +65,13 @@ interface AdminStats {
   openToWorkUsers: number
   totalJobs: number
   publishedJobs: number
+  pendingJobs: number
   draftJobs: number
   closedJobs: number
   totalApplications: number
 }
 
-type Tab = "users" | "jobs" | "applications"
+type Tab = "pending" | "users" | "jobs" | "applications"
 
 const statusColors: Record<string, string> = {
   submitted: "text-blue-700 bg-blue-50 border border-blue-200",
@@ -77,6 +79,7 @@ const statusColors: Record<string, string> = {
   shortlisted: "text-green-700 bg-green-50 border border-green-200",
   rejected: "text-red-700 bg-red-50 border border-red-200",
   published: "text-green-700 bg-green-50 border border-green-200",
+  pending: "text-amber-700 bg-amber-50 border border-amber-200",
   draft: "text-slate-600 bg-slate-100 border border-slate-200",
   closed: "text-red-700 bg-red-50 border border-red-200",
 }
@@ -98,7 +101,8 @@ export default function JobsAdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [activeTab, setActiveTab] = useState<Tab>("users")
+  const [activeTab, setActiveTab] = useState<Tab>("pending")
+  const [reviewingJob, setReviewingJob] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -152,6 +156,32 @@ export default function JobsAdminPage() {
     return d.toLocaleDateString()
   }
 
+  const handleReview = async (jobId: string, action: "approve" | "reject") => {
+    setReviewingJob(jobId)
+    try {
+      const token = await getIdToken()
+      const res = await fetch("/api/jobs/admin/review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ jobId, action }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Reload admin data to reflect changes
+        await loadAdminData()
+      } else {
+        setError(data.error || "Review action failed")
+      }
+    } catch {
+      setError("Failed to process review")
+    } finally {
+      setReviewingJob(null)
+    }
+  }
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-dvh bg-white">
@@ -178,7 +208,10 @@ export default function JobsAdminPage() {
     )
   }
 
+  const pendingJobs = jobs.filter((j) => j.status === "pending")
+
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
+    { key: "pending", label: "Pending Review", icon: <AlertCircle className="h-4 w-4" />, count: pendingJobs.length },
     { key: "users", label: "Users & Profiles", icon: <Users className="h-4 w-4" />, count: stats?.totalUsers || 0 },
     { key: "jobs", label: "Job Listings", icon: <Briefcase className="h-4 w-4" />, count: stats?.totalJobs || 0 },
     { key: "applications", label: "Applications", icon: <FileText className="h-4 w-4" />, count: stats?.totalApplications || 0 },
@@ -233,6 +266,7 @@ export default function JobsAdminPage() {
               <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{stats.totalJobs}</p>
               <div className="flex gap-3 mt-1.5">
                 <span className="text-xs text-green-600">{stats.publishedJobs} live</span>
+                <span className="text-xs text-amber-600">{stats.pendingJobs} pending</span>
                 <span className="text-xs text-slate-400">{stats.draftJobs} draft</span>
               </div>
             </div>
@@ -282,6 +316,82 @@ export default function JobsAdminPage() {
         </div>
 
         {/* Tab Content */}
+        {activeTab === "pending" && (
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            {pendingJobs.length === 0 ? (
+              <div className="p-8 text-center">
+                <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">All caught up</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">No job listings pending review.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-200">
+                <div className="px-6 py-3 bg-amber-50 border-b border-amber-100">
+                  <p className="text-sm font-semibold text-amber-800">
+                    {pendingJobs.length} job{pendingJobs.length !== 1 ? "s" : ""} awaiting review
+                  </p>
+                  <p className="text-xs text-amber-600 mt-0.5">
+                    Approve to publish and share to Discord &amp; LinkedIn, or reject to notify the poster.
+                  </p>
+                </div>
+                {pendingJobs.map((job) => (
+                  <div key={job.id} className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Link
+                              href={`/jobs/${job.slug}`}
+                              className="text-sm sm:text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors leading-tight"
+                            >
+                              {job.title}
+                            </Link>
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 shrink-0">
+                              pending
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 leading-normal">
+                            <span className="font-medium text-slate-600">{job.companyName}</span>
+                            <span>by {job.authorName}</span>
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {job.locationType}{job.location ? ` · ${job.location}` : ""}
+                            </span>
+                            <span>{job.type.toUpperCase()}</span>
+                            <span>{timeAgo(job.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 sm:ml-auto">
+                        <button
+                          onClick={() => handleReview(job.id, "approve")}
+                          disabled={reviewingJob === job.id}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        >
+                          {reviewingJob === job.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          )}
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleReview(job.id, "reject")}
+                          disabled={reviewingJob === job.id}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "users" && (
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             {users.length === 0 ? (

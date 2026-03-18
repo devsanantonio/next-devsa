@@ -91,6 +91,7 @@ const statusColors: Record<string, string> = {
   shortlisted: "text-green-700 bg-green-50 border border-green-200",
   rejected: "text-red-700 bg-red-50 border border-red-200",
   published: "text-green-700 bg-green-50 border border-green-200",
+  pending: "text-amber-700 bg-amber-50 border border-amber-200",
   draft: "text-slate-600 bg-slate-100 border border-slate-200",
   closed: "text-red-700 bg-red-50 border border-red-200",
 }
