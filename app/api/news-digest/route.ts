@@ -23,6 +23,40 @@ interface NewsArticle {
   imageUrl?: string;
 }
 
+/** Scrape Cursor's blog page — their declared RSS feed returns 404 */
+async function fetchCursorNews(): Promise<NewsArticle[]> {
+  try {
+    const res = await fetch('https://cursor.com/blog');
+    const html = await res.text();
+
+    const articles: NewsArticle[] = [];
+    // Cursor embeds blog entries in Next.js RSC payloads as JSON objects
+    const entryRegex = /"entry":\{"id":"([^"]+)","title":"([^"]+)","slug":"([^"]+)","date":"([^"]+)","excerpt":"([^"]*)"/g;
+    let match;
+    while ((match = entryRegex.exec(html)) !== null) {
+      const [, , title, slug, date, excerpt] = match;
+      const published = new Date(date);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      if (published < weekAgo) continue;
+
+      const link = `https://cursor.com/blog/${slug}`;
+      // Deduplicate by link
+      if (articles.some((a) => a.link === link)) continue;
+
+      articles.push({
+        title,
+        link,
+        summary: excerpt || title,
+      });
+    }
+
+    return articles.slice(0, 5);
+  } catch (err) {
+    console.error('Failed to fetch Cursor news:', err);
+    return [];
+  }
+}
+
 /** Scrape Anthropic's news page — they don't provide an RSS feed */
 async function fetchAnthropicNews(): Promise<NewsArticle[]> {
   try {
@@ -150,6 +184,13 @@ export async function GET(request: NextRequest) {
     const anthropicArticles = await fetchAnthropicNews();
     for (const article of anthropicArticles) {
       const posted = await processArticle(db, 'Anthropic', article);
+      if (posted) totalShared++;
+    }
+
+    // Process Cursor (declared RSS returns 404 — scrape their blog page)
+    const cursorArticles = await fetchCursorNews();
+    for (const article of cursorArticles) {
+      const posted = await processArticle(db, 'Cursor', article);
       if (posted) totalShared++;
     }
 

@@ -302,6 +302,7 @@ const sourceColors: Record<string, number> = {
   AWS: 0xff9900,
   'Google Developers': 0x4285f4,
   Microsoft: 0x0078d4,
+  Cursor: 0x14120b,
 };
 
 export async function shareNewsToDiscord(article: DiscordNewsArticle): Promise<void> {
