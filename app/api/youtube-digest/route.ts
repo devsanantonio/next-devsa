@@ -5,6 +5,9 @@ import { shareYouTubeToDiscord, isYouTubeDiscordConfigured } from '@/lib/discord
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
+// Only post content published on or after this date
+const CUTOFF_DATE = new Date('2026-03-19T00:00:00Z');
+
 const YOUTUBE_CHANNELS = [
   { channelId: 'UCsBjURrPoezykLs9EqgamOA', name: 'Fireship' },
   { channelId: 'UCbRP3c757lWg9M-U7TyEkXA', name: 'Theo' },
@@ -55,6 +58,10 @@ export async function GET(request: NextRequest) {
 
       for (const item of recentItems) {
         if (!item.link || !item.title) continue;
+
+        // Skip videos published before the cutoff date
+        const pubDate = item.pubDate || item.isoDate;
+        if (pubDate && new Date(pubDate) < CUTOFF_DATE) continue;
 
         const videoId = item.id?.replace('yt:video:', '') || '';
         const docId = Buffer.from(item.link).toString('base64url');

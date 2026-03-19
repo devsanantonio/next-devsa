@@ -5,6 +5,9 @@ import { shareNewsToDiscord, isNewsDiscordConfigured } from '@/lib/discord';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
+// Only post content published on or after this date
+const CUTOFF_DATE = new Date('2026-03-19T00:00:00Z');
+
 const FEEDS = [
   { url: 'https://github.blog/feed/', source: 'GitHub' },
   { url: 'https://vercel.com/atom', source: 'Vercel' },
@@ -36,8 +39,7 @@ async function fetchCursorNews(): Promise<NewsArticle[]> {
     while ((match = entryRegex.exec(html)) !== null) {
       const [, , title, slug, date, excerpt] = match;
       const published = new Date(date);
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      if (published < weekAgo) continue;
+      if (published < CUTOFF_DATE) continue;
 
       const link = `https://cursor.com/blog/${slug}`;
       // Deduplicate by link
@@ -72,8 +74,7 @@ async function fetchAnthropicNews(): Promise<NewsArticle[]> {
       const [, publishedOn, slug, title] = match;
       // Only include posts from the last 7 days
       const published = new Date(publishedOn);
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      if (published < weekAgo) continue;
+      if (published < CUTOFF_DATE) continue;
 
       // Try to extract the card photo URL from the surrounding context
       const surroundingStart = Math.max(0, match.index - 200);
@@ -161,6 +162,10 @@ export async function GET(request: NextRequest) {
 
       for (const item of recentItems) {
         if (!item.link || !item.title) continue;
+
+        // Skip articles published before the cutoff date
+        const pubDate = item.pubDate || item.isoDate;
+        if (pubDate && new Date(pubDate) < CUTOFF_DATE) continue;
 
         const imageUrl =
           item.enclosure?.url ||
