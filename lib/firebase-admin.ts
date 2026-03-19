@@ -88,6 +88,8 @@ export const COLLECTIONS = {
   FAILED_ORDERS: 'failed_orders',
   // News digest
   NEWS_ARTICLES: 'news_articles',
+  // YouTube digest
+  YOUTUBE_VIDEOS: 'youtube_videos',
 } as const;
 
 // Types for Firestore documents

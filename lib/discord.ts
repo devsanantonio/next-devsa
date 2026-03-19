@@ -1,6 +1,7 @@
 const DISCORD_JOBS_WEBHOOK_URL = process.env.DISCORD_JOBS_WEBHOOK_URL;
 const DISCORD_EVENTS_WEBHOOK_URL = process.env.DISCORD_EVENTS_WEBHOOK_URL;
 const DISCORD_NEWS_WEBHOOK_URL = process.env.DISCORD_NEWS_WEBHOOK_URL;
+const DISCORD_YOUTUBE_WEBHOOK_URL = process.env.DISCORD_YOUTUBE_WEBHOOK_URL;
 
 /**
  * Convert HTML or Markdown content into clean Discord-compatible Markdown.
@@ -327,6 +328,52 @@ export async function shareNewsToDiscord(article: DiscordNewsArticle): Promise<v
           timestamp: new Date().toISOString(),
         },
       ],
+    }),
+  });
+}
+
+// ========================================
+// YouTube Video Feed
+// ========================================
+
+export function isYouTubeDiscordConfigured(): boolean {
+  return !!DISCORD_YOUTUBE_WEBHOOK_URL && DISCORD_YOUTUBE_WEBHOOK_URL.startsWith('https://discord.com/api/webhooks/');
+}
+
+export interface DiscordYouTubeVideo {
+  title: string;
+  url: string;
+  channel: string;
+  description: string;
+  thumbnailUrl?: string;
+}
+
+const channelColors: Record<string, number> = {
+  Fireship: 0xf5a623,
+  Theo: 0x6366f1,
+  Vercel: 0x000000,
+  ThePrimeTime: 0xef4444,
+  DHH: 0x1d4ed8,
+  'Cult Repo': 0x8b5cf6,
+  'Syntax.fm': 0xf59e0b,
+  GitHub: 0x24292f,
+  'Aaron Francis': 0x22c55e,
+  'Code.tv': 0x06b6d4,
+  NeetCode: 0xfbbf24,
+  Anthropic: 0xd4a27f,
+  Cursor: 0x14120b,
+  OpenAI: 0x10a37f,
+};
+
+export async function shareYouTubeToDiscord(video: DiscordYouTubeVideo): Promise<void> {
+  if (!isYouTubeDiscordConfigured()) return;
+
+  await fetch(DISCORD_YOUTUBE_WEBHOOK_URL!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      thread_name: `${video.channel}: ${video.title}`,
+      content: `🎬 **New video from ${video.channel}**\n${video.url}`,
     }),
   });
 }
