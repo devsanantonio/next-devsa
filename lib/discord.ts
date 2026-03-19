@@ -1,5 +1,6 @@
 const DISCORD_JOBS_WEBHOOK_URL = process.env.DISCORD_JOBS_WEBHOOK_URL;
 const DISCORD_EVENTS_WEBHOOK_URL = process.env.DISCORD_EVENTS_WEBHOOK_URL;
+const DISCORD_NEWS_WEBHOOK_URL = process.env.DISCORD_NEWS_WEBHOOK_URL;
 
 /**
  * Convert HTML or Markdown content into clean Discord-compatible Markdown.
@@ -268,6 +269,60 @@ export async function shareEventsDigestToDiscord(events: DigestEvent[]): Promise
           description: eventLines,
           color: 0x10b981,
           footer: { text: 'DEVSA Events · devsa.community/events' },
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }),
+  });
+}
+
+// ========================================
+// News / Blog Feed
+// ========================================
+
+export function isNewsDiscordConfigured(): boolean {
+  return !!DISCORD_NEWS_WEBHOOK_URL && DISCORD_NEWS_WEBHOOK_URL.startsWith('https://discord.com/api/webhooks/');
+}
+
+export interface DiscordNewsArticle {
+  title: string;
+  url: string;
+  source: string;
+  summary: string;
+  imageUrl?: string;
+}
+
+const sourceColors: Record<string, number> = {
+  GitHub: 0x24292f,
+  Vercel: 0x000000,
+  OpenAI: 0x10a37f,
+  Anthropic: 0xd4a27f,
+  Cloudflare: 0xf38020,
+  NVIDIA: 0x76b900,
+  AWS: 0xff9900,
+  'Google Developers': 0x4285f4,
+  Microsoft: 0x0078d4,
+};
+
+export async function shareNewsToDiscord(article: DiscordNewsArticle): Promise<void> {
+  if (!isNewsDiscordConfigured()) return;
+
+  const desc = formatForDiscord(article.summary, 400);
+
+  await fetch(DISCORD_NEWS_WEBHOOK_URL!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      thread_name: article.title,
+      content: `📰 **New article from ${article.source}**`,
+      embeds: [
+        {
+          title: article.title,
+          url: article.url,
+          description: desc,
+          color: sourceColors[article.source] || 0x3b82f6,
+          ...(article.imageUrl ? { image: { url: article.imageUrl } } : {}),
+          footer: { text: `Source: ${article.source} · devsa.community` },
           timestamp: new Date().toISOString(),
         },
       ],

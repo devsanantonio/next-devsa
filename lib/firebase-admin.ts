@@ -86,6 +86,8 @@ export const COLLECTIONS = {
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
   MERCH_SUBMISSIONS: 'merch_submissions',
   FAILED_ORDERS: 'failed_orders',
+  // News digest
+  NEWS_ARTICLES: 'news_articles',
 } as const;
 
 // Types for Firestore documents
