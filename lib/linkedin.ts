@@ -193,13 +193,19 @@ export interface DigestEvent {
   eventType?: string;
 }
 
-export async function shareEventsDigestToLinkedIn(events: DigestEvent[]): Promise<void> {
+export async function shareWeeklyDigestToLinkedIn(events: DigestEvent[]): Promise<void> {
   if (!isLinkedInConfigured() || events.length === 0) return;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
   const eventsUrl = `${siteUrl}/events`;
 
-  let commentary = `📆 ${events.length} new community event${events.length !== 1 ? 's' : ''} added to the DEVSA calendar!\n\n`;
+  const weekDate = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/Chicago',
+  });
+
+  let commentary = `📅 This week from the tech community — ${events.length} event${events.length !== 1 ? 's' : ''} happening the week of ${weekDate}\n\n`;
 
   for (const event of events) {
     const eventDate = new Date(event.date);
@@ -207,22 +213,28 @@ export async function shareEventsDigestToLinkedIn(events: DigestEvent[]): Promis
       weekday: 'short',
       month: 'short',
       day: 'numeric',
+      timeZone: 'America/Chicago',
+    });
+    const timeStr = eventDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/Chicago',
     });
     const locationDisplay = event.venue || event.location;
 
-    commentary += `📍 ${event.title}\n`;
-    commentary += `   📅 ${dateStr}`;
+    commentary += `${event.title}\n`;
+    commentary += `${dateStr} at ${timeStr} CT`;
     if (locationDisplay) commentary += ` · ${locationDisplay}`;
     if (event.communityName) commentary += ` · ${event.communityName}`;
     commentary += '\n\n';
   }
 
-  commentary += `👉 See all events: ${eventsUrl}`;
+  commentary += `Find your people. Build your future.\n👉 ${eventsUrl}`;
 
   await postToLinkedIn({
     commentary,
     articleUrl: eventsUrl,
-    articleTitle: `${events.length} New Community Events on DEVSA`,
-    articleDescription: 'Check out the latest community events in San Antonio and beyond.',
+    articleTitle: `This week from the tech community — Week of ${weekDate}`,
+    articleDescription: 'One calendar for every community. Powered by https://www.devsa.community',
   });
 }

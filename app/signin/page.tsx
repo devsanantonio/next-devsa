@@ -8,14 +8,14 @@ import { ArrowLeft } from "lucide-react"
 // We'll create a layout.tsx for it instead
 export default function SignInPage() {
   return (
-    <main className="min-h-screen bg-black py-12 sm:py-20">
-      <div className="mx-auto max-w-sm px-4">
+    <main className="flex min-h-screen flex-col justify-center bg-black px-4 py-8">
+      <div className="mx-auto w-full max-w-sm">
         <Link
-          href="/"
-          className="relative z-10 inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
+          href="/events"
+          className="relative z-10 inline-flex items-center gap-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors mb-6"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to home
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to events
         </Link>
 
         <AccessRequestForm />

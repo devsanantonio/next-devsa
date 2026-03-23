@@ -86,82 +86,6 @@ export function isEventsDiscordConfigured(): boolean {
   return !!DISCORD_EVENTS_WEBHOOK_URL && DISCORD_EVENTS_WEBHOOK_URL.startsWith('https://discord.com/api/webhooks/');
 }
 
-const eventTypeLabels: Record<string, string> = {
-  'in-person': '📍 In-Person',
-  hybrid: '🔀 Hybrid',
-  virtual: '💻 Virtual',
-};
-
-interface DiscordEventPayload {
-  title: string;
-  slug: string;
-  date: string;
-  endTime?: string;
-  location?: string;
-  venue?: string;
-  description: string;
-  communityName?: string;
-  eventType?: string;
-}
-
-export async function shareEventToDiscord(event: DiscordEventPayload): Promise<void> {
-  if (!isEventsDiscordConfigured()) return;
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
-  const eventUrl = `${siteUrl}/events/${event.slug}`;
-
-  const eventDate = new Date(event.date);
-  const dateStr = eventDate.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-  const timeStr = eventDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-
-  const fields = [
-    { name: '📅 Date', value: dateStr, inline: true },
-    { name: '🕐 Time', value: timeStr, inline: true },
-  ];
-
-  if (event.eventType) {
-    fields.push({ name: 'Format', value: eventTypeLabels[event.eventType] || event.eventType, inline: true });
-  }
-
-  const locationDisplay = event.venue || event.location;
-  if (locationDisplay) {
-    fields.push({ name: '📍 Location', value: locationDisplay, inline: false });
-  }
-
-  if (event.communityName) {
-    fields.push({ name: 'Community', value: event.communityName, inline: true });
-  }
-
-  const desc = formatForDiscord(event.description, 300);
-
-  await fetch(DISCORD_EVENTS_WEBHOOK_URL!, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      content: `📆 **New community event added to the calendar**`,
-      embeds: [
-        {
-          title: event.title,
-          url: eventUrl,
-          description: desc,
-          color: 0x10b981,
-          fields,
-          footer: { text: 'DEVSA Events · devsa.community/events' },
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }),
-  });
-}
-
 export async function shareJobToDiscord(job: DiscordJobPayload): Promise<void> {
   if (!isDiscordConfigured()) return;
 
@@ -231,30 +155,43 @@ export interface DigestEvent {
   eventType?: string;
 }
 
-export async function shareEventsDigestToDiscord(events: DigestEvent[]): Promise<void> {
-  if (!isEventsDiscordConfigured() || events.length === 0) return;
+export async function shareWeeklyDigestToDiscord(events: DigestEvent[]): Promise<void> {
+  if (!isEventsDiscordConfigured()) return;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+
+  if (events.length === 0) {
+    await fetch(DISCORD_EVENTS_WEBHOOK_URL!, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: `� **This Week in from the tech community**`,
+        embeds: [
+          {
+            title: `Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'America/Chicago' })}`,
+            url: `${siteUrl}/events`,
+            description: `No events this week — browse what's coming up at [devsa.community/events](https://www.devsa.community/events)`,
+            color: 0x10b981,
+            footer: { text: 'One calendar for every community · https://www.devsa.community/events' },
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }),
+    });
+    return;
+  }
 
   const eventLines = events.map(event => {
     const eventUrl = `${siteUrl}/events/${event.slug}`;
     const eventDate = new Date(event.date);
-    const dateStr = eventDate.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-    const timeStr = eventDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    const unixTs = Math.floor(eventDate.getTime() / 1000);
     const typeEmoji = event.eventType === 'virtual' ? '💻' : event.eventType === 'hybrid' ? '🔀' : '📍';
     const locationDisplay = event.venue || event.location;
 
     let line = `${typeEmoji} **[${event.title}](${eventUrl})**\n`;
-    line += `  📅 ${dateStr} at ${timeStr}`;
+    line += `  <t:${unixTs}:F>`;
     if (locationDisplay) line += ` · ${locationDisplay}`;
-    if (event.communityName) line += `\n  👥 ${event.communityName}`;
+    if (event.communityName) line += `\n  ${event.communityName}`;
     return line;
   }).join('\n\n');
 
@@ -262,14 +199,14 @@ export async function shareEventsDigestToDiscord(events: DigestEvent[]): Promise
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      content: `📆 **${events.length} new community event${events.length !== 1 ? 's' : ''} added to the calendar**`,
+      content: `📅 **This week from the tech community** — ${events.length} event${events.length !== 1 ? 's' : ''}`,
       embeds: [
         {
-          title: 'Upcoming Community Events',
+          title: `Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'America/Chicago' })}`,
           url: `${siteUrl}/events`,
-          description: eventLines,
+          description: `*Find your people. Build your future.*\n\n` + eventLines,
           color: 0x10b981,
-          footer: { text: 'DEVSA Events · devsa.community/events' },
+          footer: { text: 'One calendar for every community · https://www.devsa.community/events' },
           timestamp: new Date().toISOString(),
         },
       ],

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Search, ChevronLeft, ChevronRight, CalendarIcon, Plus, CalendarPlus } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X } from "lucide-react"
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
@@ -215,6 +215,129 @@ END:VCALENDAR`
   return { googleUrl, icsUrl, icsContent }
 }
 
+const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed`
+
+function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  const copyFeedUrl = useCallback(() => {
+    navigator.clipboard.writeText(FEED_URL).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [])
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                  <Rss className="h-4 w-4 text-gray-500" />
+                </div>
+                <p className="text-[13px] font-medium text-gray-500 uppercase tracking-widest leading-[1.3]">
+                  RSS Feed
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <h3 className="text-lg font-semibold text-gray-900 leading-[1.3]">
+              Bring DEVSA events to your community
+            </h3>
+            <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
+              RSS is a standard format that lets platforms automatically pull in new content. Copy the feed URL below and connect it to your Discord, Slack, website, or any tool that supports RSS — events show up automatically, no manual posting needed.
+            </p>
+
+            {/* Feed URL */}
+            <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                <code className="text-[13px] font-normal text-gray-500 truncate flex-1">/api/events/feed</code>
+                <button
+                  onClick={copyFeedUrl}
+                  className="inline-flex items-center justify-center shrink-0 h-7 w-7 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Copy feed URL"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-green-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+              <a
+                href="/api/events/feed"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800 whitespace-nowrap"
+              >
+                <Rss className="h-3.5 w-3.5" />
+                View Feed
+              </a>
+            </div>
+
+            {/* How to use it */}
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <p className="text-[13px] font-medium text-gray-900 leading-[1.3] mb-3">
+                How to connect
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Discord</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    Add the MonitoRSS bot to your server, create a feed with the URL above, and pick a channel. Events post automatically.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Slack</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    Install the RSS app from the Slack App Directory, subscribe a channel to the feed URL, and set your check interval.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Website</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    Use an RSS widget or plugin to embed events on your site. Works with WordPress, Webflow, custom builds, and most CMS platforms.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <p className="mt-4 text-[11px] font-normal text-gray-400 leading-[1.6]">
+              Also works with Zapier, IFTTT, Feedly, and any tool that reads RSS. Powered by devsa.community.
+            </p>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export function CommunityEventsSection() {
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
@@ -222,7 +345,8 @@ export function CommunityEventsSection() {
   
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [showAddEvent, setShowAddEvent] = useState(false)
+  const [showRssFeed, setShowRssFeed] = useState(false)
+  const [showMobileCalendar, setShowMobileCalendar] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
 
   // Update current time every minute for live "Happening Now" detection
@@ -322,58 +446,15 @@ export function CommunityEventsSection() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [allEvents, search, selectedDate, currentTime])
 
-  // Get the appropriate link for the add event easter egg
-  const getAddEventHref = () => {
-    return "/signin"
-  }
-
   return (
     <section className="relative bg-white py-16 sm:py-24" data-bg-type="light">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header - Left aligned */}
         <div className="mb-12">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
-                Community Calendar
-              </p>
-
-              {/* Easter egg plus button with inline Add Event */}
-              <motion.button
-                onClick={() => setShowAddEvent(!showAddEvent)}
-                className="relative inline-flex items-center gap-2 group"
-                whileTap={{ scale: 0.95 }}
-                aria-label="Add event"
-              >
-                <motion.div
-                  animate={{ rotate: showAddEvent ? 45 : 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="flex items-center justify-center w-7 h-7 rounded-full border-2 border-dashed border-gray-300 group-hover:border-[#ef426f] transition-colors"
-                >
-                  <Plus className="h-4 w-4 text-gray-400 group-hover:text-[#ef426f] transition-colors" strokeWidth={2} />
-                </motion.div>
-                
-                {/* Animated "Add Event" text */}
-                <AnimatePresence>
-                  {showAddEvent && (
-                    <motion.div
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "auto", opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      className="overflow-hidden"
-                    >
-                      <Link
-                        href={getAddEventHref()}
-                        className="inline-flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-[#ef426f] hover:text-[#d93a60] transition-colors"
-                      >
-                        Add Event →
-                      </Link>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </div>
+            <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+              Community Calendar
+            </p>
 
             <h2 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Find Your Next Event.{" "}
@@ -395,7 +476,53 @@ export function CommunityEventsSection() {
               <span className="font-medium text-gray-700">connecting</span>{" "}
               with the people shipping the future.
             </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowRssFeed(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+              >
+                <Rss className="h-3.5 w-3.5" />
+                RSS Feed
+              </button>
+              <Link
+                href="/signin"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Event
+              </Link>
+            </div>
           </div>
+        </div>
+
+        {/* Mobile Calendar */}
+        <div className="lg:hidden mb-8">
+          <button
+            onClick={() => setShowMobileCalendar(!showMobileCalendar)}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 w-full justify-center"
+          >
+            <CalendarIcon className="h-3.5 w-3.5" />
+            {showMobileCalendar ? 'Hide Calendar' : 'Show Calendar'}
+            <motion.div animate={{ rotate: showMobileCalendar ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {showMobileCalendar && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4">
+                  <EventCalendar events={allEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
@@ -413,34 +540,60 @@ export function CommunityEventsSection() {
                 />
               </div>
 
-              {(search || selectedDate) && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {selectedDate && (
-                    <button
-                      onClick={() => setSelectedDate(null)}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                    >
-                      <CalendarIcon className="h-3 w-3 text-gray-500" />
-                      {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      <span className="ml-0.5 text-gray-400">×</span>
-                    </button>
-                  )}
-                  {search && (
-                    <button
-                      onClick={() => setSearch("")}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-600 hover:bg-gray-200 transition-colors"
-                    >
-                      &quot;{search}&quot;
-                      <span className="ml-0.5 text-gray-400">×</span>
-                    </button>
-                  )}
-                </div>
-              )}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <p className="text-[13px] font-normal text-gray-400">
+                  {isLoadingEvents ? '...' : `${filteredEvents.length} upcoming event${filteredEvents.length !== 1 ? 's' : ''}`}
+                </p>
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                  >
+                    <CalendarIcon className="h-3 w-3 text-gray-500" />
+                    {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    <span className="ml-0.5 text-gray-400">×</span>
+                  </button>
+                )}
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    &quot;{search}&quot;
+                    <span className="ml-0.5 text-gray-400">×</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Events list */}
             <div className="min-h-100 max-h-175 overflow-y-auto rounded-xl border border-gray-200 p-4 sm:p-5">
-              {filteredEvents.length === 0 ? (
+              {isLoadingEvents ? (
+                <div className="space-y-5">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5 sm:p-6">
+                      <div className="mb-3 flex items-center gap-2.5">
+                        <div className="h-4 w-32 rounded bg-gray-100" />
+                        {i === 0 && <div className="h-5 w-16 rounded-full bg-gray-100" />}
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="hidden sm:block h-12 w-12 shrink-0 rounded-lg bg-gray-100" />
+                        <div className="flex-1 space-y-2.5">
+                          <div className="h-5 w-3/4 rounded bg-gray-100" />
+                          <div className="h-4 w-1/2 rounded bg-gray-100" />
+                          <div className="h-4 w-full rounded bg-gray-50" />
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-gray-50">
+                        <div className="flex justify-between">
+                          <div className="h-4 w-24 rounded bg-gray-50" />
+                          <div className="h-8 w-28 rounded-lg bg-gray-100" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredEvents.length === 0 ? (
                 <div className="flex h-full min-h-75 items-center justify-center">
                   <div className="text-center">
                     <p className="text-base font-normal text-gray-500">No events found</p>
@@ -481,13 +634,19 @@ export function CommunityEventsSection() {
                             : "border-gray-200 bg-white hover:border-gray-300"
                         }`}
                       >
-                        {/* Date and badge row */}
+                        {/* Date, time, and badge row */}
                         <div className="mb-3 flex flex-wrap items-center gap-2.5">
                           <time className="text-[13px] font-medium text-gray-500 uppercase tracking-widest">
                             {new Date(event.date).toLocaleDateString("en-US", {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
+                              timeZone: "America/Chicago",
+                            })}
+                            {" · "}
+                            {new Date(event.date).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
                               timeZone: "America/Chicago",
                             })}
                           </time>
@@ -612,6 +771,9 @@ export function CommunityEventsSection() {
           </div>
         </div>
       </div>
+
+      {/* RSS Feed Modal */}
+      <RssFeedModal open={showRssFeed} onClose={() => setShowRssFeed(false)} />
     </section>
   )
 }

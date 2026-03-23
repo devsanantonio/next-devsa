@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import { FeaturedDevsaEvent } from "@/components/events/featured-devsa-event"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 
@@ -16,6 +15,11 @@ export const metadata: Metadata = {
     "DEVSA events",
     "networking events San Antonio",
   ],
+  alternates: {
+    types: {
+      "application/rss+xml": `${siteUrl}/api/events/feed`,
+    },
+  },
   openGraph: {
     title: "Events | DEVSA Community Calendar",
     description: "Discover communities that align with your interests. DEVSA is the central hub where local groups collaborate, exchange resources, and build a more connected tech ecosystem.",
