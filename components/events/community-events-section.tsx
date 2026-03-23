@@ -329,7 +329,7 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
 
             {/* Footer */}
             <p className="mt-4 text-[11px] font-normal text-gray-400 leading-[1.6]">
-              Also works with Zapier, IFTTT, Feedly, and any tool that reads RSS. Powered by devsa.community.
+              Powered by the DEVSA Community.
             </p>
           </motion.div>
         </>
