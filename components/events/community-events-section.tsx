@@ -219,11 +219,21 @@ const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'ht
 
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false)
+  const [copiedEmbed, setCopiedEmbed] = useState(false)
+
+  const embedCode = `<iframe src="https://devsa.community/events/embed" width="100%" height="600" style="border:none;border-radius:12px" title="DEVSA Community Events"></iframe>`
 
   const copyFeedUrl = useCallback(() => {
     navigator.clipboard.writeText(FEED_URL).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    })
+  }, [])
+
+  const copyEmbedCode = useCallback(() => {
+    navigator.clipboard.writeText(embedCode).then(() => {
+      setCopiedEmbed(true)
+      setTimeout(() => setCopiedEmbed(false), 2000)
     })
   }, [])
 
@@ -324,6 +334,40 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
                     Use an RSS widget or plugin to embed events on your site. Works with WordPress, Webflow, custom builds, and most CMS platforms.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Embed Calendar */}
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <p className="text-[13px] font-medium text-gray-900 leading-[1.3] mb-2">
+                Embed the calendar
+              </p>
+              <p className="text-[12px] font-normal text-gray-500 leading-[1.6] mb-3">
+                Drop this snippet into your site to show a live calendar of SA tech events. Works with any HTML page, WordPress, Webflow, or CMS.
+              </p>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <code className="text-[12px] font-normal text-gray-500 truncate flex-1">{`<iframe src=".../events/embed" ...>`}</code>
+                  <button
+                    onClick={copyEmbedCode}
+                    className="inline-flex items-center justify-center shrink-0 h-7 w-7 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                    title="Copy embed code"
+                  >
+                    {copiedEmbed ? (
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </div>
+                <a
+                  href="/events/embed"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50 whitespace-nowrap"
+                >
+                  Preview
+                </a>
               </div>
             </div>
 

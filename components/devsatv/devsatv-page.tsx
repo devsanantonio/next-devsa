@@ -684,6 +684,33 @@ export function DevsaTVPage() {
         </div>
       </section>
 
+      {/* Community Calendar Embed */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white" data-bg-type="light">
+        <div className="w-full max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-2 leading-[1.3]">
+              Community Calendar
+            </p>
+            <p className="text-sm text-gray-500 font-light leading-[1.6] mb-6">
+              Upcoming events from the San Antonio tech community
+            </p>
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <iframe
+                src="/events/embed"
+                width="100%"
+                height="600"
+                style={{ border: "none" }}
+                title="DEVSA Community Events"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA Footer */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900" data-bg-type="dark">
         <div className="w-full max-w-4xl mx-auto text-center">
