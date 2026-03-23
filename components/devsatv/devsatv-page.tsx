@@ -693,10 +693,10 @@ export function DevsaTVPage() {
             viewport={{ once: true }}
           >
             <p className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-2 leading-[1.3]">
-              Community Calendar
+              One calendar for every community. 
             </p>
-            <p className="text-sm text-gray-500 font-light leading-[1.6] mb-6">
-              Upcoming events from the San Antonio tech community
+            <p className="max-w-xs text-sm text-gray-500 font-light leading-[1.6] mb-6">
+              Stop hunting for links — DEVSA brings San Antonio's tech groups together in one place.
             </p>
             <div className="rounded-xl border border-gray-200 overflow-hidden">
               <iframe
