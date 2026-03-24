@@ -331,7 +331,7 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
                   <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Website</p>
                   <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
-                    Use an RSS widget or plugin to embed events on your site. Works with WordPress, Webflow, custom builds, and most CMS platforms.
+                    Embed our live calendar on your site with the iframe snippet below — no plugins needed. Works with any platform. <strong className="font-medium">Use the RSS feed for custom integrations.</strong>
                   </p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
                 Embed the calendar
               </p>
               <p className="text-[12px] font-normal text-gray-500 leading-[1.6] mb-3">
-                Drop this snippet into your site to show a live calendar of SA tech events. Works with any HTML page, WordPress, Webflow, or CMS.
+                Drop this snippet into your website to show a live calendar of community tech events happening in San Antonio. 
               </p>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
