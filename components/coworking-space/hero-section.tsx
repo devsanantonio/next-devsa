@@ -2,55 +2,94 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
-// TODO: Re-enable when STATUS_API_TOKEN is configured
-// import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 const mediaItems = [
   {
-    type: "image",
     src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg",
-    alt: "DevSA Community Space - Main Area",
+    alt: "Open workspace area with desks and natural lighting",
     width: 1600,
     height: 1067,
   },
   {
-    type: "video",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6956.MOV",
-    poster: "/coworking-space-video-1-poster.jpg",
-    alt: "DevSA Community Space - Main Area",
-  },
-  {
-    type: "image",
     src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_7186.jpg",
-    alt: "DevSA Community Space - Main Area",
+    alt: "Community members collaborating at the DEVSA space",
     width: 1067,
     height: 1600,
   },
   {
-    type: "image",
     src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg",
-    alt: "DevSA Community Space - Main Area",
+    alt: "Downtown San Antonio view from Geekdom on Houston Street",
     width: 1600,
     height: 1067,
   },
   {
-    type: "image",
     src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6429.jpg",
-    alt: "DevSA Community Space - Main Area",
+    alt: "DEVSA coworking lounge and meeting area",
     width: 1067,
     height: 1600,
-  },
-  {
-    type: "video",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6982.mov",
-    poster: "/coworking-space-video-2-poster.jpg",
-    alt: "DevSA Collaboration",
   },
 ]
 
 export function HeroSection() {
-  // TODO: Re-enable status toast when STATUS_API_TOKEN is configured
-  // See: app/api/discord-status/route.ts
+  const POLL_INTERVAL_MS = 120_000
+  const [status, setStatus] = useState<{
+    ok: boolean
+    online: boolean
+    state: "open" | "closed" | "unknown"
+    updatedAt: number | null
+  }>({ ok: false, online: false, state: "unknown", updatedAt: null })
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/discord-status", { cache: "no-store" })
+        const data = await res.json()
+        if (!cancelled) setStatus(data)
+      } catch {
+        if (!cancelled) setStatus({ ok: false, online: false, state: "unknown", updatedAt: null })
+      }
+    }
+
+    fetchStatus()
+    const refreshTimer = setInterval(fetchStatus, POLL_INTERVAL_MS)
+    const clockTimer = setInterval(() => setNow(Date.now()), POLL_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(refreshTimer)
+      clearInterval(clockTimer)
+    }
+  }, [])
+
+  const indicatorClass = useMemo(() => {
+    if (!status.ok) return "bg-gray-400"
+    return status.online ? "bg-green-500 animate-pulse" : "bg-red-500"
+  }, [status])
+
+  const statusLabel = useMemo(() => {
+    if (!status.ok) return "Checking…"
+    return status.state === "open" ? "Open" : status.state === "closed" ? "Closed" : "Unknown"
+  }, [status])
+
+  const lastUpdatedText = useMemo(() => {
+    if (!status.updatedAt) return "Status unavailable"
+
+    const elapsedMs = Math.max(0, now - status.updatedAt)
+    const elapsedMinutes = Math.floor(elapsedMs / 60_000)
+
+    if (elapsedMinutes < 1) return "Updated just now"
+    if (elapsedMinutes < 60) return `Updated ${elapsedMinutes}m ago`
+
+    const elapsedHours = Math.floor(elapsedMinutes / 60)
+    if (elapsedHours < 24) return `Updated ${elapsedHours}h ago`
+
+    const elapsedDays = Math.floor(elapsedHours / 24)
+    return `Updated ${elapsedDays}d ago`
+  }, [now, status.updatedAt])
 
   return (
     <section className="relative" data-testid="coworking-homepage-container-carousel" id="carousel" data-bg-type="light">
@@ -100,66 +139,21 @@ export function HeroSection() {
             </div>
           </div>
 
+          {/* Marquee Carousel */}
           <div className="relative w-full overflow-hidden">
             <div className="flex gap-8 animate-marquee-slow lg:animate-marquee">
-              {/* First set of items */}
-              {mediaItems.map((item, index) => (
-                <div key={`${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
+              {[...mediaItems, ...mediaItems].map((item, index) => (
+                <div key={`carousel-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
                   <div className="relative aspect-4/5 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-100 rounded-lg"></div>
-                    {item.type === "image" ? (
-                      <Image
-                        alt={item.alt}
-                        loading="lazy"
-                        width={item.width || 1067}
-                        height={item.height || 1600}
-                        className="rounded-lg grayscale object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                        src={item.src}
-                      />
-                    ) : (
-                      <video
-                        className="rounded-lg grayscale w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        poster={item.poster}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      >
-                        <source src={item.src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Duplicate set for seamless loop */}
-              {mediaItems.map((item, index) => (
-                <div key={`duplicate-${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
-                  <div className="relative aspect-4/5 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-100 rounded-lg"></div>
-                    {item.type === "image" ? (
-                      <Image
-                        alt={item.alt}
-                        loading="lazy"
-                        width={item.width || 1067}
-                        height={item.height || 1600}
-                        className="rounded-lg grayscale object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                        src={item.src}
-                      />
-                    ) : (
-                      <video
-                        className="rounded-lg grayscale w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        poster={item.poster}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      >
-                        <source src={item.src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
+                    <div className="absolute inset-0 bg-gray-100 rounded-lg" />
+                    <Image
+                      alt={item.alt}
+                      loading="lazy"
+                      width={item.width}
+                      height={item.height}
+                      className="rounded-lg grayscale object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                      src={item.src}
+                    />
                   </div>
                 </div>
               ))}
@@ -168,22 +162,27 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* TODO: Re-enable status toast when STATUS_API_TOKEN is configured
-      <div className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6">
-        <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <span
-            aria-hidden="true"
-            className={`h-2.5 w-2.5 rounded-full ${indicatorClass}`}
-          />
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-gray-900">
-              Coworking Space: {statusLabel}
-            </p>
-            <p className="text-xs text-gray-500">{lastUpdatedText}</p>
+      {status.ok && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+          className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6"
+        >
+          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 rounded-full ${indicatorClass}`}
+            />
+            <div className="leading-tight">
+              <p className="text-xs font-medium text-gray-900 uppercase tracking-[0.15em]">
+                Space {statusLabel}
+              </p>
+              <p className="text-[11px] text-gray-400 tracking-wide">{lastUpdatedText}</p>
+            </div>
           </div>
-        </div>
-      </div>
-      */}
+        </motion.div>
+      )}
     </section>
   )
 }
