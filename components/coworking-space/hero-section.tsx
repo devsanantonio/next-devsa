@@ -391,8 +391,14 @@ export function HeroSection() {
       )}
 
       {showPingDialog && status.activeAdmin && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+          onClick={() => setShowPingDialog(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="flex items-center gap-3">
               {status.activeAdmin.avatarUrl ? (
                 <img
@@ -424,7 +430,7 @@ export function HeroSection() {
               <button
                 type="button"
                 onClick={() => setShowPingDialog(false)}
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                className="cursor-pointer rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -432,7 +438,7 @@ export function HeroSection() {
                 type="button"
                 onClick={handlePingConfirm}
                 disabled={isPinging}
-                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70"
+                className="cursor-pointer rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70"
               >
                 {isPinging ? "Sending..." : "Send ping"}
               </button>
