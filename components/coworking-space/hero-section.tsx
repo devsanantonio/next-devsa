@@ -169,7 +169,12 @@ export function HeroSection() {
           transition={{ duration: 0.4, delay: 0.8 }}
           className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6"
         >
-          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+          <div className="relative">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-10 rounded-[2.5rem] backdrop-blur-2xl [mask-image:radial-gradient(ellipse_at_center,black_18%,rgba(0,0,0,0.9)_34%,rgba(0,0,0,0.55)_52%,rgba(0,0,0,0.2)_68%,transparent_82%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_18%,rgba(0,0,0,0.9)_34%,rgba(0,0,0,0.55)_52%,rgba(0,0,0,0.2)_68%,transparent_82%)]"
+            />
+            <div className="relative flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
             <span
               aria-hidden="true"
               className={`h-2 w-2 rounded-full ${indicatorClass}`}
@@ -179,6 +184,7 @@ export function HeroSection() {
                 Space {statusLabel}
               </p>
               <p className="text-[11px] text-gray-400 tracking-wide">{lastUpdatedText}</p>
+            </div>
             </div>
           </div>
         </motion.div>
