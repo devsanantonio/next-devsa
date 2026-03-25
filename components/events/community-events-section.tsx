@@ -216,10 +216,12 @@ END:VCALENDAR`
 }
 
 const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed`
+const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/calendar`
 
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false)
   const [copiedEmbed, setCopiedEmbed] = useState(false)
+  const [copiedIcal, setCopiedIcal] = useState(false)
 
   const embedCode = `<iframe src="https://devsa.community/events/embed" width="100%" height="600" style="border:none;border-radius:12px" title="DEVSA Community Events"></iframe>`
 
@@ -227,6 +229,13 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
     navigator.clipboard.writeText(FEED_URL).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    })
+  }, [])
+
+  const copyIcalUrl = useCallback(() => {
+    navigator.clipboard.writeText(ICAL_URL).then(() => {
+      setCopiedIcal(true)
+      setTimeout(() => setCopiedIcal(false), 2000)
     })
   }, [])
 
@@ -310,10 +319,73 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
               </a>
             </div>
 
-            {/* How to use it */}
+            {/* Subscribe to Calendar */}
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                  <CalendarPlus className="h-4 w-4 text-gray-500" />
+                </div>
+                <p className="text-[13px] font-medium text-gray-500 uppercase tracking-widest leading-[1.3]">
+                  Calendar Subscription
+                </p>
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 leading-[1.3]">
+                Subscribe to the DEVSA calendar
+              </h4>
+              <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
+                Subscribe once and new events appear automatically in your calendar app — no manual downloads needed. Your calendar will check for updates periodically.
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <code className="text-[13px] font-normal text-gray-500 truncate flex-1">/api/events/calendar</code>
+                  <button
+                    onClick={copyIcalUrl}
+                    className="inline-flex items-center justify-center shrink-0 h-7 w-7 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                    title="Copy calendar URL"
+                  >
+                    {copiedIcal ? (
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </div>
+                <a
+                  href={ICAL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800 whitespace-nowrap"
+                >
+                  <CalendarPlus className="h-3.5 w-3.5" />
+                  Subscribe
+                </a>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Google Calendar</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    Settings → Add calendar → From URL. Paste the calendar URL above.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Apple Calendar</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    File → New Calendar Subscription. Paste the calendar URL. Set auto-refresh to every hour.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Outlook</p>
+                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
+                    Add calendar → Subscribe from web. Paste the calendar URL and name it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* How to use it (RSS) */}
             <div className="mt-6 border-t border-gray-100 pt-5">
               <p className="text-[13px] font-medium text-gray-900 leading-[1.3] mb-3">
-                How to connect
+                RSS Feed — connect to Discord, Slack &amp; more
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
