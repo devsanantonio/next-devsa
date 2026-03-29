@@ -1,0 +1,108 @@
+# DEVSA - San Antonio Tech Community (Full Documentation)
+
+> DEVSA (DEV San Antonio) is a 501(c)(3) nonprofit that bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio, Texas. Website: https://devsa.community
+
+## Organization Overview
+
+- **Name**: DEVSA (DEV San Antonio)
+- **Type**: 501(c)(3) Nonprofit
+- **Founded**: 2020
+- **Location**: San Antonio, Texas
+- **Area Served**: San Antonio metro, I-35 corridor (New Braunfels, San Marcos, Austin), Rio Grande Valley
+- **Website**: https://devsa.community
+- **Social**: Twitter @devsatx, LinkedIn /company/devsa, Instagram @devsatx, GitHub /devsanantonio
+- **Discord**: https://discord.gg/cvHHzThrEw
+
+## What DEVSA Does
+
+DEVSA serves as the connective tissue for San Antonio's tech ecosystem. The organization:
+
+1. **Aggregates Tech Events**: Collects and displays events from 20+ local tech community groups in a single calendar
+2. **Provides Free Coworking Space**: A volunteer-managed workspace at Geekdom in downtown San Antonio
+3. **Runs a Tech Job Board**: Listings automatically shared across the website, Discord, and LinkedIn
+4. **Produces Content**: DEVSA TV creates documentary-style videos about the local tech community
+5. **Hosts Conferences**: Including "More Human Than Human" AI Conference and PySanAntonio Python conference
+6. **Connects Communities**: Bridges the gap between 20+ independent tech groups
+
+## Pages & Features
+
+### Homepage (https://devsa.community)
+The main landing page introducing DEVSA's mission, featuring partner highlights, community groups, and upcoming events.
+
+### Tech Events Calendar (https://devsa.community/events)
+A comprehensive calendar aggregating tech events from 20+ community groups in San Antonio. Includes meetups, workshops, hackathons, conferences, and networking events. Categories include:
+- Programming language meetups (Python, JavaScript, Rust, Go, etc.)
+- AI/ML meetups and conferences
+- Cybersecurity events
+- Cloud computing and DevOps
+- UX/UI design
+- Game development
+- Startup and entrepreneurship
+- Women in tech
+
+Events support RSVP functionality and are also available via RSS feed at /api/events/feed.
+
+### Coworking Space (https://devsa.community/coworking-space)
+A free, volunteer-managed community workspace located at:
+- **Address**: 131 Houston Street, San Antonio, TX 78205
+- **Host**: Geekdom
+- **Cost**: Free
+- **Amenities**: Free WiFi, meeting rooms, community access, downtown parking
+- **Access**: Via Discord community coordination
+
+### Tech Communities & Partners (https://devsa.community/buildingtogether)
+Directory of 20+ tech community groups and strategic partners in the San Antonio area. Each community has its own profile with description, meeting schedule, and links.
+
+### Job Board (https://devsa.community/jobs)
+Tech job listings covering San Antonio, the I-35 corridor, and the Rio Grande Valley. Features:
+- Free job posting during community launch
+- Automatic distribution to website, Discord, and LinkedIn
+- Search and filter by role type, location, and technology
+- Employer dashboard for managing listings
+
+### DEVSA TV (https://devsa.community/devsatv)
+Documentary-style video content showcasing San Antonio's tech community. Includes:
+- Conference talks and recordings
+- Developer interviews
+- Community event highlights
+- Behind-the-scenes tech culture content
+
+### Shop (https://devsa.community/shop)
+Print-on-demand community merch and developer apparel designed in San Antonio. Purchases support the nonprofit's mission.
+
+### Conferences
+
+#### More Human Than Human (https://devsa.community/events/morehumanthanhuman)
+An AI conference in San Antonio exploring the intersection of artificial intelligence and human experience.
+
+#### PySanAntonio (https://devsa.community/events/pysanantonio)
+A Python conference co-hosted by Alamo Python, DEVSA, and the PyTexas Foundation. Held at Geekdom in downtown San Antonio.
+
+## Technical Details
+
+- **Framework**: Next.js (React)
+- **Hosting**: Vercel
+- **Domain**: devsa.community
+- **Content**: Dynamic events from Firestore, products from Printify
+- **RSS Feed**: /api/events/feed
+- **Sitemap**: /sitemap.xml
+
+## Topics & Expertise
+
+DEVSA covers these technology areas in San Antonio:
+- Software Development (Web, Mobile, Backend)
+- Artificial Intelligence & Machine Learning
+- Data Science & Analytics
+- Cybersecurity
+- Cloud Computing & DevOps
+- UX/UI Design
+- Game Development
+- Python, JavaScript, TypeScript, Rust, Go
+- Open Source
+- Startup Culture & Entrepreneurship
+
+## Contact
+
+- **Community Support**: Via Discord (https://discord.gg/cvHHzThrEw)
+- **Email**: Available through the website contact forms
+- **Location**: San Antonio, Texas, USA

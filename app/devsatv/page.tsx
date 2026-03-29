@@ -4,23 +4,25 @@ import { DevsaTVPage } from "@/components/devsatv/devsatv-page"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
 export const metadata: Metadata = {
-  title: "DEVSA TV | The Content Engine for San Antonio Tech",
-  description: "Transform authentic community stories into premium, sponsor-ready content through documentary-style production. DEVSA TV leverages the living ecosystem that DEVSA created.",
+  title: "DEVSA TV | Tech Content & Documentary Production in San Antonio",
+  description: "Watch authentic San Antonio tech community stories, conference talks, and developer interviews. DEVSA TV transforms local tech culture into premium documentary-style content.",
   keywords: [
     "DEVSA TV",
-    "San Antonio tech",
-    "tech content",
-    "documentary production",
-    "sponsored workshops",
-    "tech conferences",
-    "More Human Than Human",
-    "AI Conference",
-    "PySanAntonio",
-    "content sponsorship",
+    "San Antonio tech videos",
+    "tech content creation",
+    "documentary production San Antonio",
+    "tech conference recordings",
+    "developer interviews SA",
+    "More Human Than Human AI conference",
+    "PySanAntonio talks",
+    "tech community content",
+    "San Antonio tech scene",
+    "tech YouTube San Antonio",
+    "developer community videos",
   ],
   openGraph: {
-    title: "DEVSA TV | The Content Engine for San Antonio Tech",
-    description: "Transform authentic community stories into premium, sponsor-ready content through documentary-style production.",
+    title: "DEVSA TV | Tech Content & Documentary Production in San Antonio",
+    description: "Watch authentic San Antonio tech community stories, conference talks, and developer interviews transformed into premium documentary-style content.",
     url: `${siteUrl}/devsatv`,
     siteName: "DEVSA",
     images: [
@@ -35,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DEVSA TV | The Content Engine for San Antonio Tech",
-    description: "Transform authentic community stories into premium, sponsor-ready content through documentary-style production.",
+    title: "DEVSA TV | Tech Content & Documentary Production in San Antonio",
+    description: "Watch authentic San Antonio tech community stories, conference talks, and developer interviews transformed into premium documentary-style content.",
     images: [`${siteUrl}/api/og/devsatv`],
   },
 }

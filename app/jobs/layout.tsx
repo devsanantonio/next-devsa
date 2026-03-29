@@ -58,8 +58,41 @@ export default function JobsLayout({
 }: {
   children: React.ReactNode
 }) {
+  const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
   return (
     <AuthProvider>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: "Tech Jobs in San Antonio & South Texas",
+            description: "Post once and your listing reaches developers, designers, and engineers across San Antonio, the I-35 corridor, and the Rio Grande Valley.",
+            url: `${siteUrlValue}/jobs`,
+            isPartOf: {
+              "@type": "WebSite",
+              name: "DEVSA",
+              url: siteUrlValue,
+            },
+            about: {
+              "@type": "Thing",
+              name: "Technology Jobs in San Antonio",
+            },
+            provider: {
+              "@type": "Organization",
+              name: "DEVSA",
+              url: siteUrlValue,
+              nonprofitStatus: "501(c)(3)",
+            },
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${siteUrlValue}/jobs?q={search_term_string}`,
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        }}
+      />
       <JobsLayoutShell>{children}</JobsLayoutShell>
     </AuthProvider>
   )

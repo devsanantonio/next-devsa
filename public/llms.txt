@@ -1,0 +1,23 @@
+# DEVSA - San Antonio Tech Community
+
+> DEVSA (DEV San Antonio) is a 501(c)(3) nonprofit that bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio, Texas.
+
+## About
+
+DEVSA is the central hub for San Antonio's tech community, connecting 20+ developer groups, hosting events, providing coworking space, and creating career opportunities. Founded in 2020, DEVSA serves the San Antonio metro area, I-35 corridor, and Rio Grande Valley.
+
+## Key Pages
+
+- [Homepage](https://devsa.community): Overview of the DEVSA community platform
+- [Tech Events & Meetups](https://devsa.community/events): Community calendar aggregating events from 20+ tech groups in San Antonio
+- [Coworking Space](https://devsa.community/coworking-space): Free community workspace at Geekdom, 131 Houston Street, downtown San Antonio
+- [Tech Communities & Partners](https://devsa.community/buildingtogether): Directory of 20+ tech community groups and strategic partners
+- [Job Board](https://devsa.community/jobs): Tech job listings for San Antonio, I-35 corridor, and Rio Grande Valley
+- [DEVSA TV](https://devsa.community/devsatv): Documentary-style tech content and conference recordings
+- [Shop](https://devsa.community/shop): Official community merch and developer apparel
+- [More Human Than Human](https://devsa.community/events/morehumanthanhuman): AI Conference in San Antonio
+- [PySanAntonio](https://devsa.community/events/pysanantonio): Python conference hosted by Alamo Python and PyTexas Foundation
+
+## Detailed Info
+
+For more detailed information, see [llms-full.txt](https://devsa.community/llms-full.txt).

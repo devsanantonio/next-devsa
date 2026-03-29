@@ -124,6 +124,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="author" href="https://devsa.community" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -137,6 +138,7 @@ export default function RootLayout({
               url: "https://devsa.community",
               logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
               foundingDate: "2020",
+              nonprofitStatus: "501(c)(3)",
               areaServed: {
                 "@type": "City",
                 name: "San Antonio",
@@ -167,6 +169,25 @@ export default function RootLayout({
                 "@type": "ContactPoint",
                 contactType: "Community Support",
                 availableLanguage: "English",
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "DEVSA",
+              alternateName: "DEV San Antonio",
+              url: "https://devsa.community",
+              description:
+                "San Antonio's tech community hub — events, coworking space, job board, and 20+ developer groups.",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://devsa.community/events?q={search_term_string}",
+                "query-input": "required name=search_term_string",
               },
             }),
           }}
