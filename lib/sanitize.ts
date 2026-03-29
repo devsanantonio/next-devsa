@@ -22,3 +22,10 @@ export function sanitizeHtml(dirty: string): string {
     },
   })
 }
+
+/**
+ * Sanitize plain text input by stripping HTML tags and trimming.
+ */
+export function sanitizeInput(input: string): string {
+  return sanitize(input, { allowedTags: [], allowedAttributes: {} }).trim()
+}
