@@ -17,6 +17,18 @@ export async function GET() {
           prefix: 'devsa',
           uri: DEVSA_NAMESPACE,
         },
+        variants: [
+          {
+            name: 'upcoming',
+            feedUrl: `${SITE_URL}/api/events/feed`,
+            notes: 'Upcoming published events, sorted soonest first.',
+          },
+          {
+            name: 'past',
+            feedUrl: `${SITE_URL}/api/events/feed/past`,
+            notes: 'Past published events, sorted most recent first. Supports the same item contract and communityId filter.',
+          },
+        ],
         notes: [
           'Optional fields are omitted when unavailable and are not emitted as empty tags.',
           'Array values are emitted as repeated tags rather than comma-separated values.',
@@ -34,6 +46,7 @@ export async function GET() {
             examples: [
               `${SITE_URL}/api/events/feed?communityId=devsa`,
               `${SITE_URL}/api/events/feed?communityId=devsa,alamo-python`,
+              `${SITE_URL}/api/events/feed/past?communityId=devsa`,
             ],
           },
         ],
