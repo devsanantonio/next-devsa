@@ -40,6 +40,7 @@ export default function AdminCreateEventPage() {
     status: "published" as "published" | "draft",
     eventType: "in-person" as "in-person" | "hybrid" | "virtual",
     rsvpEnabled: false,
+    externalRsvpUrl: "",
   })
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function AdminCreateEventPage() {
           status: formData.status,
           eventType: formData.eventType,
           rsvpEnabled: formData.rsvpEnabled,
+          externalRsvpUrl: formData.externalRsvpUrl || null,
           organizerEmail: adminEmail,
         }),
       })
@@ -458,38 +460,77 @@ export default function AdminCreateEventPage() {
               />
             </div>
 
-            {/* RSVP Toggle */}
-            <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4">
-              <div className="flex items-center justify-between">
+            {/* Registration */}
+            <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4 space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-gray-300">Registration</label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Manage registration through devsa.community or through an external channel.
+                </p>
+              </div>
+
+              {/* Built-in RSVP option */}
+              <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                formData.rsvpEnabled
+                  ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
+                  : 'border-gray-700 hover:border-gray-600'
+              }`}>
+                <input
+                  type="radio"
+                  name="registrationType"
+                  checked={formData.rsvpEnabled}
+                  onChange={() => setFormData({ ...formData, rsvpEnabled: true, externalRsvpUrl: "" })}
+                  className="mt-0.5 accent-[#ef426f]"
+                />
                 <div>
-                  <label className="text-sm font-semibold text-gray-300">Enable RSVP</label>
+                  <span className="text-sm font-medium text-white">devsa.community RSVP form</span>
                   <p className="text-xs text-gray-500 mt-1">
-                    Collect RSVPs directly on your event page. Attendees can register with their name and email.
+                    Collect RSVPs directly on your event page. Attendees register with their name and email.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.rsvpEnabled}
-                  onClick={() => setFormData({ ...formData, rsvpEnabled: !formData.rsvpEnabled })}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ef426f] focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                    formData.rsvpEnabled ? 'bg-[#ef426f]' : 'bg-gray-600'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      formData.rsvpEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
+              </label>
               {formData.rsvpEnabled && (
-                <p className="mt-3 text-xs text-green-400 flex items-center gap-1.5">
+                <p className="ml-7 text-xs text-green-400 flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   RSVP form will appear on the event page. You can view and export RSVPs from your dashboard.
                 </p>
+              )}
+
+              {/* External RSVP option */}
+              <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                !formData.rsvpEnabled
+                  ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
+                  : 'border-gray-700 hover:border-gray-600'
+              }`}>
+                <input
+                  type="radio"
+                  name="registrationType"
+                  checked={!formData.rsvpEnabled}
+                  onChange={() => setFormData({ ...formData, rsvpEnabled: false })}
+                  className="mt-0.5 accent-[#ef426f]"
+                />
+                <div>
+                  <span className="text-sm font-medium text-white">External registration</span>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Link to an external registration page (Eventbrite, Lu.ma, Meetup, etc.). An RSVP button will appear on the event page.
+                  </p>
+                </div>
+              </label>
+              {!formData.rsvpEnabled && (
+                <div className="ml-7">
+                  <input
+                    type="url"
+                    value={formData.externalRsvpUrl}
+                    onChange={(e) => setFormData({ ...formData, externalRsvpUrl: e.target.value })}
+                    placeholder="https://eventbrite.com/e/your-event"
+                    className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 px-4 text-sm text-white placeholder:text-gray-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Optional — leave blank if you don&apos;t need a registration button on the event page.
+                  </p>
+                </div>
               )}
             </div>
 

@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
+      externalRsvpUrl: body.externalRsvpUrl || null,
       sharedToDiscord: false,
       sharedToLinkedIn: false,
       createdAt: new Date(),
@@ -233,6 +234,7 @@ export async function PUT(request: NextRequest) {
     if (description) updateData.description = description;
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
+    if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
     if (communityId) updateData.communityId = communityId;
     if (typeof communityName === 'string') updateData.communityName = communityName;

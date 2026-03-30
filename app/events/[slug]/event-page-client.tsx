@@ -51,6 +51,7 @@ interface Event {
   communityLogos?: string[]
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
+  externalRsvpUrl?: string | null
 }
 
 interface EventPageClientProps {
@@ -552,7 +553,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               </div>
             </div>
 
-            {/* RSVP Form */}
+            {/* RSVP — built-in form */}
             {event.rsvpEnabled && eventStatus === "upcoming" && (
               <div className="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-200">
                 <h3 className="text-lg font-bold tracking-tight text-slate-900 mb-4">RSVP for this event</h3>
@@ -647,6 +648,35 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     </p>
                   </form>
                 )}
+              </div>
+            )}
+
+            {/* RSVP — external registration button */}
+            {!event.rsvpEnabled && event.externalRsvpUrl && eventStatus === "upcoming" && (
+              <div className="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h3 className="text-lg font-bold tracking-tight text-slate-900 mb-2">Register for this event</h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  {(() => {
+                    const name = event.communityName || 'The community group'
+                    const parts = name.split(', ').filter(Boolean)
+                    if (parts.length > 1) {
+                      const formatted = parts.length === 2
+                        ? `${parts[0]} and ${parts[1]}`
+                        : `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`
+                      return `${formatted} are`
+                    }
+                    return `${name} is`
+                  })()} managing registration for this event on an external platform.
+                </p>
+                <a
+                  href={event.externalRsvpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-[#d63760] hover:shadow-lg"
+                >
+                  RSVP
+                  <ExternalLink className="h-4 w-4" />
+                </a>
               </div>
             )}
 

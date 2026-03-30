@@ -49,6 +49,7 @@ async function getEventBySlug(slug: string) {
         status: data.status,
         eventType: data.eventType,
         rsvpEnabled: data.rsvpEnabled,
+        externalRsvpUrl: data.externalRsvpUrl || null,
         communityName,
         createdAt: (data.createdAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as unknown as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,

@@ -194,6 +194,7 @@ export interface Event {
   status?: 'draft' | 'published' | 'cancelled';
   eventType?: 'in-person' | 'hybrid' | 'virtual';
   rsvpEnabled?: boolean;
+  externalRsvpUrl?: string | null;
   sharedToDiscord?: boolean;
   sharedToLinkedIn?: boolean;
   createdAt: Date;

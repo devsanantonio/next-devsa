@@ -102,6 +102,7 @@ interface CalendarEvent {
   isStatic?: boolean
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
+  externalRsvpUrl?: string
 }
 
 interface Community {
@@ -574,6 +575,7 @@ export default function AdminPage() {
           status: editingEvent.status,
           eventType: editingEvent.eventType,
           rsvpEnabled: editingEvent.rsvpEnabled,
+          externalRsvpUrl: editingEvent.externalRsvpUrl || null,
           communityId: editingEvent.communityId,
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
@@ -2445,31 +2447,78 @@ export default function AdminPage() {
                           darkMode={true}
                         />
                       </div>
-                      {/* RSVP Toggle */}
-                      <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
-                        <div className="flex items-center justify-between">
+                      {/* Registration */}
+                      <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4 space-y-4">
+                        <div>
+                          <label className="text-sm font-semibold text-neutral-300">Registration</label>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            Manage registration through devsa.community or through an external channel.
+                          </p>
+                        </div>
+
+                        {/* Built-in RSVP option */}
+                        <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                          editingEvent.rsvpEnabled
+                            ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                        }`}>
+                          <input
+                            type="radio"
+                            name="editRegistrationType"
+                            checked={editingEvent.rsvpEnabled || false}
+                            onChange={() => setEditingEvent({ ...editingEvent, rsvpEnabled: true, externalRsvpUrl: "" })}
+                            className="mt-0.5 accent-[#ef426f]"
+                          />
                           <div>
-                            <label className="text-sm font-semibold text-neutral-300">Enable RSVP</label>
+                            <span className="text-sm font-medium text-white">devsa.community RSVP form</span>
                             <p className="text-xs text-neutral-500 mt-1">
-                              Collect RSVPs on your event page
+                              Collect RSVPs directly on your event page. Attendees register with their name and email.
                             </p>
                           </div>
-                          <button
-                            type="button"
-                            role="switch"
-                            aria-checked={editingEvent.rsvpEnabled || false}
-                            onClick={() => setEditingEvent({ ...editingEvent, rsvpEnabled: !editingEvent.rsvpEnabled })}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ef426f] focus:ring-offset-2 focus:ring-offset-neutral-900 ${
-                              editingEvent.rsvpEnabled ? 'bg-[#ef426f]' : 'bg-neutral-600'
-                            }`}
-                          >
-                            <span
-                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                editingEvent.rsvpEnabled ? 'translate-x-5' : 'translate-x-0'
-                              }`}
+                        </label>
+                        {editingEvent.rsvpEnabled && (
+                          <p className="ml-7 text-xs text-green-400 flex items-center gap-1.5">
+                            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            RSVP form will appear on the event page. You can view and export RSVPs from your dashboard.
+                          </p>
+                        )}
+
+                        {/* External RSVP option */}
+                        <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                          !editingEvent.rsvpEnabled
+                            ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                        }`}>
+                          <input
+                            type="radio"
+                            name="editRegistrationType"
+                            checked={!editingEvent.rsvpEnabled}
+                            onChange={() => setEditingEvent({ ...editingEvent, rsvpEnabled: false })}
+                            className="mt-0.5 accent-[#ef426f]"
+                          />
+                          <div>
+                            <span className="text-sm font-medium text-white">External registration</span>
+                            <p className="text-xs text-neutral-500 mt-1">
+                              Link to an external registration page (Eventbrite, Lu.ma, Meetup, etc.). An RSVP button will appear on the event page.
+                            </p>
+                          </div>
+                        </label>
+                        {!editingEvent.rsvpEnabled && (
+                          <div className="ml-7">
+                            <input
+                              type="url"
+                              value={editingEvent.externalRsvpUrl || ""}
+                              onChange={(e) => setEditingEvent({ ...editingEvent, externalRsvpUrl: e.target.value })}
+                              placeholder="https://eventbrite.com/e/your-event"
+                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                             />
-                          </button>
-                        </div>
+                            <p className="mt-2 text-xs text-neutral-500">
+                              Optional — leave blank if you don&apos;t need a registration button on the event page.
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
