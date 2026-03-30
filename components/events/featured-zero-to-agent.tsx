@@ -32,7 +32,7 @@ export function FeaturedZeroToAgent() {
       {/* Top accent line */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
-      <div className="mt-6 relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-14">
+      <div className="mt-6 relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
