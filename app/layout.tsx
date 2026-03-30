@@ -1,6 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google"
+import { Space_Grotesk } from "next/font/google"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
+import {
+  GeistPixelSquare,
+  GeistPixelGrid,
+  GeistPixelCircle,
+  GeistPixelTriangle,
+  GeistPixelLine,
+} from "geist/font/pixel"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
@@ -8,20 +17,6 @@ import { Suspense } from "react"
 import { Footer } from "@/components/footer"
 import { CartProvider } from "@/components/shop/cart-context"
 import { CartSlideOut } from "@/components/shop/cart-slide-out"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false, // Only preload if used on initial page load
-})
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -193,7 +188,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <CartProvider>
             <Navbar />

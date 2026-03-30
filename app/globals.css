@@ -30,6 +30,11 @@
   @theme {
   --font-geist-sans: "Geist Sans", sans-serif;
   --font-geist-mono: "Geist Mono", monospace;
+  --font-geist-pixel-square: "Geist Pixel Square", monospace;
+  --font-geist-pixel-grid: "Geist Pixel Grid", monospace;
+  --font-geist-pixel-circle: "Geist Pixel Circle", monospace;
+  --font-geist-pixel-triangle: "Geist Pixel Triangle", monospace;
+  --font-geist-pixel-line: "Geist Pixel Line", monospace;
   }
 
 body {
