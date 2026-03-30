@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+const EVENT_TIMEZONE = 'America/Chicago';
+const DEVSA_NAMESPACE = 'https://devsa.community/ns/event-feed/1.0';
 
 function escapeXml(text: string): string {
   return text
@@ -22,6 +24,40 @@ function stripHtml(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .trim();
+}
+
+function truncateAtWordBoundary(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+
+  const truncated = text.slice(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  const safeText = lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
+
+  return `${safeText.trimEnd()}...`;
+}
+
+function formatIsoInTimeZone(dateInput: string, timeZone: string): string {
+  const date = new Date(dateInput);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+    timeZoneName: 'shortOffset',
+  }).formatToParts(date);
+
+  const lookup = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  const offsetValue = lookup.timeZoneName || 'GMT';
+  const offsetMatch = offsetValue.match(/(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?/);
+  const offset = offsetMatch
+    ? `${offsetMatch[1]}${offsetMatch[2].padStart(2, '0')}:${(offsetMatch[3] || '00').padStart(2, '0')}`
+    : '+00:00';
+
+  return `${lookup.year}-${lookup.month}-${lookup.day}T${lookup.hour}:${lookup.minute}:${lookup.second}${offset}`;
 }
 
 export async function GET() {
@@ -51,18 +87,34 @@ export async function GET() {
       .map(doc => {
         const data = doc.data();
         const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
-        const communityName = communityIds
-          .map((id: string) => communityLookup.get(id) || data.communityName || id)
-          .join(', ');
+        const hosts = communityIds.map((id: string) => ({
+          id,
+          name: communityLookup.get(id) || data.communityName || id,
+        }));
+        const fallbackCommunityName = typeof data.communityName === 'string' ? data.communityName.trim() : '';
+        const communityName = hosts.length > 0
+          ? hosts.map(host => host.name).join(', ')
+          : fallbackCommunityName;
+        const venue = (data.venue || '') as string;
+        const address = (data.address || '') as string;
+        const location = (venue || data.location || '') as string;
 
         return {
           title: data.title as string,
           slug: data.slug as string,
           date: data.date as string,
-          location: (data.venue || data.location || '') as string,
+          endTime: data.endTime as string | undefined,
+          venue,
+          address,
+          location,
           description: data.description as string,
           communityName,
+          hosts: hosts.length > 0 || !fallbackCommunityName
+            ? hosts
+            : [{ id: '', name: fallbackCommunityName }],
           eventType: (data.eventType || 'in-person') as string,
+          rsvpEnabled: Boolean(data.rsvpEnabled),
+          externalUrl: (data.url || '') as string,
           createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt || data.date,
         };
       })
@@ -74,31 +126,64 @@ export async function GET() {
     const items = events.map(event => {
       const eventUrl = `${SITE_URL}/events/${event.slug}`;
       const eventDate = new Date(event.date);
+      const detailsUrl = eventUrl;
+      const rsvpUrl = event.externalUrl || (event.rsvpEnabled ? `${eventUrl}#rsvp` : '');
+      const rsvpMode = event.externalUrl ? 'external' : event.rsvpEnabled ? 'internal' : '';
       const dateStr = eventDate.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        timeZone: 'America/Chicago',
+        timeZone: EVENT_TIMEZONE,
       });
       const timeStr = eventDate.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
-        timeZone: 'America/Chicago',
+        timeZone: EVENT_TIMEZONE,
       });
 
       const plainDescription = stripHtml(event.description);
+      const truncatedPlainDescription = plainDescription
+        ? truncateAtWordBoundary(plainDescription, 300)
+        : '';
       const formatLabel = event.eventType === 'virtual' ? 'Virtual' : event.eventType === 'hybrid' ? 'Hybrid' : 'In-Person';
+      const categories = [formatLabel, ...event.hosts.map(host => host.name).filter(Boolean)];
+      const locationLabel = event.address && event.venue
+        ? `${event.venue}, ${event.address}`
+        : event.location;
 
       let descriptionParts = [`${dateStr} at ${timeStr} CT`];
       if (event.location) descriptionParts.push(event.location);
       descriptionParts.push(`Format: ${formatLabel}`);
       if (event.communityName) descriptionParts.push(`Hosted by ${event.communityName}`);
-      if (plainDescription) descriptionParts.push(plainDescription.slice(0, 300));
+      if (truncatedPlainDescription) descriptionParts.push(truncatedPlainDescription);
 
       const pubDate = typeof event.createdAt === 'string'
         ? new Date(event.createdAt).toUTCString()
         : eventDate.toUTCString();
+      const categoryFields = categories
+        .map(category => `      <category>${escapeXml(category)}</category>`)
+        .join('\n');
+      const extensionFields = [
+        `      <devsa:eventStart>${escapeXml(formatIsoInTimeZone(event.date, EVENT_TIMEZONE))}</devsa:eventStart>`,
+        event.endTime ? `      <devsa:eventEnd>${escapeXml(formatIsoInTimeZone(event.endTime, EVENT_TIMEZONE))}</devsa:eventEnd>` : null,
+        `      <devsa:eventTimezone>${EVENT_TIMEZONE}</devsa:eventTimezone>`,
+        `      <devsa:eventType>${escapeXml(event.eventType)}</devsa:eventType>`,
+        truncatedPlainDescription ? `      <devsa:description>${escapeXml(truncatedPlainDescription)}</devsa:description>` : null,
+        event.venue ? `      <devsa:venue>${escapeXml(event.venue)}</devsa:venue>` : null,
+        event.address ? `      <devsa:address>${escapeXml(event.address)}</devsa:address>` : null,
+        locationLabel ? `      <devsa:locationLabel>${escapeXml(locationLabel)}</devsa:locationLabel>` : null,
+        ...event.hosts
+          .filter(host => host.name)
+          .map(host => host.id
+            ? `      <devsa:host id="${escapeXml(host.id)}">${escapeXml(host.name)}</devsa:host>`
+            : `      <devsa:host>${escapeXml(host.name)}</devsa:host>`),
+        `      <devsa:detailsUrl>${escapeXml(detailsUrl)}</devsa:detailsUrl>`,
+        rsvpUrl ? `      <devsa:rsvpUrl>${escapeXml(rsvpUrl)}</devsa:rsvpUrl>` : null,
+        rsvpMode ? `      <devsa:rsvpMode>${escapeXml(rsvpMode)}</devsa:rsvpMode>` : null,
+        `      <devsa:link rel="details">${escapeXml(detailsUrl)}</devsa:link>`,
+        rsvpUrl ? `      <devsa:link rel="rsvp">${escapeXml(rsvpUrl)}</devsa:link>` : null,
+      ].filter(Boolean).join('\n');
 
       return `    <item>
       <title>${escapeXml(event.title)}</title>
@@ -107,12 +192,13 @@ export async function GET() {
       <description>${escapeXml(descriptionParts.join(' · '))}</description>
       <pubDate>${pubDate}</pubDate>
       <source url="${escapeXml(`${SITE_URL}/api/events/feed`)}">DEVSA Community Calendar</source>
-      <category>${escapeXml(formatLabel)}</category>
+${categoryFields}
+${extensionFields}
     </item>`;
     }).join('\n');
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:devsa="${DEVSA_NAMESPACE}">
   <channel>
     <title>DEVSA Community Calendar</title>
     <link>${SITE_URL}/events</link>
