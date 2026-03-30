@@ -146,7 +146,7 @@ export function ChangelogImage() {
 
         {/* 2. Coworking Space — milestone */}
         <ChangelogEntry
-          tag="Milestone"
+          tag="Coworking"
           tagColor="#ff4d9a"
           title="Coworking Space — Web to Discord Messaging"
           highlight={true}
@@ -159,7 +159,7 @@ export function ChangelogImage() {
 
         {/* 3. Shop — milestone */}
         <ChangelogEntry
-          tag="Milestone"
+          tag="Shop"
           tagColor="#ff6b35"
           title="Shop is Back — Printify API + Stripe Checkout"
           highlight={true}
@@ -172,7 +172,7 @@ export function ChangelogImage() {
 
         {/* 4. Job Board — milestone */}
         <ChangelogEntry
-          tag="Milestone"
+          tag="Job Board"
           tagColor="#4d8eff"
           title="Job Board — The Opportunity Pipeline"
           highlight={true}
