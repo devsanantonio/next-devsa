@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
@@ -60,9 +60,14 @@ function formatIsoInTimeZone(dateInput: string, timeZone: string): string {
   return `${lookup.year}-${lookup.month}-${lookup.day}T${lookup.hour}:${lookup.minute}:${lookup.second}${offset}`;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const db = getDb();
+    const requestedCommunityIds = request.nextUrl.searchParams
+      .get('communityId')
+      ?.split(',')
+      .map(id => id.trim())
+      .filter(Boolean) || [];
 
     // Build community lookup for display names
     const communityLookup = new Map<string, string>();
@@ -103,6 +108,7 @@ export async function GET() {
           title: data.title as string,
           slug: data.slug as string,
           date: data.date as string,
+          communityIds,
           endTime: data.endTime as string | undefined,
           venue,
           address,
@@ -118,6 +124,10 @@ export async function GET() {
           createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt || data.date,
         };
       })
+      .filter(event => (
+        requestedCommunityIds.length === 0 ||
+        event.communityIds.some(id => requestedCommunityIds.includes(id))
+      ))
       .filter(event => new Date(event.date) >= now)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 

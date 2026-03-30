@@ -217,6 +217,7 @@ END:VCALENDAR`
 
 const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed`
 const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/calendar`
+const FEED_SCHEMA_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed/schema`
 
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false)
@@ -290,6 +291,9 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
             </h3>
             <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
               RSS is a standard format that lets platforms automatically pull in new content. Copy the feed URL below and connect it to your Discord, Slack, website, or any tool that supports RSS — events show up automatically, no manual posting needed.
+            </p>
+            <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
+              Need the field contract and examples? <a href={FEED_SCHEMA_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900">View the feed schema</a>.
             </p>
 
             {/* Feed URL */}

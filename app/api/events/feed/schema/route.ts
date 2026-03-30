@@ -4,11 +4,15 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
 const DEVSA_NAMESPACE = 'https://devsa.community/ns/event-feed/1.0';
 
 export async function GET() {
+  // Keep this schema contract in sync with app/api/events/feed/route.ts whenever
+  // the RSS implementation changes. Consumers rely on this endpoint as the
+  // public reference for available fields, filters, and omission rules.
   return NextResponse.json(
     {
       feed: {
         title: 'DEVSA Community Calendar RSS Schema',
         feedUrl: `${SITE_URL}/api/events/feed`,
+        schemaUrl: `${SITE_URL}/api/events/feed/schema`,
         namespace: {
           prefix: 'devsa',
           uri: DEVSA_NAMESPACE,
@@ -25,9 +29,22 @@ export async function GET() {
             type: 'string',
             required: false,
             repeatable: false,
-            status: 'planned',
-            notes: 'When implemented, this will return only events whose participating community list includes the given community ID.',
+            status: 'active',
+            notes: 'Filters the feed to events whose participating community list includes any requested community ID. Accepts a single ID or a comma-separated list with match-any semantics.',
+            examples: [
+              `${SITE_URL}/api/events/feed?communityId=devsa`,
+              `${SITE_URL}/api/events/feed?communityId=devsa,alamo-python`,
+            ],
           },
+        ],
+        omissionRules: [
+          'Optional fields are omitted entirely when unavailable.',
+          'devsa:eventEnd is omitted when no end time is configured.',
+          'devsa:venue and devsa:address are omitted when those values are not configured.',
+          'devsa:locationLabel is omitted when no human-friendly location text is available.',
+          'devsa:rsvpUrl and devsa:rsvpMode are omitted when no actionable RSVP destination exists.',
+          'devsa:host may repeat for collaborative events and may be omitted when no host name can be resolved.',
+          'devsa:link always includes rel="details" and includes rel="rsvp" only when RSVP is available.',
         ],
       },
       channel: {
@@ -237,25 +254,79 @@ export async function GET() {
         examples: [
           {
             scenario: 'Minimal item',
-            notes: [
-              'No end time.',
-              'No RSVP URL.',
-              'Single host.',
-            ],
+            xml: `<item>
+  <title>San Antonio JavaScript Social</title>
+  <link>${SITE_URL}/events/san-antonio-javascript-social</link>
+  <guid isPermaLink="true">${SITE_URL}/events/san-antonio-javascript-social</guid>
+  <description>Wednesday, June 10, 2026 at 7:00 PM CT · Downtown San Antonio · Format: In-Person · Hosted by SATXJS · Casual meetup for local JavaScript developers...</description>
+  <pubDate>Sat, 30 May 2026 20:10:00 GMT</pubDate>
+  <source url="${SITE_URL}/api/events/feed">DEVSA Community Calendar</source>
+  <category>In-Person</category>
+  <category>SATXJS</category>
+  <devsa:eventStart>2026-06-10T19:00:00-05:00</devsa:eventStart>
+  <devsa:eventTimezone>America/Chicago</devsa:eventTimezone>
+  <devsa:eventType>in-person</devsa:eventType>
+  <devsa:description>Casual meetup for local JavaScript developers...</devsa:description>
+  <devsa:locationLabel>Downtown San Antonio</devsa:locationLabel>
+  <devsa:host id="satxjs">SATXJS</devsa:host>
+  <devsa:detailsUrl>${SITE_URL}/events/san-antonio-javascript-social</devsa:detailsUrl>
+  <devsa:link rel="details">${SITE_URL}/events/san-antonio-javascript-social</devsa:link>
+</item>`,
           },
           {
             scenario: 'RSVP-enabled item',
-            notes: [
-              'Includes devsa:rsvpUrl and devsa:rsvpMode.',
-              'Always includes devsa:detailsUrl and devsa:link rel="details".',
-            ],
+            xml: `<item>
+  <title>AI Builders Meetup</title>
+  <link>${SITE_URL}/events/ai-builders-meetup</link>
+  <guid isPermaLink="true">${SITE_URL}/events/ai-builders-meetup</guid>
+  <description>Thursday, April 16, 2026 at 6:00 PM CT · Geekdom · Format: In-Person · Hosted by DEVSA · Practical meetup for local builders exploring applied AI...</description>
+  <pubDate>Mon, 06 Apr 2026 18:22:00 GMT</pubDate>
+  <source url="${SITE_URL}/api/events/feed">DEVSA Community Calendar</source>
+  <category>In-Person</category>
+  <category>DEVSA</category>
+  <devsa:eventStart>2026-04-16T18:00:00-05:00</devsa:eventStart>
+  <devsa:eventEnd>2026-04-16T20:00:00-05:00</devsa:eventEnd>
+  <devsa:eventTimezone>America/Chicago</devsa:eventTimezone>
+  <devsa:eventType>in-person</devsa:eventType>
+  <devsa:description>Practical meetup for local builders exploring applied AI...</devsa:description>
+  <devsa:venue>Geekdom</devsa:venue>
+  <devsa:address>110 E Houston St, San Antonio, TX 78205</devsa:address>
+  <devsa:locationLabel>Geekdom, 110 E Houston St, San Antonio, TX 78205</devsa:locationLabel>
+  <devsa:host id="devsa">DEVSA</devsa:host>
+  <devsa:detailsUrl>${SITE_URL}/events/ai-builders-meetup</devsa:detailsUrl>
+  <devsa:rsvpUrl>${SITE_URL}/events/ai-builders-meetup#rsvp</devsa:rsvpUrl>
+  <devsa:rsvpMode>internal</devsa:rsvpMode>
+  <devsa:link rel="details">${SITE_URL}/events/ai-builders-meetup</devsa:link>
+  <devsa:link rel="rsvp">${SITE_URL}/events/ai-builders-meetup#rsvp</devsa:link>
+</item>`,
           },
           {
             scenario: 'Multi-host item',
-            notes: [
-              'Emits one devsa:host per participating community.',
-              'Emits a category for each host name.',
-            ],
+            xml: `<item>
+  <title>Founder Friday at Capital Factory</title>
+  <link>${SITE_URL}/events/founder-friday-capital-factory</link>
+  <guid isPermaLink="true">${SITE_URL}/events/founder-friday-capital-factory</guid>
+  <description>Friday, May 8, 2026 at 9:00 AM CT · Capital Factory · Format: Hybrid · Hosted by DEVSA, Capital Factory · Founder-focused morning meetup for the local startup community...</description>
+  <pubDate>Tue, 28 Apr 2026 15:00:00 GMT</pubDate>
+  <source url="${SITE_URL}/api/events/feed">DEVSA Community Calendar</source>
+  <category>Hybrid</category>
+  <category>DEVSA</category>
+  <category>Capital Factory</category>
+  <devsa:eventStart>2026-05-08T09:00:00-05:00</devsa:eventStart>
+  <devsa:eventEnd>2026-05-08T11:00:00-05:00</devsa:eventEnd>
+  <devsa:eventTimezone>America/Chicago</devsa:eventTimezone>
+  <devsa:eventType>hybrid</devsa:eventType>
+  <devsa:description>Founder-focused morning meetup for the local startup community...</devsa:description>
+  <devsa:venue>Capital Factory</devsa:venue>
+  <devsa:locationLabel>Capital Factory + online</devsa:locationLabel>
+  <devsa:host id="devsa">DEVSA</devsa:host>
+  <devsa:host id="capital-factory">Capital Factory</devsa:host>
+  <devsa:detailsUrl>${SITE_URL}/events/founder-friday-capital-factory</devsa:detailsUrl>
+  <devsa:rsvpUrl>https://lu.ma/founder-friday-sa</devsa:rsvpUrl>
+  <devsa:rsvpMode>external</devsa:rsvpMode>
+  <devsa:link rel="details">${SITE_URL}/events/founder-friday-capital-factory</devsa:link>
+  <devsa:link rel="rsvp">https://lu.ma/founder-friday-sa</devsa:link>
+</item>`,
           },
         ],
       },
