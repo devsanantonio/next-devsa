@@ -26,7 +26,7 @@ export async function GET() {
           {
             name: 'past',
             feedUrl: `${SITE_URL}/api/events/feed/past`,
-            notes: 'Past published events, sorted most recent first. Supports the same item contract and communityId filter.',
+            notes: 'Past published events, sorted most recent first. Supports the same item contract and communityId filter, but omits RSVP-specific fields and links.',
           },
         ],
         notes: [
@@ -55,9 +55,9 @@ export async function GET() {
           'devsa:eventEnd is omitted when no end time is configured.',
           'devsa:venue and devsa:address are omitted when those values are not configured.',
           'devsa:locationLabel is omitted when no human-friendly location text is available.',
-          'devsa:rsvpUrl and devsa:rsvpMode are omitted when no actionable RSVP destination exists.',
+          'devsa:rsvpUrl and devsa:rsvpMode are omitted when no actionable RSVP destination exists, and are always omitted from the past feed.',
           'devsa:host may repeat for collaborative events and may be omitted when no host name can be resolved.',
-          'devsa:link always includes rel="details" and includes rel="rsvp" only when RSVP is available.',
+          'devsa:link always includes rel="details" and includes rel="rsvp" only when RSVP is available on the upcoming feed.',
         ],
       },
       channel: {

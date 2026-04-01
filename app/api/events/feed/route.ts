@@ -132,6 +132,12 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const lastBuildDate = new Date().toUTCString();
+    const channelSuffix = requestedCommunityIds.length > 0
+      ? `: ${requestedCommunityIds.join(', ')}`
+      : '';
+    const channelDescription = requestedCommunityIds.length > 0
+      ? `Upcoming DEVSA community events involving ${requestedCommunityIds.join(', ')}.`
+      : `One calendar for every community. Stop hunting for links — DEVSA brings San Antonio's tech groups together in one place. Find your people. Build your future.`;
 
     const items = events.map(event => {
       const eventUrl = `${SITE_URL}/events/${event.slug}`;
@@ -210,10 +216,10 @@ ${extensionFields}
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:devsa="${DEVSA_NAMESPACE}">
   <channel>
-    <title>DEVSA Community Calendar</title>
+    <title>DEVSA Community Calendar${escapeXml(channelSuffix)}</title>
     <link>${SITE_URL}/events</link>
     <atom:link href="${SITE_URL}/api/events/feed" rel="self" type="application/rss+xml" />
-    <description>One calendar for every community. Stop hunting for links — DEVSA brings San Antonio's tech groups together in one place. Find your people. Build your future.</description>
+    <description>${escapeXml(channelDescription)}</description>
     <language>en-us</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <generator>devsa.community</generator>

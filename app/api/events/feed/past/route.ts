@@ -117,8 +117,6 @@ export async function GET(request: NextRequest) {
             ? hosts
             : [{ id: '', name: fallbackCommunityName }],
           eventType: (data.eventType || 'in-person') as string,
-          rsvpEnabled: Boolean(data.rsvpEnabled),
-          externalUrl: (data.url || '') as string,
           createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt || data.date,
         };
       })
@@ -135,8 +133,6 @@ export async function GET(request: NextRequest) {
       const eventUrl = `${SITE_URL}/events/${event.slug}`;
       const eventDate = new Date(event.date);
       const detailsUrl = eventUrl;
-      const rsvpUrl = event.externalUrl || (event.rsvpEnabled ? `${eventUrl}#rsvp` : '');
-      const rsvpMode = event.externalUrl ? 'external' : event.rsvpEnabled ? 'internal' : '';
       const dateStr = eventDate.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -187,10 +183,7 @@ export async function GET(request: NextRequest) {
             ? `      <devsa:host id="${escapeXml(host.id)}">${escapeXml(host.name)}</devsa:host>`
             : `      <devsa:host>${escapeXml(host.name)}</devsa:host>`),
         `      <devsa:detailsUrl>${escapeXml(detailsUrl)}</devsa:detailsUrl>`,
-        rsvpUrl ? `      <devsa:rsvpUrl>${escapeXml(rsvpUrl)}</devsa:rsvpUrl>` : null,
-        rsvpMode ? `      <devsa:rsvpMode>${escapeXml(rsvpMode)}</devsa:rsvpMode>` : null,
         `      <devsa:link rel="details">${escapeXml(detailsUrl)}</devsa:link>`,
-        rsvpUrl ? `      <devsa:link rel="rsvp">${escapeXml(rsvpUrl)}</devsa:link>` : null,
       ].filter(Boolean).join('\n');
 
       return `    <item>
@@ -208,6 +201,9 @@ ${extensionFields}
     const channelSuffix = requestedCommunityIds.length > 0
       ? `: ${requestedCommunityIds.join(', ')}`
       : '';
+    const channelDescription = requestedCommunityIds.length > 0
+      ? `Past DEVSA community events involving ${requestedCommunityIds.join(', ')}.`
+      : 'Past events from the DEVSA Community Calendar. Revisit previous community gatherings, workshops, and meetups across San Antonio.';
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:devsa="${DEVSA_NAMESPACE}">
@@ -215,7 +211,7 @@ ${extensionFields}
     <title>DEVSA Community Calendar Past Events${escapeXml(channelSuffix)}</title>
     <link>${SITE_URL}/events</link>
     <atom:link href="${SITE_URL}/api/events/feed/past" rel="self" type="application/rss+xml" />
-    <description>Past events from the DEVSA Community Calendar. Revisit previous community gatherings, workshops, and meetups across San Antonio.</description>
+    <description>${escapeXml(channelDescription)}</description>
     <language>en-us</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <generator>devsa.community</generator>
