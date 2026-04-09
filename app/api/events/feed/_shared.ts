@@ -17,6 +17,11 @@ type FeedConfig = {
   includeRsvp: boolean;
 };
 
+type FeedHost = {
+  id: string;
+  name: string;
+};
+
 type FeedEvent = {
   title: string;
   slug: string;
@@ -28,7 +33,7 @@ type FeedEvent = {
   location: string;
   description: string;
   communityName: string;
-  hosts: Array<{ id: string; name: string }>;
+  hosts: FeedHost[];
   eventType: string;
   rsvpEnabled: boolean;
   externalUrl: string;
@@ -107,7 +112,7 @@ async function buildCommunityLookup() {
   return communityLookup;
 }
 
-async function fetchFeedEvents(requestedCommunityIds: string[]) {
+async function fetchFeedEvents(requestedCommunityIds: string[]): Promise<FeedEvent[]> {
   const db = getDb();
   const communityLookup = await buildCommunityLookup();
   const snapshot = await db
@@ -116,10 +121,10 @@ async function fetchFeedEvents(requestedCommunityIds: string[]) {
     .get();
 
   return snapshot.docs
-    .map(doc => {
+    .map((doc): FeedEvent => {
       const data = doc.data();
       const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
-      const hosts = communityIds.map((id: string) => ({
+      const hosts: FeedHost[] = communityIds.map((id: string) => ({
         id,
         name: communityLookup.get(id) || data.communityName || id,
       }));
@@ -151,9 +156,9 @@ async function fetchFeedEvents(requestedCommunityIds: string[]) {
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt || data.date,
       } satisfies FeedEvent;
     })
-    .filter(event => (
+    .filter((event: FeedEvent) => (
       requestedCommunityIds.length === 0 ||
-      event.communityIds.some(id => requestedCommunityIds.includes(id))
+      event.communityIds.some((id: string) => requestedCommunityIds.includes(id))
     ));
 }
 
