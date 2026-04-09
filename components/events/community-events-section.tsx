@@ -284,10 +284,6 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
             <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
               RSS is a standard format that lets platforms automatically pull in new content. Copy the feed URL below and connect it to your Discord, Slack, website, or any tool that supports RSS — events show up automatically, no manual posting needed.
             </p>
-            <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
-              Need the field contract and examples? <a href={FEED_SCHEMA_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900">View the feed schema</a>.
-            </p>
-
             {/* Feed URL */}
             <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
@@ -374,6 +370,14 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
                   Preview
                 </a>
               </div>
+            </div>
+
+            {/* Developer reference */}
+            <div className="mt-6 border-t border-gray-100 pt-4">
+              <p className="text-[11px] font-normal text-gray-400 leading-[1.6]">
+                Building a custom integration?{' '}
+                <a href={FEED_SCHEMA_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-500 underline underline-offset-2 hover:text-gray-700">View feed field reference</a>
+              </p>
             </div>
 
             {/* Footer */}
