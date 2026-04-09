@@ -221,7 +221,6 @@ const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'ht
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false)
   const [copiedEmbed, setCopiedEmbed] = useState(false)
-  const [copiedIcal, setCopiedIcal] = useState(false)
 
   const embedCode = `<iframe src="https://devsa.community/events/embed" width="100%" height="600" style="border:none;border-radius:12px" title="DEVSA Community Events"></iframe>`
 
@@ -229,13 +228,6 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
     navigator.clipboard.writeText(FEED_URL).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
-  }, [])
-
-  const copyIcalUrl = useCallback(() => {
-    navigator.clipboard.writeText(ICAL_URL).then(() => {
-      setCopiedIcal(true)
-      setTimeout(() => setCopiedIcal(false), 2000)
     })
   }, [])
 
@@ -319,69 +311,6 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
               </a>
             </div>
 
-            {/* Subscribe to Calendar */}
-            <div className="mt-6 border-t border-gray-100 pt-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                  <CalendarPlus className="h-4 w-4 text-gray-500" />
-                </div>
-                <p className="text-[13px] font-medium text-gray-500 uppercase tracking-widest leading-[1.3]">
-                  Calendar Subscription
-                </p>
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 leading-[1.3]">
-                Subscribe to the DEVSA calendar
-              </h4>
-              <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
-                Subscribe once and new events appear automatically in your calendar app — no manual downloads needed. Your calendar will check for updates periodically.
-              </p>
-              <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <code className="text-[13px] font-normal text-gray-500 truncate flex-1">/api/events/calendar</code>
-                  <button
-                    onClick={copyIcalUrl}
-                    className="inline-flex items-center justify-center shrink-0 h-7 w-7 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                    title="Copy calendar URL"
-                  >
-                    {copiedIcal ? (
-                      <Check className="h-3.5 w-3.5 text-green-600" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                </div>
-                <a
-                  href={ICAL_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800 whitespace-nowrap"
-                >
-                  <CalendarPlus className="h-3.5 w-3.5" />
-                  Subscribe
-                </a>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
-                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Google Calendar</p>
-                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
-                    Settings → Add calendar → From URL. Paste the calendar URL above.
-                  </p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
-                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Apple Calendar</p>
-                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
-                    File → New Calendar Subscription. Paste the calendar URL. Set auto-refresh to every hour.
-                  </p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3.5">
-                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Outlook</p>
-                  <p className="mt-1 text-[12px] font-normal text-gray-500 leading-[1.6]">
-                    Add calendar → Subscribe from web. Paste the calendar URL and name it.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* How to use it (RSS) */}
             <div className="mt-6 border-t border-gray-100 pt-5">
               <p className="text-[13px] font-medium text-gray-900 leading-[1.3] mb-3">
@@ -454,6 +383,170 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
   )
 }
 
+function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [copiedIcal, setCopiedIcal] = useState(false)
+
+  const copyIcalUrl = useCallback(() => {
+    navigator.clipboard.writeText(ICAL_URL).then(() => {
+      setCopiedIcal(true)
+      setTimeout(() => setCopiedIcal(false), 2000)
+    })
+  }, [])
+
+  // Direct subscribe URLs for each provider
+  const webcalUrl = ICAL_URL.replace(/^https?:\/\//, 'webcal://')
+  const googleSubscribeUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`
+  const outlookSubscribeUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(ICAL_URL)}&name=${encodeURIComponent('DEVSA Community Events')}`
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                  <CalendarPlus className="h-4 w-4 text-gray-500" />
+                </div>
+                <p className="text-[13px] font-medium text-gray-500 uppercase tracking-widest leading-[1.3]">
+                  Calendar Subscription
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <h3 className="text-lg font-semibold text-gray-900 leading-[1.3]">
+              Subscribe to the DEVSA calendar
+            </h3>
+            <p className="mt-2 text-sm font-light text-gray-500 leading-[1.6]">
+              One click to subscribe — new events appear automatically in your calendar app, no manual downloads needed.
+            </p>
+
+            {/* One-click subscribe buttons */}
+            <div className="mt-5 grid gap-3">
+              <a
+                href={googleSubscribeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Google Calendar</p>
+                  <p className="mt-0.5 text-[12px] font-normal text-gray-500 leading-[1.4]">
+                    Opens Google Calendar and adds the subscription
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+              </a>
+
+              <a
+                href={webcalUrl}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="3" width="20" height="19" rx="3" stroke="#FF3B30" strokeWidth="1.5"/>
+                    <path d="M2 8h20" stroke="#FF3B30" strokeWidth="1.5"/>
+                    <path d="M7 1v4M17 1v4" stroke="#FF3B30" strokeWidth="1.5" strokeLinecap="round"/>
+                    <rect x="6" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
+                    <rect x="10.5" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
+                    <rect x="15" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
+                    <rect x="6" y="16" width="3" height="3" rx="0.5" fill="#FF3B30"/>
+                    <rect x="10.5" y="16" width="3" height="3" rx="0.5" fill="#FF3B30"/>
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Apple Calendar</p>
+                  <p className="mt-0.5 text-[12px] font-normal text-gray-500 leading-[1.4]">
+                    Opens Calendar app directly on Mac and iPhone
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+              </a>
+
+              <a
+                href={outlookSubscribeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                    <path fill="#0078D4" d="M24 7.387v10.478c0 .23-.08.424-.238.576a.806.806 0 01-.588.234h-8.592v-8.35L16.135 12l1.58-1.675V7.387h5.11c.23 0 .424.078.588.234.159.152.238.346.238.576zM16.135 12l-1.553 1.675v-3.35L16.135 12z"/>
+                    <path fill="#0078D4" d="M17.715 5.062v2.325h-3.133V5.531a.469.469 0 01.14-.344.469.469 0 01.345-.14h2.648v.015zm0 5v7.613h5.11c.23 0 .424-.078.588-.234a.776.776 0 00.238-.576V7.387a.776.776 0 00-.238-.576.806.806 0 00-.588-.234h-5.11v3.485z"/>
+                    <path fill="#0078D4" d="M8.97 4.125c1.588 0 2.895.46 3.921 1.382 1.027.921 1.54 2.108 1.54 3.56 0 1.469-.52 2.67-1.558 3.601-1.04.932-2.34 1.398-3.903 1.398-1.573 0-2.877-.462-3.912-1.388C4.022 11.753 3.504 10.555 3.504 9.068c0-1.462.515-2.652 1.544-3.571C6.078 4.578 7.387 4.125 8.97 4.125zm.088 2.058c-.88 0-1.595.303-2.148.91-.552.605-.828 1.378-.828 2.319 0 .956.273 1.737.82 2.342.545.605 1.263.908 2.156.908.9 0 1.623-.3 2.17-.898.546-.598.82-1.383.82-2.352 0-.955-.27-1.734-.812-2.335-.541-.596-1.265-.894-2.178-.894z"/>
+                    <path fill="#0078D4" opacity=".5" d="M14.582 5.531v12.938a.469.469 0 01-.14.344.469.469 0 01-.345.14H1.148A.44.44 0 01.82 18.82a.494.494 0 01-.152-.362V5.531c0-.136.05-.252.152-.344a.44.44 0 01.328-.134h12.95a.469.469 0 01.344.14.469.469 0 01.14.344z"/>
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Outlook</p>
+                  <p className="mt-0.5 text-[12px] font-normal text-gray-500 leading-[1.4]">
+                    Opens Outlook web and adds the subscription
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+              </a>
+            </div>
+
+            {/* Manual URL fallback */}
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <p className="text-[12px] font-medium text-gray-500 mb-2 uppercase tracking-widest">
+                Or copy the URL manually
+              </p>
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                <code className="text-[13px] font-normal text-gray-500 truncate flex-1">/api/events/calendar</code>
+                <button
+                  onClick={copyIcalUrl}
+                  className="inline-flex items-center justify-center shrink-0 h-7 w-7 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Copy calendar URL"
+                >
+                  {copiedIcal ? (
+                    <Check className="h-3.5 w-3.5 text-green-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[11px] font-normal text-gray-400 leading-[1.6]">
+              Powered by the DEVSA Community.
+            </p>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export function CommunityEventsSection() {
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
@@ -462,6 +555,7 @@ export function CommunityEventsSection() {
   const [search, setSearch] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showRssFeed, setShowRssFeed] = useState(false)
+  const [showCalendarSubscribe, setShowCalendarSubscribe] = useState(false)
   const [showMobileCalendar, setShowMobileCalendar] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
 
@@ -595,8 +689,15 @@ export function CommunityEventsSection() {
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowRssFeed(true)}
+                onClick={() => setShowCalendarSubscribe(true)}
                 className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+              >
+                <CalendarPlus className="h-3.5 w-3.5" />
+                Subscribe
+              </button>
+              <button
+                onClick={() => setShowRssFeed(true)}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
               >
                 <Rss className="h-3.5 w-3.5" />
                 RSS Feed
@@ -890,6 +991,9 @@ export function CommunityEventsSection() {
 
       {/* RSS Feed Modal */}
       <RssFeedModal open={showRssFeed} onClose={() => setShowRssFeed(false)} />
+
+      {/* Calendar Subscribe Modal */}
+      <CalendarSubscribeModal open={showCalendarSubscribe} onClose={() => setShowCalendarSubscribe(false)} />
     </section>
   )
 }
