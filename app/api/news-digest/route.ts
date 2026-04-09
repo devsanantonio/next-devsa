@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
             item['content:encoded'] || item.content || ''
           );
 
-        let summary = item.contentSnippet || item.content || item.title;
+        const summary = item.contentSnippet || item.content || item.title;
 
         const posted = await processArticle(db, feed.source, {
           title: item.title,
