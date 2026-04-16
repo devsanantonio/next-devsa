@@ -7,6 +7,7 @@ import { SlideOutMenu } from "./slide-out-menu"
 import { SocialMediaMenu } from "./social-media-menu"
 import { TerminalDropdown } from "./terminal-dropdown"
 import { useCart } from "./shop/cart-context"
+import { LogoContextMenu } from "./logo-context-menu"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -22,17 +23,19 @@ export function Navbar() {
         <div className="container-responsive">
           <div className="flex justify-between items-center">
             <div className="shrink-0">
-              <Link
-                href="/"
-                className="transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2 md:px-0 block"
-                aria-label="Go to home page"
-              >
-                <img
-                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
-                  alt="DEVSA - San Antonio Developer Community"
-                  className="w-8 h-8 md:w-10 md:h-10"
-                />
-              </Link>
+              <LogoContextMenu>
+                <Link
+                  href="/"
+                  className="transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2 md:px-0 block"
+                  aria-label="Go to home page"
+                >
+                  <img
+                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+                    alt="DEVSA - San Antonio Developer Community"
+                    className="w-8 h-8 md:w-10 md:h-10"
+                  />
+                </Link>
+              </LogoContextMenu>
             </div>
 
             <div className="flex-1 min-w-0 relative flex items-center justify-end gap-0.5 lg:gap-1">

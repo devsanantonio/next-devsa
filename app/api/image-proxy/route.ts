@@ -31,12 +31,19 @@ export async function GET(request: NextRequest) {
     const contentType = res.headers.get("content-type") || "application/octet-stream"
     const buffer = await res.arrayBuffer()
 
+    const headers: Record<string, string> = {
+      "Content-Type": contentType,
+      "Cache-Control": "public, max-age=86400",
+    }
+
+    const downloadName = request.nextUrl.searchParams.get("download")
+    if (downloadName) {
+      headers["Content-Disposition"] = `attachment; filename="${downloadName}"`
+    }
+
     return new NextResponse(buffer, {
       status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400",
-      },
+      headers,
     })
   } catch {
     return NextResponse.json({ error: "Proxy fetch failed" }, { status: 500 })
