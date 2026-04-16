@@ -29,11 +29,11 @@ function ZeroToAgentLogo({ className }: { className?: string }) {
 
 export function FeaturedZeroToAgent() {
   return (
-    <section className="relative bg-black overflow-hidden" data-bg-type="dark">
+    <section className="relative bg-black overflow-hidden min-h-dvh lg:h-dvh flex flex-col" data-bg-type="dark">
       {/* Top accent line */}
-      <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent" />
+      <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent shrink-0" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 pt-16 sm:pt-24 pb-10 sm:pb-14">
+      <div className="relative z-10 mx-auto max-w-7xl w-full px-4 sm:px-6 pt-16 pb-6 lg:pt-0 lg:py-10 flex-1 flex flex-col justify-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -52,10 +52,10 @@ export function FeaturedZeroToAgent() {
             {/* Content grid */}
             <div className="relative z-10 grid lg:grid-cols-2">
               {/* Left — branding */}
-              <div className="relative overflow-hidden min-h-80 sm:min-h-95 lg:min-h-110 bg-black">
+              <div className="relative overflow-hidden bg-black">
                 
                 {/* Content overlay */}
-                <div className="relative z-10 flex flex-col justify-center gap-4 p-6 sm:p-8 lg:p-12 h-full min-h-80 sm:min-h-95 lg:min-h-110">
+                <div className="relative z-10 flex flex-col justify-center gap-4 p-6 sm:p-8 lg:p-12 h-full">
                   <ZeroToAgentLogo className="w-full max-w-xl text-white" />
                   {/* Date + location */}
                   <div className="flex items-center justify-between w-full max-w-xl">
@@ -142,7 +142,7 @@ export function FeaturedZeroToAgent() {
       </div>
 
       {/* Bottom accent line */}
-      <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent" />
+      <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent shrink-0" />
     </section>
   )
 }
