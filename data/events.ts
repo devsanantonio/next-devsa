@@ -34,13 +34,13 @@ export interface CommunityEvent extends BaseEvent {
 export type AnyEvent = DevsaEvent | OnDemandEvent | CommunityEvent;
 
 export const upcomingDevsaEvent: DevsaEvent | null = {
-  id: "pytexas-2026",
+  id: "zero-to-agent-2026",
   type: "devsa",
-  title: "PyTexas Conference 2026",
-  date: "2026-04-17T09:00:00.000Z",
-  location: "Austin, TX",
-  description: "Celebrating 20 years — Join the largest gathering of Python developers in Texas for three days of software development, data science, and community. April 17–19, 2026.",
-  url: "https://www.pytexas.org/2026/",
+  title: "Zero to Agent — Vercel Global Build Week",
+  date: "2026-04-25T17:00:00.000Z",
+  location: "Geekdom, San Antonio, TX",
+  description: "Zero to Agent — a 10-day global build week powered by Vercel. Ship an AI or Agent powered project at Geekdom in downtown San Antonio.",
+  url: "/events/zero-to-agent",
 };
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {

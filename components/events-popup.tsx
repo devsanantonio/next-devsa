@@ -56,35 +56,40 @@ export function EventsPopup() {
             </button>
 
             {/* Accent gradient */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#306998] via-[#FFD43B] to-[#306998]" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-white/20 via-white to-white/20" />
             
             {/* Hero Image */}
-            <div className="bg-white flex items-center justify-center px-6 py-5">
+            <div className="bg-black flex items-center justify-center">
               <Image
-                src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pytexas2026_day_color.svg"
-                alt="PyTexas 2026"
-                width={280}
-                height={120}
-                className="object-contain w-full h-auto max-h-32"
+                src="https://devsa-assets.s3.us-east-2.amazonaws.com/vercel-community-voices.gif"
+                alt="Zero to Agent — Vercel Community"
+                width={360}
+                height={200}
+                className="object-cover w-full h-auto"
+                unoptimized
               />
             </div>
             
             {/* Content */}
             <div className="px-5 pt-4 pb-5">
-              <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#FFD43B] mb-1.5">
-                Celebrating 20 Years · Apr 17–19, 2026
+              <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-white mb-1.5">
+                Pop-Up Event · Apr 25, 2026
+              </p>
+
+              <p className="text-[13px] font-semibold text-white leading-snug mb-1">
+                Zero to Agent: San Antonio.
               </p>
 
               <p className="text-[13px] font-normal text-[#aaa] leading-snug mb-4">
-                The largest gathering of Python developers in Texas. Three days of software development, data science, and community.
+                We are Vercel&apos;s official community partner for Zero to Agent. $30 in v0 credits, $6K+ global prize pool, and limited edition swag.
               </p>
 
               <Link
-                href="https://pretix.eu/pytexas/2026/"
+                href="/events/zero-to-agent"
                 onClick={handleDismiss}
-                className="inline-flex items-center gap-2 bg-[#FFD43B] text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#306998] hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 bg-white text-[#0a0a0a] font-semibold text-xs uppercase tracking-wider px-4 py-2 hover:bg-white/90 transition-colors"
               >
-                Get Tickets
+                View Event
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

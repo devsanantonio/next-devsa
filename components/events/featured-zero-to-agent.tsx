@@ -44,7 +44,7 @@ export function FeaturedZeroToAgent() {
           <div className="flex items-center gap-2 mb-6">
               <VercelLogo className="w-4 h-4 text-white" />
               <span className="font-geist-pixel-square text-xs font-medium uppercase tracking-[0.2em] text-white/70 leading-none">
-                Vercel Community Event
+                Pop-Up Event 🤘
               </span>
             </div>
 
@@ -102,31 +102,51 @@ export function FeaturedZeroToAgent() {
 
                   <div className="h-px w-full bg-white/10 my-4" />
 
+                  <p className="text-white font-medium text-base leading-relaxed max-w-md mb-1">
+                    Find Your People. Build Your Future.
+                  </p>
                   <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
-                    DEVSA is the San Antonio community partner for{" "}
+                    DEVSA is the official San Antonio community partner for{" "}
                     <span className="text-white font-medium">Zero to Agent</span>—a
-                    10-day global build week. We&apos;re bringing{" "}
-                    <V0Logo className="inline-block w-4 h-4 text-white align-text-bottom" />{" "}
-                    powered by{" "}
-                    <VercelLogo className="inline-block w-3 h-3 text-white" />{" "}
-                    to the heart of downtown at{" "}
-                    <span className="text-white font-medium">Geekdom</span>.
+                    global 10-day initiative designed to take you from idea to deployed
+                    agent using the full power of the Vercel AI SDK and AI Gateway.
                   </p>
-                  <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
-                    From idea to deployed agent, this is your chance to ship something real.
-                  </p>
+
+                  <div className="h-px w-full bg-white/10 my-4" />
+
+                  {/* Perks */}
+                  <div className="space-y-2">
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                      <span className="text-white font-medium">$30 in v0 Credits</span> — every attendee, to power your builds during the event.
+                    </p>
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                      <span className="text-white font-medium">$6,000+ Global Prize Pool</span> — including Vercel Platform and Pro credits.
+                    </p>
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                      <span className="text-white font-medium">Limited Edition Swag</span> — available only for this event.
+                    </p>
+                  </div>
                 </div>
 
                 {/* CTA */}
-                <a
-                  href="https://luma.com/hwfvt791"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group mt-4 inline-flex items-center gap-2.5 bg-white text-black text-sm font-medium uppercase tracking-wider px-6 py-3 transition-all hover:bg-white/90 active:scale-[0.98] w-fit"
-                >
-                  <span className="font-geist-pixel-square leading-none">Register</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </a>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <a
+                    href="https://luma.com/hwfvt791"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2.5 bg-white text-black text-sm font-medium uppercase tracking-wider px-6 py-3 transition-all hover:bg-white/90 active:scale-[0.98]"
+                  >
+                    <span className="font-geist-pixel-square leading-none">Register</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </a>
+                  <a
+                    href="/events/zero-to-agent"
+                    className="group inline-flex items-center gap-2.5 border border-white/20 text-white text-sm font-medium uppercase tracking-wider px-6 py-3 transition-all hover:bg-white/5 active:scale-[0.98]"
+                  >
+                    <span className="font-geist-pixel-square leading-none">Resources</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </div>
 
                 <div className="mt-5 flex items-center gap-3">
                   <V0Logo className="w-4 h-4 text-white/30" />
