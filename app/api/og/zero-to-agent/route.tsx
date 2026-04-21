@@ -425,19 +425,6 @@ export async function GET() {
   )
 }
 
-        {/* Top accent line */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
-            display: "flex",
-          }}
-        />
-
         {/* Header */}
         <div
           style={{

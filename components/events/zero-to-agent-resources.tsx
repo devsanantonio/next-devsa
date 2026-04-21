@@ -38,6 +38,8 @@ interface ResourceLink {
 interface TrackSection {
   title: string
   description: string
+  highlight?: { label: string; body: string; href: string; linkText: string }
+  buildIdeas: string[]
   quickStart: string[]
   resources: ResourceLink[]
 }
@@ -54,7 +56,7 @@ const generalResources: ResourceLink[] = [
   { name: "Integrations", href: "https://vercel.com/integrations" },
   { name: "Agent Skills & Resources", href: "https://vercel.com/docs/agent-resources" },
   { name: "Sandbox", href: "https://vercel.com/docs/functions/sandbox" },
-  { name: "Workflow SDK", href: "https://useworkflow.dev/" },
+  { name: "Workflow SDK", href: "https://workflow-sdk.dev" },
   { name: "AI Gateway & Models", href: "https://vercel.com/ai-gateway/models" },
   { name: "AI SDK 6 Announcement", href: "https://vercel.com/blog/ai-sdk-6" },
   { name: "llms.txt", href: "https://ai-sdk.dev/llms.txt" },
@@ -70,55 +72,86 @@ const learningResources: ResourceLink[] = [
 
 const tracks: TrackSection[] = [
   {
-    title: "The Efficiency Win (WDK)",
+    title: "The UI Breakthrough (MCP)",
     description:
-      "Build a \"durable\" agent that handles asynchronous tasks—like a follow-up bot that never sleeps. Your agents survive crashes, resume after deploys, and can pause for minutes or months.",
-    quickStart: [
-      'Scaffold a Next.js app: npx create-next-app@latest --no-src-dir',
-      'Add WDK: npx workflow@latest',
-      'Wrap your Next.js config: export default withWorkflow(nextConfig)',
-      'Create workflow functions with "use workflow" and steps with "use step"',
-      'Use DurableAgent from @workflow/ai/agent for AI agent workflows',
-      'Get a Gateway API key from the Vercel AI Gateway',
-      'Deploy to Vercel — it auto-provisions queues, persistence, and routing',
+      "Use v0 by Vercel to spin up a professional interface connected to your real-world data via Model Context Protocol. Connect verified MCP servers for GitHub, Vercel, or Notion — or explore Figma's MCP server, which exposes your designs to AI agents (v0 can connect via MCP adapter, though Figma hasn't officially listed v0 as a verified client yet).",
+    highlight: {
+      label: "Did you know?",
+      body: "v0 has its own MCP server at mcp.v0.dev. Add it to Cursor, Claude Desktop, or VS Code and trigger v0 generations without leaving your IDE — no tab switching, no copy-paste. Use it as your build companion for this track.",
+      href: "https://v0.app/docs/api/platform/adapters/mcp-server",
+      linkText: "Set it up →",
+    },
+    buildIdeas: [
+      "Sprint reporter — GitHub MCP reads your open PRs and closed issues from the past week; Notion MCP writes a structured release note or sprint summary directly into your workspace. v0 scaffolds a one-click 'Generate Report' UI with a preview pane. Two MCP servers, one interface, fully automated docs.",
+      "Figma-to-code explorer — point the Figma MCP server at a design file and let v0 read your components, tokens, and frames to generate React code. Use the MCP adapter in v0 — no official listing yet, but the remote endpoint works.",
     ],
-    resources: [
-      { name: "Workflow SDK Docs", href: "https://useworkflow.dev/", type: "Docs" },
-      { name: "Workflow on Vercel", href: "https://vercel.com/docs/workflow", type: "Docs" },
-      { name: "Building Durable AI Agents", href: "https://useworkflow.dev/docs/ai", type: "Guide" },
-      { name: "vercel/workflow", href: "https://github.com/vercel/workflow", type: "Repo" },
-      { name: "Introducing WDK", href: "https://vercel.com/blog/introducing-workflow", type: "Blog" },
-      { name: "Agent Patterns", href: "https://www.aisdkagents.com/explore/ai-agent-frameworks", type: "Patterns" },
-    ],
-  },
-  {
-    title: "The UI Breakthrough (v0 + MCP)",
-    description:
-      "Use v0 by Vercel to spin up a professional interface that talks to your real-world data in minutes via Model Context Protocol. Describe what you want and iterate in real time.",
     quickStart: [
-      "Open v0.app and describe the app you want to build",
-      "Iterate on UI and logic with natural language prompts",
-      "Add AI features with the AI SDK — v0 scaffolds the integration for you",
-      "Connect an MCP server",
-      "Deploy to Vercel with one click",
-      "To build your own MCP server, see the deployment guide",
+      "Open v0.app and describe the app you want to build — be specific about what data it needs and what actions it should take",
+      "Iterate on the UI and logic with natural language prompts until the interface looks right",
+      "Add AI features with the AI SDK — v0 scaffolds the integration for you, no manual wiring",
+      "Connect an MCP server following v0's MCP adapter docs at v0.app/docs/api/platform/adapters/mcp-server",
+      "Deploy to Vercel with one click — MCP connections persist as environment variables, no infra to manage",
+      "To build your own custom MCP server, follow the Vercel deployment guide at vercel.com/docs/mcp/deploy-mcp-servers-to-vercel",
     ],
     resources: [
       { name: "v0 by Vercel", href: "https://v0.app/ref/MVBIAI", type: "Tool" },
+      { name: "v0 MCP Server (mcp.v0.dev)", href: "https://v0.app/docs/api/platform/adapters/mcp-server", type: "Docs" },
       { name: "MCP on Vercel", href: "https://vercel.com/docs/mcp", type: "Docs" },
       { name: "Vercel MCP Server", href: "https://vercel.com/docs/agent-resources/vercel-mcp", type: "Docs" },
       { name: "Deploy MCP Servers", href: "https://vercel.com/docs/mcp/deploy-mcp-servers-to-vercel", type: "Guide" },
       { name: "AI SDK MCP Tools", href: "https://ai-sdk.dev/docs/ai-sdk-core/mcp", type: "Docs" },
       { name: "MCP + AI Templates", href: "https://vercel.com/templates/ai", type: "Templates" },
+      { name: "MCP + Next.js Template", href: "https://vercel.com/templates/ai/model-context-protocol-mcp-with-next-js", type: "Template" },
+      { name: "GitHub MCP Server", href: "https://github.com/github/github-mcp-server", type: "Repo" },
+      { name: "Notion MCP", href: "https://developers.notion.com/guides/mcp/mcp", type: "Docs" },
+      { name: "Figma MCP Catalog", href: "https://www.figma.com/mcp-catalog/", type: "Tool" },
+      { name: "MCP Servers (Official List)", href: "https://github.com/modelcontextprotocol/servers", type: "Repo" },
+    ],
+  },
+  {
+    title: "The Efficiency Win (WDK)",
+    description:
+      "Build a \"durable\" agent that survives crashes, resumes after deploys, and can sleep for days — then wake up exactly when needed. These aren't chatbots. They're persistent workflows that run autonomously over hours, days, or months.",
+    buildIdeas: [
+      "Stateful Slack bot — listens for @mentions, remembers conversation context across restarts, and escalates unanswered threads to a human reviewer after a timeout. Clone the working guide and swap in your own logic.",
+      "Multi-step booking agent — user requests a flight (or appointment, or reservation), the agent searches options, sleeps while awaiting confirmation, then resumes to complete the booking. Based on the vercel/workflow-examples flight-booking-app.",
+      "Human-in-the-loop approvals — agent scans transactions or requests, flags anything over a threshold, then suspends and waits indefinitely for a human approval before writing the result. Uses WDK's native suspend/resume primitives.",
+    ],
+    quickStart: [
+      'Scaffold a Next.js app: npx create-next-app@latest --no-src-dir',
+      'Add WDK: npx workflow@latest',
+      'Wrap your Next.js config: export default withWorkflow(nextConfig)',
+      'Create workflow functions with "use workflow" and steps with "use step"',
+      'Use DurableAgent from @workflow/ai/agent for AI agent workflows — LLM calls become retryable steps automatically',
+      'Get a Gateway API key from Vercel AI Gateway — one key for OpenAI, Anthropic, Google, and more',
+      'Inspect every step, input, output, and sleep in the Vercel dashboard under Observability → Workflows — no extra setup needed',
+      'Deploy to Vercel — queues, persistence, and routing are auto-provisioned',
+    ],
+    resources: [
+      { name: "Building Durable AI Agents", href: "https://vercel.com/docs/workflow/ai/building-durable-agents", type: "Guide" },
+      { name: "Stateful Slack Bot Guide", href: "https://vercel.com/kb/guide/stateful-slack-bots-with-vercel-workflow", type: "Guide" },
+      { name: "Claude Managed Agent Guide", href: "https://vercel.com/kb/guide/claude-managed-agent-vercel", type: "Guide" },
+      { name: "Flight Booking Agent Example", href: "https://github.com/vercel/workflow-examples/tree/main/flight-booking-app", type: "Example" },
+      { name: "Sleep, Suspense & Scheduling", href: "https://vercel.com/docs/workflow/ai/sleep-and-delays", type: "Docs" },
+      { name: "Human-in-the-Loop", href: "https://vercel.com/docs/workflow/ai/human-in-the-loop", type: "Docs" },
+      { name: "Workflow SDK", href: "https://workflow-sdk.dev", type: "Docs" },
+      { name: "Vercel Workflows Docs", href: "https://vercel.com/docs/workflows", type: "Docs" },
+      { name: "vercel/workflow-examples", href: "https://github.com/vercel/workflow-examples", type: "Repo" },
     ],
   },
   {
     title: "The Connection Spark (ChatSDK)",
     description:
-      "Build an agent that lives where you already work—Slack, Discord, or GitHub. Write your bot logic once with the Chat SDK, then deploy to every platform via swappable adapters.",
+      "Write your bot logic once with the Chat SDK and deploy to 15+ platforms — Slack, Discord, Teams, WhatsApp, Telegram, iMessage, GitHub, Linear, and more — via swappable adapters. The SDK handles event routing, streaming, JSX cards, and distributed state. Pair with the AI SDK for LLM reasoning and the AI Gateway for zero-config access to any model provider.",
+    buildIdeas: [
+      "Slack Q&A bot grounded in your team docs — answers questions in-thread, cites the source page, and escalates to a human after a timeout. Uses bot.onNewMention and thread.post() with an AI SDK text stream.",
+      "GitHub PR summarizer — posts a plain-English summary of the diff as a comment the moment a PR is opened. Wire up the GitHub adapter, call the AI Gateway with the diff as context, post back via thread.post().",
+      "WhatsApp vision support bot — user sends a photo (screenshot, receipt, product image); the WhatsApp adapter downloads the media, pipes it to a vision model via AI Gateway, and replies with interactive button cards ('Save', 'Create ticket', 'Dismiss'). Uses @chat-adapter/whatsapp media downloads and the Card component.",
+    ],
     quickStart: [
+      "Install the Chat skill for your coding agent: npx skills add vercel/chat — gives Claude Code, Cursor, or your agent full SDK context and best practices",
       "Install: npm install chat @chat-adapter/slack @chat-adapter/discord",
-      "Pick a state adapter: @chat-adapter/state-redis (production) or state-memory (dev)",
+      "Pick a state adapter: @chat-adapter/state-redis or @chat-adapter/state-postgres (production) or state-memory (dev)",
       "Create a Chat instance with your adapters and state",
       "Wire up handlers: bot.onNewMention, bot.onSubscribedMessage, bot.onReaction",
       "Add AI — thread.post() accepts AI SDK text streams natively",
@@ -128,6 +161,10 @@ const tracks: TrackSection[] = [
     resources: [
       { name: "Chat SDK Docs", href: "https://chat-sdk.dev/", type: "Docs" },
       { name: "vercel/chat", href: "https://github.com/vercel/chat", type: "Repo" },
+      { name: "Guide: Slack Bot with Next.js", href: "https://chat-sdk.dev/docs/guides/slack-nextjs", type: "Guide" },
+      { name: "Guide: Discord Bot with Nuxt", href: "https://chat-sdk.dev/docs/guides/discord-nuxt", type: "Guide" },
+      { name: "Guide: GitHub Code Review Bot (Hono)", href: "https://chat-sdk.dev/docs/guides/code-review-hono", type: "Guide" },
+      { name: "All Adapters", href: "https://chat-sdk.dev/adapters", type: "Docs" },
       { name: "ChatSDK Launch Blog", href: "https://vercel.com/blog/chat-sdk-brings-agents-to-your-users", type: "Blog" },
       { name: "Knowledge Agent Template", href: "https://vercel.com/templates/nuxt/chat-sdk-knowledge-agent", type: "Template" },
       { name: "Community Agent Template", href: "https://github.com/vercel-labs/community-agent-template", type: "Template" },
@@ -207,7 +244,7 @@ export function ZeroToAgentResources() {
         >
           <div className="flex items-center gap-2">
             <VercelLogo className="w-4 h-4 text-white" />
-            <span className="font-geist-pixel-square text-xs font-medium uppercase tracking-[0.2em] text-white/70 leading-none">
+            <span className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80 leading-none">
               Vercel Community Event
             </span>
           </div>
@@ -227,7 +264,7 @@ export function ZeroToAgentResources() {
             Find Your People. Build Your Future.
           </h2>
 
-          <p className="text-white/70 text-base sm:text-lg font-normal leading-7 max-w-2xl">
+          <p className="text-white/80 text-base sm:text-lg font-normal leading-8 max-w-2xl">
             DEVSA is the official San Antonio community partner for Zero to Agent—a
             global 10-day initiative designed to take you from idea to deployed agent
             using the full power of the{" "}
@@ -257,83 +294,69 @@ export function ZeroToAgentResources() {
 
       <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
-      {/* General Resources */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
+      {/* The Stack */}
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
+          className="space-y-6"
         >
-          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mb-8">
-            General Resources
-          </h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {generalResources.map((r) => (
-              <a
-                key={r.name}
-                href={r.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between gap-3 border border-white/10 bg-white/2 px-4 py-3.5 transition-colors hover:bg-white/5 hover:border-white/20"
-              >
-                <span className="font-geist-mono text-sm text-white/90 group-hover:text-white truncate">
-                  {r.name}
-                </span>
-                <ExternalLink className="w-3.5 h-3.5 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
-              </a>
-            ))}
+          <p className="font-geist-pixel-square text-[10px] uppercase tracking-[0.2em] text-white/40">
+            Every track runs on the same core stack
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="border border-white/10 bg-white/2 p-5 space-y-2">
+              <h3 className="font-geist-mono text-sm text-white font-semibold">AI SDK</h3>
+              <p className="font-geist-mono text-sm text-white/60 leading-6">
+                The unified TypeScript library for streaming LLM calls, tool use, and multi-step agent reasoning — works with any model provider.
+              </p>
+            </div>
+            <div className="border border-white/10 bg-white/2 p-5 space-y-2">
+              <h3 className="font-geist-mono text-sm text-white font-semibold">AI Gateway</h3>
+              <p className="font-geist-mono text-sm text-white/60 leading-6">
+                One API key for OpenAI, Anthropic, Google, and more. Built-in fallbacks, usage tracking, and zero extra config.
+              </p>
+            </div>
+            <div className="border border-white/10 bg-white/2 p-5 space-y-2">
+              <h3 className="font-geist-mono text-sm text-white font-semibold">
+                <V0Logo className="inline-block w-5 h-5 text-white align-text-bottom mr-1" />
+                {" + Vercel Deploy"}
+              </h3>
+              <p className="font-geist-mono text-sm text-white/60 leading-6">
+                Build the UI in v0, deploy to Vercel in one click. Every git push creates a shareable preview — no infra to manage.
+              </p>
+            </div>
           </div>
+          <p className="font-geist-mono text-sm text-white/50 leading-7 max-w-2xl">
+            Each track layers a specialist tool on top — MCP for real-world data connections, the Workflow SDK for durable long-running agents, or the Chat SDK to deploy to Slack, Discord, WhatsApp, and more.
+          </p>
         </motion.div>
       </section>
 
-      <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
+      <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
-      {/* Learning */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
+      {/* Choose Your Track */}
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
+          className="space-y-5"
         >
-          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mb-8">
-            Learning
-          </h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {learningResources.map((r) => (
-              <a
-                key={r.name}
-                href={r.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between gap-3 border border-white/10 bg-white/2 px-4 py-3.5 transition-colors hover:bg-white/5 hover:border-white/20"
-              >
-                <span className="font-geist-mono text-sm text-white/90 group-hover:text-white truncate">
-                  {r.name}
-                </span>
-                <ExternalLink className="w-3.5 h-3.5 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
-              </a>
-            ))}
+          <div className="flex items-center gap-2.5">
+            <V0Logo className="h-5 w-5 text-white" />
+            <span className="font-geist-pixel-square text-xs text-white/30">×</span>
+            <VercelLogo className="w-3.5 h-3.5 text-white" />
+            <span className="font-geist-pixel-square text-[10px] uppercase tracking-[0.2em] text-white/50 font-semibold ml-0.5">Hackathon Tracks</span>
           </div>
-        </motion.div>
-      </section>
-
-      <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Tracks */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mb-2">
+          <h2 className="text-white text-2xl sm:text-3xl font-semibold leading-tight">
             Choose Your Track
           </h2>
-          <p className="text-white/70 text-sm leading-6 max-w-2xl">
-            Zero to Agent features three specialized hackathon tracks. Pick the path that fits your vision.
+          <p className="text-white/70 text-sm leading-7 max-w-2xl">
+            Three specialized tracks. Pick the one that fits your vision — each is designed to get a working agent shipped in a 2-hour session.
           </p>
         </motion.div>
       </section>
@@ -347,13 +370,63 @@ export function ZeroToAgentResources() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="space-y-8"
             >
-              <div className="space-y-3">
-                <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-                  {track.title}
+              <div className="space-y-4">
+                <span className="font-geist-pixel-square text-[10px] uppercase tracking-[0.2em] text-white/40">
+                  Track {String(i + 1).padStart(2, "0")}
+                </span>
+                <h2 className="text-white text-xl sm:text-2xl font-semibold leading-tight">
+                  {i === 0 ? (
+                    <>
+                      The UI Breakthrough{" ("}{
+                        <V0Logo className="inline-block h-[1.25em] w-auto align-middle" />
+                      }{" + MCP)"}
+                    </>
+                  ) : (
+                    track.title
+                  )}
                 </h2>
-                <p className="text-white/70 text-sm leading-6 max-w-2xl">
+                <p className="text-white/75 text-sm leading-7 max-w-2xl">
                   {track.description}
                 </p>
+              </div>
+
+              {/* Did you know highlight */}
+              {track.highlight && (
+                <div className="border border-white/20 bg-white/4 px-5 py-4 flex flex-col sm:flex-row gap-4 sm:items-start">
+                  <span className="font-geist-pixel-square text-[10px] uppercase tracking-[0.15em] text-white/60 shrink-0 mt-0.5">
+                    {track.highlight.label}
+                  </span>
+                  <div className="space-y-2">
+                    <p className="font-geist-mono text-sm text-white/90 leading-6">
+                      {track.highlight.body}
+                    </p>
+                    <a
+                      href={track.highlight.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-geist-mono text-xs text-white/60 hover:text-white transition-colors underline underline-offset-4"
+                    >
+                      {track.highlight.linkText}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Build Ideas */}
+              <div className="border border-white/10 bg-white/2">
+                <div className="border-b border-white/10 px-4 py-2.5">
+                  <span className="font-geist-mono text-[10px] uppercase tracking-wider text-white/50">
+                    Build one of these
+                  </span>
+                </div>
+                <ul className="p-5 space-y-4">
+                  {track.buildIdeas.map((idea, j) => (
+                    <li key={j} className="flex gap-3">
+                      <span className="font-geist-mono text-white/40 shrink-0 mt-0.5 text-xs">→</span>
+                      <span className="font-geist-mono text-sm text-white/85 leading-6 font-medium">{idea}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {/* Quick Start */}
@@ -363,13 +436,23 @@ export function ZeroToAgentResources() {
                     Quick Start
                   </span>
                 </div>
-                <ol className="p-4 space-y-2.5">
-                  {track.quickStart.map((step, j) => (
-                    <li key={j} className="flex gap-3 text-sm">
-                      <span className="font-geist-mono text-white/40 shrink-0">{j + 1}.</span>
-                      <span className="font-geist-mono text-white/80 leading-6">{step}</span>
-                    </li>
-                  ))}
+                <ol className="p-5 space-y-4">
+                  {track.quickStart.map((step, j) => {
+                    const colonIdx = step.indexOf(": ")
+                    const label = colonIdx !== -1 ? step.slice(0, colonIdx) : null
+                    const body = colonIdx !== -1 ? step.slice(colonIdx + 2) : step
+                    return (
+                      <li key={j} className="flex gap-3">
+                        <span className="font-geist-mono text-xs text-white/40 shrink-0 mt-0.5 tabular-nums">{j + 1}.</span>
+                        <div className="space-y-1 min-w-0">
+                          {label && (
+                            <p className="font-geist-mono text-xs text-white/50 leading-5">{label}</p>
+                          )}
+                          <p className={`font-geist-mono text-sm leading-6 break-all ${label ? "text-white bg-white/5 px-2 py-1" : "text-white/85"}`}>{body}</p>
+                        </div>
+                      </li>
+                    )
+                  })}
                 </ol>
               </div>
 
@@ -389,6 +472,31 @@ export function ZeroToAgentResources() {
 
       <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
+      {/* Pro Tips */}
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="space-y-8"
+        >
+          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white">
+            Pro Tips
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {proTips.map((tip) => (
+              <div key={tip.title} className="border border-white/10 bg-white/2 p-5 space-y-2">
+                <h3 className="font-geist-mono text-sm text-white font-semibold">{tip.title}</h3>
+                <p className="font-geist-mono text-sm text-white/70 leading-6">{tip.description}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
+
       {/* Why You Should Be There */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
         <motion.div
@@ -398,35 +506,44 @@ export function ZeroToAgentResources() {
           transition={{ duration: 0.5 }}
           className="space-y-8"
         >
-          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white">
             Why You Should Be There
           </h2>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="border border-white/10 bg-white/2 p-6 space-y-2">
+            <div className="border border-white/10 bg-white/2 p-6 space-y-2 flex flex-col">
               <p className="font-geist-mono text-2xl text-white font-bold">$30</p>
               <h3 className="font-geist-mono text-sm text-white font-semibold">
                 <V0Logo className="inline-block w-4 h-4 text-white align-text-bottom" />{" "}
                 Credits
               </h3>
-              <p className="font-geist-mono text-xs text-white/60 leading-5">
+              <p className="font-geist-mono text-sm text-white/75 leading-6">
                 Every attendee receives $30 in{" "}
-                <V0Logo className="inline-block w-3 h-3 text-white/70 align-text-bottom" />{" "}
+                <V0Logo className="inline-block w-3 h-3 text-white/80 align-text-bottom" />{" "}
                 credits to power their builds during the event.
               </p>
+              <a
+                href="https://v0.app/ref/MVBIAI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto pt-3 inline-flex items-center gap-2 font-geist-mono text-sm text-white hover:text-white/80 transition-colors group"
+              >
+                Explore <V0Logo className="inline-block w-5 h-5 align-middle" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </a>
             </div>
             <div className="border border-white/10 bg-white/2 p-6 space-y-2">
               <p className="font-geist-mono text-2xl text-white font-bold">$6K+</p>
               <h3 className="font-geist-mono text-sm text-white font-semibold">Global Prize Pool</h3>
-              <p className="font-geist-mono text-xs text-white/60 leading-5">
+              <p className="font-geist-mono text-sm text-white/75 leading-6">
                 Compete for a piece of the $6,000+ global prize pool, including{" "}
-                <VercelLogo className="inline-block w-2.5 h-2.5 text-white/70 align-text-bottom" />{" "}
+                <VercelLogo className="inline-block w-2.5 h-2.5 text-white/80 align-text-center" />{" "}
                 Vercel Platform and Pro credits.
               </p>
             </div>
             <div className="border border-white/10 bg-white/2 p-6 space-y-2">
               <p className="font-geist-mono text-2xl text-white font-bold">Zero to <span className="font-geist-pixel-square text-2xl font-bold">Agent</span></p>
               <h3 className="font-geist-mono text-sm text-white font-semibold">Limited Edition Swag</h3>
-              <p className="font-geist-mono text-xs text-white/60 leading-5">
+              <p className="font-geist-mono text-sm text-white/75 leading-6">
                 Score limited edition Zero to Agent swag available only for this event.
               </p>
             </div>
@@ -437,42 +554,104 @@ export function ZeroToAgentResources() {
             <h3 className="font-geist-mono text-sm text-white font-semibold">
               Invitation to the 2nd Annual AI Agent Showcase
             </h3>
-            <p className="text-white/70 text-sm leading-6 max-w-3xl">
+            <p className="text-white/80 text-sm leading-7 max-w-3xl">
               Want to showcase the agent you built? Sign up for the 2nd Annual AI Agent Showcase,
-              powered by the Geeks&amp;&amp; family—a science fair-style event where you can present your agent to the San Antonio tech community on May 2nd. 
+              powered by the Geeks&amp;&amp; family—a science fair-style event where you can present your agent to the San Antonio tech community on May 2nd.
             </p>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSfz_Mj-fYsTaX0czz5lOozC4QI98cWGqo_l8cVnj4aij437EA/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-geist-mono text-sm text-white hover:text-white/80 transition-colors group"
+            >
+              Sign up for the Showcase
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </a>
           </div>
         </motion.div>
       </section>
 
       <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
-      {/* Pro Tips */}
+      {/* Start Here + Full Reference */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="space-y-8"
+          className="space-y-10"
         >
-          <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-            Pro Tips
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {proTips.map((tip) => (
-              <div
-                key={tip.title}
-                className="border border-white/10 bg-white/2 p-5 space-y-2"
+          {/* Pinned 3 */}
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <p className="font-geist-pixel-square text-[10px] uppercase tracking-[0.2em] text-white/40">Reference</p>
+              <h2 className="font-geist-pixel-square text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+                Start Here
+              </h2>
+              <p className="text-white/40 text-sm leading-6 pt-1">
+                Open these three tabs right now — they cover 90% of what you need tonight.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <a
+                href="https://v0.app/ref/MVBIAI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-between gap-3 border border-white/20 bg-white/4 px-4 py-4 transition-colors hover:bg-white/6 hover:border-white/30"
               >
-                <h3 className="font-geist-mono text-sm text-white font-semibold">
-                  {tip.title}
-                </h3>
-                <p className="font-geist-mono text-xs text-white/60 leading-5">
-                  {tip.description}
-                </p>
-              </div>
-            ))}
+                <div className="space-y-0.5">
+                  <p className="font-geist-mono text-[10px] text-white/50 uppercase tracking-wider">Build UI</p>
+                  <p className="font-geist-mono text-sm text-white font-medium">v0.app</p>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
+              </a>
+              <a
+                href="https://ai-sdk.dev/llms.txt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-between gap-3 border border-white/20 bg-white/4 px-4 py-4 transition-colors hover:bg-white/6 hover:border-white/30"
+              >
+                <div className="space-y-0.5">
+                  <p className="font-geist-mono text-[10px] text-white/50 uppercase tracking-wider">Feed your LLM</p>
+                  <p className="font-geist-mono text-sm text-white font-medium">ai-sdk.dev/llms.txt</p>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
+              </a>
+              <a
+                href="https://ai-sdk.dev/docs/ai-sdk-core/agents"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-between gap-3 border border-white/20 bg-white/4 px-4 py-4 transition-colors hover:bg-white/6 hover:border-white/30"
+              >
+                <div className="space-y-0.5">
+                  <p className="font-geist-mono text-[10px] text-white/50 uppercase tracking-wider">Agent docs</p>
+                  <p className="font-geist-mono text-sm text-white font-medium">AI SDK Agents</p>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
+              </a>
+            </div>
+          </div>
+
+          {/* Full Reference */}
+          <div className="space-y-3">
+            <p className="font-geist-pixel-square text-[10px] uppercase tracking-[0.2em] text-white/30">Full Reference</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[...generalResources, ...learningResources].map((r) => (
+                <a
+                  key={r.name}
+                  href={r.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center justify-between gap-3 border border-white/10 bg-white/2 px-4 py-3 transition-colors hover:bg-white/5 hover:border-white/20"
+                >
+                  <span className="font-geist-mono text-xs text-white/60 group-hover:text-white/90 truncate">
+                    {r.name}
+                  </span>
+                  <ExternalLink className="w-3 h-3 text-white/30 shrink-0 group-hover:text-white/60 transition-colors" />
+                </a>
+              ))}
+            </div>
           </div>
         </motion.div>
       </section>
