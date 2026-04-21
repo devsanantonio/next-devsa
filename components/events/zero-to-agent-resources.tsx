@@ -74,7 +74,7 @@ const tracks: TrackSection[] = [
   {
     title: "The UI Breakthrough (MCP)",
     description:
-      "Use v0 by Vercel to spin up a professional interface connected to your real-world data via Model Context Protocol. Connect verified MCP servers for GitHub, Vercel, or Notion — or explore Figma's MCP server, which exposes your designs to AI agents (v0 can connect via MCP adapter, though Figma hasn't officially listed v0 as a verified client yet).",
+      "Use v0 by Vercel to spin up a professional interface connected to your real-world data via Model Context Protocol. Connect verified MCP servers for GitHub, Vercel, or Notion — or explore Figma's MCP server, which exposes your designs to AI agents (v0 can connect via MCP adapter).",
     highlight: {
       label: "Did you know?",
       body: "v0 has its own MCP server at mcp.v0.dev. Add it to Cursor, Claude Desktop, or VS Code and trigger v0 generations without leaving your IDE — no tab switching, no copy-paste. Use it as your build companion for this track.",
@@ -83,7 +83,7 @@ const tracks: TrackSection[] = [
     },
     buildIdeas: [
       "Sprint reporter — GitHub MCP reads your open PRs and closed issues from the past week; Notion MCP writes a structured release note or sprint summary directly into your workspace. v0 scaffolds a one-click 'Generate Report' UI with a preview pane. Two MCP servers, one interface, fully automated docs.",
-      "Figma-to-code explorer — point the Figma MCP server at a design file and let v0 read your components, tokens, and frames to generate React code. Use the MCP adapter in v0 — no official listing yet, but the remote endpoint works.",
+      "Figma-to-code explorer — point the Figma MCP server at a design file and let v0 read your components, tokens, and frames to generate React code. Use the MCP adapter in v0.",
     ],
     quickStart: [
       "Open v0.app and describe the app you want to build — be specific about what data it needs and what actions it should take",
