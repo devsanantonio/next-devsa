@@ -41,10 +41,10 @@ export function FeaturedZeroToAgent() {
           transition={{ duration: 0.6 }}
         >
           {/* Intro text */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 md:pt-16">
               <VercelLogo className="w-4 h-4 text-white" />
               <span className="font-geist-pixel-square text-xs font-medium uppercase tracking-[0.2em] text-white/70 leading-none">
-                Pop-Up Event 🤘
+                Vercel Community Event
               </span>
             </div>
 
