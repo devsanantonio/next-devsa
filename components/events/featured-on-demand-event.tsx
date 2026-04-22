@@ -1,9 +1,12 @@
 "use client"
-import { motion } from "motion/react"
-import { Play, ArrowRight, Video } from "lucide-react"
+import { useState, useRef } from "react"
+import { motion, AnimatePresence } from "motion/react"
+import { Play, ArrowRight, Video, X } from "lucide-react"
 import { featuredOnDemandEvent, moreHumanThanHumanEvent } from "@/data/events"
 import Image from "next/image"
 import Link from "next/link"
+
+const MORE_HUMAN_RECAP_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
 
 // Subtle background pattern
 function OnDemandBackground() {
@@ -35,9 +38,12 @@ function formatPastDate(dateStr: string) {
 }
 
 export function FeaturedOnDemandEvent() {
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const modalVideoRef = useRef<HTMLVideoElement>(null)
+
   if (!featuredOnDemandEvent && !moreHumanThanHumanEvent) return null
 
-  return (
+  return (<>
     <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
       <OnDemandBackground />
       
@@ -147,9 +153,9 @@ export function FeaturedOnDemandEvent() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <Link
-                href={moreHumanThanHumanEvent.url || "#"}
-                className="group block border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 hover:border-[#ff9900]/50"
+              <div
+                onClick={() => setShowVideoModal(true)}
+                className="group block border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 hover:border-[#ff9900]/50 cursor-pointer"
               >
                 {/* Video Thumbnail */}
                 <div className="relative aspect-video overflow-hidden bg-black">
@@ -175,7 +181,7 @@ export function FeaturedOnDemandEvent() {
                   {/* Play indicator */}
                   <div className="absolute bottom-3 left-3 flex items-center gap-2 border border-[#333] bg-[#0a0a0a]/80 backdrop-blur-sm px-3 py-1.5">
                     <Play className="h-3 w-3 text-[#ff9900]" />
-                    <span className="font-mono text-[10px] font-semibold text-[#e5e5e5]">Full Event</span>
+                    <span className="font-mono text-[10px] font-semibold text-[#e5e5e5]">Event Recap</span>
                   </div>
                 </div>
 
@@ -194,11 +200,11 @@ export function FeaturedOnDemandEvent() {
                   </p>
 
                   <span className="inline-flex items-center gap-2 font-mono text-sm font-semibold text-[#ff9900] transition-colors group-hover:text-[#fbbf24]">
-                    View event
+                    Watch the recap
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
-              </Link>
+              </div>
             </motion.div>
           )}
         </div>
@@ -207,5 +213,47 @@ export function FeaturedOnDemandEvent() {
       {/* Bottom border */}
       <div className="h-1 w-full bg-linear-to-r from-[#4B8BBE] via-[#FFD43B] to-[#4B8BBE] opacity-60" />
     </section>
+
+    {/* Video Modal */}
+    <AnimatePresence>
+      {showVideoModal && (
+        <motion.div
+          key="video-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
+          onClick={() => setShowVideoModal(false)}
+        >
+          <motion.div
+            key="video-player"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-5xl aspect-video"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowVideoModal(false)}
+              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <video
+              ref={modalVideoRef}
+              autoPlay
+              controls
+              playsInline
+              className="w-full h-full rounded-xl"
+            >
+              <source src={MORE_HUMAN_RECAP_VIDEO_URL} type="video/mp4" />
+            </video>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </>
   )
 }

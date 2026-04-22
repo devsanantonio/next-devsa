@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "motion/react"
-import { ArrowRight, ExternalLink } from "lucide-react"
+import { ArrowLeft, ArrowRight, ExternalLink, Play } from "lucide-react"
 import Link from "next/link"
 
 function V0Logo({ className }: { className?: string }) {
@@ -70,9 +70,43 @@ const learningResources: ResourceLink[] = [
   { name: "Building AI Agents Guide", href: "https://vercel.com/kb/guide/how-to-build-ai-agents-with-vercel-and-the-ai-sdk" },
 ]
 
+const zeroToAgentWelcomeVideoId = "r9hB_CQQIMk"
+const zeroToAgentWelcomeVideoUrl = `https://youtu.be/${zeroToAgentWelcomeVideoId}`
+
 const tracks: TrackSection[] = [
   {
-    title: "The UI Breakthrough (MCP)",
+    title: "Vercel Workflow (WDK)",
+    description:
+      "Build a \"durable\" agent that survives crashes, resumes after deploys, and can sleep for days — then wake up exactly when needed. These aren't chatbots. They're persistent workflows that run autonomously over hours, days, or months.",
+    buildIdeas: [
+      "Stateful Slack bot — listens for @mentions, remembers conversation context across restarts, and escalates unanswered threads to a human reviewer after a timeout. Clone the working guide and swap in your own logic.",
+      "Multi-step booking agent — user requests a flight (or appointment, or reservation), the agent searches options, sleeps while awaiting confirmation, then resumes to complete the booking. Based on the vercel/workflow-examples flight-booking-app.",
+      "Human-in-the-loop approvals — agent scans transactions or requests, flags anything over a threshold, then suspends and waits indefinitely for a human approval before writing the result. Uses WDK's native suspend/resume primitives.",
+    ],
+    quickStart: [
+      'Scaffold a Next.js app: npx create-next-app@latest --no-src-dir',
+      'Add WDK: npx workflow@latest',
+      'Wrap your Next.js config: export default withWorkflow(nextConfig)',
+      'Create workflow functions with "use workflow" and steps with "use step"',
+      'Use DurableAgent from @workflow/ai/agent for AI agent workflows — LLM calls become retryable steps automatically',
+      'Get a Gateway API key from Vercel AI Gateway — one key for OpenAI, Anthropic, Google, and more',
+      'Inspect every step, input, output, and sleep in the Vercel dashboard under Observability → Workflows — no extra setup needed',
+      'Deploy to Vercel — queues, persistence, and routing are auto-provisioned',
+    ],
+    resources: [
+      { name: "Building Durable AI Agents", href: "https://vercel.com/docs/workflow/ai/building-durable-agents", type: "Guide" },
+      { name: "Stateful Slack Bot Guide", href: "https://vercel.com/kb/guide/stateful-slack-bots-with-vercel-workflow", type: "Guide" },
+      { name: "Claude Managed Agent Guide", href: "https://vercel.com/kb/guide/claude-managed-agent-vercel", type: "Guide" },
+      { name: "Flight Booking Agent Example", href: "https://github.com/vercel/workflow-examples/tree/main/flight-booking-app", type: "Example" },
+      { name: "Sleep, Suspense & Scheduling", href: "https://vercel.com/docs/workflow/ai/sleep-and-delays", type: "Docs" },
+      { name: "Human-in-the-Loop", href: "https://vercel.com/docs/workflow/ai/human-in-the-loop", type: "Docs" },
+      { name: "Workflow SDK", href: "https://workflow-sdk.dev", type: "Docs" },
+      { name: "Vercel Workflows Docs", href: "https://vercel.com/docs/workflows", type: "Docs" },
+      { name: "vercel/workflow-examples", href: "https://github.com/vercel/workflow-examples", type: "Repo" },
+    ],
+  },
+  {
+    title: "The UI Breakthrough (v0 + MCP)",
     description:
       "Use v0 by Vercel to spin up a professional interface connected to your real-world data via Model Context Protocol. Connect verified MCP servers for GitHub, Vercel, or Notion — or explore Figma's MCP server, which exposes your designs to AI agents (v0 can connect via MCP adapter).",
     highlight: {
@@ -109,38 +143,7 @@ const tracks: TrackSection[] = [
     ],
   },
   {
-    title: "The Efficiency Win (WDK)",
-    description:
-      "Build a \"durable\" agent that survives crashes, resumes after deploys, and can sleep for days — then wake up exactly when needed. These aren't chatbots. They're persistent workflows that run autonomously over hours, days, or months.",
-    buildIdeas: [
-      "Stateful Slack bot — listens for @mentions, remembers conversation context across restarts, and escalates unanswered threads to a human reviewer after a timeout. Clone the working guide and swap in your own logic.",
-      "Multi-step booking agent — user requests a flight (or appointment, or reservation), the agent searches options, sleeps while awaiting confirmation, then resumes to complete the booking. Based on the vercel/workflow-examples flight-booking-app.",
-      "Human-in-the-loop approvals — agent scans transactions or requests, flags anything over a threshold, then suspends and waits indefinitely for a human approval before writing the result. Uses WDK's native suspend/resume primitives.",
-    ],
-    quickStart: [
-      'Scaffold a Next.js app: npx create-next-app@latest --no-src-dir',
-      'Add WDK: npx workflow@latest',
-      'Wrap your Next.js config: export default withWorkflow(nextConfig)',
-      'Create workflow functions with "use workflow" and steps with "use step"',
-      'Use DurableAgent from @workflow/ai/agent for AI agent workflows — LLM calls become retryable steps automatically',
-      'Get a Gateway API key from Vercel AI Gateway — one key for OpenAI, Anthropic, Google, and more',
-      'Inspect every step, input, output, and sleep in the Vercel dashboard under Observability → Workflows — no extra setup needed',
-      'Deploy to Vercel — queues, persistence, and routing are auto-provisioned',
-    ],
-    resources: [
-      { name: "Building Durable AI Agents", href: "https://vercel.com/docs/workflow/ai/building-durable-agents", type: "Guide" },
-      { name: "Stateful Slack Bot Guide", href: "https://vercel.com/kb/guide/stateful-slack-bots-with-vercel-workflow", type: "Guide" },
-      { name: "Claude Managed Agent Guide", href: "https://vercel.com/kb/guide/claude-managed-agent-vercel", type: "Guide" },
-      { name: "Flight Booking Agent Example", href: "https://github.com/vercel/workflow-examples/tree/main/flight-booking-app", type: "Example" },
-      { name: "Sleep, Suspense & Scheduling", href: "https://vercel.com/docs/workflow/ai/sleep-and-delays", type: "Docs" },
-      { name: "Human-in-the-Loop", href: "https://vercel.com/docs/workflow/ai/human-in-the-loop", type: "Docs" },
-      { name: "Workflow SDK", href: "https://workflow-sdk.dev", type: "Docs" },
-      { name: "Vercel Workflows Docs", href: "https://vercel.com/docs/workflows", type: "Docs" },
-      { name: "vercel/workflow-examples", href: "https://github.com/vercel/workflow-examples", type: "Repo" },
-    ],
-  },
-  {
-    title: "The Connection Spark (ChatSDK)",
+    title: "ChatSDK Agents",
     description:
       "Write your bot logic once with the Chat SDK and deploy to 15+ platforms — Slack, Discord, Teams, WhatsApp, Telegram, iMessage, GitHub, Linear, and more — via swappable adapters. The SDK handles event routing, streaming, JSX cards, and distributed state. Pair with the AI SDK for LLM reasoning and the AI Gateway for zero-config access to any model provider.",
     buildIdeas: [
@@ -240,7 +243,7 @@ export function ZeroToAgentResources() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-6"
+          className="relative z-10 space-y-6"
         >
           <div className="flex items-center gap-2">
             <VercelLogo className="w-4 h-4 text-white" />
@@ -282,10 +285,20 @@ export function ZeroToAgentResources() {
               <span className="font-geist-pixel-square leading-none">Register</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
+            <a
+              href={zeroToAgentWelcomeVideoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2.5 border border-white/30 bg-black/30 text-white text-sm font-medium uppercase tracking-wider px-6 py-3 transition-all hover:bg-white/10 active:scale-[0.98]"
+            >
+              <Play className="h-4 w-4" />
+              <span className="font-geist-pixel-square leading-none">Welcome Video</span>
+            </a>
             <Link
               href="/events"
-              className="group inline-flex items-center gap-2.5 border border-white/20 text-white text-sm font-medium uppercase tracking-wider px-6 py-3 transition-all hover:bg-white/5 active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 text-white/40 text-sm font-medium uppercase tracking-wider px-2 py-3 transition-colors hover:text-white/70"
             >
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
               <span className="font-geist-pixel-square leading-none">Back to Events</span>
             </Link>
           </div>
@@ -375,11 +388,11 @@ export function ZeroToAgentResources() {
                   Track {String(i + 1).padStart(2, "0")}
                 </span>
                 <h2 className="text-white text-xl sm:text-2xl font-semibold leading-tight">
-                  {i === 0 ? (
+                  {i === 1 ? (
                     <>
-                      The UI Breakthrough{" ("}{
-                        <V0Logo className="inline-block h-[1.25em] w-auto align-middle" />
-                      }{" + MCP)"}
+                      The UI Breakthrough{" ("}
+                      <V0Logo className="inline-block h-[1.25em] w-auto align-middle" />
+                      {" + MCP)"}
                     </>
                   ) : (
                     track.title
