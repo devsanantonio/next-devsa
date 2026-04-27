@@ -1,7 +1,6 @@
 import { Metadata } from "next"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
-import { FeaturedZeroToAgent } from "@/components/events/featured-zero-to-agent"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 
@@ -90,7 +89,6 @@ export default function EventsPage() {
         }}
       />
       <main className="min-h-screen bg-white text-gray-900">
-        <FeaturedZeroToAgent />
         <CommunityEventsSection />
         <FeaturedOnDemandEvent />
       </main>
