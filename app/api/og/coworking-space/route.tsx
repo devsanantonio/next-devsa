@@ -71,7 +71,7 @@ export async function GET() {
                 letterSpacing: "0.01em",
               }}
             >
-              Community Space
+              Coworking Space
             </span>
           </div>
         </div>
@@ -97,7 +97,7 @@ export async function GET() {
               letterSpacing: "-0.02em",
             }}
           >
-            Community Space in
+            Coworking Space in
           </h1>
           <h2
             style={{
@@ -141,7 +141,7 @@ export async function GET() {
                 <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                131 Houston Street
+                110 E Houston St, 6th Floor
               </span>
             </div>
 
@@ -151,7 +151,7 @@ export async function GET() {
                 <path d="M9 3v18" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Free Parking
+                Local Builders
               </span>
             </div>
 
@@ -163,7 +163,7 @@ export async function GET() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Community Access
+                Community Driven
               </span>
             </div>
           </div>
