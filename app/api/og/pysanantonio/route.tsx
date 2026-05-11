@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 
 export const runtime = "nodejs"
 
@@ -12,10 +13,10 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          padding: "56px 64px",
           position: "relative",
         }}
       >
+        <BrandGradientBar direction="ltr" />
         {/* Subtle Python-blue accent gradient */}
         <div
           style={{
@@ -30,6 +31,14 @@ export async function GET() {
           }}
         />
 
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            padding: "44px 64px",
+          }}
+        >
         {/* Header */}
         <div
           style={{
@@ -41,33 +50,7 @@ export async function GET() {
             zIndex: 1,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                height: 32,
-                backgroundColor: "#3776AB",
-                borderRadius: 3,
-                display: "flex",
-              }}
-            />
-            <span
-              style={{
-                color: "#111827",
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              PySanAntonio
-            </span>
-          </div>
+          <DevsaLogoMark size={40} />
 
           {/* Badge */}
           <div
@@ -128,7 +111,7 @@ export async function GET() {
               letterSpacing: "-0.01em",
             }}
           >
-            Python Conference
+            First Python Conference
           </h2>
 
           {/* Subtitle */}
@@ -143,9 +126,8 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Hosted by Alamo Python, DEVSA, and the PyTexas Foundation. Celebrating the industries building with Python in San Antonio.
+            PySanAntonio brought together Python enthusiasts from across the region for a day of learning, networking, and community building.
           </p>
-
           {/* Event details */}
           <div
             style={{
@@ -219,6 +201,8 @@ export async function GET() {
             devsa.community/events/pysanantonio
           </span>
         </div>
+        </div>
+        <BrandGradientBar direction="rtl" />
       </div>
     ),
     {

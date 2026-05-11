@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 
 export const runtime = "nodejs"
 
@@ -12,9 +13,17 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          padding: "56px 64px",
         }}
       >
+        <BrandGradientBar direction="ltr" />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            padding: "44px 64px",
+          }}
+        >
         {/* Header with DEVSA branding */}
         <div
           style={{
@@ -25,33 +34,7 @@ export async function GET() {
             marginBottom: 48,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                height: 32,
-                backgroundColor: "#ef426f",
-                borderRadius: 3,
-                display: "flex",
-              }}
-            />
-            <span
-              style={{
-                color: "#111827",
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DEVSA
-            </span>
-          </div>
+          <DevsaLogoMark size={40} />
 
           {/* Badge */}
           <div
@@ -98,7 +81,7 @@ export async function GET() {
               letterSpacing: "-0.02em",
             }}
           >
-            Upcoming Events
+            Build Your Network.
           </h1>
 
           {/* Subtitle */}
@@ -113,7 +96,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Discover tech meetups, workshops, and networking events happening in San Antonio
+            One calendar for every community group. Stop hunting for meetup links and focus on building, learning, and connecting with the people shipping in San Antonio.
           </p>
 
           {/* Stats row */}
@@ -131,7 +114,7 @@ export async function GET() {
                 <line x1="3" y1="10" x2="21" y2="10" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                Weekly Meetups
+                Weekly Events
               </span>
             </div>
 
@@ -143,7 +126,7 @@ export async function GET() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                20+ Tech Groups
+                20+ Community Groups
               </span>
             </div>
 
@@ -178,16 +161,18 @@ export async function GET() {
             }}
           >
             <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              Building
+              Find your people.
             </span>
             <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              Together
+              Build your future.
             </span>
           </div>
           <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
             devsa.community/events
           </span>
         </div>
+        </div>
+        <BrandGradientBar direction="rtl" />
       </div>
     ),
     {

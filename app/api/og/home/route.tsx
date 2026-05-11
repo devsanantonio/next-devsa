@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 
 export const runtime = "nodejs"
 
@@ -12,9 +13,17 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          padding: "56px 64px",
         }}
       >
+        <BrandGradientBar direction="ltr" />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            padding: "44px 64px",
+          }}
+        >
         {/* Header */}
         <div
           style={{
@@ -25,33 +34,7 @@ export async function GET() {
             marginBottom: 48,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                height: 32,
-                backgroundColor: "#ef426f",
-                borderRadius: 3,
-                display: "flex",
-              }}
-            />
-            <span
-              style={{
-                color: "#111827",
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DEVSA
-            </span>
-          </div>
+          <DevsaLogoMark size={40} />
 
           {/* Badge */}
           <div
@@ -72,7 +55,7 @@ export async function GET() {
                 letterSpacing: "0.01em",
               }}
             >
-              San Antonio Tech Community
+              Community Driven Platform
             </span>
           </div>
         </div>
@@ -123,7 +106,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Events, coworking space, local organizations, community partners, and networking opportunities — all in one place.
+            Our platform simplifies how local partners and tech communities collaborate, exchange resources, and grow the ecosystem together.
           </p>
         </div>
 
@@ -145,31 +128,8 @@ export async function GET() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Events
-            </span>
-            <span
-              style={{
-                color: "#9ca3af",
-                fontSize: 15,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}
-            >
               Coworking Space
             </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 24,
-                fontWeight: 700,
-                lineHeight: 1.3,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Community Partners
-            </span>
             <span
               style={{
                 color: "#9ca3af",
@@ -178,7 +138,7 @@ export async function GET() {
                 lineHeight: 1.5,
               }}
             >
-              Local Organizations
+              Downtown San Antonio
             </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -191,7 +151,7 @@ export async function GET() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Job Board
+              Community Calendar
             </span>
             <span
               style={{
@@ -201,7 +161,30 @@ export async function GET() {
                 lineHeight: 1.5,
               }}
             >
-              Networking Opportunities
+              Workshops & Events
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span
+              style={{
+                color: "#ef426f",
+                fontSize: 24,
+                fontWeight: 700,
+                lineHeight: 1.3,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Building Together
+            </span>
+            <span
+              style={{
+                color: "#9ca3af",
+                fontSize: 15,
+                fontWeight: 500,
+                lineHeight: 1.5,
+              }}
+            >
+              Partners & Communities
             </span>
           </div>
         </div>
@@ -238,6 +221,8 @@ export async function GET() {
             devsa.community
           </span>
         </div>
+        </div>
+        <BrandGradientBar direction="rtl" />
       </div>
     ),
     {

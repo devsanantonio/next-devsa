@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { shareWeeklyDigestToDiscord, type DigestEvent } from '@/lib/discord';
-import { shareWeeklyDigestToLinkedIn } from '@/lib/linkedin';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// GET - Weekly digest: share this week's events to Discord & LinkedIn
+// GET - Weekly digest: share this week's events to Discord
 // Triggered by Vercel cron every Monday at 9am CST (0 15 * * 1 UTC)
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -80,20 +79,11 @@ export async function GET(request: NextRequest) {
         return false;
       });
 
-    // Post to LinkedIn (skips if empty)
-    const linkedInResult = await shareWeeklyDigestToLinkedIn(events)
-      .then(() => true)
-      .catch((err) => {
-        console.error('LinkedIn weekly digest failed:', err);
-        return false;
-      });
-
     return NextResponse.json({
       success: true,
       message: `Weekly digest: ${events.length} event${events.length !== 1 ? 's' : ''} this week`,
       count: events.length,
       discord: discordResult,
-      linkedin: linkedInResult,
     });
   } catch (error) {
     console.error('Weekly digest error:', error);

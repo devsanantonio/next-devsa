@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 
 export const runtime = "nodejs"
 
@@ -12,9 +13,17 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          padding: "56px 64px",
         }}
       >
+        <BrandGradientBar direction="ltr" />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            padding: "44px 64px",
+          }}
+        >
         {/* Header */}
         <div
           style={{
@@ -25,33 +34,7 @@ export async function GET() {
             marginBottom: 48,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                height: 32,
-                backgroundColor: "#ef426f",
-                borderRadius: 3,
-                display: "flex",
-              }}
-            />
-            <span
-              style={{
-                color: "#111827",
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DEVSA
-            </span>
-          </div>
+          <DevsaLogoMark size={40} />
 
           <div
             style={{
@@ -195,6 +178,8 @@ export async function GET() {
             devsa.community/devsatv
           </span>
         </div>
+        </div>
+        <BrandGradientBar direction="rtl" />
       </div>
     ),
     {
