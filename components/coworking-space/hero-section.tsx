@@ -714,14 +714,13 @@ export function HeroSection() {
           </div>
 
           <div className="relative w-full overflow-hidden">
-            <div className="flex animate-marquee gap-8">
+            <div className="flex animate-marquee">
               {[...mediaItems, ...mediaItems].map((item, index) => (
-                <div key={`carousel-${index}`} className="flex w-64 shrink-0 flex-col justify-end md:w-80">
+                <div key={`carousel-${index}`} className="mr-8 flex w-64 shrink-0 flex-col justify-end md:w-80">
                   <div className="relative aspect-4/5 overflow-hidden">
                     <div className="absolute inset-0 rounded-lg bg-gray-100" />
                     <Image
                       alt={item.alt}
-                      loading="lazy"
                       width={item.width}
                       height={item.height}
                       className="h-full w-full rounded-lg object-cover grayscale transition-transform duration-300 hover:scale-105"
