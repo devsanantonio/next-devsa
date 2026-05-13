@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { motion } from "motion/react"
-import { Heart, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
-const PRESET_AMOUNTS = [10, 25, 50, 100]
+const PRESET_AMOUNTS = [50, 100, 250, 500]
 
 export function DonationCta() {
-  const [selectedAmount, setSelectedAmount] = useState(25)
+  const [selectedAmount, setSelectedAmount] = useState(100)
   const [customAmount, setCustomAmount] = useState("")
   const [isCustom, setIsCustom] = useState(false)
   const [name, setName] = useState("")
@@ -79,12 +79,13 @@ export function DonationCta() {
 
             <div className="space-y-6 max-w-lg mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Every dollar goes directly toward workshops,{" "}
+                Every dollar goes directly toward PySanAntonio, the More Human
+                Than Human conference,{" "}
                 <strong className="font-semibold text-white">
-                community events
+                  monthly community workshops
                 </strong>
-                , and the resources that keep San
-                Antonio&apos;s tech scene growing.
+                , and the coworking space behind San&nbsp;Antonio&apos;s tech
+                meetups.
               </p>
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
                 As a 501(c)(3), your donation may be tax-deductible.
@@ -212,10 +213,7 @@ export function DonationCta() {
                 {isSubmitting ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <>
-                    <Heart className="h-5 w-5" />
-                    Donate ${donationAmount || "..."}
-                  </>
+                  <>Donate ${donationAmount || "..."}</>
                 )}
               </button>
 

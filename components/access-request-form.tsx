@@ -103,7 +103,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
             Request Organizer Access
           </h2>
           <p className="text-sm font-light leading-[1.6] text-gray-500">
-            Apply to add events to the DEVSA community calendar.
+            List your group on Building Together and add events to the DEVSA community calendar.
           </p>
         </div>
 

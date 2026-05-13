@@ -79,20 +79,21 @@ export function LogoShowcase() {
               Partners &amp; Communities
             </p>
             <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              The Organizations{" "}
-              <span className="text-white/50 font-light italic">Behind the</span>{" "}
-              Movement.
+              Explore the{" "}
+              <span className="text-white/50 font-light italic">Ecosystem</span>.
             </h2>
           </div>
 
           <div className="space-y-6 max-w-3xl mt-8">
             <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-              From grassroots meetups to enterprise partners — these are the groups
-              shaping San Antonio&apos;s{" "}
-              <strong className="font-semibold text-white">tech ecosystem</strong>.
+              Every tech group, meetup, and partner organization powering San
+              Antonio&apos;s{" "}
+              <strong className="font-semibold text-white">tech network</strong>{" "}
+              — in one place.
             </p>
             <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              Tap any logo to learn more about their mission and upcoming events.
+              Tap any logo to see their mission, upcoming events, and how to get
+              involved.
             </p>
           </div>
         </motion.div>

@@ -32,8 +32,9 @@ function splitIntoColumns(items: MediaItem[], cols: number): MediaItem[][] {
   return columns
 }
 
-// Lazy-loaded image card — only loads src when near viewport
-function LazyImage({ src, alt }: { src: string; alt: string }) {
+// Lazy-loaded image card — only loads src when near viewport.
+// Images are decorative background; alt is empty so screen readers skip them.
+function LazyImage({ src }: { src: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -61,7 +62,7 @@ function LazyImage({ src, alt }: { src: string; alt: string }) {
       {isVisible && (
         <img
           src={src}
-          alt={alt}
+          alt=""
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover"
@@ -87,13 +88,13 @@ function ScrollingColumn({
   return (
     <div className="relative overflow-hidden h-full flex-1">
       <div
-        className="flex flex-col gap-3 md:gap-4 will-change-transform"
+        className="hero-scroll-column flex flex-col gap-3 md:gap-4 will-change-transform"
         style={{
           animation: `hero-scroll-${direction} ${durationS}s linear infinite`,
         }}
       >
         {doubled.map((item, i) => (
-          <LazyImage key={`${item.src}-${i}`} src={item.src} alt={item.alt} />
+          <LazyImage key={`${item.src}-${i}`} src={item.src} />
         ))}
       </div>
     </div>
@@ -135,12 +136,12 @@ export function HeroBridge() {
           from { transform: translateY(-50%); }
           to   { transform: translateY(0); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-scroll-column {
+            animation: none !important;
+          }
+        }
       `}</style>
-
-      {/* Hidden H1 for SEO */}
-      <h1 className="sr-only">
-        Your Direct Connection to the Tech Community
-      </h1>
 
       {/* 3D Photo Carousel Background */}
       <div
@@ -176,8 +177,8 @@ export function HeroBridge() {
         />
       </div>
 
-      {/* Foreground hero content — left aligned, capped at 50% */}
-      <div className="relative z-20 w-full md:max-w-[55%] flex flex-col items-start text-left pl-6 sm:pl-10 md:pl-16 lg:pl-20 py-20 md:py-28">
+      {/* Foreground hero content — left aligned, capped at 55% on desktop */}
+      <div className="relative z-20 w-full md:max-w-[55%] flex flex-col items-start text-left px-6 sm:px-10 md:px-16 lg:px-20 py-20 md:py-28">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -188,11 +189,11 @@ export function HeroBridge() {
             <p className="text-sm md:text-base font-medium text-white/60 uppercase tracking-[0.2em]">
               Building Together
             </p>
-            <h2 className="text-balance font-sans text-white leading-[1.1] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            <h1 className="text-balance font-sans text-white leading-[1.1] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Find Your People.{" "}
               <span className="text-white/65 font-normal italic">Build Your</span>{" "}
               Future.
-            </h2>
+            </h1>
           </div>
 
           <div className="space-y-6 max-w-2xl">
@@ -214,15 +215,14 @@ export function HeroBridge() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-start gap-3">
             <Link
-              href="/coworking-space"
-              className="group w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
+              href="/buildingtogether"
+              className="w-auto inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
             >
-              Coworking Space
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              Explore Building Together
             </Link>
             <Link
               href="/events"
-              className="group w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/10 bg-white/5 text-white font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/20"
+              className="group w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/30"
             >
               Events Calendar
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
