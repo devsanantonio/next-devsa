@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/coworking-space/hero-section"
 import { SpaceFeaturesSection } from "@/components/coworking-space/space-features-section"
 import { AdminsSection } from "@/components/coworking-space/admins-section"
 import { GeekdomSection } from "@/components/coworking-space/geekdom-section"
+import { ClosingCta } from "@/components/coworking-space/closing-cta"
 
 export function CoworkingSpaceClient() {
 
@@ -74,6 +75,7 @@ export function CoworkingSpaceClient() {
       <AdminsSection admins={admins} />
       <SpaceFeaturesSection features={spaceFeatures} />
       <GeekdomSection />
+      <ClosingCta />
     </div>
   )
 }

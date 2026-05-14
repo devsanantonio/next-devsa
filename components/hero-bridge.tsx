@@ -218,7 +218,7 @@ export function HeroBridge() {
               href="/buildingtogether"
               className="w-auto inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-gray-900 font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
             >
-              Explore Building Together
+              Explore Our Platform
             </Link>
             <Link
               href="/events"

@@ -1,8 +1,12 @@
 "use client"
 
-import { motion } from "motion/react"
+import { motion, AnimatePresence } from "motion/react"
 import Image from "next/image"
 import { useEffect, useEffectEvent, useMemo, useState } from "react"
+import { Maximize2, X } from "lucide-react"
+
+const HERO_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking.mp4"
+const HERO_POSTER_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg"
 
 type SpaceState = "open" | "closed" | "unknown"
 
@@ -46,6 +50,16 @@ export function HeroSection() {
   const [status, setStatus] = useState<StatusState>(fallbackStatus)
   const [now, setNow] = useState(Date.now())
   const [expanded, setExpanded] = useState(false)
+  const [enlargedPhoto, setEnlargedPhoto] = useState<{ src: string; alt: string } | null>(null)
+
+  useEffect(() => {
+    if (!enlargedPhoto) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setEnlargedPhoto(null)
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [enlargedPhoto])
 
   const refreshStatus = useEffectEvent(async () => {
     try {
@@ -125,6 +139,7 @@ export function HeroSection() {
   }, [now, status.updatedAt])
 
   return (
+    <>
     <section className="relative min-h-dvh" data-testid="coworking-homepage-container-carousel" id="carousel" data-bg-type="light">
       <div className="-mt-px bg-white pb-6 pt-[calc(1.5rem-var(--header-height))] text-black md:pb-24 md:pt-[calc(6rem-var(--header-height))] lg:pt-[calc(12rem-var(--header-height))]">
         <div className="flex flex-col gap-6 md:gap-y-12 lg:gap-y-10">
@@ -138,7 +153,7 @@ export function HeroSection() {
               >
                 <div className="space-y-4">
                   <p className="letter-spacing-wide text-sm font-medium uppercase tracking-[0.2em] text-gray-500 md:text-base">
-                    Community Driven Coworking Space
+                    Coworking Space
                   </p>
                   <h1 className="font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-5xl lg:text-6xl xl:text-7xl">
                     A Space to{" "}
@@ -153,9 +168,12 @@ export function HeroSection() {
                     projector, and always-stocked coffee.{" "}
                     <strong className="font-semibold text-gray-900">
                       Free to use
-                    </strong>{" "}
-                    — no Geekdom day pass or membership required. Generously
-                    supported by{" "}
+                    </strong>
+                    , no Geekdom day pass or membership required — part of{" "}
+                    <strong className="font-semibold text-gray-900">
+                      Building Together
+                    </strong>
+                    , generously supported by{" "}
                     <strong className="font-semibold text-gray-900">
                       Geekdom
                     </strong>
@@ -277,21 +295,125 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-8 lg:col-span-8 lg:mt-24"
             >
-              <div className="relative aspect-square overflow-hidden rounded-lg">
-                <Image
-                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg"
-                  alt="Open workspace area with desks and natural lighting at the DEVSA coworking space"
-                  fill
-                  sizes="(min-width: 1024px) 44vw, 100vw"
-                  priority
-                  className="object-cover grayscale"
-                />
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={HERO_POSTER_URL}
+                  className="absolute inset-0 h-full w-full object-cover grayscale"
+                  aria-label="Builders working at the DEVSA coworking space"
+                >
+                  <source src={HERO_VIDEO_URL} type="video/mp4" />
+                </video>
               </div>
             </motion.div>
 
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="container-responsive"
+          >
+            <div className="grid grid-cols-3 gap-3 md:gap-4 lg:gap-5">
+              {[
+                {
+                  src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg",
+                  alt: "Builders working together at the DEVSA coworking space",
+                  caption: "Plug in & build",
+                },
+                {
+                  src: "https://devsa-assets.s3.us-east-2.amazonaws.com/downtown.jpg",
+                  alt: "Downtown San Antonio view from Geekdom on Houston Street",
+                  caption: "Downtown SA",
+                },
+                {
+                  src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg",
+                  alt: "Lounge and meeting area inside the DEVSA coworking space",
+                  caption: "Lounge & breaks",
+                },
+              ].map((item) => (
+                <figure key={item.src} className="space-y-2 md:space-y-3">
+                  <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                    <Image
+                      alt={item.alt}
+                      fill
+                      sizes="(max-width: 1024px) 33vw, 22vw"
+                      className="object-cover grayscale"
+                      src={item.src}
+                    />
+                    {/* Mobile-only: tap to enlarge */}
+                    <button
+                      type="button"
+                      onClick={() => setEnlargedPhoto({ src: item.src, alt: item.alt })}
+                      className="absolute inset-0 lg:hidden"
+                      aria-label={`Enlarge: ${item.alt}`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 backdrop-blur-sm"
+                      >
+                        <Maximize2 className="h-3.5 w-3.5 text-white" />
+                      </span>
+                    </button>
+                  </div>
+                  <figcaption className="text-[10px] md:text-xs font-medium uppercase tracking-[0.15em] text-gray-500">
+                    {item.caption}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
+
+    {/* Mobile-only: tap-to-enlarge photo modal */}
+    <AnimatePresence>
+      {enlargedPhoto && (
+        <motion.div
+          key="enlarge-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 lg:hidden"
+          onClick={() => setEnlargedPhoto(null)}
+        >
+          <motion.div
+            key="enlarge-image"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setEnlargedPhoto(null)}
+              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors"
+              aria-label="Close enlarged image"
+            >
+              <X className="h-7 w-7" />
+            </button>
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-900">
+              <Image
+                src={enlargedPhoto.src}
+                alt={enlargedPhoto.alt}
+                fill
+                sizes="100vw"
+                className="object-contain grayscale"
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   )
 }
