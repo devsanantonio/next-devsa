@@ -33,7 +33,7 @@ export function AdminsSection({ admins }: AdminsSectionProps) {
         >
           <div className="space-y-6 max-w-7xl">
             <p className="text-sm md:text-base font-semibold text-gray-500 uppercase tracking-[0.2em]">
-              Our Leadership Team
+              The Space Admin Team
             </p>
             <h2 className="max-w-3xl font-sans text-gray-900 leading-[0.9] text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Meet the Community Space{" "}

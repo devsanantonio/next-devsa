@@ -5,33 +5,6 @@ import Image from "next/image"
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import { useMagen } from "@/lib/hooks/use-magen"
 
-const mediaItems = [
-  {
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg",
-    alt: "Open workspace area with desks and natural lighting",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_7186.jpg",
-    alt: "Community members collaborating at the DEVSA space",
-    width: 1067,
-    height: 1600,
-  },
-  {
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg",
-    alt: "Downtown San Antonio view from Geekdom on Houston Street",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6429.jpg",
-    alt: "DEVSA coworking lounge and meeting area",
-    width: 1067,
-    height: 1600,
-  },
-]
-
 type SpaceState = "open" | "closed" | "unknown"
 
 interface ActiveAdmin {
@@ -520,27 +493,34 @@ export function HeroSection() {
                     Community Driven Coworking Space
                   </p>
                   <h1 className="font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-5xl lg:text-6xl xl:text-7xl">
-                    A True Community Space,{" "}
-                    <span className="font-light italic text-gray-600">Powered by</span>{" "}
-                    Local Builders.
+                    A Space to{" "}
+                    <span className="font-light italic text-gray-600">Build</span>,{" "}
+                    in Downtown San Antonio.
                   </h1>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <p className="text-lg font-light leading-[1.4] text-gray-700 md:text-xl">
-                    What started as a simple idea grew into a physical reality, generously supported by{" "}
-                    <strong className="font-semibold text-gray-900">Geekdom!</strong>{" "}
-                    Our downtown coworking space is completely{" "}
-                    <strong className="font-semibold text-gray-900">free to use</strong> — no membership or daily fees.
+                    Workstations with monitors, a private office for calls, a
+                    projector, and always-stocked coffee.{" "}
+                    <strong className="font-semibold text-gray-900">
+                      Free to use
+                    </strong>{" "}
+                    — no Geekdom day pass or membership required. Generously
+                    supported by{" "}
+                    <strong className="font-semibold text-gray-900">
+                      Geekdom
+                    </strong>
+                    .
                   </p>
-
                   <p className="text-base leading-relaxed text-gray-500 md:text-lg">
-                    This resource is proudly administered by volunteers from{" "}
+                    Run by volunteer organizers from{" "}
                     <span className="font-medium text-gray-700">Greater Gaming Society</span>,{" "}
                     <span className="font-medium text-gray-700">Alamo Python</span>,{" "}
                     <span className="font-medium text-gray-700">Dungo Digital</span>,{" "}
                     <span className="font-medium text-gray-700">ACM San Antonio</span>{" "}
-                    and more.
+                    and more — coordinated by{" "}
+                    <span className="font-medium text-gray-700">DEVSA</span>, a 501(c)(3) education nonprofit.
                   </p>
                 </div>
 
@@ -711,25 +691,24 @@ export function HeroSection() {
               </motion.div>
             </div>
 
-          </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mt-8 lg:col-span-8 lg:mt-24"
+            >
+              <div className="relative aspect-square overflow-hidden rounded-lg">
+                <Image
+                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg"
+                  alt="Open workspace area with desks and natural lighting at the DEVSA coworking space"
+                  fill
+                  sizes="(min-width: 1024px) 44vw, 100vw"
+                  priority
+                  className="object-cover grayscale"
+                />
+              </div>
+            </motion.div>
 
-          <div className="relative w-full overflow-hidden">
-            <div className="flex animate-marquee">
-              {[...mediaItems, ...mediaItems].map((item, index) => (
-                <div key={`carousel-${index}`} className="mr-8 flex w-64 shrink-0 flex-col justify-end md:w-80">
-                  <div className="relative aspect-4/5 overflow-hidden">
-                    <div className="absolute inset-0 rounded-lg bg-gray-100" />
-                    <Image
-                      alt={item.alt}
-                      width={item.width}
-                      height={item.height}
-                      className="h-full w-full rounded-lg object-cover grayscale transition-transform duration-300 hover:scale-105"
-                      src={item.src}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
