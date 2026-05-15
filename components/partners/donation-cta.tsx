@@ -53,7 +53,7 @@ export function DonationCta() {
   }
 
   return (
-    <section className="bg-black border-b border-gray-800" data-bg-type="dark">
+    <section id="donate" className="bg-black border-b border-gray-800 scroll-mt-20" data-bg-type="dark">
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Left: intro text */}

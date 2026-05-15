@@ -1,18 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { SlideOutMenu } from "./slide-out-menu"
-import { SocialMediaMenu } from "./social-media-menu"
-import { TerminalDropdown } from "./terminal-dropdown"
+import { TerminalDrawer } from "./terminal-drawer"
 import { useCart } from "./shop/cart-context"
 import { LogoContextMenu } from "./logo-context-menu"
 
 export function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const { openCart, totalItems } = useCart()
   const pathname = usePathname()
   const isShopPage = pathname.startsWith("/shop")
@@ -101,10 +97,10 @@ export function Navbar() {
 
               {/* Terminal dots — mobile only */}
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
                 className="lg:hidden cursor-pointer transition-all duration-200 ease-in-out active:scale-90 focus:outline-none focus:ring-2 focus:ring-black/30 p-3 rounded-xl hover:bg-black/5 group"
                 aria-label="Toggle menu"
-                aria-expanded={isDropdownOpen}
+                aria-expanded={isDrawerOpen}
               >
                 <div className="flex items-center space-x-1.5">
                   <div className="w-2.5 h-2.5 bg-[#00b2a9] rounded-full transition-transform duration-200 group-hover:scale-110"></div>
@@ -112,21 +108,18 @@ export function Navbar() {
                   <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full transition-transform duration-200 group-hover:scale-110 group-hover:delay-150"></div>
                 </div>
               </button>
-
-              <TerminalDropdown 
-                isOpen={isDropdownOpen}
-                onClose={() => setIsDropdownOpen(false)}
-                onSocialMenuOpen={() => setIsSocialMenuOpen(true)}
-              />
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Slide-out Menu */}
-      <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-
-      <SocialMediaMenu isOpen={isSocialMenuOpen} onClose={() => setIsSocialMenuOpen(false)} />
+      {/* Drawer rendered outside <nav> so backdrop-filter on the nav
+          doesn't constrain its fixed positioning. */}
+      <TerminalDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        pathname={pathname}
+      />
     </>
   )
 }

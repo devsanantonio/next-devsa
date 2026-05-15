@@ -2,11 +2,11 @@
 
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
-import { ArrowRight, X, Heart, Loader2 } from "lucide-react"
+import { ArrowRight, X, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 const DEVSA_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
-const PRESET_AMOUNTS = [10, 25, 50, 100]
+const PRESET_AMOUNTS = [50, 100, 250, 500]
 
 const communityGroups = [
   { id: "alamo-python", name: "Alamo Python" },
@@ -80,7 +80,7 @@ function LogoConfetti({ isActive }: { isActive: boolean }) {
 
 // Donate modal (mirrors DonationCta from building together page)
 function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [selectedAmount, setSelectedAmount] = useState(25)
+  const [selectedAmount, setSelectedAmount] = useState(100)
   const [customAmount, setCustomAmount] = useState("")
   const [isCustom, setIsCustom] = useState(false)
   const [name, setName] = useState("")
@@ -233,10 +233,7 @@ function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Heart className="h-4 w-4" />
-                  Donate ${donationAmount || "..."}
-                </>
+                <>Donate ${donationAmount || "..."}</>
               )}
             </button>
 
@@ -260,9 +257,9 @@ export function Footer() {
   return (
     <footer className="relative bg-neutral-950 border-t border-neutral-800/50 overflow-hidden">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 md:px-8 pt-20 pb-36">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 pt-20 pb-16">
         <div className="flex flex-col lg:flex-row gap-14 lg:gap-20">
-          {/* Left Side - Brand */}
+          {/* Left Side - Brand (terminal) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -270,22 +267,70 @@ export function Footer() {
             transition={{ duration: 0.5 }}
             className="lg:w-1/4 shrink-0"
           >
-            <div
-              className="relative inline-block mb-6 cursor-pointer"
-              onMouseEnter={() => setIsLogoHovered(true)}
-              onMouseLeave={() => setIsLogoHovered(false)}
-              onClick={() => setShowVideo(true)}
-            >
-              <div className="absolute -inset-8 z-20 pointer-events-none">
-                <LogoConfetti isActive={isLogoHovered} />
+            <div className="font-mono">
+              {/* Terminal header */}
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="flex items-center space-x-1.5">
+                  <div className="w-2.5 h-2.5 bg-[#00b2a9] rounded-full" />
+                  <div className="w-2.5 h-2.5 bg-[#ef426f] rounded-full" />
+                  <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full" />
+                </div>
+                <span className="text-[#ef426f] text-[10px] leading-none">
+                  visitor@devsa.community
+                </span>
               </div>
-              <img
-                src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
-                alt="DEVSA"
-                className="w-14 h-14 relative z-10 transition-transform duration-200 hover:scale-110"
-              />
+
+              {/* ASCII Art DEVSA — clickable for video, hover for confetti */}
+              <div
+                className="relative inline-block mb-5 cursor-pointer"
+                onMouseEnter={() => setIsLogoHovered(true)}
+                onMouseLeave={() => setIsLogoHovered(false)}
+                onClick={() => setShowVideo(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    setShowVideo(true)
+                  }
+                }}
+                aria-label="Watch the DEVSA conference recap"
+              >
+                <div className="absolute -inset-8 z-20 pointer-events-none">
+                  <LogoConfetti isActive={isLogoHovered} />
+                </div>
+                <pre
+                  className="text-[#ef426f] text-[9px] sm:text-[10px] leading-tight whitespace-pre relative z-10 transition-transform duration-200 hover:scale-[1.02]"
+                  aria-hidden="true"
+                >{`██████╗ ███████╗██╗   ██╗███████╗ █████╗
+██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗
+██║  ██║█████╗  ██║   ██║███████╗███████║
+██║  ██║██╔══╝  ╚██╗ ██╔╝╚════██║██╔══██║
+██████╔╝███████╗ ╚████╔╝ ███████║██║  ██║
+╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝`}</pre>
+              </div>
+
+              {/* Tagline as terminal output */}
+              <p className="text-white/70 text-xs sm:text-sm leading-normal mb-2">
+                <span className="text-[#ef426f]">$</span> Find Your People.
+                Build Your Future.
+              </p>
+
+              {/* Blinking cursor */}
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-[#ef426f]">
+                <span>$</span>
+                <span
+                  className="inline-block w-1.5 h-3 bg-[#ef426f] animate-pulse"
+                  aria-hidden="true"
+                />
+              </div>
             </div>
-            <p className="text-neutral-400 text-[13px] font-normal leading-normal">
+
+            <div className="mt-7 space-y-0.5 text-neutral-500 text-[12px] font-normal leading-relaxed">
+              <p>110 E Houston St, 6th Floor</p>
+              <p>San Antonio, TX 78205</p>
+            </div>
+            <p className="mt-5 text-neutral-400 text-[13px] font-normal leading-normal">
               © {currentYear} DEVSA. All rights reserved.
             </p>
             <p className="text-neutral-400 text-[13px] font-normal mt-2 leading-normal">
