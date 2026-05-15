@@ -90,7 +90,7 @@ export async function shareJobToDiscord(job: DiscordJobPayload): Promise<void> {
   if (!isDiscordConfigured()) return;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
-  const jobUrl = `${siteUrl}/jobs/${job.slug}`;
+  const jobUrl = `${siteUrl}/bounties/${job.slug}`;
 
   const locationValue = `${locationLabels[job.locationType] || job.locationType}${job.location ? ` · ${job.location}` : ''}`;
 
@@ -129,15 +129,15 @@ export async function shareJobToDiscord(job: DiscordJobPayload): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      content: `🚀 **New job posted on DEVSA Jobs**`,
+      content: `🛠️ **New bounty on DEVSA**`,
       embeds: [
         {
-          title: `${job.title} at ${job.companyName}`,
+          title: `${job.title} · ${job.companyName}`,
           url: jobUrl,
           ...(desc ? { description: desc } : {}),
           color: 0xef426f,
           fields,
-          footer: { text: 'DEVSA Jobs · devsa.community/jobs' },
+          footer: { text: 'DEVSA Bounties · devsa.community/bounties' },
           timestamp: new Date().toISOString(),
         },
       ],

@@ -122,7 +122,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
 
   const loadComments = async () => {
     try {
-      const res = await fetch(`/api/jobs/comments?jobId=${job.id}`)
+      const res = await fetch(`/api/bounties/comments?jobId=${job.id}`)
       const data = await res.json()
       setComments(data.comments || [])
     } catch {
@@ -152,7 +152,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     try {
       const token = await getIdToken()
       if (!token) return
-      const res = await fetch("/api/jobs/saved", {
+      const res = await fetch("/api/bounties/saved", {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -167,7 +167,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     try {
       const token = await getIdToken()
       if (!token) return
-      const res = await fetch(`/api/jobs/applications?jobId=${job.id}`, {
+      const res = await fetch(`/api/bounties/applications?jobId=${job.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -189,7 +189,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     if (!user) return
     try {
       const token = await getIdToken()
-      const res = await fetch("/api/jobs/saved", {
+      const res = await fetch("/api/bounties/saved", {
         method: isSaved ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -208,7 +208,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
     setIsApplying(true)
     try {
       const token = await getIdToken()
-      const res = await fetch("/api/jobs/applications", {
+      const res = await fetch("/api/bounties/applications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -231,7 +231,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
   const handleAddComment = async (content: string, mentions: string[]) => {
     if (!job.id) return
     const token = await getIdToken()
-    const res = await fetch("/api/jobs/comments", {
+    const res = await fetch("/api/bounties/comments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -246,7 +246,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
 
   const handleDeleteComment = async (commentId: string) => {
     const token = await getIdToken()
-    await fetch("/api/jobs/comments", {
+    await fetch("/api/bounties/comments", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -272,7 +272,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
       <main className="mx-auto max-w-4xl px-5 sm:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
-          href="/jobs#open-positions"
+          href="/bounties#open-positions"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -448,7 +448,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
               </button>
             ) : !user ? (
               <Link
-                href="/jobs/signin"
+                href="/bounties/signin"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
               >
                 Sign in to Apply
@@ -457,7 +457,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
 
             {user && userProfile && job.authorUid !== userProfile.uid && (
               <Link
-                href={`/jobs/dashboard/messages?startWith=${job.authorUid}&jobId=${job.id}`}
+                href={`/bounties/dashboard/messages?startWith=${job.authorUid}&jobId=${job.id}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -482,21 +482,21 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
             <p className="text-sm text-slate-500 mb-4">You posted this job. Here are quick actions.</p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href={`/jobs/edit?id=${job.id}`}
+                href={`/bounties/edit?id=${job.id}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <Pencil className="h-4 w-4" />
                 Edit Listing
               </Link>
               <Link
-                href="/jobs/dashboard"
+                href="/bounties/dashboard"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <Users className="h-4 w-4" />
                 View Applicants ({job.applicantCount})
               </Link>
               <Link
-                href="/jobs/dashboard/messages"
+                href="/bounties/dashboard/messages"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -554,7 +554,7 @@ export function JobDetailClient({ job }: { job: JobDetail }) {
             </div>
             {user && userProfile && job.authorUid !== userProfile.uid && (
               <Link
-                href={`/jobs/dashboard/messages?startWith=${job.authorUid}&jobId=${job.id}`}
+                href={`/bounties/dashboard/messages?startWith=${job.authorUid}&jobId=${job.id}`}
                 className="ml-auto text-sm text-[#ef426f] hover:underline flex items-center gap-1 font-medium"
               >
                 <ExternalLink className="h-3 w-3" />

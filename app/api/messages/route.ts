@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
         type: 'message',
         title: 'New message',
         body: `${senderName}: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
-        link: `/jobs/dashboard/messages/${convoId}`,
+        link: `/bounties/dashboard/messages/${convoId}`,
         sourceUid: result.uid,
         sourceName: senderName,
         referenceId: convoId,

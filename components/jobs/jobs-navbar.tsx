@@ -63,7 +63,7 @@ export function JobsNavbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-6">
-            <Link href="/jobs" className="flex items-center gap-2">
+            <Link href="/bounties" className="flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-[#ef426f]" />
               <span className="text-lg font-bold text-white">
                 DEVSA <span className="text-[#ef426f]">Jobs</span>
@@ -73,14 +73,14 @@ export function JobsNavbar() {
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-4">
               <Link
-                href="/jobs#open-positions"
+                href="/bounties#open-positions"
                 className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
               >
                 Browse Jobs
               </Link>
               {profile && (
                 <Link
-                  href="/jobs/dashboard"
+                  href="/bounties/dashboard"
                   className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
                 >
                   Dashboard
@@ -88,7 +88,7 @@ export function JobsNavbar() {
               )}
               {profile?.role === "open-to-work" && (
                 <Link
-                  href="/jobs/dashboard?tab=applications"
+                  href="/bounties/dashboard?tab=applications"
                   className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
                 >
                   My Applications
@@ -96,7 +96,7 @@ export function JobsNavbar() {
               )}
               {profile?.role === "hiring" && (
                 <Link
-                  href="/jobs/post"
+                  href="/bounties/post"
                   className="text-sm font-medium text-[#ef426f] hover:text-[#d93a60] transition-colors"
                 >
                   Post a Job
@@ -109,7 +109,7 @@ export function JobsNavbar() {
           <div className="flex items-center gap-3">
             {/* Search (desktop only) */}
             <Link
-              href="/jobs?search=true"
+              href="/bounties?search=true"
               className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
             >
               <Search className="h-4 w-4" />
@@ -119,7 +119,7 @@ export function JobsNavbar() {
               <UserDropdown theme="dark" profile={profile} />
             ) : (
               <Link
-                href="/jobs/signin"
+                href="/bounties/signin"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
               >
                 Sign In
@@ -140,7 +140,7 @@ export function JobsNavbar() {
         {showMobileMenu && (
           <div className="md:hidden border-t border-neutral-800 py-4 space-y-1">
             <Link
-              href="/jobs#open-positions"
+              href="/bounties#open-positions"
               onClick={() => setShowMobileMenu(false)}
               className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
             >
@@ -155,7 +155,7 @@ export function JobsNavbar() {
                   {profile.role === "hiring" ? "Hiring Tools" : "Job Seeker"}
                 </p>
                 <Link
-                  href="/jobs/dashboard"
+                  href="/bounties/dashboard"
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                 >
@@ -163,7 +163,7 @@ export function JobsNavbar() {
                   Dashboard
                 </Link>
                 <Link
-                  href="/jobs/dashboard/profile"
+                  href="/bounties/dashboard/profile"
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                 >
@@ -171,7 +171,7 @@ export function JobsNavbar() {
                   Edit Profile
                 </Link>
                 <Link
-                  href="/jobs/dashboard/messages"
+                  href="/bounties/dashboard/messages"
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                 >
@@ -179,7 +179,7 @@ export function JobsNavbar() {
                   Messages
                 </Link>
                 <Link
-                  href="/jobs/dashboard/notifications"
+                  href="/bounties/dashboard/notifications"
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                 >
@@ -193,7 +193,7 @@ export function JobsNavbar() {
                       Hiring Tools
                     </p>
                     <Link
-                      href="/jobs/post"
+                      href="/bounties/post"
                       onClick={() => setShowMobileMenu(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[#ef426f] hover:text-[#d93a60] hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                     >
@@ -201,7 +201,7 @@ export function JobsNavbar() {
                       Post a Job
                     </Link>
                     <Link
-                      href="/jobs/dashboard"
+                      href="/bounties/dashboard"
                       onClick={() => setShowMobileMenu(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                     >
@@ -217,7 +217,7 @@ export function JobsNavbar() {
                       Job Seeker
                     </p>
                     <Link
-                      href="/jobs/dashboard?tab=applications"
+                      href="/bounties/dashboard?tab=applications"
                       onClick={() => setShowMobileMenu(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                     >
@@ -225,7 +225,7 @@ export function JobsNavbar() {
                       My Applications
                     </Link>
                     <Link
-                      href="/jobs#open-positions"
+                      href="/bounties#open-positions"
                       onClick={() => setShowMobileMenu(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800/50 rounded-lg mx-2 transition-colors"
                     >

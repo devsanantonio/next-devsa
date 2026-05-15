@@ -77,13 +77,13 @@ export async function shareJobToLinkedIn(job: LinkedInJobPayload): Promise<void>
   if (!isLinkedInConfigured()) return;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
-  const jobUrl = `${siteUrl}/jobs/${job.slug}`;
+  const jobUrl = `${siteUrl}/bounties/${job.slug}`;
 
   const locationLine = `${locationLabels[job.locationType] || job.locationType}${job.location ? ` · ${job.location}` : ''}`;
   const typeLine = typeLabels[job.type] || job.type;
 
-  let commentary = `🚀 New job posted on DEVSA Jobs!\n\n`;
-  commentary += `${job.title} at ${job.companyName}\n`;
+  let commentary = `🛠️ New bounty on DEVSA!\n\n`;
+  commentary += `${job.title} · ${job.companyName}\n`;
   commentary += `📋 ${typeLine} · ${locationLine}\n`;
   if (job.salaryRange) commentary += `💰 ${job.salaryRange}\n`;
   if (job.description) {
@@ -92,12 +92,12 @@ export async function shareJobToLinkedIn(job: LinkedInJobPayload): Promise<void>
   if (job.tags.length > 0) {
     commentary += `\n${job.tags.slice(0, 5).map(t => `#${t.replace(/[^a-zA-Z0-9]/g, '')}`).join(' ')}\n`;
   }
-  commentary += `\n👉 Apply now: ${jobUrl}`;
+  commentary += `\n👉 Claim this bounty: ${jobUrl}`;
 
   await postToLinkedIn({
     commentary,
     articleUrl: jobUrl,
-    articleTitle: `${job.title} at ${job.companyName}`,
+    articleTitle: `${job.title} · ${job.companyName}`,
     articleDescription: `${typeLine} · ${locationLine}${job.salaryRange ? ` · ${job.salaryRange}` : ''}`,
   });
 }

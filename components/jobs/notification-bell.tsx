@@ -123,7 +123,7 @@ export function NotificationBell({ notifications, unreadCount, onMarkRead }: Not
 
             {notifications.length > 0 && (
               <Link
-                href="/jobs/dashboard/notifications"
+                href="/bounties/dashboard/notifications"
                 onClick={() => setShowDropdown(false)}
                 className="block px-4 py-3 text-center text-sm text-[#ef426f] hover:bg-neutral-700/50 border-t border-neutral-700"
               >

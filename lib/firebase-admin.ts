@@ -79,6 +79,10 @@ export const COLLECTIONS = {
   JOB_LISTINGS: 'job_listings',
   JOB_COMMENTS: 'job_comments',
   JOB_APPLICATIONS: 'job_applications',
+  // Bounty marketplace
+  BOUNTIES: 'bounties',
+  BOUNTY_CLAIMS: 'bounty_claims',
+  BOUNTY_DELIVERABLES: 'bounty_deliverables',
   CONVERSATIONS: 'conversations',
   MESSAGES: 'messages',
   NOTIFICATIONS: 'notifications',
@@ -366,6 +370,111 @@ export interface JobComment {
   parentCommentId?: string;
   createdAt: Date;
   updatedAt?: Date;
+}
+
+// ============================================================================
+// Bounty marketplace
+// ----------------------------------------------------------------------------
+// A bounty is a bite-sized, fixed-price piece of work posted by an organization
+// (typically a local nonprofit or startup) and claimed by a community member.
+// DEVSA acts as the bridge — funds are held in escrow at posting time via
+// Stripe Connect and released to the claimant on approval, minus an 8%
+// platform fee that funds DEVSA programming.
+// ============================================================================
+
+export type BountyCategory =
+  | 'website'
+  | 'integration'
+  | 'automation'
+  | 'data'
+  | 'design'
+  | 'ai'
+  | 'accessibility'
+  | 'devops'
+  | 'mobile'
+  | 'other';
+
+export type BountyStatus =
+  | 'draft'          // poster is still composing
+  | 'pending_review' // submitted, awaiting DEVSA admin review
+  | 'open'           // approved + funded, accepting claims
+  | 'claimed'        // a claimant is working on it
+  | 'in_review'      // claimant submitted deliverable, awaiting poster approval
+  | 'completed'      // approved + paid out
+  | 'disputed'       // poster + claimant disagree, admin involvement
+  | 'cancelled'      // pulled by poster before claim, escrow refunded
+  | 'expired';       // open too long without a claim
+
+export interface Bounty {
+  id: string;
+  posterUid: string;
+  posterName: string;
+  posterImage?: string;
+  orgName: string;       // the organization posting (e.g. nonprofit name)
+  orgLogo?: string;
+  orgVerifiedNonprofit?: boolean; // set true by admin after 501(c)(3) verification
+  title: string;
+  slug: string;
+  summary: string;       // one-line pitch shown on cards
+  description: string;   // long-form scope (markdown / sanitized HTML)
+  deliverables: string[]; // checklist of what "done" means
+  category: BountyCategory;
+  tags: string[];
+  // Money
+  amountCents: number;           // gross bounty amount (what poster funds)
+  platformFeeCents: number;      // DEVSA's cut (e.g. 8% of amount)
+  payoutCents: number;           // claimant receives this (amount - fee)
+  currency: 'usd';
+  // Escrow state
+  escrowStatus: 'unfunded' | 'funded' | 'released' | 'refunded';
+  stripePaymentIntentId?: string;
+  // Timeline
+  estimatedHours?: number;
+  deadlineAt?: Date;
+  // Match
+  status: BountyStatus;
+  claimantUid?: string;
+  claimantName?: string;
+  claimedAt?: Date;
+  completedAt?: Date;
+  // Visibility
+  isPublic: boolean;      // false = invite-only / hidden
+  applicantCount: number; // how many devs have expressed interest
+  createdAt: Date;
+  updatedAt?: Date;
+  expiresAt?: Date;
+}
+
+// Expressions of interest before a poster picks a claimant. Once a claim is
+// accepted, that claim's status becomes 'accepted' and others become 'declined'.
+export interface BountyClaim {
+  id: string;
+  bountyId: string;
+  bountyTitle: string;
+  claimantUid: string;
+  claimantName: string;
+  claimantEmail: string;
+  claimantImage?: string;
+  pitchNote: string;        // why this person; relevant work, approach, timeline
+  proposedTimelineDays?: number;
+  portfolioLinks?: string[];
+  status: 'pending' | 'accepted' | 'declined' | 'withdrawn';
+  createdAt: Date;
+  decidedAt?: Date;
+}
+
+// Submitted work / artifacts attached to a claimed bounty.
+export interface BountyDeliverable {
+  id: string;
+  bountyId: string;
+  claimantUid: string;
+  summary: string;
+  links: string[];   // PR URLs, deployed previews, file links
+  notes?: string;
+  submittedAt: Date;
+  reviewStatus: 'pending' | 'approved' | 'changes_requested' | 'rejected';
+  reviewNote?: string;
+  reviewedAt?: Date;
 }
 
 export interface JobApplication {

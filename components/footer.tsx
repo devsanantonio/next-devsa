@@ -360,7 +360,7 @@ export function Footer() {
                 <li><Link href="/buildingtogether" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Building Together</Link></li>
                 <li><Link href="/coworking-space" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Coworking Space</Link></li>
                 <li><Link href="/events" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Community Calendar</Link></li>
-                <li><Link href="/jobs" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Job Board <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-400 border border-amber-500/30">Testing</span></Link></li>
+                <li><Link href="/bounties" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Bounty Board <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-400 border border-amber-500/30">Testing</span></Link></li>
                 <li><Link href="/shop" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Shop</Link></li>
               </ul>
             </div>

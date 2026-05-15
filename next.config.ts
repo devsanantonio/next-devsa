@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // Job board → bounty marketplace pivot. Permanent (308) so old Discord
+      // and LinkedIn links keep working and search engines re-index.
+      { source: "/jobs", destination: "/bounties", permanent: true },
+      { source: "/jobs/:path*", destination: "/bounties/:path*", permanent: true },
+      { source: "/api/jobs/:path*", destination: "/api/bounties/:path*", permanent: true },
+      { source: "/api/og/jobs", destination: "/api/og/bounties", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -103,7 +103,7 @@ export function CommentSection({
       ) : (
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <p className="text-sm text-slate-500">
-            <a href="/jobs/signin" className="text-[#ef426f] hover:underline">Sign in</a> to join the discussion
+            <a href="/bounties/signin" className="text-[#ef426f] hover:underline">Sign in</a> to join the discussion
           </p>
         </div>
       )}

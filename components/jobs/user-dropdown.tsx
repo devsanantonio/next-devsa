@@ -164,7 +164,7 @@ export function UserDropdown({ theme = "light", profile }: UserDropdownProps) {
     setOpen(false)
     setShowNotifications(false)
     await signOut()
-    router.push("/jobs")
+    router.push("/bounties")
   }
 
   const close = () => {
@@ -321,15 +321,15 @@ export function UserDropdown({ theme = "light", profile }: UserDropdownProps) {
 
                 {/* Navigation */}
                 <div className="p-1">
-                  <Link href="/jobs/dashboard" onClick={close} className={itemClass}>
+                  <Link href="/bounties/dashboard" onClick={close} className={itemClass}>
                     <LayoutDashboard className={iconClass} />
                     Dashboard
                   </Link>
-                  <Link href="/jobs/dashboard/profile" onClick={close} className={itemClass}>
+                  <Link href="/bounties/dashboard/profile" onClick={close} className={itemClass}>
                     <User className={iconClass} />
                     Edit Profile
                   </Link>
-                  <Link href="/jobs/dashboard/messages" onClick={close} className={itemClass}>
+                  <Link href="/bounties/dashboard/messages" onClick={close} className={itemClass}>
                     <MessageSquare className={iconClass} />
                     Messages
                   </Link>
@@ -351,7 +351,7 @@ export function UserDropdown({ theme = "light", profile }: UserDropdownProps) {
                     Notifications
                   </button>
                   {profile.isSuperAdmin && (
-                    <Link href="/jobs/admin" onClick={close} className={`${itemClass} text-purple-500!`}>
+                    <Link href="/bounties/admin" onClick={close} className={`${itemClass} text-purple-500!`}>
                       <Shield className="h-4 w-4" />
                       Jobs Admin
                     </Link>
@@ -362,11 +362,11 @@ export function UserDropdown({ theme = "light", profile }: UserDropdownProps) {
                 <div className={`p-1 ${divider}`}>
                   {(profile.role === "hiring" || profile.isSuperAdmin) && (
                     <>
-                      <Link href="/jobs/post" onClick={close} className={postJobClass}>
+                      <Link href="/bounties/post" onClick={close} className={postJobClass}>
                         <PenSquare className="h-4 w-4" />
                         Post a Job
                       </Link>
-                      <Link href="/jobs/dashboard" onClick={close} className={itemClass}>
+                      <Link href="/bounties/dashboard" onClick={close} className={itemClass}>
                         <Briefcase className={iconClass} />
                         My Listings
                       </Link>
@@ -374,11 +374,11 @@ export function UserDropdown({ theme = "light", profile }: UserDropdownProps) {
                   )}
                   {profile.role === "open-to-work" && (
                     <>
-                      <Link href="/jobs/dashboard?tab=applications" onClick={close} className={itemClass}>
+                      <Link href="/bounties/dashboard?tab=applications" onClick={close} className={itemClass}>
                         <FileText className={iconClass} />
                         My Applications
                       </Link>
-                      <Link href="/jobs#open-positions" onClick={close} className={itemClass}>
+                      <Link href="/bounties#open-positions" onClick={close} className={itemClass}>
                         <Bookmark className={iconClass} />
                         Saved Jobs
                       </Link>

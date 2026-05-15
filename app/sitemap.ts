@@ -47,7 +47,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/jobs`,
+      url: `${baseUrl}/bounties`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,

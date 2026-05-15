@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion } from "motion/react"
 import { JobCard } from "@/components/jobs/job-card"
 import { JobFilters } from "@/components/jobs/job-filters"
-import { Briefcase, PenSquare, ArrowRight } from "lucide-react"
+import { Briefcase, ArrowRight, HandCoins } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 
@@ -50,7 +50,7 @@ export function JobListingsClient({
     try {
       const token = await getIdToken()
       if (!token) return
-      const res = await fetch("/api/jobs/saved", {
+      const res = await fetch("/api/bounties/saved", {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -65,7 +65,7 @@ export function JobListingsClient({
     try {
       const token = await getIdToken()
       if (!token) return
-      const res = await fetch("/api/jobs/applications", {
+      const res = await fetch("/api/bounties/applications", {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -81,7 +81,7 @@ export function JobListingsClient({
     try {
       const token = await getIdToken()
       const isSaved = savedJobIds.has(jobId)
-      const res = await fetch("/api/jobs/saved", {
+      const res = await fetch("/api/bounties/saved", {
         method: isSaved ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,71 +167,69 @@ export function JobListingsClient({
           >
             <div className="space-y-4">
               <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
-                Job Board
+                Bounty Board
               </p>
               <h1 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-                Hire from the Community{" "}
-                <span className="text-white/55 font-light italic">You&apos;re</span>{" "}
-                Funding.
+                Local Work.{" "}
+                <span className="text-white/55 font-light italic">Local</span>{" "}
+                Talent.
               </h1>
             </div>
 
             <div className="space-y-5 max-w-3xl mt-8">
               <p className="text-xl md:text-2xl text-white/75 leading-[1.4] font-light">
-                Subscribe to post jobs across DEVSA&apos;s{" "}
-                <strong className="font-semibold text-white">Website</strong>,{" "}
-                <strong className="font-semibold text-white">Discord</strong>, and{" "}
-                <strong className="font-semibold text-white">LinkedIn</strong>{" "}
-                — reaching builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.
+                Bite-sized dev projects posted by{" "}
+                <strong className="font-semibold text-white">local nonprofits</strong>{" "}
+                and{" "}
+                <strong className="font-semibold text-white">startups</strong>{" "}
+                — claimed by builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.
               </p>
 
               <p className="text-base md:text-lg text-white/55 leading-relaxed">
-                Every subscription funds workshops, conferences, and the downtown coworking space — DEVSA is a 501(c)(3) bridging 20+ tech community groups across South Texas.
+                Fund the bounty, pick a builder, pay on delivery. DEVSA holds payment in escrow and takes 8% to fund workshops, conferences, and the downtown coworking space — a 501(c)(3) bridging 20+ tech community groups across South Texas.
               </p>
             </div>
 
-            {/* Backed-by community strip */}
+            {/* How it works strip */}
             <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs max-w-3xl">
               <span className="font-semibold uppercase tracking-[0.18em] text-white/35">
-                Backed by
+                How it works
               </span>
-              <span className="font-medium text-white/70">Alamo Python</span>
+              <span className="font-medium text-white/70">Post + fund</span>
               <span className="text-white/20">·</span>
-              <span className="font-medium text-white/70">ACM SA</span>
+              <span className="font-medium text-white/70">Match a builder</span>
               <span className="text-white/20">·</span>
-              <span className="font-medium text-white/70">GDG San Antonio</span>
+              <span className="font-medium text-white/70">Approve work</span>
               <span className="text-white/20">·</span>
-              <span className="font-medium text-white/70">Greater Gaming Society</span>
-              <span className="text-white/20">·</span>
-              <span className="italic text-white/40">and more</span>
+              <span className="font-medium text-white/70">Builder gets paid</span>
             </div>
 
             {/* Pricing anchor */}
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-sm">
               <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
               <span className="text-sm font-medium text-white/85">
-                Free during Community Launch
+                Free to post
               </span>
               <span className="text-sm text-white/30">·</span>
               <span className="text-sm text-white/60">
-                $4.99/mo after
+                8% on completed bounties funds DEVSA
               </span>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-start gap-3 mt-8">
               <Link
-                href="/jobs/signin?role=hiring"
+                href="/bounties/signin?role=hiring"
                 className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
               >
-                <PenSquare className="h-4 w-4" />
-                Post a Job
+                <HandCoins className="h-4 w-4" />
+                Post a Bounty
               </Link>
               <a
                 href="#open-positions"
                 className="group inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white/30 transition-colors"
               >
-                Browse Open Positions
+                Browse Open Bounties
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
             </div>
@@ -245,7 +243,7 @@ export function JobListingsClient({
           {/* Section header */}
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 leading-[1.2]">
-              Open Positions
+              Open Bounties
             </h2>
             <span className="text-sm font-medium text-gray-400 leading-normal tabular-nums">
               {filteredListings.length}

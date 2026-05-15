@@ -74,7 +74,7 @@ export function JobCard({
 
   return (
     <Link
-      href={`/jobs/${slug}`}
+      href={`/bounties/${slug}`}
       className="block rounded-xl border border-gray-200 bg-white p-5 sm:p-6 hover:border-gray-300 hover:shadow-md transition-all group"
     >
       <div className="flex items-start gap-4">

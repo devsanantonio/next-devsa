@@ -181,7 +181,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
   const handleSignOut = async () => {
     onMobileClose()
     await signOut()
-    router.push("/jobs")
+    router.push("/bounties")
   }
 
   const handleLinkClick = () => {
@@ -316,7 +316,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                 Navigation
               </p>
               <Link
-                href="/jobs/dashboard"
+                href="/bounties/dashboard"
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -324,7 +324,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                 Dashboard
               </Link>
               <Link
-                href="/jobs/dashboard/profile"
+                href="/bounties/dashboard/profile"
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -332,7 +332,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                 Edit Profile
               </Link>
               <Link
-                href="/jobs/dashboard/messages"
+                href="/bounties/dashboard/messages"
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -365,7 +365,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
               </button>
               {profile.isSuperAdmin && (
                 <Link
-                  href="/jobs/admin"
+                  href="/bounties/admin"
                   onClick={handleLinkClick}
                   className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                 >
@@ -382,7 +382,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
               {(profile.role === "hiring" || profile.isSuperAdmin) && (
                 <>
                   <Link
-                    href="/jobs/post"
+                    href="/bounties/post"
                     onClick={handleLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
                   >
@@ -390,7 +390,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     Post a Job
                   </Link>
                   <Link
-                    href="/jobs/dashboard"
+                    href="/bounties/dashboard"
                     onClick={handleLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -402,7 +402,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
               {profile.role === "open-to-work" && (
                 <>
                   <Link
-                    href="/jobs#open-positions"
+                    href="/bounties#open-positions"
                     onClick={handleLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
                   >
@@ -410,7 +410,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     Browse Jobs
                   </Link>
                   <Link
-                    href="/jobs/dashboard?tab=applications"
+                    href="/bounties/dashboard?tab=applications"
                     onClick={handleLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -418,7 +418,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     My Applications
                   </Link>
                   <Link
-                    href="/jobs#open-positions"
+                    href="/bounties#open-positions"
                     onClick={handleLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
