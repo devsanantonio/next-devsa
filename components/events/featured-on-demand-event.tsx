@@ -1,32 +1,12 @@
 "use client"
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Play, ArrowRight, Video, X } from "lucide-react"
+import { Play, ArrowRight, X } from "lucide-react"
 import { featuredOnDemandEvent, moreHumanThanHumanEvent } from "@/data/events"
 import Image from "next/image"
 import Link from "next/link"
 
 const MORE_HUMAN_RECAP_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
-
-// Subtle background pattern
-function OnDemandBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div 
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(#FFD43B 1px, transparent 1px),
-            linear-gradient(90deg, #4B8BBE 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-        }}
-      />
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[#FFD43B]/5 blur-[150px]" />
-      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-[#4B8BBE]/5 blur-[150px]" />
-    </div>
-  )
-}
 
 function formatPastDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -43,217 +23,212 @@ export function FeaturedOnDemandEvent() {
 
   if (!featuredOnDemandEvent && !moreHumanThanHumanEvent) return null
 
-  return (<>
-    <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
-      <OnDemandBackground />
-      
-      {/* Top border */}
-      <div className="h-1 w-full bg-linear-to-r from-[#4B8BBE] via-[#FFD43B] to-[#4B8BBE] opacity-60" />
-      
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
-        <div className="mb-12">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center border border-[#4B8BBE]/50 bg-[#4B8BBE]/10">
-                <Video className="h-4 w-4 sm:h-5 sm:w-5 text-[#4B8BBE]" />
-              </div>
-              <span className="font-mono text-[10px] sm:text-xs uppercase tracking-[0.15em] text-[#FFD43B]">
-                On-Demand
-              </span>
+  return (
+    <>
+      <section
+        className="bg-black border-b border-gray-800"
+        data-bg-type="dark"
+      >
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mb-12 md:mb-16"
+          >
+            <div className="space-y-4 max-w-3xl">
+              <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
+                On Demand
+              </p>
+              <h2 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+                Watch Past{" "}
+                <span className="text-white/50 font-light italic">
+                  Conferences{" "}
+                </span>
+                Powered by <strong className="font-semibold text-white">DEVSA</strong>.
+              </h2>
             </div>
 
-            <h2 className="text-balance font-sans text-[#e5e5e5] leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              Quarterly Conferences{" "}
-              <span className="text-[#737373] font-light italic">Powered by</span>{" "}
-              DEVSA.
-            </h2>
-          </div>
-
-          <div className="space-y-6 max-w-3xl mt-8">
-            <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-[#999] leading-[1.4] font-light">
-              Watch on-demand content from conferences organized right here in{" "}
-              <strong className="font-semibold text-[#e5e5e5]">San Antonio</strong> — built by the community, for the community.
-            </p>
-
-            <p className="text-base md:text-lg text-[#666] leading-relaxed">
-              Missed a session? Catch up on{" "}
-              <span className="font-medium text-[#999]">talks</span>,{" "}
-              <span className="font-medium text-[#999]">panels</span>, and{" "}
-              <span className="font-medium text-[#999]">workshops</span>{" "}
-              at your own pace.
-            </p>
-          </div>
-        </div>
-        
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Left - PySanAntonio */}
-          {featuredOnDemandEvent && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <Link
-                href={featuredOnDemandEvent.url || "#"}
-                className="group block border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 hover:border-[#FFD43B]/50"
-              >
-                {/* Thumbnail */}
-                <div className="relative aspect-video overflow-hidden">
-                  <Image
-                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg"
-                    alt={featuredOnDemandEvent.title}
-                    fill
-                    className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
-                  />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                  
-                  {/* Past event badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className="inline-flex items-center gap-1.5 bg-[#4B8BBE] text-white font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1">
-                      Past Event
-                    </span>
-                  </div>
-                  
-                  {/* Play indicator */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-2 border border-[#333] bg-[#0a0a0a]/80 backdrop-blur-sm px-3 py-1.5">
-                    <Play className="h-3 w-3 text-[#FFD43B]" />
-                    <span className="font-mono text-[10px] font-semibold text-[#e5e5e5]">Full Event</span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-5 sm:p-6">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#666] mb-2">
-                    {formatPastDate(featuredOnDemandEvent.date)} · {featuredOnDemandEvent.location}
-                  </p>
-                  
-                  <h3 className="text-lg sm:text-xl font-black uppercase leading-tight tracking-tight text-[#e5e5e5] mb-3">
-                    {featuredOnDemandEvent.title}
-                  </h3>
-                  
-                  <p className="text-sm text-[#737373] leading-relaxed mb-4">
-                    {featuredOnDemandEvent.description}
-                  </p>
-
-                  <span className="inline-flex items-center gap-2 font-mono text-sm font-semibold text-[#FFD43B] transition-colors group-hover:text-[#4B8BBE]">
-                    View all sessions
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          )}
-
-          {/* Right - More Human Than Human */}
-          {moreHumanThanHumanEvent && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <div
-                onClick={() => setShowVideoModal(true)}
-                className="group block border border-[#333] bg-[#111] overflow-hidden transition-all duration-500 hover:border-[#ff9900]/50 cursor-pointer"
-              >
-                {/* Video Thumbnail */}
-                <div className="relative aspect-video overflow-hidden bg-black">
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
-                  >
-                    <source src="https://devsa-assets.s3.us-east-2.amazonaws.com/HEAD_v01.mp4" type="video/mp4" />
-                    <source src="https://devsa-assets.s3.us-east-2.amazonaws.com/HEAD_v01.webm" type="video/webm" />
-                  </video>
-                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                  
-                  {/* Past event badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className="inline-flex items-center gap-1.5 bg-[#ff9900] text-[#0a0a0a] font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1">
-                      Past Event
-                    </span>
-                  </div>
-                  
-                  {/* Play indicator */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-2 border border-[#333] bg-[#0a0a0a]/80 backdrop-blur-sm px-3 py-1.5">
-                    <Play className="h-3 w-3 text-[#ff9900]" />
-                    <span className="font-mono text-[10px] font-semibold text-[#e5e5e5]">Event Recap</span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-5 sm:p-6">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#666] mb-2">
-                    {formatPastDate(moreHumanThanHumanEvent.date)} · {moreHumanThanHumanEvent.location}
-                  </p>
-                  
-                  <h3 className="text-lg sm:text-xl font-black uppercase leading-tight tracking-tight text-[#e5e5e5] mb-3">
-                    {moreHumanThanHumanEvent.title}
-                  </h3>
-                  
-                  <p className="text-sm text-[#737373] leading-relaxed mb-4">
-                    {moreHumanThanHumanEvent.description}
-                  </p>
-
-                  <span className="inline-flex items-center gap-2 font-mono text-sm font-semibold text-[#ff9900] transition-colors group-hover:text-[#fbbf24]">
-                    Watch the recap
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-      
-      {/* Bottom border */}
-      <div className="h-1 w-full bg-linear-to-r from-[#4B8BBE] via-[#FFD43B] to-[#4B8BBE] opacity-60" />
-    </section>
-
-    {/* Video Modal */}
-    <AnimatePresence>
-      {showVideoModal && (
-        <motion.div
-          key="video-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
-          onClick={() => setShowVideoModal(false)}
-        >
-          <motion.div
-            key="video-player"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-5xl aspect-video"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-8 h-8" />
-            </button>
-            <video
-              ref={modalVideoRef}
-              autoPlay
-              controls
-              playsInline
-              className="w-full h-full rounded-xl"
-            >
-              <source src={MORE_HUMAN_RECAP_VIDEO_URL} type="video/mp4" />
-            </video>
+            <div className="space-y-6 max-w-3xl mt-8">
+              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+                Conferences organized right here in{" "}
+                <strong className="font-semibold text-white">
+                  San&nbsp;Antonio
+                </strong>{" "}
+                — built by the community, for the community.
+              </p>
+              <p className="text-base md:text-lg text-white/50 leading-relaxed">
+                Catch up on talks, panels, and workshops at your own pace.
+              </p>
+            </div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* PySanAntonio */}
+            {featuredOnDemandEvent && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link
+                  href={featuredOnDemandEvent.url || "#"}
+                  className="group block h-full overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition-all duration-300 hover:border-white/20 hover:bg-neutral-900/70"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-black">
+                    <Image
+                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg"
+                      alt={featuredOnDemandEvent.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+
+                    <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/80">
+                      Past Event
+                    </span>
+
+                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white">
+                      <Play className="h-3 w-3 fill-white" />
+                      Full Event
+                    </span>
+                  </div>
+
+                  <div className="p-5 sm:p-6">
+                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/40 mb-2">
+                      {formatPastDate(featuredOnDemandEvent.date)} ·{" "}
+                      {featuredOnDemandEvent.location}
+                    </p>
+
+                    <h3 className="text-lg sm:text-xl font-bold leading-tight tracking-tight text-white mb-3">
+                      {featuredOnDemandEvent.title}
+                    </h3>
+
+                    <p className="text-sm text-white/55 leading-relaxed mb-5">
+                      {featuredOnDemandEvent.description}
+                    </p>
+
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-white transition-colors group-hover:text-white/80">
+                      View all sessions
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            )}
+
+            {/* More Human Than Human */}
+            {moreHumanThanHumanEvent && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowVideoModal(true)}
+                  className="group block w-full text-left h-full overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 cursor-pointer transition-all duration-300 hover:border-white/20 hover:bg-neutral-900/70"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-black">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    >
+                      <source
+                        src="https://devsa-assets.s3.us-east-2.amazonaws.com/HEAD_v01.mp4"
+                        type="video/mp4"
+                      />
+                      <source
+                        src="https://devsa-assets.s3.us-east-2.amazonaws.com/HEAD_v01.webm"
+                        type="video/webm"
+                      />
+                    </video>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+
+                    <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/80">
+                      Past Event
+                    </span>
+
+                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white">
+                      <Play className="h-3 w-3 fill-white" />
+                      Event Recap
+                    </span>
+                  </div>
+
+                  <div className="p-5 sm:p-6">
+                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/40 mb-2">
+                      {formatPastDate(moreHumanThanHumanEvent.date)} ·{" "}
+                      {moreHumanThanHumanEvent.location}
+                    </p>
+
+                    <h3 className="text-lg sm:text-xl font-bold leading-tight tracking-tight text-white mb-3">
+                      {moreHumanThanHumanEvent.title}
+                    </h3>
+
+                    <p className="text-sm text-white/55 leading-relaxed mb-5">
+                      {moreHumanThanHumanEvent.description}
+                    </p>
+
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-white transition-colors group-hover:text-white/80">
+                      Watch the recap
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {showVideoModal && (
+          <motion.div
+            key="video-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
+            onClick={() => setShowVideoModal(false)}
+          >
+            <motion.div
+              key="video-player"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-5xl aspect-video"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors cursor-pointer"
+                aria-label="Close video"
+              >
+                <X className="w-8 h-8" />
+              </button>
+              <video
+                ref={modalVideoRef}
+                autoPlay
+                controls
+                playsInline
+                className="w-full h-full rounded-xl"
+              >
+                <source src={MORE_HUMAN_RECAP_VIDEO_URL} type="video/mp4" />
+              </video>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

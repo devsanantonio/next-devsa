@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin } from "lucide-react"
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
@@ -692,10 +692,12 @@ export function CommunityEventsSection() {
               <span className="font-medium text-gray-700">building</span>,{" "}
               <span className="font-medium text-gray-700">learning</span>, and{" "}
               <span className="font-medium text-gray-700">connecting</span>{" "}
-              with the people shipping the future.
+              with the people shipping the future. Part of{" "}
+              <span className="font-medium text-gray-700">Building Together</span>{" "}
+              — DEVSA&apos;s 501(c)(3) platform.
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={() => setShowCalendarSubscribe(true)}
                 className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
