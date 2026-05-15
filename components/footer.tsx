@@ -276,7 +276,7 @@ export function Footer() {
                   <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full" />
                 </div>
                 <span className="text-[#ef426f] text-[10px] leading-none">
-                  visitor@devsa.community
+                  builder@devsa.community
                 </span>
               </div>
 

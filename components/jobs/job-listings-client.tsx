@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "motion/react"
 import { JobCard } from "@/components/jobs/job-card"
 import { JobFilters } from "@/components/jobs/job-filters"
-import { Briefcase, PenSquare, Globe, CheckCircle } from "lucide-react"
+import { Briefcase, PenSquare, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 
@@ -22,14 +23,6 @@ interface JobListingItem {
   createdAt: string
 }
 
-interface JobBoardProfile {
-  uid: string
-  role: "hiring" | "open-to-work"
-  firstName: string
-  lastName: string
-  profileImage?: string
-  companyName?: string
-}
 export function JobListingsClient({
   initialListings,
 }: {
@@ -44,34 +37,14 @@ export function JobListingsClient({
   const [sortBy, setSortBy] = useState("newest")
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set())
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set())
-  const [profile, setProfile] = useState<JobBoardProfile | null>(null)
 
   useEffect(() => {
     if (user) {
       fetchSavedJobs()
       fetchMyApplications()
-      loadProfile()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
-
-  const loadProfile = async () => {
-    try {
-      const token = await getIdToken()
-      if (!token) return
-      const res = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: token }),
-      })
-      const data = await res.json()
-      if (data.hasProfile) {
-        setProfile(data.profile)
-      }
-    } catch {
-      // silently fail
-    }
-  }
 
   const fetchSavedJobs = async () => {
     try {
@@ -159,95 +132,115 @@ export function JobListingsClient({
     setSearchQuery(tag)
   }
 
-  const isSignedIn = !!user && !!profile
-
   return (
     <div>
-      {/* Hero — only visible when not signed in */}
-      {!isSignedIn && (
-        <section className="w-full px-4 sm:px-6 pt-24 sm:pt-28 pb-10 sm:pb-14">
-          <div className="mx-auto max-w-7xl">
+      {/* Hero — visible to everyone, matches Building Together platform pattern */}
+      <section
+        className="relative overflow-hidden bg-black min-h-[85vh] flex flex-col items-center justify-center"
+        data-bg-type="dark"
+      >
+        {/* Background image */}
+        <img
+          src="https://devsa-assets.s3.us-east-2.amazonaws.com/replay13.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-right md:object-center grayscale"
+        />
+
+        {/* Dark overlays — heavy left for text readability, fading right to reveal photo */}
+        <div className="absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/85 to-transparent z-10" />
+        <div className="absolute inset-0 bg-linear-to-b from-neutral-950/70 via-transparent to-neutral-950/70 z-10" />
+        <div
+          className="absolute inset-0 z-10"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.15) 65%, transparent 100%)",
+          }}
+        />
+
+        {/* Foreground content */}
+        <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-20 sm:py-24 md:py-28 lg:py-32 flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl"
+          >
             <div className="space-y-4">
-              <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
-                The Opportunity Pipeline
+              <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
+                Job Board
               </p>
-              <h1 className="text-balance font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-                Post Once.{" "}
-                <span className="text-gray-600 font-light italic">Reach Every</span>{" "}
-                Member in our Community.
+              <h1 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+                Hire from the Community{" "}
+                <span className="text-white/55 font-light italic">You&apos;re</span>{" "}
+                Funding.
               </h1>
             </div>
-            <div className="max-w-3xl mt-8 space-y-3">
-              <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-normal">
-                Your listing is automatically pushed to our {" "}
-                <strong className="font-semibold text-gray-900">website</strong>,{" "}
-                <strong className="font-semibold text-gray-900">Discord</strong>, and{" "}
-                <strong className="font-semibold text-gray-900">LinkedIn</strong> — connecting with developers, designers, and engineers across San Antonio, the I-35 corridor, and the Rio Grande Valley.
+
+            <div className="space-y-5 max-w-3xl mt-8">
+              <p className="text-xl md:text-2xl text-white/75 leading-[1.4] font-light">
+                Subscribe to post jobs across DEVSA&apos;s{" "}
+                <strong className="font-semibold text-white">Website</strong>,{" "}
+                <strong className="font-semibold text-white">Discord</strong>, and{" "}
+                <strong className="font-semibold text-white">LinkedIn</strong>{" "}
+                — reaching builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.
               </p>
-              <p className="text-base md:text-lg text-gray-500 leading-[1.6]">
-                Free for a limited time during our Community Launch. Support DEVSA, a 501(c)(3) nonprofit bridging the gap between 20+ tech community groups, industry partners, and local talent.
+
+              <p className="text-base md:text-lg text-white/55 leading-relaxed">
+                Every subscription funds workshops, conferences, and the downtown coworking space — DEVSA is a 501(c)(3) bridging 20+ tech community groups across South Texas.
               </p>
             </div>
 
-            {/* Distribution channels */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Globe className="h-4 w-4 text-gray-500" />
-                <span>devsa.community</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <svg className="h-4 w-4 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
-                <span>800+ Community Members</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <svg className="h-4 w-4 text-[#0A66C2]" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                <span>600+ LinkedIn Followers</span>
-              </div>
+            {/* Backed-by community strip */}
+            <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs max-w-3xl">
+              <span className="font-semibold uppercase tracking-[0.18em] text-white/35">
+                Backed by
+              </span>
+              <span className="font-medium text-white/70">Alamo Python</span>
+              <span className="text-white/20">·</span>
+              <span className="font-medium text-white/70">ACM SA</span>
+              <span className="text-white/20">·</span>
+              <span className="font-medium text-white/70">GDG San Antonio</span>
+              <span className="text-white/20">·</span>
+              <span className="font-medium text-white/70">Greater Gaming Society</span>
+              <span className="text-white/20">·</span>
+              <span className="italic text-white/40">and more</span>
             </div>
 
-            {/* How it works */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mt-6 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="leading-[1.4] font-medium">Create your listing</span>
-              </div>
-              <span className="hidden sm:inline text-gray-300">→</span>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="leading-[1.4] font-medium">Auto-shared to 3 channels</span>
-              </div>
-              <span className="hidden sm:inline text-gray-300">→</span>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="leading-[1.4] font-medium">Hire local talent</span>
-              </div>
+            {/* Pricing anchor */}
+            <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-sm">
+              <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="text-sm font-medium text-white/85">
+                Free during Community Launch
+              </span>
+              <span className="text-sm text-white/30">·</span>
+              <span className="text-sm text-white/60">
+                $4.99/mo after
+              </span>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-10">
-              <a
-                href="#open-positions"
-                className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
-              >
-                <Briefcase className="h-4 w-4" />
-                View Open Positions
-              </a>
+            <div className="flex flex-col sm:flex-row items-start gap-3 mt-8">
               <Link
                 href="/jobs/signin?role=hiring"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white hover:bg-[#d93a60] transition-colors"
               >
                 <PenSquare className="h-4 w-4" />
-                Post a Job — It&apos;s Free
+                Post a Job
               </Link>
+              <a
+                href="#open-positions"
+                className="group inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white/30 transition-colors"
+              >
+                Browse Open Positions
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
             </div>
-          </div>
-        </section>
-      )}
+          </motion.div>
+        </div>
+      </section>
 
       {/* Job Listings */}
-      <section id="open-positions" className={`w-full px-4 sm:px-6 scroll-mt-4 ${isSignedIn ? "pt-6 lg:pt-20 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto" : ""}`}>
+      <section id="open-positions" className="w-full bg-white px-4 sm:px-6 pt-12 sm:pt-16 scroll-mt-4">
         <div className="mx-auto max-w-7xl pb-16 sm:pb-24">
           {/* Section header */}
           <div className="flex items-center gap-3 mb-6">
