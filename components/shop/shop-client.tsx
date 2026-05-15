@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import { ArrowRight, BadgeCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type PrintifyProduct, slugify } from "@/lib/printify";
@@ -59,7 +60,7 @@ export function ShopClient({ products }: ShopClientProps) {
           >
             <div className="space-y-4 max-w-3xl">
               <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em]">
-                Official Merch
+                Community Merch
               </p>
               <h1 className="font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Community Threads.{" "}
@@ -70,35 +71,79 @@ export function ShopClient({ products }: ShopClientProps) {
 
             <div className="space-y-6 max-w-3xl mt-8">
               <p className="text-xl md:text-2xl text-gray-500 leading-[1.4] font-normal">
-                Bridging the gap between code and community with high-fidelity threads designed to keep our resources available and our connections strong.
+                Developer apparel designed in San Antonio. Every purchase
+                supports DEVSA&apos;s{" "}
+                <span className="font-medium text-gray-700">workshops</span>,{" "}
+                <span className="font-medium text-gray-700">conferences</span>,
+                and{" "}
+                <span className="font-medium text-gray-700">
+                  the coworking space
+                </span>
+                .
               </p>
 
               <p className="text-base md:text-lg text-gray-400 leading-[1.6] font-normal">
-                Print-on-demand apparel — designed in{" "}
-                <span className="font-medium text-gray-600">San Antonio</span>,{" "}
-                shipped to{" "}
-                <span className="font-medium text-gray-600">your door</span>.
+                Print-on-demand — part of{" "}
+                <span className="font-medium text-gray-600">
+                  Building Together
+                </span>
+                , DEVSA&apos;s 501(c)(3) platform.
               </p>
 
-              <p className="text-sm text-gray-400 leading-[1.6] font-normal">
-                Special thanks to the{" "}
+              <div className="flex flex-col sm:flex-row items-start gap-3 pt-2">
                 <a
-                  href="https://www.python.org/psf/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-[#306998] underline underline-offset-2 decoration-2 decoration-[#FFD43B] hover:text-[#24507a] transition-colors"
+                  href="#products"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-gray-900 text-white font-medium text-sm transition-colors duration-200 hover:bg-gray-800"
                 >
-                  Python Software Foundation
-                </a>{" "}
-                for granting permission to use the Python logo commercially.
-              </p>
+                  Shop the Collection
+                </a>
+                <button
+                  onClick={() => setShowSubmitForm(true)}
+                  className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-gray-200 bg-white text-gray-700 font-medium text-sm transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
+                >
+                  Submit Your Logo
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
+      {/* PSF Credential Band */}
+      <section className="bg-white border-b border-gray-100 py-6 md:py-7">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-5"
+          >
+            <div className="flex items-center gap-2.5 shrink-0">
+              <BadgeCheck className="h-5 w-5 text-[#306998]" strokeWidth={2} />
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-gray-500">
+                Officially Licensed
+              </p>
+            </div>
+            <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+              DEVSA is licensed by the{" "}
+              <a
+                href="https://www.python.org/psf/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#306998] underline underline-offset-2 decoration-2 decoration-[#FFD43B] hover:text-[#24507a] transition-colors"
+              >
+                Python Software Foundation
+              </a>
+              {" "}for commercial use of the Python logo.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Products Grid */}
-      <section className="bg-white py-16 md:py-24">
+      <section id="products" className="bg-white py-16 md:py-24 scroll-mt-20">
         <div className="container-responsive">
           {products.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
@@ -130,7 +175,7 @@ export function ShopClient({ products }: ShopClientProps) {
       </section>
 
       {/* Community CTA */}
-      <section className="bg-white border-t border-gray-200 pt-16 pb-20 md:pt-20 md:pb-24">
+      <section className="bg-black border-t border-gray-800 pt-16 pb-20 md:pt-20 md:pb-24" data-bg-type="dark">
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -140,36 +185,75 @@ export function ShopClient({ products }: ShopClientProps) {
             className="max-w-4xl"
           >
             <div className="space-y-4 max-w-3xl">
-              <p className="text-sm md:text-base font-medium text-gray-400 uppercase tracking-[0.2em]">
+              <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
                 Community Collection
               </p>
-              <h2 className="font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              <h2 className="font-sans text-white leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
                 Your Logo.{" "}
-                <span className="text-gray-400 font-light italic">Remixed</span>{" "}
+                <span className="text-white/50 font-light italic">Remixed</span>.
               </h2>
             </div>
 
             <div className="space-y-6 max-w-3xl mt-8">
-              <p className="text-xl md:text-2xl text-gray-500 leading-[1.4] font-normal">
-                Part of our mission is spotlighting the groups that power San Antonio. 
-                Submit your logo and let our team remix it into a fresh, production-ready design for the DEVSA store.
+              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-normal">
+                Part of our mission is spotlighting the groups that power
+                San&nbsp;Antonio. Submit your logo and let our team remix it
+                into a fresh, production-ready design for the DEVSA store.
               </p>
-              <p className="text-base md:text-lg text-gray-400 leading-[1.6] font-normal">
+              <p className="text-base md:text-lg text-white/50 leading-[1.6] font-normal">
                 We&apos;ll handle the{" "}
-                <span className="font-medium text-gray-600">design</span>,{" "}
+                <span className="font-medium text-white">design</span>, the{" "}
+                <span className="font-medium text-white">printing</span>, and
                 the{" "}
-                <span className="font-medium text-gray-600">printing</span>,{" "}
-                and the{" "}
-                <span className="font-medium text-gray-600">shipping</span>{" "}
-                — you bring the community.
+                <span className="font-medium text-white">shipping</span> — you
+                bring the community.
+              </p>
+
+              <p className="text-sm font-medium text-white/60 italic">
+                The Python Software Foundation was our first — your community
+                could be next.
               </p>
 
               <button
                 onClick={() => setShowSubmitForm(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors cursor-pointer mt-2"
+                className="group inline-flex items-center gap-2 px-6 py-3 bg-[#ef426f] hover:bg-[#d93a62] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer mt-2"
               >
                 Submit Your Logo
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </button>
+            </div>
+          </motion.div>
+
+          {/* Cross-links footer */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="mt-14 md:mt-20 pt-8 border-t border-white/10"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+              More from DEVSA
+            </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+              <Link
+                href="/buildingtogether"
+                className="font-medium text-white/60 hover:text-white transition-colors"
+              >
+                Building Together
+              </Link>
+              <Link
+                href="/coworking-space"
+                className="font-medium text-white/60 hover:text-white transition-colors"
+              >
+                Coworking Space
+              </Link>
+              <Link
+                href="/events"
+                className="font-medium text-white/60 hover:text-white transition-colors"
+              >
+                Community Calendar
+              </Link>
             </div>
           </motion.div>
         </div>

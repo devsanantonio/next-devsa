@@ -52,14 +52,19 @@ export function FeaturedOnDemandEvent() {
 
             <div className="space-y-6 max-w-3xl mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Conferences organized right here in{" "}
                 <strong className="font-semibold text-white">
-                  San&nbsp;Antonio
+                  DEVSA conferences
                 </strong>{" "}
-                — built by the community, for the community.
+                built right here in San&nbsp;Antonio — for the community, by
+                the community.
               </p>
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
-                Catch up on talks, panels, and workshops at your own pace.
+                Part of{" "}
+                <span className="font-medium text-white/70">
+                  Building Together
+                </span>
+                , our 501(c)(3) platform. Watch talks, panels, and workshops at
+                your own pace.
               </p>
             </div>
           </motion.div>

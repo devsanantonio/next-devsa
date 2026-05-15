@@ -705,13 +705,13 @@ export function CommunityEventsSection() {
                 <CalendarPlus className="h-3.5 w-3.5" />
                 Subscribe
               </button>
-              <button
-                onClick={() => setShowRssFeed(true)}
+              <Link
+                href="/coworking-space"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
               >
-                <Rss className="h-3.5 w-3.5" />
-                RSS Feed
-              </button>
+                <MapPin className="h-3.5 w-3.5" />
+                Coworking Space
+              </Link>
               <Link
                 href="/signin"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
@@ -720,6 +720,17 @@ export function CommunityEventsSection() {
                 Add Event
               </Link>
             </div>
+
+            <p className="text-sm text-gray-500">
+              Building an integration?{" "}
+              <button
+                onClick={() => setShowRssFeed(true)}
+                className="inline-flex items-center gap-1.5 font-medium text-gray-900 underline underline-offset-2 hover:text-gray-700 transition-colors cursor-pointer"
+              >
+                <Rss className="h-3 w-3" />
+                Use the RSS feed
+              </button>
+            </p>
           </div>
         </div>
 
