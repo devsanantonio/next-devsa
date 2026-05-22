@@ -297,19 +297,24 @@ export default function PostBountyPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8 sm:py-12 pt-20 lg:pt-8">
-        <div className="mb-6 sm:mb-8 max-w-3xl">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2] mb-2">Post a Bounty</h1>
-          <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+      <main className="mx-auto max-w-6xl px-5 sm:px-6 pt-14 sm:pt-20 pb-16 sm:pb-24">
+        <div className="mb-10 sm:mb-12 max-w-3xl space-y-3">
+          <p className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-[0.18em]">
+            Bounty Board · Building Together
+          </p>
+          <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-[1.05] tracking-[-0.02em]">
+            Post a Bounty.
+          </h1>
+          <p className="text-base sm:text-lg text-slate-600 leading-[1.55] max-w-2xl">
             Scope a bite-sized project for builders in the DEVSA network. DEVSA takes 8% on completion to fund workshops, conferences, and the coworking space.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-10">
-          <div className="space-y-6 min-w-0">
+          <div className="space-y-8 min-w-0">
           {/* Basics */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 leading-tight">Basics</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5 leading-tight">Basics</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Title *</label>
@@ -371,9 +376,9 @@ export default function PostBountyPage() {
           </section>
 
           {/* Scope */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-1 leading-tight">Scope</h2>
-            <p className="text-sm text-slate-400 mb-4">Be specific. Bounty amount is fixed — additional work requires a new bounty.</p>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-1.5 leading-tight">Scope</h2>
+            <p className="text-sm text-slate-500 leading-relaxed mb-5">Be specific. Bounty amount is fixed — additional work requires a new bounty.</p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Description *</label>
@@ -429,9 +434,9 @@ export default function PostBountyPage() {
           </section>
 
           {/* Money */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-1 leading-tight">Bounty amount</h2>
-            <p className="text-sm text-slate-400 mb-4">$50 minimum, $10,000 maximum. Builder is paid on your approval; DEVSA takes 8%.</p>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-1.5 leading-tight">Bounty amount</h2>
+            <p className="text-sm text-slate-500 leading-relaxed mb-5">$50 minimum, $10,000 maximum. Builder is paid on your approval; DEVSA takes 8%.</p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Bounty amount (USD) *</label>
@@ -498,8 +503,8 @@ export default function PostBountyPage() {
           </section>
 
           {/* Tags */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 leading-tight">Tags</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5 leading-tight">Tags</h2>
             <div className="flex items-center gap-2 mb-3">
               <input
                 value={tagInput}
@@ -584,7 +589,7 @@ export default function PostBountyPage() {
           {/* Live preview pane — Vercel-style sticky right column.
               Hidden on mobile; the form is the priority on small screens. */}
           <aside className="hidden lg:block">
-            <div className="sticky top-8 space-y-3">
+            <div className="sticky top-8 lg:top-12 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                   Live preview
