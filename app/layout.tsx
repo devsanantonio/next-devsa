@@ -11,10 +11,9 @@ import {
   GeistPixelLine,
 } from "geist/font/pixel"
 import "./globals.css"
-import { Navbar } from "@/components/navbar"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
-import { Footer } from "@/components/footer"
+import { LayoutChrome } from "@/components/layout-chrome"
 import { CartProvider } from "@/components/shop/cart-context"
 import { CartSlideOut } from "@/components/shop/cart-slide-out"
 
@@ -191,9 +190,7 @@ export default function RootLayout({
       <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <CartProvider>
-            <Navbar />
-            {children}
-            <Footer />
+            <LayoutChrome>{children}</LayoutChrome>
             <CartSlideOut />
           </CartProvider>
           <Analytics />

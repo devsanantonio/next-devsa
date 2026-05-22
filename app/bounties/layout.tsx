@@ -8,20 +8,19 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
 export const metadata: Metadata = {
   title: "Bounties — Local Work, Local Talent | DEVSA",
   description:
-    "Bite-sized dev projects posted by local nonprofits and startups — claimed by builders across San Antonio, the I-35 corridor, and the Rio Grande Valley. Fund the bounty, pick a builder, pay on delivery. 8% supports DEVSA programming.",
+    "Bite-sized dev projects from community groups and partners — claimed by builders in the DEVSA network. Fund the bounty, pick a builder, pay on delivery. 8% supports DEVSA programming.",
   keywords: [
-    "San Antonio dev bounties",
-    "nonprofit dev help San Antonio",
-    "tech bounty board",
-    "South Texas freelance dev",
-    "local nonprofit tech projects",
     "DEVSA bounties",
-    "I-35 corridor freelance",
-    "Rio Grande Valley tech work",
-    "startup project marketplace",
-    "fund developer projects San Antonio",
+    "tech bounty board",
+    "dev projects for builders",
+    "community group developer projects",
+    "partner sponsored dev work",
+    "nonprofit tech bounties",
+    "claim a dev bounty",
+    "fund a developer project",
+    "developer community marketplace",
     "501(c)(3) bounty program",
-    "claim dev work San Antonio",
+    "Building Together",
   ],
   alternates: {
     canonical: "/bounties",
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Local Work. Local Talent. DEVSA Bounties.",
     description:
-      "Bite-sized dev projects from local nonprofits and startups, claimed by builders across South Texas. Escrow at posting; pay on delivery. 8% funds DEVSA workshops, conferences, and the downtown coworking space.",
+      "Bite-sized dev projects from community groups and partners, claimed by builders in the DEVSA network. Escrow at posting; pay on delivery. 8% funds DEVSA workshops, conferences, and the downtown coworking space.",
     url: `${siteUrl}/bounties`,
     siteName: "DEVSA",
     images: [
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Local Work. Local Talent. DEVSA Bounties.",
     description:
-      "Bite-sized dev projects from local nonprofits and startups, claimed by builders across South Texas. 8% funds DEVSA programming.",
+      "Bite-sized dev projects from community groups and partners, claimed by builders in the DEVSA network. 8% funds DEVSA programming.",
     images: [`${siteUrl}/api/og/bounties`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -68,7 +67,7 @@ export default function JobsLayout({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: "DEVSA Bounties — Local Work, Local Talent",
-            description: "Bite-sized dev projects posted by local nonprofits and startups, claimed by builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.",
+            description: "Bite-sized dev projects from community groups and partners, claimed by builders in the DEVSA network.",
             url: `${siteUrlValue}/bounties`,
             isPartOf: {
               "@type": "WebSite",
@@ -77,7 +76,7 @@ export default function JobsLayout({
             },
             about: {
               "@type": "Thing",
-              name: "Dev bounties and local tech projects in South Texas",
+              name: "Dev bounties for community groups, partners, and builders",
             },
             provider: {
               "@type": "Organization",

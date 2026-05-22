@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type JobBoardUser } from '@/lib/firebase-admin';
 import { verifyJobBoardUser, isSuperAdmin } from '@/lib/auth-middleware';
+import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { WelcomeEmail } from '@/lib/emails/welcome';
 
 // GET - Get own profile or another user's public profile
 export async function GET(request: NextRequest) {
@@ -114,6 +116,28 @@ export async function POST(request: NextRequest) {
     };
 
     await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(result.uid).set(newProfile);
+
+    // Send welcome email. Reachable only on first profile creation (the
+    // "Profile already exists" guard above ensures this branch runs once).
+    // Fire-and-forget; email failure should never block account creation.
+    if (isResendConfigured() && resend && result.email) {
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: result.email,
+          subject: 'Welcome to DEVSA Bounties',
+          html: WelcomeEmail({
+            firstName: newProfile.firstName || newProfile.displayName || '',
+            role,
+            bountiesUrl: `${siteUrl}/bounties`,
+            postUrl: `${siteUrl}/bounties/post`,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Failed to send welcome email:', emailErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,

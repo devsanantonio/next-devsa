@@ -18,6 +18,7 @@ import {
   Eye,
   XCircle,
   AlertCircle,
+  Search,
 } from "lucide-react"
 
 interface AdminUser {
@@ -103,6 +104,10 @@ export default function JobsAdminPage() {
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState<Tab>("pending")
   const [reviewingJob, setReviewingJob] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  // Track which job is showing the inline rejection-reason form + the typed reason
+  const [rejectingJobId, setRejectingJobId] = useState<string | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -156,7 +161,7 @@ export default function JobsAdminPage() {
     return d.toLocaleDateString()
   }
 
-  const handleReview = async (jobId: string, action: "approve" | "reject") => {
+  const handleReview = async (jobId: string, action: "approve" | "reject", reason?: string) => {
     setReviewingJob(jobId)
     try {
       const token = await getIdToken()
@@ -166,11 +171,12 @@ export default function JobsAdminPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ jobId, action }),
+        body: JSON.stringify({ jobId, action, reason }),
       })
       const data = await res.json()
       if (data.success) {
-        // Reload admin data to reflect changes
+        setRejectingJobId(null)
+        setRejectionReason("")
         await loadAdminData()
       } else {
         setError(data.error || "Review action failed")
@@ -181,6 +187,12 @@ export default function JobsAdminPage() {
       setReviewingJob(null)
     }
   }
+
+  // Reset search whenever the active tab changes — avoids confusing
+  // "no results" states left over from another tab's query.
+  useEffect(() => {
+    setSearchQuery("")
+  }, [activeTab])
 
   if (authLoading || isLoading) {
     return (
@@ -210,12 +222,54 @@ export default function JobsAdminPage() {
 
   const pendingJobs = jobs.filter((j) => j.status === "pending")
 
+  // Per-tab filtering. One shared search input that targets the active tab's data.
+  const q = searchQuery.trim().toLowerCase()
+  const filteredPendingJobs = q
+    ? pendingJobs.filter(
+        (j) =>
+          j.title.toLowerCase().includes(q) ||
+          j.companyName.toLowerCase().includes(q) ||
+          j.authorName.toLowerCase().includes(q)
+      )
+    : pendingJobs
+  const filteredUsers = q
+    ? users.filter(
+        (u) =>
+          (u.displayName || "").toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          (u.companyName || "").toLowerCase().includes(q)
+      )
+    : users
+  const filteredJobs = q
+    ? jobs.filter(
+        (j) =>
+          j.title.toLowerCase().includes(q) ||
+          j.companyName.toLowerCase().includes(q) ||
+          j.authorName.toLowerCase().includes(q)
+      )
+    : jobs
+  const filteredApplications = q
+    ? applications.filter(
+        (a) =>
+          a.jobTitle.toLowerCase().includes(q) ||
+          a.applicantName.toLowerCase().includes(q) ||
+          a.applicantEmail.toLowerCase().includes(q)
+      )
+    : applications
+
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
     { key: "pending", label: "Pending Review", icon: <AlertCircle className="h-4 w-4" />, count: pendingJobs.length },
     { key: "users", label: "Users & Profiles", icon: <Users className="h-4 w-4" />, count: stats?.totalUsers || 0 },
     { key: "jobs", label: "Job Listings", icon: <Briefcase className="h-4 w-4" />, count: stats?.totalJobs || 0 },
     { key: "applications", label: "Applications", icon: <FileText className="h-4 w-4" />, count: stats?.totalApplications || 0 },
   ]
+
+  const searchPlaceholder: Record<Tab, string> = {
+    pending: "Search pending by title, company, or author...",
+    users: "Search users by name, email, or company...",
+    jobs: "Search listings by title, company, or author...",
+    applications: "Search applications by job, applicant, or email...",
+  }
 
   return (
     <div className="min-h-dvh bg-white">
@@ -232,7 +286,7 @@ export default function JobsAdminPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-3 mb-1.5">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">
-              Jobs Admin
+              Bounties Admin
             </h1>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 text-xs font-semibold">
               <Shield className="h-3 w-3" />
@@ -240,7 +294,7 @@ export default function JobsAdminPage() {
             </span>
           </div>
           <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
-            Overview of all users, roles, job listings, and applications on the platform.
+            Review pending listings, manage users, and track activity across the platform.
           </p>
         </div>
 
@@ -291,7 +345,7 @@ export default function JobsAdminPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 border-b border-slate-200 mb-6 sm:mb-8 overflow-x-auto">
+        <div className="flex items-center gap-1 border-b border-slate-200 mb-4 sm:mb-5 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -315,6 +369,27 @@ export default function JobsAdminPage() {
           ))}
         </div>
 
+        {/* Quick search for the active tab — Linear-style fast filter. */}
+        <div className="relative mb-5 sm:mb-6">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={searchPlaceholder[activeTab]}
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 shadow-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-5 w-5 items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              aria-label="Clear search"
+            >
+              <XCircle className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         {/* Tab Content */}
         {activeTab === "pending" && (
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -322,71 +397,131 @@ export default function JobsAdminPage() {
               <div className="p-8 text-center">
                 <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">All caught up</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">No job listings pending review.</p>
+                <p className="text-sm text-slate-500 leading-relaxed">No listings pending review.</p>
+              </div>
+            ) : filteredPendingJobs.length === 0 ? (
+              <div className="p-8 text-center">
+                <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No pending listings match &ldquo;{searchQuery}&rdquo;.</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
                 <div className="px-6 py-3 bg-amber-50 border-b border-amber-100">
                   <p className="text-sm font-semibold text-amber-800">
-                    {pendingJobs.length} job{pendingJobs.length !== 1 ? "s" : ""} awaiting review
+                    {filteredPendingJobs.length} of {pendingJobs.length} awaiting review
                   </p>
                   <p className="text-xs text-amber-600 mt-0.5">
-                    Approve to publish and share to Discord &amp; LinkedIn, or reject to notify the poster.
+                    Approve to publish and share to Discord &amp; LinkedIn, or reject with a note so the poster knows what to fix.
                   </p>
                 </div>
-                {pendingJobs.map((job) => (
-                  <div key={job.id} className="p-4 sm:p-6">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Link
-                              href={`/bounties/${job.slug}`}
-                              className="text-sm sm:text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors leading-tight"
-                            >
-                              {job.title}
-                            </Link>
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 shrink-0">
-                              pending
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 leading-normal">
-                            <span className="font-medium text-slate-600">{job.companyName}</span>
-                            <span>by {job.authorName}</span>
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {job.locationType}{job.location ? ` · ${job.location}` : ""}
-                            </span>
-                            <span>{job.type.toUpperCase()}</span>
-                            <span>{timeAgo(job.createdAt)}</span>
+                {filteredPendingJobs.map((job) => {
+                  const isRejecting = rejectingJobId === job.id
+                  return (
+                    <div key={job.id} className="p-4 sm:p-6">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Link
+                                href={`/bounties/${job.slug}`}
+                                className="text-sm sm:text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors leading-tight"
+                              >
+                                {job.title}
+                              </Link>
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 shrink-0">
+                                pending
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 leading-normal">
+                              <span className="font-medium text-slate-600">{job.companyName}</span>
+                              <span>by {job.authorName}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {job.locationType}{job.location ? ` · ${job.location}` : ""}
+                              </span>
+                              <span>{job.type.toUpperCase()}</span>
+                              <span>{timeAgo(job.createdAt)}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 sm:ml-auto">
-                        <button
-                          onClick={() => handleReview(job.id, "approve")}
-                          disabled={reviewingJob === job.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
-                        >
-                          {reviewingJob === job.id ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <CheckCircle className="h-3.5 w-3.5" />
-                          )}
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReview(job.id, "reject")}
-                          disabled={reviewingJob === job.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
-                        >
-                          <XCircle className="h-3.5 w-3.5" />
-                          Reject
-                        </button>
+
+                        {/* Inline rejection-reason form — Linear pattern: expand in-place rather than open a modal. */}
+                        {isRejecting ? (
+                          <div className="rounded-xl border border-red-200 bg-red-50/50 p-3 sm:p-4">
+                            <label className="block text-xs font-semibold text-red-900 mb-1.5">
+                              Reason for rejection
+                              <span className="font-normal text-red-700/70 ml-1">(sent to the poster)</span>
+                            </label>
+                            <textarea
+                              value={rejectionReason}
+                              onChange={(e) => setRejectionReason(e.target.value)}
+                              placeholder="e.g. Scope is too vague — please define deliverables. Or: doesn't match our community guidelines."
+                              rows={3}
+                              maxLength={500}
+                              autoFocus
+                              className="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                            />
+                            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                              <span className="text-[11px] text-red-700/70">
+                                {rejectionReason.length}/500 — leave blank to send a generic notice.
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    setRejectingJobId(null)
+                                    setRejectionReason("")
+                                  }}
+                                  disabled={reviewingJob === job.id}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleReview(job.id, "reject", rejectionReason.trim() || undefined)}
+                                  disabled={reviewingJob === job.id}
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                                >
+                                  {reviewingJob === job.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <XCircle className="h-3 w-3" />
+                                  )}
+                                  Confirm rejection
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 sm:ml-auto">
+                            <button
+                              onClick={() => handleReview(job.id, "approve")}
+                              disabled={reviewingJob === job.id}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                            >
+                              {reviewingJob === job.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-3.5 w-3.5" />
+                              )}
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                setRejectingJobId(job.id)
+                                setRejectionReason("")
+                              }}
+                              disabled={reviewingJob === job.id}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              Reject
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -400,6 +535,11 @@ export default function JobsAdminPage() {
                 <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No users yet</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">No one has created a profile on the job board.</p>
               </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-8 text-center">
+                <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No users match &ldquo;{searchQuery}&rdquo;.</p>
+              </div>
             ) : (
               <div className="divide-y divide-slate-200">
                 {/* Table header */}
@@ -409,7 +549,7 @@ export default function JobsAdminPage() {
                   <span className="w-24 text-center">Status</span>
                   <span className="w-24 text-right">Joined</span>
                 </div>
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <div key={u.uid} className="px-4 sm:px-6 py-4 sm:grid sm:grid-cols-[1fr_auto_auto_auto] sm:items-center gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 overflow-hidden">
@@ -462,12 +602,17 @@ export default function JobsAdminPage() {
             {jobs.length === 0 ? (
               <div className="p-8 text-center">
                 <Briefcase className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No job listings</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">No jobs have been posted on the platform yet.</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No listings</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">No listings have been posted on the platform yet.</p>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="p-8 text-center">
+                <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No listings match &ldquo;{searchQuery}&rdquo;.</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
-                {jobs.map((job) => (
+                {filteredJobs.map((job) => (
                   <div key={job.id} className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <div className="flex-1 min-w-0">
@@ -513,7 +658,12 @@ export default function JobsAdminPage() {
               <div className="p-8 text-center">
                 <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No applications</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">No one has applied to any jobs yet.</p>
+                <p className="text-sm text-slate-500 leading-relaxed">No one has applied yet.</p>
+              </div>
+            ) : filteredApplications.length === 0 ? (
+              <div className="p-8 text-center">
+                <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500">No applications match &ldquo;{searchQuery}&rdquo;.</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
@@ -524,7 +674,7 @@ export default function JobsAdminPage() {
                   <span className="w-24 text-center">Status</span>
                   <span className="w-24 text-right">Applied</span>
                 </div>
-                {applications.map((app) => (
+                {filteredApplications.map((app) => (
                   <div key={app.id} className="px-4 sm:px-6 py-4 sm:grid sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center gap-4">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900 truncate leading-tight">{app.applicantName}</p>

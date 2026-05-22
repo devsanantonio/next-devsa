@@ -103,7 +103,7 @@ export async function GET() {
     <title>DEVSA Bounties</title>
     <link>${SITE_URL}/bounties</link>
     <atom:link href="${SITE_URL}/api/bounties/feed" rel="self" type="application/rss+xml" />
-    <description>Local work, local talent. DEVSA Bounties connects local nonprofits and startups with builders across San Antonio, the I-35 corridor, and the Rio Grande Valley. Bite-sized dev projects, paid on delivery.</description>
+    <description>Local work, local talent. DEVSA Bounties connects community groups and partners with builders in the DEVSA network. Bite-sized dev projects, paid on delivery.</description>
     <language>en-us</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <generator>devsa.community</generator>

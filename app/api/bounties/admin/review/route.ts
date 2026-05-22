@@ -19,7 +19,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { jobId, action } = body;
+    const { jobId, action, reason } = body as {
+      jobId?: string;
+      action?: 'approve' | 'reject';
+      reason?: string;
+    };
 
     if (!jobId || !action || !['approve', 'reject'].includes(action)) {
       return NextResponse.json(
@@ -27,6 +31,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const rejectionReason = typeof reason === 'string' ? reason.trim().slice(0, 500) : '';
 
     const db = getDb();
     const docRef = db.collection(COLLECTIONS.JOB_LISTINGS).doc(jobId);
@@ -98,18 +104,23 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
       });
     } else {
-      // Reject: set to rejected
+      // Reject: set to rejected and store the reason on the listing
       await docRef.update({
         status: 'rejected',
+        rejectionReason: rejectionReason || null,
         updatedAt: new Date(),
       });
 
-      // Notify the job poster
+      // Notify the poster with the reviewer's reason (if provided)
+      const notificationBody = rejectionReason
+        ? `Your listing "${listing.title}" was not approved. Reviewer note: ${rejectionReason}`
+        : `Your listing "${listing.title}" was not approved. Please review our posting guidelines and resubmit.`;
+
       await db.collection(COLLECTIONS.NOTIFICATIONS).add({
         recipientUid: listing.authorUid,
         type: 'status-update',
-        title: 'Job Not Approved',
-        body: `Your job listing "${listing.title}" was not approved. Please review our posting guidelines and resubmit.`,
+        title: 'Listing Not Approved',
+        body: notificationBody,
         link: '/bounties/dashboard',
         read: false,
         sourceUid: result.uid,

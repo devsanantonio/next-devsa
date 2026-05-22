@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type Conversation, type Message, type Notification } from '@/lib/firebase-admin';
 import { verifyJobBoardUser, isSuperAdmin } from '@/lib/auth-middleware';
+import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { NewMessageEmail } from '@/lib/emails/new-message';
 
 // GET - List conversations or get messages for a conversation
 export async function GET(request: NextRequest) {
@@ -264,6 +266,64 @@ export async function POST(request: NextRequest) {
     });
 
     await Promise.all(notifications);
+
+    // Email each recipient — but only if they have no other unread messages
+    // from the sender in this conversation. That throttles email spam on
+    // back-and-forth chats: one email per "they're not currently engaged"
+    // window. Fire-and-forget so a slow Resend call doesn't delay the API.
+    if (isResendConfigured() && resend) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+      const jobTitle: string | undefined = convoData.jobId
+        ? await (async () => {
+            try {
+              const jobDoc = await db.collection(COLLECTIONS.JOB_LISTINGS).doc(convoData.jobId!).get();
+              return jobDoc.exists ? (jobDoc.data()?.title as string | undefined) : undefined;
+            } catch {
+              return undefined;
+            }
+          })()
+        : undefined;
+
+      for (const recipientUid of otherParticipants) {
+        // Check for prior unread messages from this sender to this recipient.
+        // If any exist, the recipient was already emailed; skip to avoid spam.
+        const priorUnread = await db
+          .collection(COLLECTIONS.MESSAGES)
+          .where('conversationId', '==', convoId)
+          .where('senderUid', '==', result.uid)
+          .get();
+        const hasPriorUnreadFromSender = priorUnread.docs.some(
+          (doc) => doc.id !== messageRef.id && !doc.data().readAt
+        );
+        if (hasPriorUnreadFromSender) continue;
+
+        try {
+          const recipientDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(recipientUid).get();
+          const recipientData = recipientDoc.data();
+          const recipientEmail = recipientData?.email;
+          if (!recipientEmail) continue;
+          const recipientName =
+            recipientData?.displayName ||
+            `${recipientData?.firstName || ''} ${recipientData?.lastName || ''}`.trim() ||
+            '';
+
+          await resend.emails.send({
+            from: EMAIL_FROM,
+            to: recipientEmail,
+            subject: `${senderName} sent you a message — DEVSA Bounties`,
+            html: NewMessageEmail({
+              recipientName,
+              senderName,
+              messagePreview: content,
+              conversationUrl: `${siteUrl}/bounties/dashboard/messages?conversation=${convoId}`,
+              jobTitle,
+            }),
+          });
+        } catch (emailErr) {
+          console.error('Failed to send new-message email:', emailErr);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -132,14 +132,16 @@ export function BountyListingsClient({
             <div className="space-y-5 max-w-3xl mt-8">
               <p className="text-xl md:text-2xl text-white/75 leading-[1.4] font-light">
                 Bite-sized dev projects posted by{" "}
-                <strong className="font-semibold text-white">local nonprofits</strong>{" "}
+                <strong className="font-semibold text-white">community groups</strong>{" "}
                 and{" "}
-                <strong className="font-semibold text-white">startups</strong>{" "}
-                — claimed by builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.
+                <strong className="font-semibold text-white">partners</strong>{" "}
+                — claimed by{" "}
+                <strong className="font-semibold text-white">builders</strong>{" "}
+                in the DEVSA network.
               </p>
 
               <p className="text-base md:text-lg text-white/55 leading-relaxed">
-                Fund the bounty, pick a builder, pay on delivery. DEVSA holds payment in escrow and takes 8% to fund workshops, conferences, and the downtown coworking space — a 501(c)(3) bridging 20+ tech community groups across South Texas.
+                Fund the bounty, pick a builder, pay on delivery. DEVSA holds payment in escrow and takes 8% to fund workshops, conferences, and the downtown coworking space — a 501(c)(3) bridging 20+ tech community groups.
               </p>
             </div>
 

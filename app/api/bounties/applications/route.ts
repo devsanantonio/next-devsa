@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
           await resend.emails.send({
             from: EMAIL_FROM,
             to: hiringManager.email,
-            subject: `New applicant for "${jobData.title}" — DEVSA Job Board`,
+            subject: `New applicant for "${jobData.title}" — DEVSA Bounties`,
             html: NewApplicationEmail({
               hiringManagerName: hiringManager.displayName || `${hiringManager.firstName || ''} ${hiringManager.lastName || ''}`.trim(),
               applicantName: application.applicantName,

@@ -25,7 +25,7 @@ export function NewApplicationEmail({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Application - DEVSA Job Board</title>
+  <title>New Application - DEVSA Bounties</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #000000;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #000000;">
@@ -40,7 +40,7 @@ export function NewApplicationEmail({
                 <span style="color: #ef426f;">DEV</span><span style="color: #ffffff;">SA</span>
               </div>
               <p style="margin: 8px 0 0 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px;">
-                Job Board
+                Bounty Board
               </p>
             </td>
           </tr>
@@ -62,7 +62,7 @@ export function NewApplicationEmail({
               </h1>
               
               <p style="margin: 0 0 28px 0; font-size: 16px; color: #d1d5db; line-height: 1.6; text-align: center;">
-                Someone just applied to your job listing on the DEVSA Job Board.
+                Someone just applied to your listing on DEVSA Bounties.
               </p>
 
               <!-- Application Details Card -->
@@ -130,10 +130,10 @@ export function NewApplicationEmail({
           <tr>
             <td align="center" style="padding-top: 32px;">
               <p style="margin: 0 0 4px 0; font-size: 12px; color: #6b7280;">
-                DEVSA Job Board · San Antonio Tech Community
+                DEVSA Bounties · San Antonio Tech Community
               </p>
               <p style="margin: 0; font-size: 11px; color: #4b5563;">
-                You received this email because someone applied to your job listing.
+                You received this email because someone applied to your bounty listing.
               </p>
             </td>
           </tr>

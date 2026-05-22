@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import { useAuth } from "@/components/auth-provider"
-import { User, Trash2, MessageSquare } from "lucide-react"
+// MessagesSquare (stacked bubbles) distinguishes public threaded comments
+// from MessageSquare (single bubble) used for private 1:1 messages.
+import { User, Trash2, MessagesSquare } from "lucide-react"
 
 interface Comment {
   id: string
@@ -76,7 +78,7 @@ export function CommentSection({
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-        <MessageSquare className="h-5 w-5 text-[#ef426f]" />
+        <MessagesSquare className="h-5 w-5 text-[#ef426f]" />
         Discussion ({comments.length})
       </h3>
 

@@ -35,7 +35,7 @@ export function ApplicationStatusEmail({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Application Update - DEVSA Job Board</title>
+  <title>Application Update - DEVSA Bounties</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #000000;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #000000;">
@@ -50,7 +50,7 @@ export function ApplicationStatusEmail({
                 <span style="color: #ef426f;">DEV</span><span style="color: #ffffff;">SA</span>
               </div>
               <p style="margin: 8px 0 0 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px;">
-                Job Board
+                Bounty Board
               </p>
             </td>
           </tr>
@@ -122,7 +122,7 @@ export function ApplicationStatusEmail({
           <tr>
             <td align="center" style="padding-top: 32px;">
               <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280; line-height: 1.5;">
-                This is an automated notification from the DEVSA Job Board.
+                This is an automated notification from the DEVSA Bounties.
               </p>
               <p style="margin: 0; font-size: 12px; color: #4b5563;">
                 San Antonio's Developer Community

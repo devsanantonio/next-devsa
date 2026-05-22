@@ -109,7 +109,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Bite-sized dev projects from local nonprofits and startups, claimed by builders across San Antonio, the I-35 corridor, and the Rio Grande Valley.
+            Bite-sized dev projects from community groups and partners, claimed by builders in the DEVSA network.
           </p>
 
           {/* Stats row */}

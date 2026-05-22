@@ -15,6 +15,11 @@ import {
   HandCoins,
   CheckCircle2,
   Info,
+  Tag as TagIcon,
+  Calendar,
+  Building2,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -58,7 +63,9 @@ export default function PostBountyPage() {
   const [tagInput, setTagInput] = useState("")
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/bounties/signin")
+    // Posting intent → first-time visitors land on signup, returning users will
+    // see the "Already have an account? Sign in" toggle.
+    if (!authLoading && !user) router.push("/bounties/signup")
   }, [user, authLoading, router])
 
   useEffect(() => {
@@ -121,14 +128,20 @@ export default function PostBountyPage() {
     }
   }, [amountDollars])
 
-  const isValid =
-    title.trim().length >= 5 &&
-    orgName.trim().length >= 2 &&
-    summary.trim().length >= 10 &&
-    description.trim().length >= 30 &&
-    !!feePreview &&
-    feePreview.amount >= 5000 &&
-    feePreview.amount <= 1_000_000
+  // Concrete validation errors (Linear-style — tell the user exactly what's left)
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+    if (title.trim().length < 5) errors.push("Title needs at least 5 characters")
+    if (orgName.trim().length < 2) errors.push("Organization name is required")
+    if (summary.trim().length < 10) errors.push("Summary needs at least 10 characters")
+    if (description.trim().length < 30) errors.push("Description needs at least 30 characters")
+    if (!feePreview) errors.push("Enter a bounty amount")
+    else if (feePreview.amount < 5000) errors.push("Amount must be at least $50")
+    else if (feePreview.amount > 1_000_000) errors.push("Amount cannot exceed $10,000")
+    return errors
+  }, [title, orgName, summary, description, feePreview])
+
+  const isValid = validationErrors.length === 0
 
   const handleSubmit = async (status: "published" | "draft") => {
     if (!isValid && status === "published") return
@@ -271,17 +284,29 @@ export default function PostBountyPage() {
     )
   }
 
+  // Display values for the live preview pane on the right
+  const previewAmountCents = feePreview?.amount ?? 0
+  const previewPayoutCents = feePreview?.payout ?? 0
+  const previewCategoryLabel = categories.find((c) => c.value === category)?.label ?? "Category"
+  const daysToDeadline = (() => {
+    if (!deadlineAt) return null
+    const days = Math.ceil((new Date(deadlineAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    if (days < 0) return null
+    return days
+  })()
+
   return (
     <div className="min-h-dvh bg-white">
-      <main className="mx-auto max-w-3xl px-5 sm:px-6 py-8 sm:py-12 pt-20 lg:pt-8">
-        <div className="mb-6 sm:mb-8">
+      <main className="mx-auto max-w-6xl px-5 sm:px-6 py-8 sm:py-12 pt-20 lg:pt-8">
+        <div className="mb-6 sm:mb-8 max-w-3xl">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-[1.2] mb-2">Post a Bounty</h1>
           <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
-            Scope a bite-sized project for builders across San Antonio, the I-35 corridor, and the Rio Grande Valley. DEVSA takes 8% on completion to fund workshops, conferences, and the coworking space.
+            Scope a bite-sized project for builders in the DEVSA network. DEVSA takes 8% on completion to fund workshops, conferences, and the coworking space.
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-10">
+          <div className="space-y-6 min-w-0">
           {/* Basics */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 mb-4 leading-tight">Basics</h2>
@@ -513,6 +538,21 @@ export default function PostBountyPage() {
             {tags.length >= 10 && <p className="text-xs text-slate-400 mt-2">Maximum 10 tags.</p>}
           </section>
 
+          {/* Validation summary — Linear-style "X things to fix" list */}
+          {!isValid && validationErrors.length > 0 && (title || orgName || summary || description || amountDollars) && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
+              <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {validationErrors.length === 1 ? "1 thing to fix" : `${validationErrors.length} things to fix`} before publishing
+              </p>
+              <ul className="mt-2 ml-6 text-xs text-amber-800 leading-relaxed space-y-1 list-disc">
+                {validationErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Errors */}
           {errorMsg && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -539,6 +579,87 @@ export default function PostBountyPage() {
               Submit for Review
             </button>
           </div>
+          </div>
+
+          {/* Live preview pane — Vercel-style sticky right column.
+              Hidden on mobile; the form is the priority on small screens. */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-8 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Live preview
+                </p>
+                <span className="text-[11px] text-slate-400">As builders will see it</span>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                    <Building2 className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2">
+                      <h3 className="text-base font-semibold text-gray-900 leading-[1.3] truncate">
+                        {title.trim() || "Your bounty title"}
+                      </h3>
+                      <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700 uppercase tracking-wide">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        New
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-0.5 truncate">
+                      {orgName.trim() || "Your organization"}
+                    </p>
+                    <p className="mt-3 text-sm text-gray-600 leading-normal line-clamp-2">
+                      {summary.trim() || "Your one-line summary will appear here."}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3">
+                      <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 text-xs font-medium">
+                        {previewCategoryLabel}
+                      </span>
+                      {estimatedHours && (
+                        <span className="inline-flex items-center gap-1.5 text-[13px] text-gray-500">
+                          <Clock className="h-3.5 w-3.5 text-gray-400" />
+                          ~{estimatedHours}h
+                        </span>
+                      )}
+                      {daysToDeadline !== null && (
+                        <span className="inline-flex items-center gap-1.5 text-[13px] text-gray-500">
+                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                          {daysToDeadline} day{daysToDeadline === 1 ? "" : "s"} left
+                        </span>
+                      )}
+                    </div>
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {tags.slice(0, 5).map((tag) => (
+                          <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            <TagIcon className="h-2.5 w-2.5 text-gray-400" />
+                            {tag}
+                          </span>
+                        ))}
+                        {tags.length > 5 && <span className="text-xs text-gray-400">+{tags.length - 5}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end text-right shrink-0">
+                    <span className="text-2xl font-extrabold text-gray-900 tabular-nums leading-none">
+                      {previewAmountCents > 0
+                        ? `$${(previewAmountCents / 100).toLocaleString()}`
+                        : "$—"}
+                    </span>
+                    {previewPayoutCents > 0 && (
+                      <span className="text-[11px] text-gray-400 mt-1 leading-tight">
+                        Builder gets ${(previewPayoutCents / 100).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed px-1">
+                Updates as you type. This is the card builders see in the public bounty list.
+              </p>
+            </div>
+          </aside>
         </div>
       </main>
     </div>

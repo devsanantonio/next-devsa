@@ -19,6 +19,12 @@ import {
   CheckCheck,
   ArrowLeft,
   Search,
+  Home,
+  Calendar,
+  Building2,
+  ShoppingBag,
+  Users as UsersIcon,
+  ChevronRight,
 } from "lucide-react"
 
 interface NotificationItem {
@@ -49,9 +55,13 @@ interface AppSidebarProps {
   onMobileClose: () => void
 }
 
+// Distinct icons so notification entries can be visually parsed at a glance.
+// Comments used to share the speech-balloon with messages — now use a memo
+// glyph instead, since comments are public notes on a listing while messages
+// are private 1:1 chats.
 const typeIcons: Record<string, string> = {
   message: "💬",
-  comment: "💬",
+  comment: "📝",
   mention: "@",
   application: "📋",
   "status-update": "📊",
@@ -181,7 +191,9 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
   const handleSignOut = async () => {
     onMobileClose()
     await signOut()
-    router.push("/bounties")
+    // Return to the marketing home — keeps sign-out from looping back into the
+    // workspace surface the user just left.
+    router.push("/")
   }
 
   const handleLinkClick = () => {
@@ -207,7 +219,22 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* Header */}
+      {/* Brand bar — clickable anchor home to the rest of DEVSA */}
+      <Link
+        href="/"
+        onClick={handleLinkClick}
+        className="flex items-center gap-2.5 px-5 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors group"
+      >
+        <img
+          src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+          alt=""
+          className="h-7 w-7"
+        />
+        <span className="text-sm font-semibold text-gray-900 tracking-tight">DEVSA</span>
+        <ArrowLeft className="ml-auto h-3.5 w-3.5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+      </Link>
+
+      {/* Profile header */}
       <div className="border-b border-gray-100 px-5 py-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -273,39 +300,50 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                   </p>
                 </div>
               ) : (
-                notifications.slice(0, 20).map((notification) => (
-                  <Link
-                    key={notification.id}
-                    href={notification.link}
-                    onClick={() => {
-                      if (!notification.read) markNotificationsRead([notification.id])
-                      handleLinkClick()
-                    }}
-                    className={`block px-4 py-3 transition-colors border-b border-gray-100 hover:bg-gray-50 ${
-                      !notification.read ? "bg-pink-50/40" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <span className="text-sm mt-0.5 leading-none shrink-0">
-                        {typeIcons[notification.type] || "🔔"}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-gray-900 leading-snug truncate">
-                          {notification.title}
-                        </p>
-                        <p className="text-[12px] mt-0.5 text-gray-500 leading-snug line-clamp-2">
-                          {notification.body}
-                        </p>
-                        <p className="text-[11px] mt-1 text-gray-400 leading-none font-medium">
-                          {timeAgo(notification.createdAt)}
-                        </p>
+                <>
+                  {notifications.slice(0, 20).map((notification) => (
+                    <Link
+                      key={notification.id}
+                      href={notification.link}
+                      onClick={() => {
+                        if (!notification.read) markNotificationsRead([notification.id])
+                        handleLinkClick()
+                      }}
+                      className={`block px-4 py-3 transition-colors border-b border-gray-100 hover:bg-gray-50 ${
+                        !notification.read ? "bg-pink-50/40" : ""
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-sm mt-0.5 leading-none shrink-0">
+                          {typeIcons[notification.type] || "🔔"}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-gray-900 leading-snug truncate">
+                            {notification.title}
+                          </p>
+                          <p className="text-[12px] mt-0.5 text-gray-500 leading-snug line-clamp-2">
+                            {notification.body}
+                          </p>
+                          <p className="text-[11px] mt-1 text-gray-400 leading-none font-medium">
+                            {timeAgo(notification.createdAt)}
+                          </p>
+                        </div>
+                        {!notification.read && (
+                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#ef426f]" />
+                        )}
                       </div>
-                      {!notification.read && (
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#ef426f]" />
-                      )}
-                    </div>
+                    </Link>
+                  ))}
+                  {/* Discoverability hook to the full notifications page */}
+                  <Link
+                    href="/bounties/dashboard/notifications"
+                    onClick={handleLinkClick}
+                    className="flex items-center justify-center gap-1.5 px-4 py-3 text-[12px] font-semibold text-[#ef426f] hover:bg-pink-50 transition-colors"
+                  >
+                    View all notifications
+                    <ChevronRight className="h-3 w-3" />
                   </Link>
-                ))
+                </>
               )}
             </div>
           </>
@@ -370,14 +408,14 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                   className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                 >
                   <Shield className="h-4 w-4" />
-                  Jobs Admin
+                  Bounties Admin
                 </Link>
               )}
             </div>
 
             <div className="px-3 py-1 mt-1 border-t border-gray-100">
               <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                {profile.role === "hiring" ? "Hiring Tools" : "Browse"}
+                {profile.role === "hiring" ? "Posting" : "Browse"}
               </p>
               {(profile.role === "hiring" || profile.isSuperAdmin) && (
                 <>
@@ -387,7 +425,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
                   >
                     <PenSquare className="h-4 w-4" />
-                    Post a Job
+                    Post a Bounty
                   </Link>
                   <Link
                     href="/bounties/dashboard"
@@ -395,7 +433,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <Briefcase className="h-4 w-4 text-gray-400" />
-                    My Listings
+                    My Bounties
                   </Link>
                 </>
               )}
@@ -407,7 +445,7 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-[#ef426f] hover:bg-pink-50 rounded-lg transition-colors"
                   >
                     <Search className="h-4 w-4" />
-                    Browse Jobs
+                    Browse Bounties
                   </Link>
                   <Link
                     href="/bounties/dashboard?tab=applications"
@@ -423,10 +461,58 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <Bookmark className="h-4 w-4 text-gray-400" />
-                    Saved Jobs
+                    Saved Bounties
                   </Link>
                 </>
               )}
+            </div>
+
+            {/* Explore DEVSA — keeps the user grounded in the broader platform.
+                Quiet styling so it reads as secondary, not part of the workspace. */}
+            <div className="px-3 py-1 mt-1 border-t border-gray-100">
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                Explore DEVSA
+              </p>
+              <Link
+                href="/"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              >
+                <Home className="h-3.5 w-3.5 text-gray-400" />
+                Home
+              </Link>
+              <Link
+                href="/events"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              >
+                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                Events
+              </Link>
+              <Link
+                href="/coworking-space"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              >
+                <Building2 className="h-3.5 w-3.5 text-gray-400" />
+                Coworking
+              </Link>
+              <Link
+                href="/buildingtogether"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              >
+                <UsersIcon className="h-3.5 w-3.5 text-gray-400" />
+                Building Together
+              </Link>
+              <Link
+                href="/shop"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              >
+                <ShoppingBag className="h-3.5 w-3.5 text-gray-400" />
+                Shop
+              </Link>
             </div>
           </div>
         )}
@@ -449,8 +535,10 @@ export function AppSidebar({ profile, mobileOpen, onMobileClose }: AppSidebarPro
 
   return (
     <>
-      {/* Desktop sidebar — persistent left column */}
-      <aside className="hidden lg:flex fixed left-0 top-16 z-20 h-[calc(100dvh-8rem)] w-64 flex-col border-r border-gray-200 bg-white">
+      {/* Desktop sidebar — persistent left column.
+          Spans full viewport height since the marketing navbar/footer are
+          hidden in the signed-in workspace. */}
+      <aside className="hidden lg:flex fixed left-0 top-0 z-20 h-dvh w-64 flex-col border-r border-gray-200 bg-white">
         {sidebarContent}
       </aside>
 
