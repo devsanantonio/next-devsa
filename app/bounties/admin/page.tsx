@@ -34,17 +34,19 @@ interface AdminUser {
   createdAt: string
 }
 
-interface AdminJob {
+interface AdminBounty {
   id: string
   title: string
   slug: string
-  companyName: string
-  authorUid: string
-  authorName: string
-  type: string
-  locationType: string
-  location?: string
+  orgName: string
+  orgVerifiedNonprofit: boolean
+  posterUid: string
+  posterName: string
+  category: string
   status: string
+  amountCents: number
+  payoutCents: number
+  platformFeeCents: number
   applicantCount: number
   createdAt: string
 }
@@ -64,25 +66,44 @@ interface AdminStats {
   totalUsers: number
   hiringUsers: number
   openToWorkUsers: number
-  totalJobs: number
-  publishedJobs: number
-  pendingJobs: number
-  draftJobs: number
-  closedJobs: number
+  totalBounties: number
+  openBounties: number
+  pendingBounties: number
+  claimedBounties: number
+  completedBounties: number
+  draftBounties: number
   totalApplications: number
 }
 
-type Tab = "pending" | "users" | "jobs" | "applications"
+type Tab = "pending" | "users" | "bounties" | "applications"
 
+// Bounty + application status color map. Bounty statuses share the same set
+// of colors as the listings hero badges so the language stays consistent
+// across surfaces.
 const statusColors: Record<string, string> = {
+  // bounty statuses
+  open: "text-green-700 bg-green-50 border border-green-200",
+  pending_review: "text-amber-700 bg-amber-50 border border-amber-200",
+  claimed: "text-blue-700 bg-blue-50 border border-blue-200",
+  in_review: "text-amber-700 bg-amber-50 border border-amber-200",
+  completed: "text-green-700 bg-green-50 border border-green-200",
+  disputed: "text-red-700 bg-red-50 border border-red-200",
+  cancelled: "text-slate-600 bg-slate-100 border border-slate-200",
+  expired: "text-slate-600 bg-slate-100 border border-slate-200",
+  draft: "text-slate-600 bg-slate-100 border border-slate-200",
+  rejected: "text-red-700 bg-red-50 border border-red-200",
+  // application statuses (still used by the legacy Applications tab)
   submitted: "text-blue-700 bg-blue-50 border border-blue-200",
   viewed: "text-amber-700 bg-amber-50 border border-amber-200",
   shortlisted: "text-green-700 bg-green-50 border border-green-200",
-  rejected: "text-red-700 bg-red-50 border border-red-200",
-  published: "text-green-700 bg-green-50 border border-green-200",
-  pending: "text-amber-700 bg-amber-50 border border-amber-200",
-  draft: "text-slate-600 bg-slate-100 border border-slate-200",
-  closed: "text-red-700 bg-red-50 border border-red-200",
+}
+
+// Human label for bounty status pills — substitutes underscores for spaces
+// and title-cases. Keeps the source-of-truth in the schema strings.
+function statusLabel(status: string): string {
+  return status
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -92,12 +113,17 @@ const statusIcons: Record<string, React.ReactNode> = {
   rejected: <XCircle className="h-3 w-3" />,
 }
 
+// Formats amountCents as a compact dollar string ($1,234) for table rows.
+function formatMoney(cents: number): string {
+  return `$${(cents / 100).toLocaleString()}`
+}
+
 export default function JobsAdminPage() {
   const router = useRouter()
   const { user, getIdToken, loading: authLoading } = useAuth()
 
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [jobs, setJobs] = useState<AdminJob[]>([])
+  const [bounties, setBounties] = useState<AdminBounty[]>([])
   const [applications, setApplications] = useState<AdminApplication[]>([])
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -140,7 +166,9 @@ export default function JobsAdminPage() {
         setError(data.error)
       } else {
         setUsers(data.users || [])
-        setJobs(data.jobs || [])
+        // Slice 3a.2 API returns `bounties`; fall back to legacy `jobs` shape
+        // during the transition so the page doesn't crash if redeploys race.
+        setBounties(data.bounties || data.jobs || [])
         setApplications(data.applications || [])
         setStats(data.stats || null)
       }
@@ -220,18 +248,18 @@ export default function JobsAdminPage() {
     )
   }
 
-  const pendingJobs = jobs.filter((j) => j.status === "pending")
+  const pendingBounties = bounties.filter((b) => b.status === "pending_review")
 
   // Per-tab filtering. One shared search input that targets the active tab's data.
   const q = searchQuery.trim().toLowerCase()
-  const filteredPendingJobs = q
-    ? pendingJobs.filter(
-        (j) =>
-          j.title.toLowerCase().includes(q) ||
-          j.companyName.toLowerCase().includes(q) ||
-          j.authorName.toLowerCase().includes(q)
+  const filteredPendingBounties = q
+    ? pendingBounties.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          b.orgName.toLowerCase().includes(q) ||
+          b.posterName.toLowerCase().includes(q)
       )
-    : pendingJobs
+    : pendingBounties
   const filteredUsers = q
     ? users.filter(
         (u) =>
@@ -240,14 +268,14 @@ export default function JobsAdminPage() {
           (u.companyName || "").toLowerCase().includes(q)
       )
     : users
-  const filteredJobs = q
-    ? jobs.filter(
-        (j) =>
-          j.title.toLowerCase().includes(q) ||
-          j.companyName.toLowerCase().includes(q) ||
-          j.authorName.toLowerCase().includes(q)
+  const filteredBounties = q
+    ? bounties.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          b.orgName.toLowerCase().includes(q) ||
+          b.posterName.toLowerCase().includes(q)
       )
-    : jobs
+    : bounties
   const filteredApplications = q
     ? applications.filter(
         (a) =>
@@ -258,16 +286,16 @@ export default function JobsAdminPage() {
     : applications
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
-    { key: "pending", label: "Pending Review", icon: <AlertCircle className="h-4 w-4" />, count: pendingJobs.length },
+    { key: "pending", label: "Pending Review", icon: <AlertCircle className="h-4 w-4" />, count: pendingBounties.length },
     { key: "users", label: "Users & Profiles", icon: <Users className="h-4 w-4" />, count: stats?.totalUsers || 0 },
-    { key: "jobs", label: "Job Listings", icon: <Briefcase className="h-4 w-4" />, count: stats?.totalJobs || 0 },
+    { key: "bounties", label: "Bounties", icon: <Briefcase className="h-4 w-4" />, count: stats?.totalBounties || 0 },
     { key: "applications", label: "Applications", icon: <FileText className="h-4 w-4" />, count: stats?.totalApplications || 0 },
   ]
 
   const searchPlaceholder: Record<Tab, string> = {
-    pending: "Search pending by title, company, or author...",
+    pending: "Search pending by title, org, or poster...",
     users: "Search users by name, email, or company...",
-    jobs: "Search listings by title, company, or author...",
+    bounties: "Search bounties by title, org, or poster...",
     applications: "Search applications by job, applicant, or email...",
   }
 
@@ -315,13 +343,13 @@ export default function JobsAdminPage() {
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-2 text-slate-500 mb-2">
                 <Briefcase className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Jobs</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Bounties</span>
               </div>
-              <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{stats.totalJobs}</p>
+              <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{stats.totalBounties}</p>
               <div className="flex gap-3 mt-1.5">
-                <span className="text-xs text-green-600">{stats.publishedJobs} live</span>
-                <span className="text-xs text-amber-600">{stats.pendingJobs} pending</span>
-                <span className="text-xs text-slate-400">{stats.draftJobs} draft</span>
+                <span className="text-xs text-green-600">{stats.openBounties} open</span>
+                <span className="text-xs text-amber-600">{stats.pendingBounties} pending</span>
+                <span className="text-xs text-slate-400">{stats.draftBounties} draft</span>
               </div>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -334,11 +362,11 @@ export default function JobsAdminPage() {
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-2 text-slate-500 mb-2">
                 <CheckCircle className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Published</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Completed</span>
               </div>
-              <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{stats.publishedJobs}</p>
+              <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{stats.completedBounties}</p>
               <div className="flex gap-3 mt-1.5">
-                <span className="text-xs text-red-500">{stats.closedJobs} closed</span>
+                <span className="text-xs text-blue-600">{stats.claimedBounties} claimed</span>
               </div>
             </div>
           </div>
@@ -393,28 +421,28 @@ export default function JobsAdminPage() {
         {/* Tab Content */}
         {activeTab === "pending" && (
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {pendingJobs.length === 0 ? (
+            {pendingBounties.length === 0 ? (
               <div className="p-8 text-center">
                 <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">All caught up</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">No listings pending review.</p>
+                <p className="text-sm text-slate-500 leading-relaxed">No bounties pending review.</p>
               </div>
-            ) : filteredPendingJobs.length === 0 ? (
+            ) : filteredPendingBounties.length === 0 ? (
               <div className="p-8 text-center">
                 <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">No pending listings match &ldquo;{searchQuery}&rdquo;.</p>
+                <p className="text-sm text-slate-500">No pending bounties match &ldquo;{searchQuery}&rdquo;.</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
                 <div className="px-6 py-3 bg-amber-50 border-b border-amber-100">
                   <p className="text-sm font-semibold text-amber-800">
-                    {filteredPendingJobs.length} of {pendingJobs.length} awaiting review
+                    {filteredPendingBounties.length} of {pendingBounties.length} awaiting review
                   </p>
                   <p className="text-xs text-amber-600 mt-0.5">
                     Approve to publish and share to Discord &amp; LinkedIn, or reject with a note so the poster knows what to fix.
                   </p>
                 </div>
-                {filteredPendingJobs.map((job) => {
+                {filteredPendingBounties.map((job) => {
                   const isRejecting = rejectingJobId === job.id
                   return (
                     <div key={job.id} className="p-4 sm:p-6">
@@ -429,17 +457,23 @@ export default function JobsAdminPage() {
                                 {job.title}
                               </Link>
                               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 shrink-0">
-                                pending
+                                pending review
                               </span>
+                              {job.orgVerifiedNonprofit && (
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 shrink-0">
+                                  501(c)(3)
+                                </span>
+                              )}
                             </div>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 leading-normal">
-                              <span className="font-medium text-slate-600">{job.companyName}</span>
-                              <span>by {job.authorName}</span>
-                              <span className="inline-flex items-center gap-1">
+                              <span className="font-medium text-slate-600">{job.orgName}</span>
+                              <span>by {job.posterName}</span>
+                              <span className="inline-flex items-center gap-1 capitalize">
                                 <MapPin className="h-3 w-3" />
-                                {job.locationType}{job.location ? ` · ${job.location}` : ""}
+                                {job.category}
                               </span>
-                              <span>{job.type.toUpperCase()}</span>
+                              <span className="font-semibold text-slate-700 tabular-nums">{formatMoney(job.amountCents)}</span>
+                              <span className="text-slate-400">→ {formatMoney(job.payoutCents)} payout</span>
                               <span>{timeAgo(job.createdAt)}</span>
                             </div>
                           </div>
@@ -597,52 +631,57 @@ export default function JobsAdminPage() {
           </div>
         )}
 
-        {activeTab === "jobs" && (
+        {activeTab === "bounties" && (
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            {jobs.length === 0 ? (
+            {bounties.length === 0 ? (
               <div className="p-8 text-center">
                 <Briefcase className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No listings</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">No listings have been posted on the platform yet.</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-tight">No bounties</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">No bounties have been posted on the platform yet.</p>
               </div>
-            ) : filteredJobs.length === 0 ? (
+            ) : filteredBounties.length === 0 ? (
               <div className="p-8 text-center">
                 <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">No listings match &ldquo;{searchQuery}&rdquo;.</p>
+                <p className="text-sm text-slate-500">No bounties match &ldquo;{searchQuery}&rdquo;.</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
-                {filteredJobs.map((job) => (
-                  <div key={job.id} className="p-4 sm:p-6">
+                {filteredBounties.map((bounty) => (
+                  <div key={bounty.id} className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Link
-                            href={`/bounties/${job.slug}`}
+                            href={`/bounties/${bounty.slug}`}
                             className="text-sm sm:text-base font-semibold text-slate-900 hover:text-[#ef426f] truncate transition-colors leading-tight"
                           >
-                            {job.title}
+                            {bounty.title}
                           </Link>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0 ${statusColors[job.status]}`}>
-                            {job.status}
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0 ${statusColors[bounty.status] || "text-slate-600 bg-slate-100 border border-slate-200"}`}>
+                            {statusLabel(bounty.status)}
                           </span>
+                          {bounty.orgVerifiedNonprofit && (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 shrink-0">
+                              501(c)(3)
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 leading-normal">
-                          <span className="font-medium text-slate-600">{job.companyName}</span>
-                          <span>by {job.authorName}</span>
-                          <span className="inline-flex items-center gap-1">
+                          <span className="font-medium text-slate-600">{bounty.orgName}</span>
+                          <span>by {bounty.posterName}</span>
+                          <span className="inline-flex items-center gap-1 capitalize">
                             <MapPin className="h-3 w-3" />
-                            {job.locationType}{job.location ? ` · ${job.location}` : ""}
+                            {bounty.category}
                           </span>
-                          <span>{job.type.toUpperCase()}</span>
+                          <span className="font-semibold text-slate-700 tabular-nums">{formatMoney(bounty.amountCents)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
                         <span className="inline-flex items-center gap-1.5 text-sm text-slate-500">
                           <Users className="h-3.5 w-3.5" />
-                          <span className="tabular-nums">{job.applicantCount}</span>
+                          <span className="tabular-nums">{bounty.applicantCount}</span>
                         </span>
-                        <span className="text-xs text-slate-400">{timeAgo(job.createdAt)}</span>
+                        <span className="text-xs text-slate-400">{timeAgo(bounty.createdAt)}</span>
                       </div>
                     </div>
                   </div>

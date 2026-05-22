@@ -93,10 +93,12 @@ export async function GET(request: NextRequest) {
 
 // POST - Create a new bounty (hiring role only — this is the "poster" side)
 //
-// NOTE: This slice does NOT enforce escrow funding. Bounties land in
-// `pending_review` with `escrowStatus: 'unfunded'`. Slice 3 will add the
-// Stripe Connect payment flow that moves the bounty to `open` only after
-// funds are escrowed.
+// Slice 3a.2: moderation gate re-enabled. Bounties land in `pending_review`
+// and only become public once a super admin approves them on /bounties/admin.
+//
+// Slice 3d will add Stripe Connect escrow: bounties will move to `open` only
+// after the poster funds the bounty via Checkout. Today `escrowStatus` is
+// always 'unfunded'.
 export async function POST(request: NextRequest) {
   const result = await verifyJobBoardUser(request, {
     requireProfile: true,
@@ -186,6 +188,8 @@ export async function POST(request: NextRequest) {
       escrowStatus: 'unfunded',
       estimatedHours: estimatedHours && Number.isFinite(estimatedHours) ? estimatedHours : undefined,
       deadlineAt: deadlineAt ? new Date(deadlineAt) : undefined,
+      // Admin moderation gate: new posts land in pending_review until a super
+      // admin approves them on /bounties/admin (then status moves to open).
       status: requestedStatus === 'draft' ? 'draft' : 'pending_review',
       isPublic: true,
       applicantCount: 0,

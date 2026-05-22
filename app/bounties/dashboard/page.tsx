@@ -90,7 +90,20 @@ interface SavedJob {
   status?: string
 }
 
+// Status color map covers both bounty + application statuses since both pills
+// render through this dashboard. Bounty status keys match Bounty.status in
+// lib/firebase-admin.ts. Legacy job keys are kept so older docs still render.
 const statusColors: Record<string, string> = {
+  // bounty statuses
+  open: "text-green-700 bg-green-50 border border-green-200",
+  pending_review: "text-amber-700 bg-amber-50 border border-amber-200",
+  claimed: "text-blue-700 bg-blue-50 border border-blue-200",
+  in_review: "text-amber-700 bg-amber-50 border border-amber-200",
+  completed: "text-green-700 bg-green-50 border border-green-200",
+  disputed: "text-red-700 bg-red-50 border border-red-200",
+  cancelled: "text-slate-600 bg-slate-100 border border-slate-200",
+  expired: "text-slate-600 bg-slate-100 border border-slate-200",
+  // application + legacy job statuses
   submitted: "text-blue-700 bg-blue-50 border border-blue-200",
   viewed: "text-amber-700 bg-amber-50 border border-amber-200",
   shortlisted: "text-green-700 bg-green-50 border border-green-200",
@@ -173,9 +186,11 @@ export default function DashboardPage() {
         const allAppsData = await allAppsRes.json()
         setAllApplications(allAppsData.applications || [])
       } else if (verifyData.profile.role === "hiring") {
-        // Load my posted jobs and all applications for my jobs
+        // Load my posted bounties and all applications for them.
+        // Param name `posterUid` matches the refactored /api/bounties GET handler
+        // that operates on the BOUNTIES collection (Bounty.posterUid).
         const [jobsRes, appsRes] = await Promise.all([
-          fetch(`/api/bounties?authorUid=${verifyData.profile.uid}`, {
+          fetch(`/api/bounties?posterUid=${verifyData.profile.uid}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetch("/api/bounties/applications", {
@@ -210,15 +225,21 @@ export default function DashboardPage() {
             headers: { Authorization: `Bearer ${token}` },
           })
           const jobsData = await jobsRes.json()
-          const jobsMap = new Map((jobsData.bounties || jobsData.listings || []).map((j: JobListing) => [j.id, j]))
+          // Bounty docs use orgName/category instead of companyName/type. Map
+          // them onto the legacy SavedJob shape so the saved-bounties row
+          // renderer (still JobListing-shaped) shows something useful.
+          type EnrichedJob = JobListing & { orgName?: string; category?: string; amountCents?: number }
+          const jobsMap = new Map<string, EnrichedJob>(
+            (jobsData.bounties || jobsData.listings || []).map((j: EnrichedJob) => [j.id, j])
+          )
           const enriched = savedJobsList.map((s: SavedJob) => {
-            const job = jobsMap.get(s.jobId) as JobListing | undefined
+            const job = jobsMap.get(s.jobId)
             return {
               ...s,
               title: job?.title,
               slug: job?.slug,
-              companyName: job?.companyName,
-              type: job?.type,
+              companyName: job?.orgName || job?.companyName,
+              type: job?.category || job?.type,
               locationType: job?.locationType,
               location: job?.location,
               status: job?.status,
@@ -465,7 +486,7 @@ export default function DashboardPage() {
                       <Eye className="h-5 w-5 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-slate-900">{myJobs.filter(j => j.status === "published").length}</p>
+                      <p className="text-2xl font-bold text-slate-900">{myJobs.filter(j => j.status === "open" || j.status === "claimed" || j.status === "in_review").length}</p>
                       <p className="text-xs text-slate-500">Active</p>
                     </div>
                   </div>
@@ -774,9 +795,12 @@ export default function DashboardPage() {
                           >
                             {job.title}
                           </Link>
-                          {job.status === "closed" && (
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200">
-                              Closed
+                          {(job.status === "closed" || job.status === "cancelled" || job.status === "expired" || job.status === "completed") && (
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[job.status] || "text-slate-600 bg-slate-100 border border-slate-200"}`}>
+                              {job.status === "closed" ? "Closed" :
+                               job.status === "cancelled" ? "Cancelled" :
+                               job.status === "expired" ? "Expired" :
+                               "Completed"}
                             </span>
                           )}
                         </div>

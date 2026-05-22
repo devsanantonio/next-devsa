@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { getDb, COLLECTIONS, type JobListing } from '@/lib/firebase-admin';
+import { getDb, COLLECTIONS, type Bounty } from '@/lib/firebase-admin';
 import { verifyJobBoardUser } from '@/lib/auth-middleware';
 import { shareJobToDiscord } from '@/lib/discord';
 import { shareJobToLinkedIn } from '@/lib/linkedin';
 
-// POST - Approve or reject a pending job listing (super admin only)
+// POST - Approve or reject a pending bounty (super admin only).
+//
+// Slice 3a.2 migration: operates on BOUNTIES (was JOB_LISTINGS), status flow
+// is pending_review → open (approve) | rejected (reject).
+//
+// Request body: { bountyId, action: 'approve'|'reject', reason? }
+// Backward compat: also accepts { jobId } so the existing admin UI doesn't
+// need to ship a coordinated change. Either field name works.
 export async function POST(request: NextRequest) {
   const result = await verifyJobBoardUser(request, { requireProfile: true });
   if (result instanceof NextResponse) return result;
@@ -19,15 +26,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { jobId, action, reason } = body as {
+    const { bountyId, jobId, action, reason } = body as {
+      bountyId?: string;
       jobId?: string;
       action?: 'approve' | 'reject';
       reason?: string;
     };
 
-    if (!jobId || !action || !['approve', 'reject'].includes(action)) {
+    const docId = bountyId || jobId;
+
+    if (!docId || !action || !['approve', 'reject'].includes(action)) {
       return NextResponse.json(
-        { error: 'jobId and action (approve|reject) are required' },
+        { error: 'bountyId and action (approve|reject) are required' },
         { status: 400 }
       );
     }
@@ -35,97 +45,106 @@ export async function POST(request: NextRequest) {
     const rejectionReason = typeof reason === 'string' ? reason.trim().slice(0, 500) : '';
 
     const db = getDb();
-    const docRef = db.collection(COLLECTIONS.JOB_LISTINGS).doc(jobId);
+    const docRef = db.collection(COLLECTIONS.BOUNTIES).doc(docId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      return NextResponse.json(
-        { error: 'Listing not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Bounty not found' }, { status: 404 });
     }
 
-    const listing = doc.data() as JobListing;
+    const bounty = doc.data() as Bounty;
 
-    if (listing.status !== 'pending') {
+    if (bounty.status !== 'pending_review') {
       return NextResponse.json(
-        { error: `Listing is not pending review (current status: ${listing.status})` },
+        { error: `Bounty is not pending review (current status: ${bounty.status})` },
         { status: 400 }
       );
     }
 
     if (action === 'approve') {
-      // Approve: set to published, refresh expiration, share to Discord/LinkedIn
-      const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
-      await docRef.update({
-        status: 'published',
-        expiresAt,
+      // Approve: move to open. expiresAt was set at post-time (30 days);
+      // no need to refresh here unless the bounty has already expired.
+      const updates: Partial<Bounty> = {
+        status: 'open',
         updatedAt: new Date(),
-      });
+      };
+      if (bounty.expiresAt && new Date(bounty.expiresAt as unknown as string) < new Date()) {
+        // Stale expiry — push forward 30 days from approval.
+        updates.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      }
+      await docRef.update(updates);
 
-      // Share to Discord and LinkedIn (fire-and-forget)
+      // Share to Discord and LinkedIn (fire-and-forget).
+      // We adapt Bounty fields into the existing share-helper shape rather than
+      // refactor the helpers; clearer at the call site and keeps blast radius small.
+      const amountLabel = `$${(bounty.amountCents / 100).toLocaleString()} bounty`;
+      const payoutLabel = `Builder receives $${(bounty.payoutCents / 100).toLocaleString()}`;
+      const compensationLine = `${amountLabel} · ${payoutLabel}`;
+
       shareJobToDiscord({
-        title: listing.title,
-        companyName: listing.companyName,
-        slug: listing.slug,
-        type: listing.type,
-        locationType: listing.locationType,
-        location: listing.location || undefined,
-        salaryRange: listing.salaryRange || undefined,
-        equityRange: listing.equityRange || undefined,
-        startupStage: listing.startupStage || undefined,
-        tags: listing.tags || [],
-        description: listing.description || undefined,
+        title: bounty.title,
+        companyName: bounty.orgName,
+        slug: bounty.slug,
+        type: bounty.category,
+        locationType: 'remote',
+        location: undefined,
+        salaryRange: compensationLine,
+        equityRange: undefined,
+        startupStage: undefined,
+        tags: bounty.tags || [],
+        description: bounty.summary || bounty.description || undefined,
       }).catch((err) => console.error('Discord share failed:', err));
 
       shareJobToLinkedIn({
-        title: listing.title,
-        companyName: listing.companyName,
-        slug: listing.slug,
-        type: listing.type,
-        locationType: listing.locationType,
-        location: listing.location || undefined,
-        salaryRange: listing.salaryRange || undefined,
-        description: listing.description || undefined,
-        tags: listing.tags || [],
+        title: bounty.title,
+        companyName: bounty.orgName,
+        slug: bounty.slug,
+        type: bounty.category,
+        locationType: 'remote',
+        location: undefined,
+        salaryRange: compensationLine,
+        description: bounty.summary || bounty.description || undefined,
+        tags: bounty.tags || [],
       }).catch((err) => console.error('LinkedIn share failed:', err));
 
-      // Notify the job poster
+      // Notify the poster.
       await db.collection(COLLECTIONS.NOTIFICATIONS).add({
-        recipientUid: listing.authorUid,
+        recipientUid: bounty.posterUid,
         type: 'status-update',
-        title: 'Job Approved',
-        body: `Your listing "${listing.title}" has been approved and is now live on DEVSA Bounties.`,
-        link: `/bounties/${listing.slug}`,
+        title: 'Bounty Approved',
+        body: `Your bounty "${bounty.title}" is now live on DEVSA Bounties.`,
+        link: `/bounties/${bounty.slug}`,
         read: false,
         sourceUid: result.uid,
         sourceName: `${result.profile!.firstName} ${result.profile!.lastName}`,
-        referenceId: jobId,
+        referenceId: docId,
         createdAt: new Date(),
       });
     } else {
-      // Reject: set to rejected and store the reason on the listing
+      // Reject: set rejected + store reviewer note.
+      // rejectionReason isn't on the Bounty schema yet — admin-only annotation.
+      // Cast through unknown so TS allows the extra field without bloating the
+      // type definition for a moderation concern.
       await docRef.update({
         status: 'rejected',
         rejectionReason: rejectionReason || null,
         updatedAt: new Date(),
-      });
+      } as unknown as Partial<Bounty>);
 
-      // Notify the poster with the reviewer's reason (if provided)
       const notificationBody = rejectionReason
-        ? `Your listing "${listing.title}" was not approved. Reviewer note: ${rejectionReason}`
-        : `Your listing "${listing.title}" was not approved. Please review our posting guidelines and resubmit.`;
+        ? `Your bounty "${bounty.title}" was not approved. Reviewer note: ${rejectionReason}`
+        : `Your bounty "${bounty.title}" was not approved. Please review the posting guidelines and resubmit.`;
 
       await db.collection(COLLECTIONS.NOTIFICATIONS).add({
-        recipientUid: listing.authorUid,
+        recipientUid: bounty.posterUid,
         type: 'status-update',
-        title: 'Listing Not Approved',
+        title: 'Bounty Not Approved',
         body: notificationBody,
         link: '/bounties/dashboard',
         read: false,
         sourceUid: result.uid,
         sourceName: `${result.profile!.firstName} ${result.profile!.lastName}`,
-        referenceId: jobId,
+        referenceId: docId,
         createdAt: new Date(),
       });
     }
@@ -135,15 +154,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       action,
-      message: action === 'approve'
-        ? 'Job approved and shared to Discord & LinkedIn'
-        : 'Job rejected and poster notified',
+      message:
+        action === 'approve'
+          ? 'Bounty approved and shared to Discord & LinkedIn'
+          : 'Bounty rejected and poster notified',
     });
   } catch (error) {
     console.error('Admin review error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
