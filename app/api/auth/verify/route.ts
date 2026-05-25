@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdminAuth, getDb, COLLECTIONS, type JobBoardUser } from '@/lib/firebase-admin';
 import { isSuperAdmin } from '@/lib/auth-middleware';
+import { readConnectStatus } from '@/lib/stripe-connect';
 
 // Verify Firebase ID token and return user profile
 export async function POST(request: NextRequest) {
@@ -45,6 +46,9 @@ export async function POST(request: NextRequest) {
           companyLogo: profile.companyLogo,
           isActive: profile.isActive,
         },
+        // Connect status mirrored from Stripe via webhook. Dashboard renders
+        // the Payouts card off this snapshot without round-tripping to Stripe.
+        connect: readConnectStatus(profile),
       });
     }
 

@@ -24,6 +24,9 @@ import {
   Search,
   Send,
   Trash2,
+  Wallet,
+  AlertTriangle,
+  ArrowUpRight,
 } from "lucide-react"
 
 // Hiring users' "my listings" surface now loads Bounty docs (Slice 2 migration).
@@ -128,6 +131,19 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [myJobs, setMyJobs] = useState<JobListing[]>([])
   const [myApplications, setMyApplications] = useState<Application[]>([])
+  // Stripe Connect onboarding state — mirrored from /api/auth/verify.
+  // Drives the Payouts card UI (none / onboarding / enabled / restricted).
+  const [connectStatus, setConnectStatus] = useState<{
+    hasAccount: boolean
+    accountId?: string
+    payoutsEnabled: boolean
+    chargesEnabled: boolean
+    detailsSubmitted: boolean
+    requirementsDisabled: boolean
+    country?: string
+  } | null>(null)
+  const [connectAction, setConnectAction] = useState<"onboard" | "manage" | null>(null)
+  const [connectError, setConnectError] = useState<string | null>(null)
   const [allJobs, setAllJobs] = useState<JobListing[]>([])
   const [allApplications, setAllApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -167,6 +183,7 @@ export default function DashboardPage() {
         return
       }
       setProfile(verifyData.profile)
+      if (verifyData.connect) setConnectStatus(verifyData.connect)
 
       const isSuperAdmin = verifyData.isSuperAdmin === true
 
@@ -327,6 +344,62 @@ export default function DashboardPage() {
     ? myApplications
     : myApplications.filter((app) => app.status === applicationFilter)
 
+  // Connect onboarding handler — POST to our route, then redirect to the
+  // Stripe-hosted URL. The webhook (account.updated) will update the user's
+  // Connect flags asynchronously when they complete onboarding; our return_url
+  // brings them back to /bounties/dashboard?connect=return where this page
+  // re-fetches /api/auth/verify and renders the new state.
+  const startConnectOnboarding = async () => {
+    setConnectError(null)
+    setConnectAction("onboard")
+    try {
+      const token = await getIdToken()
+      if (!token) {
+        setConnectError("Sign-in expired. Please refresh.")
+        setConnectAction(null)
+        return
+      }
+      const res = await fetch("/api/bounties/connect/onboard", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setConnectError(data?.error || "Failed to start onboarding")
+        setConnectAction(null)
+      }
+    } catch {
+      setConnectError("Network error. Try again.")
+      setConnectAction(null)
+    }
+  }
+
+  // Stripe Express dashboard link — post-onboarding management.
+  const openExpressDashboard = async () => {
+    setConnectError(null)
+    setConnectAction("manage")
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const res = await fetch("/api/bounties/connect/login", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setConnectError(data?.error || "Failed to open Stripe dashboard")
+        setConnectAction(null)
+      }
+    } catch {
+      setConnectError("Network error. Try again.")
+      setConnectAction(null)
+    }
+  }
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-dvh bg-white">
@@ -364,6 +437,18 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {/* Payouts card — visible to all signed-in users since any role can
+            claim a bounty. State varies by Connect account progress. */}
+        {connectStatus && (
+          <PayoutsCard
+            status={connectStatus}
+            action={connectAction}
+            error={connectError}
+            onStart={startConnectOnboarding}
+            onManage={openExpressDashboard}
+          />
+        )}
 
         {/* Super Admin: All Bounties Overview */}
         {profile.isSuperAdmin && (
@@ -963,6 +1048,183 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+    </div>
+  )
+}
+
+// =============================================================================
+// Payouts card — shown to all signed-in users on the dashboard.
+//
+// Four states map to four UI variants:
+//   - no account yet           → primary "Set up payouts" CTA (Stripe-hosted)
+//   - onboarding in progress   → amber "Resume onboarding" CTA
+//   - payouts enabled          → emerald "Payouts enabled · Manage" link
+//   - restricted               → red "Action needed in Stripe" CTA
+// =============================================================================
+
+interface ConnectStatusShape {
+  hasAccount: boolean
+  accountId?: string
+  payoutsEnabled: boolean
+  chargesEnabled: boolean
+  detailsSubmitted: boolean
+  requirementsDisabled: boolean
+  country?: string
+}
+
+function PayoutsCard({
+  status,
+  action,
+  error,
+  onStart,
+  onManage,
+}: {
+  status: ConnectStatusShape
+  action: "onboard" | "manage" | null
+  error: string | null
+  onStart: () => void
+  onManage: () => void
+}) {
+  const enabled = status.payoutsEnabled && status.detailsSubmitted && !status.requirementsDisabled
+  const restricted = status.hasAccount && status.requirementsDisabled
+  const onboarding = status.hasAccount && !enabled && !restricted
+
+  // Restricted takes priority over onboarding — needs immediate attention.
+  if (restricted) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50/40 p-5 sm:p-6 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-900 leading-tight">
+                Payouts restricted
+              </h3>
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                Stripe needs more information before you can receive payouts. Open your payout
+                dashboard to finish up.
+              </p>
+              {error && <p className="text-xs text-red-700 mt-2">{error}</p>}
+            </div>
+          </div>
+          <button
+            onClick={onManage}
+            disabled={action === "manage"}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {action === "manage" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
+            Open payout dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (enabled) {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 sm:p-6 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
+              <CheckCircle className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-900 leading-tight">
+                  Payouts enabled
+                </h3>
+                <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider">
+                  Stripe Connect
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                You&apos;re set to receive bounty payouts. Manage your bank account, payout history,
+                and tax forms in your Stripe dashboard.
+              </p>
+              {error && <p className="text-xs text-red-700 mt-2">{error}</p>}
+            </div>
+          </div>
+          <button
+            onClick={onManage}
+            disabled={action === "manage"}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {action === "manage" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />}
+            Manage payouts
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Onboarding in progress — has account, hasn't finished.
+  if (onboarding) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-5 sm:p-6 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100">
+              <Clock className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-900 leading-tight">
+                Finish payout setup
+              </h3>
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                You started Stripe onboarding but haven&apos;t finished. Resume to enable
+                bounty payouts to your bank account.
+              </p>
+              {error && <p className="text-xs text-red-700 mt-2">{error}</p>}
+            </div>
+          </div>
+          <button
+            onClick={onStart}
+            disabled={action === "onboard"}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {action === "onboard" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />}
+            Resume onboarding
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // No account yet — first-time prompt. Soft, not blocking.
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 mb-6 sm:mb-8 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#ef426f]/10">
+            <Wallet className="h-5 w-5 text-[#ef426f]" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-semibold text-slate-900 leading-tight">
+                Set up payouts
+              </h3>
+              <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider">
+                Stripe-hosted
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+              Connect your bank account so you can receive payouts when you claim a bounty.
+              Takes ~3 minutes; Stripe handles bank info, tax forms, and KYC.
+            </p>
+            {error && <p className="text-xs text-red-700 mt-2">{error}</p>}
+          </div>
+        </div>
+        <button
+          onClick={onStart}
+          disabled={action === "onboard"}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50 shrink-0"
+        >
+          {action === "onboard" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
+          Set up payouts
+        </button>
+      </div>
     </div>
   )
 }

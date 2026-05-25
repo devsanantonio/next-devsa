@@ -314,6 +314,17 @@ export interface JobBoardUser {
   resumeUrl?: string; // for open-to-work role
   jobPreferences?: JobPreferences; // for open-to-work role
   isActive: boolean;
+  // Stripe Connect Express — populated when a claimant starts payout onboarding
+  // so we can transfer bounty payouts to them (Slice 3e).
+  // The booleans are mirrored from Stripe via the account.updated webhook so
+  // the dashboard can render state without round-tripping to Stripe.
+  stripeConnectAccountId?: string;
+  stripeConnectChargesEnabled?: boolean;
+  stripeConnectPayoutsEnabled?: boolean;
+  stripeConnectDetailsSubmitted?: boolean;
+  stripeConnectCountry?: string;
+  stripeConnectRequirementsDisabled?: boolean; // true when Stripe blocks the account
+  stripeConnectUpdatedAt?: Date;
   createdAt: Date;
   updatedAt?: Date;
 }
