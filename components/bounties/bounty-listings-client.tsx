@@ -6,6 +6,7 @@ import { BountyCard } from "@/components/bounties/bounty-card"
 import { BountyFilters } from "@/components/bounties/bounty-filters"
 import { Briefcase, ArrowRight, HandCoins } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/components/auth-provider"
 import type { BountyCategory, BountyStatus } from "@/lib/firebase-admin"
 
 export interface BountyListItem {
@@ -41,6 +42,13 @@ export function BountyListingsClient({
 }: {
   initialBounties: BountyListItem[]
 }) {
+  // Signed-in users are in a workspace context (sidebar visible) and shouldn't
+  // see the marketing hero — that lane is for first-time visitors. Match the
+  // chrome decision used by JobsLayoutShell, which keys off `user` alone so
+  // the hero hides as soon as Firebase Auth resolves a cached session.
+  const { user } = useAuth()
+  const isSignedIn = !!user
+
   const [bounties] = useState<BountyListItem[]>(initialBounties)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -89,7 +97,10 @@ export function BountyListingsClient({
 
   return (
     <div>
-      {/* Hero — bounty-led copy */}
+      {/* Hero — bounty-led copy, marketing-only.
+          Hidden for signed-in users so the workspace surface (sidebar +
+          listings) isn't competing with first-time-visitor messaging. */}
+      {!isSignedIn && (
       <section
         className="relative overflow-hidden bg-black min-h-[85vh] flex flex-col items-center justify-center"
         data-bg-type="dark"
@@ -184,9 +195,18 @@ export function BountyListingsClient({
           </motion.div>
         </div>
       </section>
+      )}
 
-      {/* Listings */}
-      <section id="open-bounties" className="w-full bg-white px-4 sm:px-6 pt-12 sm:pt-16 scroll-mt-4">
+      {/* Listings — workspace surface for signed-in users (no hero above),
+          marketing-section anchor for signed-out scrollers. The bigger top
+          padding when signed in compensates for the missing hero so the
+          workspace header has room from the viewport top. */}
+      <section
+        id="open-bounties"
+        className={`w-full bg-white px-4 sm:px-6 scroll-mt-4 ${
+          isSignedIn ? "pt-10 sm:pt-16" : "pt-12 sm:pt-16"
+        }`}
+      >
         <div className="mx-auto max-w-7xl pb-16 sm:pb-24">
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 leading-[1.2]">
