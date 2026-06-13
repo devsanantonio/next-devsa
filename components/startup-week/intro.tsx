@@ -62,7 +62,7 @@ export function StartupWeekIntro({
           <img
             src={DEVSA_LOGO}
             alt="DEVSA"
-            className={cn("w-auto", lg ? "h-16 sm:h-20 lg:h-24" : "h-12 sm:h-14 lg:h-16")}
+            className={cn("w-auto", lg ? "h-16 sm:h-20 lg:h-24 xl:h-28" : "h-12 sm:h-14 lg:h-16")}
           />
         </div>
       </div>
@@ -88,7 +88,12 @@ export function StartupWeekIntro({
         </span>
       </div>
 
-      <p className="max-w-md text-balance text-base leading-relaxed text-neutral-600 md:text-lg">
+      <p
+        className={cn(
+          "max-w-md text-balance text-base leading-relaxed text-neutral-600 md:text-lg",
+          lg && "xl:max-w-lg xl:text-xl"
+        )}
+      >
         DEVSA and Geekdom are coming together for an open call for speakers.
         Share what you&apos;re building with founders, operators, and investors
         from across the San&nbsp;Antonio ecosystem.

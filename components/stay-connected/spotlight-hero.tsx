@@ -69,14 +69,17 @@ export function SpotlightHero() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.5 }}
-                className={cn("space-y-6", dark ? "max-w-2xl" : "max-w-xl")}
+                className={cn(
+                  "space-y-6 xl:space-y-8",
+                  dark ? "max-w-2xl xl:max-w-3xl" : "max-w-xl xl:max-w-2xl"
+                )}
               >
                 {item.key === "startup-week" ? (
                   <StartupWeekIntro size="lg" showTracks={false} />
                 ) : item.key === "ai-builder" ? (
                   <>
-                    <LogoParticles className="h-72 w-full sm:h-80" />
-                    <p className="text-balance text-base leading-relaxed text-white/70 md:text-lg">
+                    <LogoParticles className="h-72 w-full sm:h-80 xl:h-104 2xl:h-120" />
+                    <p className="text-balance text-center text-base leading-relaxed text-white/70 md:text-lg xl:max-w-2xl xl:text-xl">
                       {item.blurb}
                     </p>
                   </>
@@ -84,7 +87,7 @@ export function SpotlightHero() {
                   <>
                     <p
                       className={cn(
-                        "text-xs font-medium uppercase tracking-[0.2em]",
+                        "text-xs font-medium uppercase tracking-[0.2em] xl:text-sm",
                         dark ? "text-white/50" : "text-neutral-400"
                       )}
                     >
@@ -109,7 +112,7 @@ export function SpotlightHero() {
                   <>
                     <p
                       className={cn(
-                        "text-xs font-medium uppercase tracking-[0.2em]",
+                        "text-xs font-medium uppercase tracking-[0.2em] xl:text-sm",
                         dark ? "text-white/50" : "text-neutral-400"
                       )}
                     >
@@ -122,14 +125,14 @@ export function SpotlightHero() {
                       muted
                       loop
                       playsInline
-                      className="max-h-[60dvh] w-full max-w-2xl rounded-2xl object-contain"
+                      className="max-h-[60dvh] w-full max-w-2xl rounded-2xl object-contain xl:max-w-3xl"
                     />
                   </>
                 ) : item.image ? (
                   <>
                     <p
                       className={cn(
-                        "text-xs font-medium uppercase tracking-[0.2em]",
+                        "text-xs font-medium uppercase tracking-[0.2em] xl:text-sm",
                         dark ? "text-white/50" : "text-neutral-400"
                       )}
                     >
@@ -149,7 +152,7 @@ export function SpotlightHero() {
                   <>
                     <p
                       className={cn(
-                        "text-xs font-medium uppercase tracking-[0.2em]",
+                        "text-xs font-medium uppercase tracking-[0.2em] xl:text-sm",
                         dark ? "text-white/55" : "text-neutral-400"
                       )}
                     >
@@ -157,7 +160,7 @@ export function SpotlightHero() {
                     </p>
                     <h1
                       className={cn(
-                        "text-balance font-sans text-4xl font-black leading-[1.05] tracking-[-0.02em] md:text-5xl xl:text-6xl",
+                        "text-balance font-sans text-4xl font-black leading-[1.05] tracking-[-0.02em] md:text-5xl xl:text-6xl 2xl:text-7xl",
                         dark ? "text-white" : "text-neutral-900"
                       )}
                     >
@@ -166,7 +169,7 @@ export function SpotlightHero() {
                     {item.blurb && (
                       <p
                         className={cn(
-                          "max-w-md text-balance text-base leading-relaxed md:text-lg",
+                          "max-w-md text-balance text-base leading-relaxed md:text-lg xl:max-w-lg xl:text-xl",
                           dark ? "text-white/65" : "text-neutral-600"
                         )}
                       >

@@ -19,14 +19,14 @@ const INVERT = new Set([
 /** Logo wall of San Antonio tech communities — context for the calendar slide. */
 export function CommunityGrid() {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 xl:gap-3">
       {COMMUNITY_LOGOS.map((c) => {
         const invert = INVERT.has(c.name)
         return (
           <div
             key={c.name}
             title={c.name}
-            className="flex h-12 w-20 items-center justify-center rounded-lg border border-neutral-200 bg-white p-2"
+            className="flex h-12 w-20 items-center justify-center rounded-lg border border-neutral-200 bg-white p-2 xl:h-16 xl:w-28 xl:p-3"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

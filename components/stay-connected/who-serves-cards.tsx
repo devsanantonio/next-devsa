@@ -28,16 +28,16 @@ export function WhoServesCards() {
       {LANES.map((l) => (
         <div
           key={l.eyebrow}
-          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 xl:p-5"
         >
           <p
-            className="text-[11px] font-semibold uppercase tracking-[0.16em]"
+            className="text-[11px] font-semibold uppercase tracking-[0.16em] xl:text-xs"
             style={{ color: l.accent }}
           >
             {l.eyebrow}
           </p>
-          <h3 className="text-base font-bold text-white">{l.headline}</h3>
-          <p className="text-xs leading-relaxed text-white/55">{l.body}</p>
+          <h3 className="text-base font-bold text-white xl:text-lg">{l.headline}</h3>
+          <p className="text-xs leading-relaxed text-white/55 xl:text-sm">{l.body}</p>
         </div>
       ))}
     </div>
