@@ -112,8 +112,14 @@ export interface SpeakerSubmission {
   email: string;
   company?: string | null;
   sessionTitle: string;
-  sessionFormat: string;
+  sessionFormat?: string | null;
+  /** Submission track (e.g. Startup Week's speaking tracks). */
+  track?: string | null;
   abstract: string;
+  /** Short speaker bio. */
+  bio?: string | null;
+  /** Speaker LinkedIn or website URL. */
+  linkedin?: string | null;
   eventId?: string;
   submittedAt: Date;
   magenSessionId?: string | null;

@@ -3,14 +3,18 @@ import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
+import { StartupWeekThankYouEmail, getStartupWeekThankYouSubject } from '@/lib/emails/startup-week-thank-you';
 
 interface SpeakerSubmissionRequest {
   name: string;
   email: string;
   company?: string;
   sessionTitle: string;
-  sessionFormat: string;
+  sessionFormat?: string;
+  track?: string;
   abstract: string;
+  bio?: string;
+  linkedin?: string;
   magenSessionId?: string;
   magenVerdict?: string;
   magenScore?: number;
@@ -20,10 +24,10 @@ interface SpeakerSubmissionRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: SpeakerSubmissionRequest = await request.json();
-    const { name, email, company, sessionTitle, sessionFormat, abstract, magenSessionId, magenVerdict, magenScore, eventId } = body;
+    const { name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin, magenSessionId, magenVerdict, magenScore, eventId } = body;
 
     // Validate required fields
-    if (!name || !email || !sessionTitle || !sessionFormat || !abstract) {
+    if (!name || !email || !sessionTitle || !abstract) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -49,8 +53,11 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase(),
       company: company || null,
       sessionTitle,
-      sessionFormat,
+      sessionFormat: sessionFormat || null,
+      track: track || null,
       abstract,
+      bio: bio || null,
+      linkedin: linkedin || null,
       eventId: eventId || 'aiconference2026',
       submittedAt: new Date(),
       magenSessionId: magenSessionId ?? null,
@@ -62,13 +69,18 @@ export async function POST(request: NextRequest) {
     const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
 
     // Send thank you email if Resend is configured
+    const isStartupWeek = (eventId || 'aiconference2026') === 'startup-week-2026';
     if (isResendConfigured() && resend) {
       try {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: email.toLowerCase(),
-          subject: getSpeakerThankYouSubject(sessionTitle),
-          html: SpeakerThankYouEmail({ name, sessionTitle, sessionFormat }),
+          subject: isStartupWeek
+            ? getStartupWeekThankYouSubject(sessionTitle)
+            : getSpeakerThankYouSubject(sessionTitle),
+          html: isStartupWeek
+            ? StartupWeekThankYouEmail({ name, sessionTitle, track: track || "" })
+            : SpeakerThankYouEmail({ name, sessionTitle, sessionFormat: sessionFormat || track || "" }),
         });
         console.log('Thank you email sent to:', email);
       } catch (emailError) {

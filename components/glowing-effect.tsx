@@ -11,7 +11,7 @@ interface GlowingEffectProps {
   inactiveZone?: number
   proximity?: number
   spread?: number
-  variant?: "default" | "white"
+  variant?: "default" | "white" | "devsa"
   glow?: boolean
   className?: string
   disabled?: boolean
@@ -138,6 +138,19 @@ const GlowingEffect = memo(
                   from 236.84deg at 50% 50%,
                   var(--black),
                   var(--black) calc(25% / var(--repeating-conic-gradient-times))
+                )`
+                  : variant === "devsa"
+                  ? `radial-gradient(circle, #ef426f 15%, #ef426f00 25%),
+                radial-gradient(circle at 40% 40%, #ff6b35 10%, #ff6b3500 20%),
+                radial-gradient(circle at 60% 60%, #00b2a9 12%, #00b2a900 22%),
+                radial-gradient(circle at 40% 60%, #4d8eff 10%, #4d8eff00 20%),
+                repeating-conic-gradient(
+                  from 236.84deg at 50% 50%,
+                  #ef426f 0%,
+                  #ff6b35 calc(25% / var(--repeating-conic-gradient-times)),
+                  #00b2a9 calc(50% / var(--repeating-conic-gradient-times)),
+                  #4d8eff calc(75% / var(--repeating-conic-gradient-times)),
+                  #ef426f calc(100% / var(--repeating-conic-gradient-times))
                 )`
                   : `radial-gradient(circle, #FACB11 15%, #FACB1100 25%),
                 radial-gradient(circle at 40% 40%, #FF6B35 10%, #FF6B3500 20%),
