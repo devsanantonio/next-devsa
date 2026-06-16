@@ -90,6 +90,7 @@ export const COLLECTIONS = {
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
   MERCH_SUBMISSIONS: 'merch_submissions',
   FAILED_ORDERS: 'failed_orders',
+  ORDERS: 'orders',
   // News digest
   NEWS_ARTICLES: 'news_articles',
   // YouTube digest

@@ -11,6 +11,10 @@
     {
       "path": "/api/youtube-digest",
       "schedule": "30 */4 * * *"
+    },
+    {
+      "path": "/api/shop/reconcile?fix=1",
+      "schedule": "0 9 * * *"
     }
   ]
 }

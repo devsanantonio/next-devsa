@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { submitOrder } from "@/lib/printify";
 import type { PrintifyAddress } from "@/lib/printify";
+import { fulfillShopOrder } from "@/lib/shop-fulfillment";
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin";
 import { resend, EMAIL_FROM, isResendConfigured } from "@/lib/resend";
 import { OrderConfirmationEmail } from "@/lib/emails/order-confirmation";
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     }
 
     // Handle shop orders
-    if (session.payment_status === "paid" && session.metadata) {
+    if (session.payment_status === "paid" && session.metadata?.line_items) {
       const shipping = JSON.parse(
         session.metadata.shipping || "{}"
       ) as PrintifyAddress & { email?: string };
@@ -89,57 +89,19 @@ export async function POST(request: Request) {
       }>;
 
       const customerEmail = shipping.email || session.customer_email || "";
-      const orderId = `DEVSA-${Date.now()}`;
 
       if (lineItems.length > 0) {
+        let result;
         try {
-          await submitOrder({
-            external_id: `stripe-${session.id}`,
-            label: orderId,
-            line_items: lineItems,
-            shipping_method: 1,
-            send_shipping_notification: true,
-            address_to: {
-              first_name: shipping.first_name || "",
-              last_name: shipping.last_name || "",
-              email: customerEmail,
-              phone: shipping.phone || "",
-              country: shipping.country || "US",
-              region: shipping.region || "",
-              address1: shipping.address1 || "",
-              address2: shipping.address2 || "",
-              city: shipping.city || "",
-              zip: shipping.zip || "",
-            },
+          // Submit to Printify, send to production, and record the order.
+          // Idempotent on session.id, so Stripe webhook retries are safe.
+          result = await fulfillShopOrder({
+            sessionId: session.id,
+            lineItems,
+            shipping,
+            customerEmail,
+            amountTotalCents: session.amount_total,
           });
-
-          // Send order confirmation email
-          if (customerEmail && isResendConfigured() && resend) {
-            try {
-              await resend.emails.send({
-                from: EMAIL_FROM,
-                to: customerEmail,
-                subject: `Order Confirmed – ${orderId}`,
-                html: OrderConfirmationEmail({
-                  firstName: shipping.first_name || "there",
-                  lastName: shipping.last_name || "",
-                  email: customerEmail,
-                  orderId,
-                  items: lineItems,
-                  shippingAddress: {
-                    address1: shipping.address1 || "",
-                    city: shipping.city || "",
-                    region: shipping.region || "",
-                    zip: shipping.zip || "",
-                    country: shipping.country || "US",
-                  },
-                }),
-              });
-            } catch (emailErr) {
-              console.error("Failed to send order confirmation email:", emailErr);
-              // Non-blocking — order was already placed
-            }
-          }
         } catch (err) {
           console.error("Failed to create Printify order from webhook:", err);
           // Log to Firestore for manual resolution
@@ -147,7 +109,7 @@ export async function POST(request: Request) {
             const db = getDb();
             await db.collection(COLLECTIONS.FAILED_ORDERS).add({
               stripeSessionId: session.id,
-              orderId,
+              orderId: `DEVSA-failed-${session.id.slice(-8)}`,
               error: err instanceof Error ? err.message : String(err),
               customerEmail,
               shipping: session.metadata.shipping,
@@ -157,6 +119,40 @@ export async function POST(request: Request) {
             });
           } catch (logErr) {
             console.error("Failed to log failed order to Firestore:", logErr);
+          }
+          return NextResponse.json({ received: true });
+        }
+
+        // Only email on first successful fulfillment (skip on webhook retries).
+        if (
+          result.status === "fulfilled" &&
+          customerEmail &&
+          isResendConfigured() &&
+          resend
+        ) {
+          try {
+            await resend.emails.send({
+              from: EMAIL_FROM,
+              to: customerEmail,
+              subject: `Order Confirmed – ${result.label}`,
+              html: OrderConfirmationEmail({
+                firstName: shipping.first_name || "there",
+                lastName: shipping.last_name || "",
+                email: customerEmail,
+                orderId: result.label,
+                items: lineItems,
+                shippingAddress: {
+                  address1: shipping.address1 || "",
+                  city: shipping.city || "",
+                  region: shipping.region || "",
+                  zip: shipping.zip || "",
+                  country: shipping.country || "US",
+                },
+              }),
+            });
+          } catch (emailErr) {
+            console.error("Failed to send order confirmation email:", emailErr);
+            // Non-blocking — order was already placed
           }
         }
       }

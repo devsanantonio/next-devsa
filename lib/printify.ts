@@ -148,6 +148,15 @@ export async function submitOrder(body: {
   );
 }
 
+// Printify creates API orders as "on-hold". This is what actually starts
+// production (and charges the connected Printify payment method).
+export async function sendOrderToProduction(orderId: string) {
+  return printifyFetch<PrintifyOrder>(
+    `/shops/${getShopId()}/orders/${orderId}/send_to_production.json`,
+    { method: "POST" }
+  );
+}
+
 // ── Uploads ────────────────────────────────────────────
 
 export async function getUploads(page = 1, limit = 10) {

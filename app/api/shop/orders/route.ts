@@ -2,7 +2,17 @@ import { NextResponse } from "next/server";
 import { submitOrder } from "@/lib/printify";
 import type { PrintifyAddress } from "@/lib/printify";
 
+const CRON_SECRET = process.env.CRON_SECRET;
+
+// Internal/manual order-submission endpoint. Customer orders are placed by the
+// Stripe webhook → fulfillShopOrder; this is a privileged tool, so require the
+// shared secret rather than leaving it open to the public.
 export async function POST(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  if (!CRON_SECRET || authHeader !== `Bearer ${CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
