@@ -6,57 +6,64 @@ import { cn } from "@/lib/utils"
 import { QRCode } from "@/components/qr-code"
 import { GlowingEffect } from "@/components/glowing-effect"
 import { StartupWeekIntro } from "@/components/startup-week/intro"
-import { LogoParticles } from "@/components/ai-builder/logo-particles"
 import { WhoServesCards } from "@/components/stay-connected/who-serves-cards"
 import { CommunityGrid } from "@/components/stay-connected/community-grid"
 import { SPOTLIGHTS, stayConnectedUrl } from "@/data/stay-connected"
 
-const ROTATE_MS = 6500
-
 /**
- * Motion-driven "slide deck" hero that auto-advances through the spotlight
- * announcements. Mirrors the /startup-week-2026 hero layout — co-branded
- * content on the left, a take-it-with-you QR on the right where that page has
- * its form. Built to run unattended on the booth monitor, but tappable too.
+ * Manually-driven "slide deck" hero for the booth monitor. No auto-advance:
+ * click the right half (or press →) to advance, the left half (or ←) to go
+ * back. Desktop-only — on mobile the page falls back to the linktree below.
  */
 export function SpotlightHero() {
   const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
   const item = SPOTLIGHTS[index]
-  // Some slides (AI Builder particles, event flyers) run on a black background.
+  // Some slides (event flyers, the PySA video) run on a black background.
   const dark = !!item.dark
 
   const go = useCallback(
     (next: number) => setIndex((next + SPOTLIGHTS.length) % SPOTLIGHTS.length),
     []
   )
+  const next = useCallback(() => setIndex((i) => (i + 1) % SPOTLIGHTS.length), [])
+  const prev = useCallback(
+    () => setIndex((i) => (i - 1 + SPOTLIGHTS.length) % SPOTLIGHTS.length),
+    []
+  )
 
   useEffect(() => {
-    if (paused) return
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-    if (reduce) return
-    const id = setInterval(() => setIndex((i) => (i + 1) % SPOTLIGHTS.length), ROTATE_MS)
-    return () => clearInterval(id)
-  }, [paused])
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") next()
+      else if (e.key === "ArrowLeft") prev()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [next, prev])
+
+  // Click the right half to advance, the left half to go back.
+  const onClick = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    if (e.clientX - rect.left < rect.width / 2) prev()
+    else next()
+  }
 
   return (
     <section
       id="stay-connected-hero"
       data-bg-type={dark ? "dark" : "light"}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onClick={onClick}
       className={cn(
-        "relative w-full transition-colors duration-500 lg:h-dvh lg:overflow-hidden",
+        "relative hidden w-full cursor-pointer select-none transition-colors duration-500 lg:block lg:h-dvh lg:overflow-hidden",
         dark ? "bg-[#050505]" : "bg-white"
       )}
     >
       <div
         className={cn(
           "mx-auto grid min-h-dvh max-w-7xl grid-cols-1 lg:h-dvh lg:pt-14",
-          // The events slide gets a wider left so the two posters can grow.
-          item.events ? "lg:grid-cols-[2.5fr_1fr]" : "lg:grid-cols-[1.7fr_1fr]"
+          // A multi-poster events slide gets a wider left so the posters can grow.
+          item.events && item.events.length > 1
+            ? "lg:grid-cols-[2.5fr_1fr]"
+            : "lg:grid-cols-[1.7fr_1fr]"
         )}
       >
         {/* LEFT — rotating announcement + progress */}
@@ -75,14 +82,7 @@ export function SpotlightHero() {
                 )}
               >
                 {item.key === "startup-week" ? (
-                  <StartupWeekIntro size="lg" showTracks={false} />
-                ) : item.key === "ai-builder" ? (
-                  <>
-                    <LogoParticles className="h-72 w-full sm:h-80 xl:h-104 2xl:h-120" />
-                    <p className="text-balance text-center text-base leading-relaxed text-white/70 md:text-lg xl:max-w-2xl xl:text-xl">
-                      {item.blurb}
-                    </p>
-                  </>
+                  <StartupWeekIntro size="lg" showTracks={false} showDeadline={false} />
                 ) : item.events ? (
                   <>
                     <p
@@ -93,7 +93,7 @@ export function SpotlightHero() {
                     >
                       {item.eyebrow}
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-wrap justify-center gap-4">
                       {item.events.map((e) => (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -101,7 +101,7 @@ export function SpotlightHero() {
                           src={e.image.src}
                           alt={e.image.alt}
                           className={cn(
-                            "max-h-[72dvh] w-full rounded-xl object-contain ring-1",
+                            "max-h-[72dvh] w-auto max-w-full rounded-xl object-contain ring-1",
                             dark ? "ring-white/10" : "ring-black/10"
                           )}
                         />
@@ -229,7 +229,10 @@ export function SpotlightHero() {
                 role="tab"
                 aria-selected={i === index}
                 aria-label={s.title}
-                onClick={() => go(i)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  go(i)
+                }}
                 className={cn(
                   "group relative h-1.5 flex-1 overflow-hidden rounded-full transition-colors",
                   dark ? "bg-white/15 hover:bg-white/25" : "bg-neutral-200 hover:bg-neutral-300"

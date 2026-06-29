@@ -20,9 +20,11 @@ const STARTUP_WEEK_LOGO =
 export function StartupWeekIntro({
   size = "md",
   showTracks = true,
+  showDeadline = true,
 }: {
   size?: "md" | "lg"
   showTracks?: boolean
+  showDeadline?: boolean
 }) {
   const [hoveredTrack, setHoveredTrack] = useState<Track | null>(null)
   const lg = size === "lg"
@@ -80,13 +82,15 @@ export function StartupWeekIntro({
       </div>
 
       {/* Deadline */}
-      <div className="inline-flex w-fit items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-sm text-neutral-700">
-        <CalendarClock className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
-        <span>
-          Speaker submissions close{" "}
-          <span className="font-semibold text-neutral-900">June 30, 2026</span>
-        </span>
-      </div>
+      {showDeadline && (
+        <div className="inline-flex w-fit items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-sm text-neutral-700">
+          <CalendarClock className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
+          <span>
+            Speaker submissions close{" "}
+            <span className="font-semibold text-neutral-900">June 30, 2026</span>
+          </span>
+        </div>
+      )}
 
       <p
         className={cn(

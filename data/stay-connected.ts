@@ -62,17 +62,8 @@ export type EventLink = {
   image: { src: string; alt: string }
 }
 
-/** The two upcoming events shown together on one slide, but linked separately. */
+/** Upcoming community events shown on the events slide, linked separately in the linktree. */
 export const EVENTS: EventLink[] = [
-  {
-    name: "Civic Build Night",
-    href: "/events/week-00-the-juneteenth-civic-build-jam-mq1hq70u",
-    accent: "#4d8eff",
-    image: {
-      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-antigravity.PNG",
-      alt: "Civic Build Night",
-    },
-  },
   {
     name: "Velocicode II",
     href: "https://acmsa.org/velocicode",
@@ -129,63 +120,6 @@ export const SPOTLIGHTS: Spotlight[] = [
     status: "",
   },
   {
-    key: "startup-week",
-    eyebrow: "DEVSA × Geekdom",
-    title: "San Antonio Startup Week",
-    logo: {
-      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/poweredbygeekdom.png",
-      alt: "San Antonio Startup Week — Powered by Geekdom",
-    },
-    blurb:
-      "DEVSA and Geekdom are coming together for an open call for speakers across five tracks — founders, builders, applied AI, solopreneurs, and capital & community. Sept 28 – Oct 2, 2026.",
-    accent: "#ec228d",
-    group: "happening",
-    href: "/startup-week-2026",
-    cta: "Submit a talk",
-    status: "Call for speakers open",
-  },
-  {
-    key: "ai-builder",
-    eyebrow: "DEVSA × Digital Canvas × 434 Media",
-    title: "AI Builder Program",
-    blurb:
-      "Digital Canvas isn't a new institution. It's a layer connecting two existing pipelines — DEVSA's tech community and an accredited investor network — with industry underwriters in between. The infrastructure is in place. We're the connecting tissue.",
-    accent: "#00f2ff",
-    dark: true,
-    group: "happening",
-    href: "/ai-builder-program",
-    cta: "Explore the program",
-    status: "Now announcing",
-  },
-  {
-    key: "events",
-    eyebrow: "Upcoming community events",
-    title: "Upcoming events",
-    events: EVENTS,
-    blurb: "",
-    accent: "#4d8eff",
-    group: "happening",
-    href: "",
-    cta: "",
-    status: "Upcoming",
-  },
-  {
-    key: "pysanantonio",
-    eyebrow: "Upcoming conference: PySanAntonio II",
-    title: "PySanAntonio II",
-    video: {
-      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.mp4",
-      poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.jpg",
-    },
-    blurb: "",
-    accent: "#ffd343",
-    dark: true,
-    group: "happening",
-    href: "/events/pysanantonio",
-    cta: "View conference",
-    status: "Upcoming",
-  },
-  {
     key: "who-serves",
     eyebrow: "Who DEVSA Serves",
     title: "Three Audiences, One Bridge.",
@@ -234,5 +168,49 @@ export const SPOTLIGHTS: Spotlight[] = [
     href: "/events",
     cta: "Browse events",
     status: "",
+  },
+  {
+    key: "events",
+    eyebrow: "Upcoming community events",
+    title: "Upcoming events",
+    events: EVENTS,
+    blurb: "",
+    accent: "#4d8eff",
+    group: "happening",
+    href: "",
+    cta: "",
+    status: "Upcoming",
+  },
+  {
+    key: "startup-week",
+    eyebrow: "DEVSA × Geekdom",
+    title: "San Antonio Startup Week",
+    logo: {
+      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/poweredbygeekdom.png",
+      alt: "San Antonio Startup Week — Powered by Geekdom",
+    },
+    blurb:
+      "DEVSA and Geekdom are coming together for an open call for speakers across five tracks — founders, builders, applied AI, solopreneurs, and capital & community. Sept 28 – Oct 2, 2026.",
+    accent: "#ec228d",
+    group: "happening",
+    href: "/startup-week-2026",
+    cta: "Submit a talk",
+    status: "Call for speakers open",
+  },
+  {
+    key: "pysanantonio",
+    eyebrow: "Upcoming conference: PySanAntonio II",
+    title: "PySanAntonio II",
+    video: {
+      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.mp4",
+      poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.jpg",
+    },
+    blurb: "",
+    accent: "#ffd343",
+    dark: true,
+    group: "happening",
+    href: "/events/pysanantonio",
+    cta: "View conference",
+    status: "Upcoming",
   },
 ]
