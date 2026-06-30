@@ -58,8 +58,10 @@ interface SpeakerSubmission {
   email: string
   company?: string
   sessionTitle: string
-  sessionFormat: string
+  sessionFormat?: string
+  track?: string
   abstract: string
+  eventId?: string
   submittedAt: string
   status: string
 }
@@ -169,6 +171,7 @@ export default function AdminPage() {
   // Data states
   const [newsletter, setNewsletter] = useState<NewsletterSubscription[]>([])
   const [speakers, setSpeakers] = useState<SpeakerSubmission[]>([])
+  const [speakerEventFilter, setSpeakerEventFilter] = useState<string>("all")
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -1731,17 +1734,57 @@ export default function AdminPage() {
           )}
 
           {/* Speakers Tab - Admin Only */}
-          {activeTab === "speakers" && hasAdminAccess(adminRole) && (
+          {activeTab === "speakers" && hasAdminAccess(adminRole) && (() => {
+            const speakerEvents = Array.from(
+              new Set(speakers.map((s) => s.eventId || "—"))
+            ).sort()
+            const filteredSpeakers =
+              speakerEventFilter === "all"
+                ? speakers
+                : speakers.filter((s) => (s.eventId || "—") === speakerEventFilter)
+            return (
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Speaker Submissions</h2>
-              {speakers.length === 0 ? (
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <h2 className="text-xl font-bold tracking-tight text-white">
+                  Speaker Submissions{" "}
+                  <span className="text-base font-normal text-neutral-500">
+                    ({filteredSpeakers.length})
+                  </span>
+                </h2>
+                <select
+                  value={speakerEventFilter}
+                  onChange={(e) => setSpeakerEventFilter(e.target.value)}
+                  className="rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
+                >
+                  <option value="all">All events ({speakers.length})</option>
+                  {speakerEvents.map((ev) => (
+                    <option key={ev} value={ev}>
+                      {ev} (
+                      {speakers.filter((s) => (s.eventId || "—") === ev).length})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {filteredSpeakers.length === 0 ? (
                 <p className="text-neutral-400 text-center py-8">No speaker submissions yet.</p>
               ) : (
                 <div className="space-y-4">
-                  {speakers.map((speaker) => (
+                  {filteredSpeakers.map((speaker) => (
                     <div key={speaker.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
                       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                         <div>
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            {speaker.eventId && (
+                              <span className="rounded-full bg-neutral-700/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
+                                {speaker.eventId}
+                              </span>
+                            )}
+                            {speaker.track && (
+                              <span className="rounded-full bg-[#ec228d]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ec228d]">
+                                {speaker.track}
+                              </span>
+                            )}
+                          </div>
                           <h3 className="text-lg font-bold tracking-tight text-white">{speaker.sessionTitle}</h3>
                           <p className="text-neutral-400 text-sm mt-1">
                             {speaker.name} {speaker.company && <span className="text-neutral-500">• {speaker.company}</span>}
@@ -1761,10 +1804,12 @@ export default function AdminPage() {
                           Delete
                         </button>
                       </div>
-                      <div className="mb-4">
-                        <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
-                        <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
-                      </div>
+                      {speaker.sessionFormat && (
+                        <div className="mb-4">
+                          <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
+                          <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
+                        </div>
+                      )}
                       <div>
                         <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Abstract</span>
                         <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
@@ -1777,7 +1822,8 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
-          )}
+            )
+          })()}
 
           {/* Access Requests Tab - Admin Only */}
           {activeTab === "access" && hasAdminAccess(adminRole) && (
