@@ -24,7 +24,7 @@ export function StartupWeekHero() {
           transition={{ duration: 0.6 }}
           className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:h-full lg:overflow-y-auto lg:px-14 lg:py-10"
         >
-          <StartupWeekIntro />
+          <StartupWeekIntro showDeadline={false} />
         </motion.div>
 
         {/* RIGHT — the form */}
