@@ -183,8 +183,8 @@ export function HeroSection() {
                     Run by volunteer organizers from{" "}
                     <span className="font-medium text-gray-700">Greater Gaming Society</span>,{" "}
                     <span className="font-medium text-gray-700">Alamo Python</span>,{" "}
-                    <span className="font-medium text-gray-700">Dungo Digital</span>,{" "}
-                    <span className="font-medium text-gray-700">ACM San Antonio</span>{" "}
+                    <span className="font-medium text-gray-700">Google Developer Groups</span>,{" "}
+                    <span className="font-medium text-gray-700">ACM-UTSA</span>{" "}
                     and more — coordinated by{" "}
                     <span className="font-medium text-gray-700">DEVSA</span>, a 501(c)(3) education nonprofit.
                   </p>

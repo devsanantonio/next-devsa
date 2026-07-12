@@ -33,25 +33,11 @@ export function CoworkingSpaceClient() {
 
   const admins = [
     {
-      name: "Al Dungo",
-      role: "Dungo Digital",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-dungo2.webp",
-      linkedin: "https://www.linkedin.com/in/al-d-543688113/",
-      instagram: "https://www.instagram.com/dungodigital/",
-    },
-    {
-      name: "Daniel Ochoa",
-      role: "Alamo Python",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-daniel.jpeg",
-      linkedin: "https://www.linkedin.com/in/dochoa3/",
-      instagram: "https://www.instagram.com/devsatx/",
-    },
-    {
-      name: "Ansley Rose",
-      role: "Greater Gaming Society",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-ansley.jpeg",
-      linkedin: "https://www.linkedin.com/in/ansley-partosa/",
-      instagram: "https://www.instagram.com/greatergamingsociety/",
+      name: "Zander Brysch",
+      role: "ACM-UTSA/RowdyHacks",
+      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-zander.png",
+      linkedin: "https://www.linkedin.com/in/zander-brysch/",
+      instagram: "https://www.instagram.com/acmutsa/",
     },
     {
       name: "Zaquariah Holland",
@@ -59,6 +45,20 @@ export function CoworkingSpaceClient() {
       image: "https://devsa-assets.s3.us-east-2.amazonaws.com/admin-holland.png",
       linkedin: "https://www.linkedin.com/in/zaquariah-holland/",
       instagram: "https://www.instagram.com/acmsanantonio/",
+    },
+    {
+      name: "Al Dungo",
+      role: "Dungo Digital",
+      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-dungo2.webp",
+      linkedin: "https://www.linkedin.com/in/al-d-543688113/",
+      instagram: "https://www.instagram.com/dungodigital/",
+    },
+    {
+      name: "Ansley Rose",
+      role: "Greater Gaming Society",
+      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-ansley.jpeg",
+      linkedin: "https://www.linkedin.com/in/ansley-partosa/",
+      instagram: "https://www.instagram.com/greatergamingsociety/",
     },
     {
       name: "Jesse Hernandez",
