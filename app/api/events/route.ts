@@ -16,6 +16,21 @@ async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
   return lookup;
 }
 
+// Helper to build partner lookup map from Firestore (partners co-host events)
+async function buildPartnerLookup(db: FirebaseFirestore.Firestore) {
+  const lookup = new Map<string, { name: string; logo: string }>();
+  try {
+    const partnersSnapshot = await db.collection(COLLECTIONS.PARTNERS).get();
+    partnersSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      lookup.set(doc.id, { name: data.name || doc.id, logo: data.logo || '' });
+    });
+  } catch {
+    // Firestore unavailable
+  }
+  return lookup;
+}
+
 // Get all events
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +39,8 @@ export async function GET(request: NextRequest) {
     
     // Build merged community lookup (static + Firestore)
     const communityLookup = await buildCommunityLookup(db);
-    
+    const partnerLookup = await buildPartnerLookup(db);
+
     // For admin dashboard, fetch all events including drafts
     // For public pages, only fetch published events
     let eventsSnapshot;
@@ -45,18 +61,25 @@ export async function GET(request: NextRequest) {
       // Build arrays of names/logos for all communities
       const communityNames = communityIds.map((id: string) => communityLookup.get(id)?.name || data.communityName || id).join(', ');
       const communityLogos = communityIds.map((id: string) => communityLookup.get(id)?.logo || '').filter(Boolean);
+      // Support comma-separated partnerIds for co-hosted events
+      const partnerIds = (data.partnerId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
+      const partnerNames = partnerIds.map((id: string) => partnerLookup.get(id)?.name || id).join(', ');
+      const partnerLogos = partnerIds.map((id: string) => partnerLookup.get(id)?.logo || '').filter(Boolean);
       return {
         id: doc.id,
         ...data,
-        communityName: communityNames || 'DEVSA Community',
+        // Headline host: communities if any, else co-hosting partners, else the generic default
+        communityName: communityNames || partnerNames || 'DEVSA Community',
         communityLogo: primaryCommunity?.logo || '',
         communityLogos: communityLogos,
+        partnerNames,
+        partnerLogos,
         isStatic: false, // Firestore events can be edited/deleted
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string; communityName: string; communityLogo: string; communityLogos: string[]; isStatic: boolean })[];
+    }) as (Event & { id: string; communityName: string; communityLogo: string; communityLogos: string[]; partnerNames: string; partnerLogos: string[]; isStatic: boolean })[];
 
     // Sort by date
     firestoreEvents.sort((a, b) => {
@@ -79,11 +102,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, status, eventType, rsvpEnabled, organizerEmail } = body;
 
-    if (!title || !date || !description || !communityId || !organizerEmail) {
+    // An event needs at least one host — a community, a partner, or both
+    if (!title || !date || !description || (!communityId && !partnerId) || !organizerEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields — an event needs a title, date, description, and at least one host (community or partner)' },
         { status: 400 }
       );
     }
@@ -132,8 +156,9 @@ export async function POST(request: NextRequest) {
       venue: venue || '',
       address: address || '',
       description,
-      communityId,
+      communityId: communityId || '',
       ...(communityName ? { communityName } : {}),
+      ...(partnerId ? { partnerId } : {}),
       organizerEmail: organizerEmail.toLowerCase(),
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
@@ -165,7 +190,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -236,8 +261,9 @@ export async function PUT(request: NextRequest) {
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
-    if (communityId) updateData.communityId = communityId;
+    if (typeof communityId === 'string') updateData.communityId = communityId;
     if (typeof communityName === 'string') updateData.communityName = communityName;
+    if (typeof partnerId === 'string') updateData.partnerId = partnerId;
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 

@@ -200,6 +200,7 @@ export interface Event {
   url?: string;
   communityId: string;
   communityName?: string; // Display name for custom/one-off communities
+  partnerId?: string; // Comma-separated partner IDs co-hosting the event
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';

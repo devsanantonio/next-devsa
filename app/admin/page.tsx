@@ -33,7 +33,8 @@ import {
   Bell,
   Menu,
   Home,
-  Download
+  Download,
+  Handshake
 } from "lucide-react"
 
 import { RichTextEditor } from "@/components/rich-text-editor"
@@ -105,12 +106,25 @@ interface CalendarEvent {
   url?: string
   communityId: string
   communityName?: string
+  partnerId?: string
+  partnerNames?: string
+  partnerLogos?: string[]
   status: string
   source?: string
   isStatic?: boolean
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
+}
+
+interface Partner {
+  id: string
+  name: string
+  logo: string
+  description: string
+  website?: string
+  video?: string
+  isEasterEgg?: boolean
 }
 
 interface Community {
@@ -144,7 +158,7 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "rsvps" | "merch"
+type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -204,6 +218,7 @@ export default function AdminPage() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
   const [showArchivedEvents, setShowArchivedEvents] = useState(false)
+  const [showEventPartnerDropdown, setShowEventPartnerDropdown] = useState(false)
   const [showEditCommunity, setShowEditCommunity] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [editingCommunity, setEditingCommunity] = useState<Community | null>(null)
@@ -240,6 +255,16 @@ export default function AdminPage() {
     github: "",
   })
   const [isCreatingCommunity, setIsCreatingCommunity] = useState(false)
+
+  // Partners
+  const [partners, setPartners] = useState<Partner[]>([])
+  const [showCreatePartner, setShowCreatePartner] = useState(false)
+  const [showEditPartner, setShowEditPartner] = useState(false)
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
+  const [isSavingPartner, setIsSavingPartner] = useState(false)
+  const [isDeletingPartner, setIsDeletingPartner] = useState<string | null>(null)
+  const emptyPartner: Partner = { id: "", name: "", logo: "", description: "", website: "", video: "" }
+  const [newPartner, setNewPartner] = useState<Partner>(emptyPartner)
   const [isUploadingNewLogo, setIsUploadingNewLogo] = useState(false)
   const [isDeletingCommunity, setIsDeletingCommunity] = useState<string | null>(null)
   const [isDevsaAccordionOpen, setIsDevsaAccordionOpen] = useState(false)
@@ -273,7 +298,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "devsa", "speakers", "access", "admins", "events", "communities", "rsvps", "merch",
+      "newsletter", "devsa", "speakers", "access", "admins", "events", "communities", "partners", "rsvps", "merch",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -338,15 +363,17 @@ export default function AdminPage() {
 
   const fetchData = async (email: string, role?: string, communityId?: string) => {
     try {
-      const [adminDataRes, eventsRes, communitiesRes] = await Promise.all([
+      const [adminDataRes, eventsRes, communitiesRes, partnersRes] = await Promise.all([
         fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
         fetch('/api/events?includeAll=true'),
-        fetch('/api/communities')
+        fetch('/api/communities'),
+        fetch('/api/partners')
       ])
-      
+
       const adminData = await adminDataRes.json()
       const eventsData = await eventsRes.json()
       const communitiesData = await communitiesRes.json()
+      const partnersData = await partnersRes.json()
 
       if (adminDataRes.ok) {
         // Only admins/superadmins should see newsletter, speakers, access requests, and admins data
@@ -362,7 +389,11 @@ export default function AdminPage() {
         setCommunities(communitiesData.communities || [])
         setCommunitiesSource(communitiesData.source || 'static')
       }
-      
+
+      if (partnersRes.ok) {
+        setPartners(partnersData.partners || [])
+      }
+
       if (eventsRes.ok) {
         // Organizers can only see events for their community
         const userCommunityId = communityId || adminCommunityId
@@ -614,6 +645,7 @@ export default function AdminPage() {
       address: "",
       description: "",
       communityId: adminRole === "organizer" && adminCommunityId ? adminCommunityId : "",
+      partnerId: "",
       status: "published",
       eventType: "in-person",
       rsvpEnabled: false,
@@ -622,6 +654,7 @@ export default function AdminPage() {
     setEditEventUseCustomCommunity(false)
     setEditEventCustomCommunityName("")
     setShowEditEventCommunityDropdown(false)
+    setShowEventPartnerDropdown(false)
     setShowEditEvent(true)
   }
 
@@ -652,6 +685,7 @@ export default function AdminPage() {
           rsvpEnabled: editingEvent.rsvpEnabled,
           externalRsvpUrl: editingEvent.externalRsvpUrl || null,
           communityId: editingEvent.communityId,
+          partnerId: editingEvent.partnerId || "",
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
@@ -1011,6 +1045,84 @@ export default function AdminPage() {
     }
   }
 
+  const handleCreatePartner = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingPartner(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/partners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newPartner, adminEmail }),
+      })
+      if (response.ok) {
+        setShowCreatePartner(false)
+        setNewPartner(emptyPartner)
+        setSuccessMessage("Partner created successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to create partner")
+      }
+    } catch {
+      setError("Failed to create partner")
+    } finally {
+      setIsSavingPartner(false)
+    }
+  }
+
+  const handleSavePartner = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPartner) return
+    setIsSavingPartner(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/partners", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editingPartner, adminEmail }),
+      })
+      if (response.ok) {
+        setShowEditPartner(false)
+        setEditingPartner(null)
+        setSuccessMessage("Partner updated successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to update partner")
+      }
+    } catch {
+      setError("Failed to update partner")
+    } finally {
+      setIsSavingPartner(false)
+    }
+  }
+
+  const handleDeletePartner = async (partnerId: string, partnerName: string) => {
+    if (!confirm(`Are you sure you want to delete "${partnerName}"? This action cannot be undone.`)) return
+
+    setIsDeletingPartner(partnerId)
+    setError(null)
+    try {
+      const response = await fetch("/api/partners", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: partnerId, adminEmail }),
+      })
+      if (response.ok) {
+        setSuccessMessage("Partner deleted successfully!")
+        await fetchData(adminEmail)
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete partner")
+      }
+    } catch {
+      setError("Failed to delete partner")
+    } finally {
+      setIsDeletingPartner(null)
+    }
+  }
+
   // Clear messages after showing
   useEffect(() => {
     if (successMessage) {
@@ -1109,6 +1221,7 @@ export default function AdminPage() {
   ]
 
   const adminNav: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }[] = [
+    { id: "partners", label: "Partners", icon: Handshake, count: partners.length },
     { id: "devsa", label: "DEVSA Subscribers", icon: RocketIcon, count: devsaSubs.length },
     { id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.length },
     { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length },
@@ -1121,6 +1234,7 @@ export default function AdminPage() {
     events: "Events",
     rsvps: "RSVPs",
     communities: adminRole === "organizer" ? "My Community" : "Communities",
+    partners: "Partners",
     devsa: "DEVSA Subscribers",
     newsletter: "Newsletter",
     speakers: "Speakers",
@@ -2235,6 +2349,20 @@ export default function AdminPage() {
                           )}
                         </div>
                         <p className="text-neutral-400 text-sm mt-1">{event.communityName || event.communityId}</p>
+                        {/* Only a co-host row when a community is the headline; partner-only events already show the partner as the headline */}
+                        {event.partnerNames && event.communityId && (
+                          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500">
+                            <span className="font-medium text-neutral-400">With partners:</span>
+                            {event.partnerNames.split(', ').filter(Boolean).map((name) => (
+                              <span
+                                key={name}
+                                className="inline-flex items-center rounded-full border border-neutral-700 bg-neutral-800/60 px-2 py-0.5 text-[11px] font-medium text-neutral-300"
+                              >
+                                {name}
+                              </span>
+                            ))}
+                          </p>
+                        )}
                         <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-neutral-500">
                           <span className="flex items-center gap-1.5">
                             <CalendarDays className="h-4 w-4" />
@@ -2504,6 +2632,94 @@ export default function AdminPage() {
                           )}
                         </div>
                       )}
+                      {/* Partners (co-hosts) — available to every role */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                          Partners <span className="font-normal text-neutral-500">(optional co-hosts)</span>
+                        </label>
+                        <div className="relative">
+                          {editingEvent.partnerId && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {(editingEvent.partnerId || '').split(',').filter(Boolean).map((id) => {
+                                const partner = partners.find(p => p.id === id)
+                                return (
+                                  <span
+                                    key={id}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-[#ef426f]/15 border border-[#ef426f]/30 px-3 py-1 text-xs font-semibold text-[#ef426f]"
+                                  >
+                                    {partner?.name || id}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const ids = (editingEvent.partnerId || '').split(',').filter(i => i !== id)
+                                        setEditingEvent({ ...editingEvent, partnerId: ids.join(',') })
+                                      }}
+                                      className="hover:text-white transition-colors"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setShowEventPartnerDropdown(!showEventPartnerDropdown)}
+                            className="w-full flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-left focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          >
+                            <span className={editingEvent.partnerId ? "text-white" : "text-neutral-500"}>
+                              {editingEvent.partnerId
+                                ? `${(editingEvent.partnerId || '').split(',').filter(Boolean).length} selected — click to add more`
+                                : "Select partners"}
+                            </span>
+                            <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showEventPartnerDropdown ? "rotate-180" : ""}`} />
+                          </button>
+                          {showEventPartnerDropdown && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setShowEventPartnerDropdown(false)} />
+                              <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-neutral-700 bg-neutral-800 py-1 shadow-xl max-h-56 overflow-y-auto">
+                                {partners.length === 0 ? (
+                                  <p className="px-4 py-2.5 text-sm text-neutral-500">No partners yet — add them in the Partners section.</p>
+                                ) : (
+                                  partners.map((partner) => {
+                                    const selectedIds = (editingEvent.partnerId || '').split(',').filter(Boolean)
+                                    const isSelected = selectedIds.includes(partner.id)
+                                    return (
+                                      <button
+                                        key={partner.id}
+                                        type="button"
+                                        onClick={() => {
+                                          const ids = (editingEvent.partnerId || '').split(',').filter(Boolean)
+                                          setEditingEvent({
+                                            ...editingEvent,
+                                            partnerId: isSelected
+                                              ? ids.filter(i => i !== partner.id).join(',')
+                                              : [...ids, partner.id].join(','),
+                                          })
+                                        }}
+                                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                                          isSelected ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
+                                        }`}
+                                      >
+                                        <span className={`flex items-center justify-center h-4 w-4 rounded border text-[10px] ${
+                                          isSelected ? "bg-[#ef426f] border-[#ef426f] text-white" : "border-neutral-600"
+                                        }`}>
+                                          {isSelected && "✓"}
+                                        </span>
+                                        <span className="truncate">{partner.name}</span>
+                                      </button>
+                                    )
+                                  })
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs text-neutral-500">
+                          Partners like Tech Bloc or Youth Code Jam co-hosting this event.
+                        </p>
+                      </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Event Title
@@ -3459,6 +3675,248 @@ export default function AdminPage() {
                         </button>
                       </div>
                     </form>
+              </SlideDrawer>
+            </div>
+          )}
+
+          {/* Partners Tab - Admin Only */}
+          {activeTab === "partners" && hasAdminAccess(adminRole) && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-white">Partners</h2>
+                <button
+                  onClick={() => { setNewPartner(emptyPartner); setShowCreatePartner(true) }}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Partner
+                </button>
+              </div>
+
+              {partners.length === 0 ? (
+                <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 py-12 text-center">
+                  <Handshake className="mx-auto mb-3 h-6 w-6 text-neutral-600" />
+                  <p className="text-sm text-neutral-400">No partners yet</p>
+                  <p className="mt-1 text-xs text-neutral-600">
+                    Add partner organizations like Tech Bloc or Youth Code Jam. They can then co-host events.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {partners.map((partner) => (
+                    <div key={partner.id} className="flex gap-4 rounded-xl border border-neutral-800 bg-neutral-800/30 p-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-800 bg-white/5">
+                        {partner.logo ? (
+                          <img src={partner.logo} alt={partner.name} className="h-full w-full object-contain p-1" />
+                        ) : (
+                          <Handshake className="h-5 w-5 text-neutral-500" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="truncate font-semibold text-white">{partner.name}</h3>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              onClick={() => { setEditingPartner(partner); setShowEditPartner(true) }}
+                              className="rounded-lg bg-blue-500/20 p-2 text-blue-400 hover:bg-blue-500/30 transition-colors"
+                              aria-label="Edit partner"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePartner(partner.id, partner.name)}
+                              disabled={isDeletingPartner === partner.id}
+                              className="rounded-lg bg-red-500/20 p-2 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                              aria-label="Delete partner"
+                            >
+                              {isDeletingPartner === partner.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs text-neutral-400">{partner.description}</p>
+                        {partner.website && (
+                          <a
+                            href={partner.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#ef426f] hover:underline"
+                          >
+                            <ExternalLink className="h-3 w-3" /> Website
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Create Partner Drawer */}
+              <SlideDrawer
+                open={showCreatePartner}
+                onClose={() => { setShowCreatePartner(false); setNewPartner(emptyPartner) }}
+                title="Create Partner"
+                subtitle="Add a partner organization that can co-host events."
+              >
+                <form onSubmit={handleCreatePartner} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Partner ID *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPartner.id}
+                      onChange={(e) => setNewPartner({ ...newPartner, id: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                      placeholder="tech-bloc"
+                      className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    />
+                    <p className="mt-2 text-xs text-neutral-500">Lowercase and hyphenated — this is the permanent ID and can&apos;t be changed later.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPartner.name}
+                      onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })}
+                      placeholder="Tech Bloc"
+                      className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo URL *</label>
+                    <input
+                      type="url"
+                      required
+                      value={newPartner.logo}
+                      onChange={(e) => setNewPartner({ ...newPartner, logo: e.target.value })}
+                      placeholder="https://…/logo.svg"
+                      className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Description *</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={newPartner.description}
+                      onChange={(e) => setNewPartner({ ...newPartner, description: e.target.value })}
+                      placeholder="What this partner does…"
+                      className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
+                    <input
+                      type="url"
+                      value={newPartner.website || ""}
+                      onChange={(e) => setNewPartner({ ...newPartner, website: e.target.value })}
+                      placeholder="https://…"
+                      className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => { setShowCreatePartner(false); setNewPartner(emptyPartner) }}
+                      className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingPartner}
+                      className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
+                    >
+                      {isSavingPartner ? (
+                        <><Loader2 className="inline h-4 w-4 animate-spin mr-2" />Creating...</>
+                      ) : (
+                        "Create Partner"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </SlideDrawer>
+
+              {/* Edit Partner Drawer */}
+              <SlideDrawer
+                open={showEditPartner && !!editingPartner}
+                onClose={() => { setShowEditPartner(false); setEditingPartner(null) }}
+                title="Edit Partner"
+              >
+                {editingPartner && (
+                  <form onSubmit={handleSavePartner} className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Partner ID</label>
+                      <div className="w-full rounded-xl border border-neutral-700 bg-neutral-800/60 py-3 px-4 text-sm text-neutral-400">
+                        {editingPartner.id}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingPartner.name}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
+                        className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo URL</label>
+                      {editingPartner.logo && (
+                        <div className="mb-2 flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-800/40 p-2">
+                          <img src={editingPartner.logo} alt="" className="h-8 w-8 object-contain" />
+                          <span className="truncate text-xs text-neutral-400">{editingPartner.logo}</span>
+                        </div>
+                      )}
+                      <input
+                        type="url"
+                        required
+                        value={editingPartner.logo}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, logo: e.target.value })}
+                        className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Description</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={editingPartner.description}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, description: e.target.value })}
+                        className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
+                      <input
+                        type="url"
+                        value={editingPartner.website || ""}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, website: e.target.value })}
+                        className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => { setShowEditPartner(false); setEditingPartner(null) }}
+                        className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSavingPartner}
+                        className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
+                      >
+                        {isSavingPartner ? (
+                          <><Loader2 className="inline h-4 w-4 animate-spin mr-2" />Saving...</>
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </SlideDrawer>
             </div>
           )}
