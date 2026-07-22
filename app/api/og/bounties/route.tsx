@@ -1,9 +1,11 @@
 import { ImageResponse } from "next/og"
 import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
+import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
 export async function GET() {
+  const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
       <div
@@ -13,6 +15,7 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
+          fontFamily: "Geist Sans",
         }}
       >
         <BrandGradientBar direction="ltr" />
@@ -185,6 +188,7 @@ export async function GET() {
     {
       width: 1200,
       height: 630,
+      fonts,
     }
   )
 }

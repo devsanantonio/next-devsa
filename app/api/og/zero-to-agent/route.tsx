@@ -1,8 +1,11 @@
 import { ImageResponse } from "next/og"
+import { loadBrandMonoFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
 export async function GET() {
+  const fonts = await loadBrandMonoFonts()
+
   return new ImageResponse(
     (
       <div
@@ -14,7 +17,7 @@ export async function GET() {
           backgroundColor: "#000000",
           padding: "0",
           position: "relative",
-          fontFamily: "monospace",
+          fontFamily: "Geist Mono",
         }}
       >
         {/* Top accent line */}
@@ -421,6 +424,7 @@ export async function GET() {
     {
       width: 1200,
       height: 630,
+      fonts,
     }
   )
 }

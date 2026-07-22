@@ -1,9 +1,12 @@
 import { ImageResponse } from "next/og"
 import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
+import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
 export async function GET() {
+  const fonts = await loadBrandFonts()
+
   return new ImageResponse(
     (
       <div
@@ -13,6 +16,7 @@ export async function GET() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
+          fontFamily: "Geist Sans",
         }}
       >
         <BrandGradientBar direction="ltr" />
@@ -96,7 +100,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            One calendar for every community group. Stop hunting for meetup links and focus on building, learning, and connecting with the people shipping in San Antonio.
+            One calendar for every community and partner. Stop hunting for meetup links and focus on building, learning, and connecting with the people shipping in San Antonio.
           </p>
 
           {/* Stats row */}
@@ -126,7 +130,7 @@ export async function GET() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                20+ Community Groups
+                20+ Communities · 10+ Partners
               </span>
             </div>
 
@@ -178,6 +182,7 @@ export async function GET() {
     {
       width: 1200,
       height: 630,
+      fonts,
     }
   )
 }

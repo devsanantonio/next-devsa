@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og"
 import { getProduct } from "@/lib/printify"
+import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
@@ -37,6 +38,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
     // fallback to defaults
   }
 
+  const fonts = await loadBrandFonts()
+
   return new ImageResponse(
     (
       <div
@@ -46,6 +49,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
           display: "flex",
           backgroundColor: "#ffffff",
           padding: "56px 64px",
+          fontFamily: "Geist Sans",
         }}
       >
         {/* Left side — text content */}
@@ -178,6 +182,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     {
       width: 1200,
       height: 630,
+      fonts,
     }
   )
 }

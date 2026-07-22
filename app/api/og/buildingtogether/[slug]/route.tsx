@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
 import { partners } from "@/data/partners"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
@@ -80,7 +81,9 @@ export async function GET(
       community = { id: doc.id, name: data?.name, logo: data?.logo, description: data?.description }
     }
   } catch {}
-  
+
+  const fonts = await loadBrandFonts()
+
   if (community) {
     return new ImageResponse(
       (
@@ -92,6 +95,7 @@ export async function GET(
             flexDirection: "column",
             backgroundColor: "#ffffff",
             padding: "56px 64px",
+            fontFamily: "Geist Sans",
           }}
         >
           <OgHeader label="Tech Group" />
@@ -186,7 +190,7 @@ export async function GET(
           </div>
         </div>
       ),
-      { width: 1200, height: 630 }
+      { width: 1200, height: 630, fonts }
     )
   }
 
@@ -203,6 +207,7 @@ export async function GET(
             flexDirection: "column",
             backgroundColor: "#ffffff",
             padding: "56px 64px",
+            fontFamily: "Geist Sans",
           }}
         >
           <OgHeader label="Partner" />
@@ -302,7 +307,7 @@ export async function GET(
           </div>
         </div>
       ),
-      { width: 1200, height: 630 }
+      { width: 1200, height: 630, fonts }
     )
   }
 
@@ -319,6 +324,7 @@ export async function GET(
           justifyContent: "center",
           backgroundColor: "#ffffff",
           gap: 16,
+          fontFamily: "Geist Sans",
         }}
       >
         <span style={{ color: "#ef426f", fontSize: 28, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.4 }}>
@@ -332,6 +338,6 @@ export async function GET(
         </span>
       </div>
     ),
-    { width: 1200, height: 630 }
+    { width: 1200, height: 630, fonts }
   )
 }

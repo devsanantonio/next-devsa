@@ -1,8 +1,10 @@
 import { ImageResponse } from "next/og"
+import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
 export async function GET() {
+  const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
       <div
@@ -13,6 +15,7 @@ export async function GET() {
           flexDirection: "column",
           backgroundColor: "#ffffff",
           padding: "56px 64px",
+          fontFamily: "Geist Sans",
         }}
       >
         {/* Header */}
@@ -165,6 +168,7 @@ export async function GET() {
     {
       width: 1200,
       height: 630,
+      fonts,
     }
   )
 }
