@@ -16,20 +16,30 @@ export function Navbar() {
   return (
     <>
       <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md border-b border-black/10">
-        <div className="container-responsive">
+        <div className="w-full px-6 sm:px-10 md:px-16 lg:px-20">
           <div className="flex justify-between items-center">
             <div className="shrink-0">
               <LogoContextMenu>
                 <Link
                   href="/"
-                  className="transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2 md:px-0 block"
+                  className="group transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg block"
                   aria-label="Go to home page"
                 >
-                  <img
-                    src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
-                    alt="DEVSA - San Antonio Developer Community"
-                    className="w-8 h-8 md:w-10 md:h-10"
-                  />
+                  <span className="relative block w-10 h-10 md:w-12 md:h-12">
+                    {/* Alternate (monochrome) logo — default, fades out on hover */}
+                    <img
+                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-altlogo.png"
+                      alt="DEVSA - San Antonio Developer Community"
+                      className="absolute inset-0 h-full w-full object-contain transition-opacity duration-200 group-hover:opacity-0"
+                    />
+                    {/* Original (color) logo — fades in on hover */}
+                    <img
+                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full object-contain opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    />
+                  </span>
                 </Link>
               </LogoContextMenu>
             </div>
