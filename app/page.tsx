@@ -8,7 +8,7 @@ import { AudienceLanes } from "@/components/audience-lanes"
 
 export default function HomePage() {
   return (
-    <div className="w-full min-h-screen bg-white overflow-x-hidden">
+    <div className="w-full min-h-screen bg-white overflow-x-clip">
       <main className="relative w-full">
         <HeroBridge />
         <AboutDevsa />
