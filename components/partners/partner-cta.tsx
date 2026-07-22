@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "motion/react"
-import { Handshake, Mail, ArrowRight } from "lucide-react"
+import { Handshake, Mail, ArrowUpRight } from "lucide-react"
 
 const useCases = [
   "Collaborative workshops & training series",
@@ -86,7 +86,7 @@ export function PartnerCta() {
                 >
                   <Handshake className="h-5 w-5" />
                   Partner With Us
-                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
                 <a
                   href="mailto:sponsor@devsa.community?subject=Sponsor%20a%20DEVSA%20event"

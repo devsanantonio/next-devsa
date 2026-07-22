@@ -1,19 +1,13 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { motion, AnimatePresence } from "motion/react"
-import { Play, X } from "lucide-react"
+import { motion } from "motion/react"
+import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 
-const VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
-const HERO_IMAGE_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9726.jpg"
+const HERO_IMAGE_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg"
 
 export function GroupsHero() {
-  const [showVideoModal, setShowVideoModal] = useState(false)
-  const modalVideoRef = useRef<HTMLVideoElement>(null)
-
   return (
-    <>
-    {/* Hero with video background */}
     <section
       className="relative overflow-hidden bg-black min-h-dvh flex flex-col items-center justify-center"
       data-bg-type="dark"
@@ -25,7 +19,7 @@ export function GroupsHero() {
         className="absolute inset-0 w-full h-full object-cover grayscale"
       />
 
-      {/* Dark overlay — heavy left for text readability, fading right to reveal video */}
+      {/* Dark overlay — heavy left for text readability, fading right to reveal the photo */}
       <div className="absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/85 to-transparent z-10" />
       <div className="absolute inset-0 bg-linear-to-b from-neutral-950/70 via-transparent to-neutral-950/70 z-10" />
       <div
@@ -51,83 +45,49 @@ export function GroupsHero() {
             <h1 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Where Partners and Communities{" "}
               <span className="text-white/50 font-light italic">Come Together to</span>{" "}
-              Align.
+              Build.
             </h1>
           </div>
 
-          <div className="space-y-6 max-w-3xl mt-8">
-            <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-              Our platform simplifies how local partners and tech communities{" "}
-              <strong className="font-semibold text-white">collaborate</strong>,{" "}
-              exchange resources, and grow the ecosystem together.
-            </p>
+          <div className="space-y-8 max-w-3xl mt-8">
+            <div className="space-y-6">
+              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+                Our platform simplifies how local partners and tech communities{" "}
+                <strong className="font-semibold text-white">collaborate</strong>,{" "}
+                exchange resources, and grow the ecosystem together.
+              </p>
 
-            <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              We&apos;re the bridge for a reason — connecting{" "}
-              <span className="font-medium text-white/70">organizers</span>,{" "}
-              <span className="font-medium text-white/70">companies</span>, and{" "}
-              <span className="font-medium text-white/70">builders</span>{" "}
-              across San Antonio&apos;s tech landscape.
-            </p>
+              <p className="text-base md:text-lg text-white/50 leading-relaxed">
+                We&apos;re the bridge for a reason — connecting{" "}
+                <span className="font-medium text-white/70">organizers</span>,{" "}
+                <span className="font-medium text-white/70">companies</span>, and{" "}
+                <span className="font-medium text-white/70">builders</span>{" "}
+                across San Antonio&apos;s tech landscape.
+              </p>
+            </div>
 
-            <button
-              onClick={() => setShowVideoModal(true)}
-              className="inline-flex items-center gap-3 group cursor-pointer"
-            >
-              <span className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border border-white/20 group-hover:bg-white/20 group-hover:border-white/30 transition-all duration-300">
-                <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-              </span>
-              <span className="text-sm font-medium text-white/60 group-hover:text-white/90 transition-colors">
-                Watch the Video
-              </span>
-            </button>
+            {/* CTAs — Community Calendar leads, Coworking second (per site ranking) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
+              <Link
+                href="/events"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-lg bg-white text-gray-900 font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
+              >
+                Community Calendar
+                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+              <Link
+                href="/coworking-space"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/30"
+              >
+                Coworking Space
+                <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>
-      {/* Bottom fade into logo showcase */}
+      {/* Bottom fade into the logo showcase */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black to-transparent z-20" />
     </section>
-
-    {/* Video Modal */}
-    <AnimatePresence>
-      {showVideoModal && (
-        <motion.div
-          key="video-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
-          onClick={() => setShowVideoModal(false)}
-        >
-          <motion.div
-            key="video-player"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-5xl aspect-video"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-8 h-8" />
-            </button>
-            <video
-              ref={modalVideoRef}
-              autoPlay
-              controls
-              playsInline
-              className="w-full h-full rounded-xl"
-            >
-              <source src={VIDEO_URL} type="video/mp4" />
-            </video>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-    </>
   )
 }

@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { GroupsHero } from "@/components/partners/groups-hero"
 import { LogoShowcase } from "@/components/partners/logo-showcase"
+import { GetInvolved } from "@/components/partners/get-involved"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { PartnerCta } from "@/components/partners/partner-cta"
 import { DonationCta } from "@/components/partners/donation-cta"
@@ -90,8 +91,9 @@ export default function GroupsPage() {
       <main className="min-h-screen bg-black">
       <GroupsHero />
       <LogoShowcase />
-      <MeetTheTeam />
+      <GetInvolved />
       <PartnerCta />
+      <MeetTheTeam />
       <DonationCta />
       </main>
     </>
