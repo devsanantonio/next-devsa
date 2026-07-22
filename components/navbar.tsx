@@ -22,7 +22,7 @@ export function Navbar() {
               <LogoContextMenu>
                 <Link
                   href="/"
-                  className="group transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg block"
+                  className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg block"
                   aria-label="Go to home page"
                 >
                   <span className="relative block w-10 h-10 md:w-12 md:h-12">
