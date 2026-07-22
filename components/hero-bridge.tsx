@@ -3,7 +3,7 @@
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 // Images-only from DevSA conferences — videos removed for performance
 const mediaItems = [
@@ -158,8 +158,8 @@ export function HeroBridge() {
         }
       `}</style>
 
-      {/* Headline — first, on both mobile and desktop */}
-      <div className="order-1 md:order-0 relative z-20 w-full md:max-w-[55%] px-6 sm:px-10 md:px-16 lg:px-20 pt-24 md:pt-0">
+      {/* Headline — below the images on mobile; leads the left column on desktop */}
+      <div className="order-2 md:order-0 relative z-20 w-full md:max-w-[55%] px-6 sm:px-10 md:px-16 lg:px-20 pt-8 md:pt-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -173,11 +173,11 @@ export function HeroBridge() {
         </motion.div>
       </div>
 
-      {/* 3D Photo Carousel — between the headline and body on mobile; full-bleed
-          behind on desktop. Explicit mobile height because the inner columns are
-          absolutely positioned (zero intrinsic height). */}
+      {/* 3D Photo Carousel — leads on mobile (full-bleed, images first);
+          full-bleed behind the text on desktop. Explicit mobile height because
+          the inner columns are absolutely positioned (zero intrinsic height). */}
       <div
-        className="order-2 md:order-0 relative z-0 mt-8 md:mt-0 w-full h-[48dvh] min-h-85 overflow-hidden md:h-auto md:min-h-0 md:overflow-visible md:absolute md:inset-0"
+        className="order-1 md:order-0 relative z-0 w-full h-[48dvh] min-h-85 overflow-hidden md:h-auto md:min-h-0 md:overflow-visible md:absolute md:inset-0"
         style={{ perspective: "1200px" }}
       >
         <div
@@ -250,7 +250,7 @@ export function HeroBridge() {
               className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/30"
             >
               Events Calendar
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </div>
         </motion.div>
