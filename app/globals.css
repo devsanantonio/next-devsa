@@ -41,6 +41,22 @@ body {
   font-family: var(--font-geist-sans);
 }
 
+/* Admin slide-over drawer animations */
+@keyframes admin-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes admin-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.admin-drawer-panel {
+  animation: admin-drawer-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.admin-drawer-overlay {
+  animation: admin-overlay-in 0.2s ease-out;
+}
+
 /* Custom responsive utilities for consistent spacing */
 .container-responsive {
   width: 100%;

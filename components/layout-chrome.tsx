@@ -14,8 +14,11 @@ import { Footer } from "@/components/footer"
  *   - signed-out → renders Navbar + Footer (marketing context)
  *   - signed-in  → renders sidebar only (workspace context)
  *   - /admin     → renders bare children (full-screen admin)
+ *
+ * /admin owns its own chrome too: it renders a full-screen sidebar shell, so
+ * the marketing Navbar + Footer are skipped there.
  */
-const APP_OWNED_CHROME_PREFIXES = ["/bounties"]
+const APP_OWNED_CHROME_PREFIXES = ["/bounties", "/admin"]
 
 function isAppOwnedChrome(pathname: string | null) {
   if (!pathname) return false

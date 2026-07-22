@@ -29,10 +29,16 @@ import {
   LogOut,
   User,
   RocketIcon,
-  X
+  X,
+  Bell,
+  Menu,
+  Home,
+  Download
 } from "lucide-react"
 
 import { RichTextEditor } from "@/components/rich-text-editor"
+import { AdminCombobox } from "@/components/admin/admin-combobox"
+import { SlideDrawer } from "@/components/admin/slide-drawer"
 
 interface DevSASubscriber {
   id: string
@@ -193,11 +199,11 @@ export default function AdminPage() {
   
   // Modal state
   const [showAddAdmin, setShowAddAdmin] = useState(false)
-  const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showCommunityFilter, setShowCommunityFilter] = useState(false)
-  const [showEventFilter, setShowEventFilter] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
+  const [showArchivedEvents, setShowArchivedEvents] = useState(false)
   const [showEditCommunity, setShowEditCommunity] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [editingCommunity, setEditingCommunity] = useState<Community | null>(null)
@@ -264,6 +270,38 @@ export default function AdminPage() {
     }
   }, [])
 
+  // Initialize the active section from the URL (?tab=) so sections are deep-linkable
+  useEffect(() => {
+    const validTabs: Tab[] = [
+      "newsletter", "devsa", "speakers", "access", "admins", "events", "communities", "rsvps", "merch",
+    ]
+    const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
+    if (t && validTabs.includes(t)) setActiveTab(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Keep the URL in sync as the active section changes (shareable, back-button friendly)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("tab") !== activeTab) {
+      params.set("tab", activeTab)
+      window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`)
+    }
+  }, [activeTab])
+
+  // Close the event drawer on Escape
+  useEffect(() => {
+    if (!showEditEvent) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowEditEvent(false)
+        setEditingEvent(null)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [showEditEvent])
+
   const checkAdminStatus = async (email: string) => {
     setIsCheckingAuth(true)
     setError(null)
@@ -281,8 +319,10 @@ export default function AdminPage() {
         setAdminProfileImage(data.profileImage || "")
         setIsAuthenticated(true)
         localStorage.setItem("devsa-admin-email", email)
-        // Set default tab based on role - admins/superadmins see newsletter first, organizers see events
-        setActiveTab(hasAdminAccess(data.role) ? "newsletter" : "events")
+        // Default to Events, unless the URL already deep-links a specific section (?tab=)
+        if (!new URLSearchParams(window.location.search).get("tab")) {
+          setActiveTab("events")
+        }
         await fetchData(email, data.role, data.communityId)
       } else {
         setError("You are not authorized to access the admin panel")
@@ -556,16 +596,48 @@ export default function AdminPage() {
     setShowEditEventCommunityDropdown(false)
   }
 
+  // Open the drawer in "create" mode — a blank event with sensible defaults.
+  // Organizers are locked to their assigned community.
+  const handleOpenCreateEvent = () => {
+    const start = new Date()
+    start.setHours(18, 0, 0, 0)
+    const end = new Date()
+    end.setHours(20, 0, 0, 0)
+    setEditingEvent({
+      id: "",
+      title: "",
+      slug: "",
+      date: start.toISOString(),
+      endTime: end.toISOString(),
+      location: "",
+      venue: "",
+      address: "",
+      description: "",
+      communityId: adminRole === "organizer" && adminCommunityId ? adminCommunityId : "",
+      status: "published",
+      eventType: "in-person",
+      rsvpEnabled: false,
+      externalRsvpUrl: "",
+    })
+    setEditEventUseCustomCommunity(false)
+    setEditEventCustomCommunityName("")
+    setShowEditEventCommunityDropdown(false)
+    setShowEditEvent(true)
+  }
+
+  // Handles both create (no id → POST) and edit (id → PUT) from the event drawer.
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingEvent) return
 
+    const isCreate = !editingEvent.id
+
     try {
       const response = await fetch("/api/events", {
-        method: "PUT",
+        method: isCreate ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          eventId: editingEvent.id,
+          ...(isCreate ? {} : { eventId: editingEvent.id }),
           title: editingEvent.title,
           date: editingEvent.date,
           endTime: editingEvent.endTime,
@@ -588,13 +660,14 @@ export default function AdminPage() {
       if (response.ok) {
         setShowEditEvent(false)
         setEditingEvent(null)
+        setSuccessMessage(isCreate ? "Event created successfully" : "Event updated successfully")
         await fetchData(adminEmail)
       } else {
         const data = await response.json()
-        setError(data.error || "Failed to update event")
+        setError(data.error || (isCreate ? "Failed to create event" : "Failed to update event"))
       }
     } catch {
-      setError("Failed to update event")
+      setError(isCreate ? "Failed to create event" : "Failed to update event")
     }
   }
 
@@ -1020,29 +1093,153 @@ export default function AdminPage() {
     )
   }
 
+  // Derived nav + notification data for the sidebar shell
+  const pendingAccessCount = accessRequests.filter((r) => r.status === "pending").length
+  const pendingMerchCount = merchSubmissions.filter((s) => s.status === "pending").length
+
+  const mainNav: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }[] = [
+    { id: "events", label: "Events", icon: CalendarDays, count: events.length },
+    { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length },
+    {
+      id: "communities",
+      label: adminRole === "organizer" ? "My Community" : "Communities",
+      icon: Building2,
+      count: adminRole === "organizer" ? undefined : communities.length,
+    },
+  ]
+
+  const adminNav: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }[] = [
+    { id: "devsa", label: "DEVSA Subscribers", icon: RocketIcon, count: devsaSubs.length },
+    { id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.length },
+    { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length },
+    { id: "access", label: "Access Requests", icon: Users, count: accessRequests.length, alert: pendingAccessCount },
+    { id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length },
+    { id: "merch", label: "Merch Submissions", icon: Upload, count: merchSubmissions.length, alert: pendingMerchCount },
+  ]
+
+  const tabTitles: Record<Tab, string> = {
+    events: "Events",
+    rsvps: "RSVPs",
+    communities: adminRole === "organizer" ? "My Community" : "Communities",
+    devsa: "DEVSA Subscribers",
+    newsletter: "Newsletter",
+    speakers: "Speakers",
+    access: "Access Requests",
+    admins: "Manage Admins",
+    merch: "Merch Submissions",
+  }
+
+  const notifications: { id: Tab; label: string; icon: typeof Users }[] = [
+    ...(pendingAccessCount > 0
+      ? [{ id: "access" as Tab, label: `${pendingAccessCount} access request${pendingAccessCount > 1 ? "s" : ""} pending review`, icon: Users }]
+      : []),
+    ...(pendingMerchCount > 0
+      ? [{ id: "merch" as Tab, label: `${pendingMerchCount} merch submission${pendingMerchCount > 1 ? "s" : ""} pending review`, icon: Upload }]
+      : []),
+  ]
+  const notificationCount = notifications.length
+
+  const goToTab = (tab: Tab) => {
+    setActiveTab(tab)
+    setSidebarOpen(false)
+    setShowNotifications(false)
+  }
+
+  const renderNavItem = (item: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }) => {
+    const Icon = item.icon
+    const isActive = activeTab === item.id
+    return (
+      <button
+        key={item.id}
+        onClick={() => goToTab(item.id)}
+        className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          isActive ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-800/60 hover:text-white"
+        }`}
+      >
+        <span
+          className={`absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-r-full bg-[#ef426f] transition-all ${
+            isActive ? "w-0.5" : "w-0"
+          }`}
+        />
+        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#ef426f]" : "text-neutral-500 group-hover:text-neutral-300"}`} />
+        <span className="flex-1 truncate text-left">{item.label}</span>
+        {item.alert ? (
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef426f] px-1.5 text-xs font-semibold text-white">
+            {item.alert}
+          </span>
+        ) : typeof item.count === "number" ? (
+          <span className="text-xs tabular-nums text-neutral-500">{item.count}</span>
+        ) : null}
+      </button>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-black py-8 sm:py-12">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors mb-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to home
-            </Link>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
+    <div className="min-h-screen bg-black text-white">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-neutral-800 bg-neutral-950 transition-transform duration-200 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Brand */}
+        <div className="flex h-16 items-center justify-between gap-2 border-b border-neutral-800 px-5">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+              alt="DEVSA"
+              className="h-8 w-8"
+            />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-white">DEVSA</p>
+              <p className="text-[11px] text-neutral-500">Admin Portal</p>
+            </div>
           </div>
-          
-          {/* User Profile Dropdown */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+          <div className="space-y-1">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">General</p>
+            {mainNav.map(renderNavItem)}
+          </div>
+          {hasAdminAccess(adminRole) && (
+            <div className="space-y-1">
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">Administration</p>
+              {adminNav.map(renderNavItem)}
+            </div>
+          )}
+        </nav>
+
+        {/* Footer: back to site + account */}
+        <div className="space-y-1 border-t border-neutral-800 p-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-400 transition-colors hover:bg-neutral-800/60 hover:text-white"
+          >
+            <Home className="h-4 w-4 text-neutral-500" />
+            Back to site
+            <ExternalLink className="ml-auto h-3.5 w-3.5 text-neutral-600" />
+          </Link>
+
+          {/* Account */}
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="inline-flex items-center gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
+              className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-neutral-800/60"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ef426f] overflow-hidden">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#ef426f]">
                 {adminProfileImage ? (
                   <img src={adminProfileImage} alt="" className="h-full w-full object-cover" />
                 ) : adminCommunityId && communities.find(c => c.id === adminCommunityId)?.logo ? (
@@ -1051,23 +1248,23 @@ export default function AdminPage() {
                   <User className="h-4 w-4 text-white" />
                 )}
               </div>
-              <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium text-white">Hello, {adminFirstName || adminEmail?.split('@')[0]}</p>
-                <p className={`text-xs ${
-                  adminRole === "superadmin" ? "text-yellow-400" : 
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-white">{adminFirstName || adminEmail?.split('@')[0]}</p>
+                <p className={`truncate text-xs ${
+                  adminRole === "superadmin" ? "text-yellow-400" :
                   adminRole === "admin" ? "text-purple-400" : "text-blue-400"
                 }`}>
                   {adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
                 </p>
               </div>
-              <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
+              <ChevronDown className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
             </button>
 
-            {/* Dropdown Menu */}
+            {/* Account menu — opens upward from the sidebar footer */}
             {showUserMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl overflow-hidden">
+                <div className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl">
                   {/* User Info Header */}
                   <div className="px-4 py-4 border-b border-neutral-700 bg-neutral-800/80">
                     <div className="flex items-center gap-3">
@@ -1215,177 +1412,82 @@ export default function AdminPage() {
             )}
           </div>
         </div>
+      </aside>
 
-        {/* Tabs - Reordered: Primary actions first, admin settings in dropdown */}
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-          {/* Primary tabs - shown to everyone */}
+      {/* Main column */}
+      <div className="lg:pl-64">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-800 bg-black/80 px-4 backdrop-blur sm:px-6">
           <button
-            onClick={() => setActiveTab("events")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "events"
-                ? "bg-[#ef426f] text-white"
-                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
-            }`}
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white lg:hidden"
+            aria-label="Open menu"
           >
-            <CalendarDays className="h-4 w-4" />
-            Events ({events.length})
+            <Menu className="h-5 w-5" />
           </button>
-          <button
-            onClick={() => setActiveTab("rsvps")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "rsvps"
-                ? "bg-[#ef426f] text-white"
-                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            RSVPs ({rsvps.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("communities")}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === "communities"
-                ? "bg-[#ef426f] text-white"
-                : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
-            }`}
-          >
-            <Building2 className="h-4 w-4" />
-            {adminRole === "organizer" ? "My Community" : `Communities (${communities.length})`}
-          </button>
+          <h1 className="text-lg font-semibold tracking-tight text-white">{tabTitles[activeTab]}</h1>
 
-          {/* Admin-only dropdown menu */}
-          {hasAdminAccess(adminRole) && (
+          <div className="ml-auto flex items-center gap-2">
+            {/* Notification bell */}
             <div className="relative">
               <button
-                onClick={() => setShowAdminMenu(!showAdminMenu)}
-                className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  ["newsletter", "speakers", "access", "admins", "merch"].includes(activeTab)
-                    ? "bg-[#ef426f] text-white"
-                    : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700"
-                }`}
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative rounded-lg border border-neutral-800 bg-neutral-900/60 p-2.5 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
+                aria-label="Notifications"
               >
-                <Settings className="h-4 w-4" />
-                Admin
-                {(accessRequests.filter(r => r.status === "pending").length > 0) && (
-                  <span className="flex h-2 w-2 rounded-full bg-yellow-400" />
+                <Bell className="h-4 w-4" />
+                {notificationCount > 0 && (
+                  <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef426f] px-1 text-[10px] font-semibold text-white">
+                    {notificationCount}
+                  </span>
                 )}
-                <ChevronDown className={`h-4 w-4 transition-transform ${showAdminMenu ? "rotate-180" : ""}`} />
               </button>
-
-              {/* Dropdown menu */}
-              {showAdminMenu && (
+              {showNotifications && (
                 <>
-                  {/* Backdrop to close menu */}
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowAdminMenu(false)} 
-                  />
-                  <div className="absolute left-0 top-full mt-2 z-50 w-56 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl">
-                    <button
-                      onClick={() => {
-                        setActiveTab("devsa")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "devsa"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <RocketIcon className="h-4 w-4" />
-                      DEVSA Subscribers
-                      <span className="ml-auto text-xs text-neutral-500">{devsaSubs.length}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab("newsletter")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "newsletter"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <Mail className="h-4 w-4" />
-                      Newsletter
-                      <span className="ml-auto text-xs text-neutral-500">{newsletter.length}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab("speakers")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "speakers"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <Mic2 className="h-4 w-4" />
-                      Speakers
-                      <span className="ml-auto text-xs text-neutral-500">{speakers.length}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab("access")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "access"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <Users className="h-4 w-4" />
-                      Access Requests
-                      {accessRequests.filter(r => r.status === "pending").length > 0 && (
-                        <span className="ml-auto inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-semibold">
-                          {accessRequests.filter(r => r.status === "pending").length}
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                  <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl">
+                    <div className="flex items-center justify-between border-b border-neutral-700 px-4 py-3">
+                      <p className="text-sm font-semibold text-white">Notifications</p>
+                      {notificationCount > 0 && (
+                        <span className="rounded-full bg-[#ef426f]/20 px-2 py-0.5 text-xs font-semibold text-[#ef426f]">
+                          {notificationCount} new
                         </span>
                       )}
-                    </button>
-                    <div className="my-2 border-t border-neutral-700" />
-                    <button
-                      onClick={() => {
-                        setActiveTab("admins")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "admins"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <UserCheck className="h-4 w-4" />
-                      Manage Admins
-                      <span className="ml-auto text-xs text-neutral-500">{admins.length}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab("merch")
-                        setShowAdminMenu(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        activeTab === "merch"
-                          ? "bg-[#ef426f]/20 text-[#ef426f]"
-                          : "text-neutral-300 hover:bg-neutral-700"
-                      }`}
-                    >
-                      <Upload className="h-4 w-4" />
-                      Merch Submissions
-                      {merchSubmissions.filter(s => s.status === "pending").length > 0 && (
-                        <span className="ml-auto inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                          {merchSubmissions.filter(s => s.status === "pending").length}
-                        </span>
-                      )}
-                    </button>
+                    </div>
+                    {notificationCount === 0 ? (
+                      <div className="px-4 py-8 text-center">
+                        <Bell className="mx-auto mb-2 h-5 w-5 text-neutral-600" />
+                        <p className="text-sm text-neutral-500">You&apos;re all caught up</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-80 overflow-y-auto py-1">
+                        {notifications.map((n) => {
+                          const Icon = n.icon
+                          return (
+                            <button
+                              key={n.id + n.label}
+                              onClick={() => goToTab(n.id)}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-neutral-700/50"
+                            >
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ef426f]/15 text-[#ef426f]">
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span className="flex-1 text-sm text-neutral-200">{n.label}</span>
+                              <ChevronDown className="h-4 w-4 -rotate-90 text-neutral-500" />
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 </>
               )}
             </div>
-          )}
-        </div>
+
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
 
         {/* Success/Error messages */}
         {successMessage && (
@@ -1751,19 +1853,19 @@ export default function AdminPage() {
                     ({filteredSpeakers.length})
                   </span>
                 </h2>
-                <select
+                <AdminCombobox
+                  className="w-64"
                   value={speakerEventFilter}
-                  onChange={(e) => setSpeakerEventFilter(e.target.value)}
-                  className="rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                >
-                  <option value="all">All events ({speakers.length})</option>
-                  {speakerEvents.map((ev) => (
-                    <option key={ev} value={ev}>
-                      {ev} (
-                      {speakers.filter((s) => (s.eventId || "—") === ev).length})
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSpeakerEventFilter}
+                  options={[
+                    { value: "all", label: "All events", count: speakers.length },
+                    ...speakerEvents.map((ev) => ({
+                      value: ev,
+                      label: ev,
+                      count: speakers.filter((s) => (s.eventId || "—") === ev).length,
+                    })),
+                  ]}
+                />
               </div>
               {filteredSpeakers.length === 0 ? (
                 <p className="text-neutral-400 text-center py-8">No speaker submissions yet.</p>
@@ -1976,13 +2078,18 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Add/Edit Admin Modal */}
-              {showAddAdmin && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-md w-full shadow-2xl">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">
-                      {editingAdmin ? "Edit Admin" : "Add New Admin"}
-                    </h3>
+              {/* Add/Edit Admin Drawer */}
+              <SlideDrawer
+                open={showAddAdmin}
+                onClose={() => {
+                  setShowAddAdmin(false)
+                  setEditingAdmin(null)
+                  setNewAdminEmail("")
+                  setNewAdminRole("organizer")
+                  setNewAdminCommunity("")
+                }}
+                title={editingAdmin ? "Edit Admin" : "Add New Admin"}
+              >
                     <form onSubmit={handleAddAdmin} className="space-y-5">
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
@@ -2065,9 +2172,7 @@ export default function AdminPage() {
                         </button>
                       </div>
                     </form>
-                  </div>
-                </div>
-              )}
+              </SlideDrawer>
             </div>
           )}
 
@@ -2076,13 +2181,13 @@ export default function AdminPage() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold tracking-tight text-white">Calendar Events</h2>
-                <Link
-                  href="/admin/create-event"
+                <button
+                  onClick={handleOpenCreateEvent}
                   className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                 >
                   <Plus className="h-4 w-4" />
                   Create Event
-                </Link>
+                </button>
               </div>
               
               {(() => {
@@ -2204,28 +2309,69 @@ export default function AdminPage() {
                       )}
                     </div>
 
-                    {/* Archived Events Section */}
+                    {/* Archived Events Section — collapsed by default */}
                     {archivedEvents.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-neutral-400 mb-4 flex items-center gap-2">
+                      <div className="rounded-xl border border-neutral-800 bg-neutral-900/30">
+                        <button
+                          onClick={() => setShowArchivedEvents((v) => !v)}
+                          className="flex w-full items-center gap-2 px-4 py-3 text-left text-lg font-semibold text-neutral-400 transition-colors hover:text-neutral-200"
+                          aria-expanded={showArchivedEvents}
+                        >
                           <Archive className="h-5 w-5" />
                           Archived Events ({archivedEvents.length})
-                        </h3>
-                        <div className="space-y-4 opacity-75">
-                          {archivedEvents.map(renderEventCard)}
-                        </div>
+                          <ChevronDown
+                            className={`ml-auto h-5 w-5 transition-transform ${showArchivedEvents ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                        {showArchivedEvents && (
+                          <div className="space-y-4 border-t border-neutral-800 p-4 opacity-75">
+                            {archivedEvents.map(renderEventCard)}
+                          </div>
+                        )}
                       </div>
                     )}
                   </>
                 )
               })()}
 
-              {/* Edit Event Modal */}
+              {/* Event Drawer — create + edit */}
               {showEditEvent && editingEvent && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Event</h3>
-                    <form onSubmit={handleUpdateEvent} className="space-y-5">
+                <div className="fixed inset-0 z-50">
+                  <div
+                    className="admin-drawer-overlay absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onClick={() => { setShowEditEvent(false); setEditingEvent(null) }}
+                  />
+                  <div className="admin-drawer-panel absolute inset-y-0 right-0 flex w-full max-w-md flex-col overflow-hidden rounded-l-2xl border-l border-neutral-800 bg-neutral-900 shadow-2xl">
+                    <div className="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-5">
+                      <div>
+                        <h3 className="text-base font-semibold tracking-tight text-white">
+                          {editingEvent.id ? "Edit Event" : "Create Event"}
+                        </h3>
+                        <p className="mt-0.5 text-xs text-neutral-500">
+                          {editingEvent.id
+                            ? "Update the details for this event."
+                            : "Add a new event to the DEVSA community calendar."}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setShowEditEvent(false); setEditingEvent(null) }}
+                        className="-mr-1 shrink-0 rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+                        aria-label="Close"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <form onSubmit={handleUpdateEvent} className="flex-1 space-y-5 overflow-y-auto px-6 pt-5">
+                      {/* Organizer: community is locked to their assignment */}
+                      {adminRole === "organizer" && (
+                        <div>
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Community</label>
+                          <div className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white">
+                            {communities.find(c => c.id === editingEvent.communityId)?.name || "No community assigned"}
+                          </div>
+                        </div>
+                      )}
                       {/* Community selector - admin/superadmin only */}
                       {hasAdminAccess(adminRole) && (
                         <div>
@@ -2465,15 +2611,16 @@ export default function AdminPage() {
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Event Format
                         </label>
-                        <select
+                        <AdminCombobox
                           value={editingEvent.eventType || 'in-person'}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, eventType: e.target.value as 'in-person' | 'hybrid' | 'virtual' })}
-                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        >
-                          <option value="in-person">🏢 In-Person</option>
-                          <option value="hybrid">🔀 Hybrid</option>
-                          <option value="virtual">💻 Virtual</option>
-                        </select>
+                          onChange={(v) => setEditingEvent({ ...editingEvent, eventType: v as 'in-person' | 'hybrid' | 'virtual' })}
+                          buttonClassName="rounded-xl px-4 py-3"
+                          options={[
+                            { value: 'in-person', label: 'In-Person' },
+                            { value: 'hybrid', label: 'Hybrid' },
+                            { value: 'virtual', label: 'Virtual' },
+                          ]}
+                        />
                         <p className="mt-2 text-xs text-neutral-500 leading-relaxed">
                           {editingEvent.eventType === 'virtual' && 'Attendees will join via an online platform'}
                           {editingEvent.eventType === 'hybrid' && 'Attendees can join in person or online'}
@@ -2582,7 +2729,7 @@ export default function AdminPage() {
                           Draft events are only visible in the admin dashboard
                         </p>
                       </div>
-                      <div className="flex gap-3 pt-4">
+                      <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-neutral-800 bg-neutral-900/95 px-6 py-4 backdrop-blur">
                         <button
                           type="button"
                           onClick={() => {
@@ -2597,7 +2744,11 @@ export default function AdminPage() {
                           type="submit"
                           className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
                         >
-                          Save Changes
+                          {editingEvent.id
+                            ? "Save Changes"
+                            : editingEvent.status === "draft"
+                            ? "Save as Draft"
+                            : "Publish Event"}
                         </button>
                       </div>
                     </form>
@@ -2783,11 +2934,16 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Edit Community Modal */}
-              {showEditCommunity && editingCommunity && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Edit Community</h3>
+              {/* Edit Community Drawer */}
+              <SlideDrawer
+                open={showEditCommunity && !!editingCommunity}
+                onClose={() => {
+                  setShowEditCommunity(false)
+                  setEditingCommunity(null)
+                }}
+                title="Edit Community"
+              >
+                {editingCommunity && (
                     <form onSubmit={handleSaveCommunity} className="space-y-5">
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">Name</label>
@@ -3015,15 +3171,34 @@ export default function AdminPage() {
                         </button>
                       </div>
                     </form>
-                  </div>
-                </div>
-              )}
+                )}
+              </SlideDrawer>
 
-              {/* Create Community Modal */}
-              {showCreateCommunity && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-6">Create New Community</h3>
+              {/* Create Community Drawer */}
+              <SlideDrawer
+                open={showCreateCommunity}
+                onClose={() => {
+                  setShowCreateCommunity(false)
+                  setNewCommunity({
+                    id: "",
+                    name: "",
+                    logo: "",
+                    description: "",
+                    website: "",
+                    discord: "",
+                    meetup: "",
+                    luma: "",
+                    instagram: "",
+                    twitter: "",
+                    linkedin: "",
+                    youtube: "",
+                    twitch: "",
+                    facebook: "",
+                    github: "",
+                  })
+                }}
+                title="Create New Community"
+              >
                     <form onSubmit={handleCreateCommunity} className="space-y-5">
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">Community ID *</label>
@@ -3284,9 +3459,7 @@ export default function AdminPage() {
                         </button>
                       </div>
                     </form>
-                  </div>
-                </div>
-              )}
+              </SlideDrawer>
             </div>
           )}
 
@@ -3296,119 +3469,35 @@ export default function AdminPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-xl font-bold tracking-tight text-white">Event RSVPs</h2>
                 <div className="flex flex-wrap items-center gap-3">
-                  {/* Custom Community Filter Dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        setShowCommunityFilter(!showCommunityFilter)
-                        setShowEventFilter(false)
+                  {/* Community filter — admins/superadmins only (organizers own a single group) */}
+                  {hasAdminAccess(adminRole) && (
+                    <AdminCombobox
+                      className="w-52"
+                      value={selectedRsvpCommunity}
+                      onChange={(v) => {
+                        setSelectedRsvpCommunity(v)
+                        setSelectedRsvpEvent('all')
                       }}
-                      className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 py-2 px-4 text-sm text-white hover:bg-neutral-700 transition-colors min-w-40 justify-between"
-                    >
-                      <span className="truncate">
-                        {selectedRsvpCommunity === 'all' 
-                          ? 'All Communities' 
-                          : communities.find(c => c.id === selectedRsvpCommunity)?.name || 'Select'}
-                      </span>
-                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${showCommunityFilter ? "rotate-180" : ""}`} />
-                    </button>
-                    {showCommunityFilter && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowCommunityFilter(false)} />
-                        <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl max-h-64 overflow-y-auto">
-                          <button
-                            onClick={() => {
-                              setSelectedRsvpCommunity('all')
-                              setShowCommunityFilter(false)
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                              selectedRsvpCommunity === 'all'
-                                ? "bg-[#ef426f]/20 text-[#ef426f]"
-                                : "text-neutral-300 hover:bg-neutral-700"
-                            }`}
-                          >
-                            All Communities
-                          </button>
-                          {communities.map(community => (
-                            <button
-                              key={community.id}
-                              onClick={() => {
-                                setSelectedRsvpCommunity(community.id)
-                                setSelectedRsvpEvent('all') // Reset event filter when community changes
-                                setShowCommunityFilter(false)
-                              }}
-                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                                selectedRsvpCommunity === community.id
-                                  ? "bg-[#ef426f]/20 text-[#ef426f]"
-                                  : "text-neutral-300 hover:bg-neutral-700"
-                              }`}
-                            >
-                              <span className="truncate">{community.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                      options={[
+                        { value: 'all', label: 'All Communities' },
+                        ...communities.map((c) => ({ value: c.id, label: c.name })),
+                      ]}
+                    />
+                  )}
 
-                  {/* Custom Event Filter Dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        setShowEventFilter(!showEventFilter)
-                        setShowCommunityFilter(false)
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 py-2 px-4 text-sm text-white hover:bg-neutral-700 transition-colors min-w-40 justify-between"
-                    >
-                      <span className="truncate">
-                        {selectedRsvpEvent === 'all' 
-                          ? 'All Events' 
-                          : events.find(e => e.id === selectedRsvpEvent)?.title || 'Select'}
-                      </span>
-                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${showEventFilter ? "rotate-180" : ""}`} />
-                    </button>
-                    {showEventFilter && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowEventFilter(false)} />
-                        <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border border-neutral-700 bg-neutral-800 py-2 shadow-xl max-h-64 overflow-y-auto">
-                          <button
-                            onClick={() => {
-                              setSelectedRsvpEvent('all')
-                              setShowEventFilter(false)
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                              selectedRsvpEvent === 'all'
-                                ? "bg-[#ef426f]/20 text-[#ef426f]"
-                                : "text-neutral-300 hover:bg-neutral-700"
-                            }`}
-                          >
-                            All Events
-                          </button>
-                          {events
-                            .filter(e => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity))
-                            .map(event => (
-                              <button
-                                key={event.id}
-                                onClick={() => {
-                                  setSelectedRsvpEvent(event.id)
-                                  setShowEventFilter(false)
-                                }}
-                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left ${
-                                  selectedRsvpEvent === event.id
-                                    ? "bg-[#ef426f]/20 text-[#ef426f]"
-                                    : "text-neutral-300 hover:bg-neutral-700"
-                                }`}
-                              >
-                                <span className="truncate">{event.title}</span>
-                              </button>
-                            ))}
-                          {events.filter(e => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity)).length === 0 && (
-                            <p className="px-4 py-2.5 text-sm text-neutral-500">No RSVP-enabled events</p>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  {/* Event filter */}
+                  <AdminCombobox
+                    className="w-60"
+                    value={selectedRsvpEvent}
+                    onChange={setSelectedRsvpEvent}
+                    placeholder="All Events"
+                    options={[
+                      { value: 'all', label: 'All Events' },
+                      ...events
+                        .filter((e) => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity))
+                        .map((e) => ({ value: e.id, label: e.title })),
+                    ]}
+                  />
 
                   <button
                     onClick={() => handleExportRsvps(selectedRsvpEvent)}
@@ -3418,7 +3507,7 @@ export default function AdminPage() {
                     {isExportingRsvps ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <ArrowLeft className="h-4 w-4 rotate-135" />
+                      <Download className="h-4 w-4" />
                     )}
                     Export CSV
                   </button>
@@ -3436,13 +3525,20 @@ export default function AdminPage() {
                   filteredRsvps = filteredRsvps.filter(r => r.eventId === selectedRsvpEvent)
                 }
                 
-                if (filteredRsvps.length === 0) {
-                  return (
-                    <p className="text-neutral-400 text-center py-8">
-                      No RSVPs yet. Enable RSVP on an event to start collecting registrations.
-                    </p>
-                  )
-                }
+                // Summary metrics for the KPI row (reflect the active filters)
+                const totalRsvps = filteredRsvps.length
+                const optedIn = filteredRsvps.filter(r => r.joinNewsletter).length
+                const optInRate = totalRsvps > 0 ? Math.round((optedIn / totalRsvps) * 100) : 0
+                const eventCount = new Set(filteredRsvps.map(r => r.eventSlug)).size
+                const communityCount = new Set(filteredRsvps.map(r => r.communityId)).size
+
+                const tiles: { label: string; value: number; sub?: string }[] = [
+                  { label: 'Total RSVPs', value: totalRsvps },
+                  { label: 'Events', value: eventCount },
+                  { label: 'Newsletter opt-ins', value: optedIn, sub: `${optInRate}%` },
+                  // Communities only matters when more than one group is in view
+                  ...(hasAdminAccess(adminRole) ? [{ label: 'Communities', value: communityCount }] : []),
+                ]
 
                 // Group by event
                 const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
@@ -3460,17 +3556,46 @@ export default function AdminPage() {
                 }, {} as Record<string, { eventTitle: string; communityName: string; rsvps: EventRSVP[] }>)
 
                 return (
-                  <div className="space-y-6">
+                  <>
+                    {/* Summary tiles */}
+                    <div className={`mb-6 grid grid-cols-2 gap-3 ${hasAdminAccess(adminRole) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+                      {tiles.map((t) => (
+                        <div key={t.label} className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t.label}</p>
+                          <p className="mt-1 flex items-baseline gap-1.5">
+                            <span className="text-2xl font-semibold tabular-nums text-white">{t.value}</span>
+                            {t.sub && <span className="text-sm font-medium text-neutral-500">{t.sub}</span>}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {totalRsvps === 0 ? (
+                      <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 py-12 text-center">
+                        <Users className="mx-auto mb-3 h-6 w-6 text-neutral-600" />
+                        <p className="text-sm text-neutral-400">No RSVPs yet</p>
+                        <p className="mt-1 text-xs text-neutral-600">
+                          Enable RSVP on an event to start collecting registrations.
+                        </p>
+                      </div>
+                    ) : (
+                    <div className="space-y-6">
                     {Object.entries(groupedByEvent).map(([slug, { eventTitle, communityName, rsvps: eventRsvps }]) => (
                       <div key={slug} className="rounded-xl border border-neutral-800 bg-neutral-800/30 overflow-hidden">
                         <div className="px-4 py-3 bg-neutral-800/50 border-b border-neutral-700 flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-3">
                             <h3 className="font-semibold text-white">{eventTitle}</h3>
-                            <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
-                              {communityName}
-                            </span>
+                            {/* Community badge only helps super admins viewing multiple groups */}
+                            {hasAdminAccess(adminRole) && (
+                              <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
+                                {communityName}
+                              </span>
+                            )}
                           </div>
-                          <span className="text-sm text-neutral-400">{eventRsvps.length} RSVPs</span>
+                          <span className="text-sm text-neutral-400">
+                            {eventRsvps.length} RSVPs
+                            <span className="text-neutral-600"> · {eventRsvps.filter(r => r.joinNewsletter).length} opted in</span>
+                          </span>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full min-w-175">
@@ -3525,7 +3650,9 @@ export default function AdminPage() {
                         </div>
                       </div>
                     ))}
-                  </div>
+                    </div>
+                    )}
+                  </>
                 )
               })()}
             </div>
@@ -3614,8 +3741,9 @@ export default function AdminPage() {
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

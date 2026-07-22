@@ -99,14 +99,6 @@ export function AuthButton() {
               Admin Dashboard
             </Link>
 
-            <Link
-              href="/admin/create-event"
-              onClick={() => setShowMenu(false)}
-              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
-            >
-              Create Event
-            </Link>
-            
             <button
               onClick={handleSignOut}
               className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
