@@ -275,8 +275,8 @@ export function CallForSpeakers() {
                 </p>
                 <p className="text-sm text-gray-500">
                   Questions? Contact us at{" "}
-                  <a href="mailto:hello@devsa.community" className="font-semibold text-[#ef426f] hover:underline">
-                    hello@devsa.community
+                  <a href="mailto:jesse@devsanantonio.com" className="font-semibold text-[#ef426f] hover:underline">
+                    jesse@devsanantonio.com
                   </a>
                 </p>
               </div>

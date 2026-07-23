@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { ZeroToAgentResources } from "@/components/events/zero-to-agent-resources"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "Zero to Agent — Vercel Global Build Week | San Antonio | DEVSA",

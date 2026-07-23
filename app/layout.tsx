@@ -24,7 +24,7 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["300", "400", "500", "600", "700"],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: {
@@ -118,7 +118,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="author" href="https://devsa.community" />
+        <link rel="author" href="https://www.devsa.community" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -129,7 +129,7 @@ export default function RootLayout({
               alternateName: "DEV San Antonio",
               description:
                 "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
-              url: "https://devsa.community",
+              url: "https://www.devsa.community",
               logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
               foundingDate: "2020",
               nonprofitStatus: "501(c)(3)",
@@ -175,12 +175,12 @@ export default function RootLayout({
               "@type": "WebSite",
               name: "DEVSA",
               alternateName: "DEV San Antonio",
-              url: "https://devsa.community",
+              url: "https://www.devsa.community",
               description:
                 "San Antonio's tech community hub — events, coworking space, job board, and 20+ developer groups.",
               potentialAction: {
                 "@type": "SearchAction",
-                target: "https://devsa.community/events?q={search_term_string}",
+                target: "https://www.devsa.community/events?q={search_term_string}",
                 "query-input": "required name=search_term_string",
               },
             }),

@@ -215,15 +215,15 @@ END:VCALENDAR`
   return { googleUrl, icsUrl, icsContent }
 }
 
-const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed`
-const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/calendar`
-const FEED_SCHEMA_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://devsa.community'}/api/events/feed/schema`
+const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/feed`
+const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/calendar`
+const FEED_SCHEMA_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/feed/schema`
 
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false)
   const [copiedEmbed, setCopiedEmbed] = useState(false)
 
-  const embedCode = `<iframe src="https://devsa.community/events/embed" width="100%" height="600" style="border:none;border-radius:12px" title="DEVSA Community Events"></iframe>`
+  const embedCode = `<iframe src="https://www.devsa.community/events/embed" width="100%" height="600" style="border:none;border-radius:12px" title="DEVSA Community Events"></iframe>`
 
   const copyFeedUrl = useCallback(() => {
     navigator.clipboard.writeText(FEED_URL).then(() => {

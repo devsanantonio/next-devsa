@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type JobListing } from '@/lib/firebase-admin';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 
 function escapeXml(text: string): string {
   return text

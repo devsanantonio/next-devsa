@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { AuthProvider } from "@/components/auth-provider"
 import { JobsLayoutShell } from "@/components/jobs/jobs-layout-shell"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "Bounties — Local Work, Local Talent | DEVSA",
@@ -57,7 +57,7 @@ export default function JobsLayout({
 }: {
   children: React.ReactNode
 }) {
-  const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+  const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   return (
     <AuthProvider>
       <script

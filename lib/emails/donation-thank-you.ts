@@ -91,7 +91,7 @@ export function DonationThankYouEmail({
               <table role="presentation" style="border-collapse: collapse;">
                 <tr>
                   <td style="border-radius: 12px; background-color: #ef426f;">
-                    <a href="https://devsa.community/buildingtogether" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                    <a href="https://www.devsa.community/buildingtogether" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">
                       See What We're Building →
                     </a>
                   </td>
@@ -107,7 +107,7 @@ export function DonationThankYouEmail({
                 Find your people. Build your future.
               </p>
               <p style="margin: 0; font-size: 12px; color: #4b5563;">
-                © ${new Date().getFullYear()} DEVSA · <a href="https://devsa.community" style="color: #ef426f; text-decoration: none;">devsa.community</a>
+                © ${new Date().getFullYear()} DEVSA · <a href="https://www.devsa.community" style="color: #ef426f; text-decoration: none;">devsa.community</a>
               </p>
             </td>
           </tr>

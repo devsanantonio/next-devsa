@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 
 function escapeICalText(text: string): string {
   return text
@@ -107,7 +107,7 @@ export async function GET() {
         foldLine(`LOCATION:${escapeICalText(event.location)}`),
         foldLine(`DESCRIPTION:${escapeICalText(description)}`),
         foldLine(`URL:${SITE_URL}/events/${event.slug}`),
-        event.communityName ? foldLine(`ORGANIZER;CN=${escapeICalText(event.communityName)}:mailto:hello@devsa.community`) : null,
+        event.communityName ? foldLine(`ORGANIZER;CN=${escapeICalText(event.communityName)}:mailto:jesse@devsanantonio.com`) : null,
         'END:VEVENT',
       ].filter(Boolean);
 

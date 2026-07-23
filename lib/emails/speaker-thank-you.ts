@@ -116,11 +116,11 @@ export function SpeakerThankYouEmail({ name, sessionTitle, sessionFormat }: Spea
               <table role="presentation" style="border-collapse: collapse;">
                 <tr>
                   <td style="padding: 0 8px;">
-                    <a href="https://devsa.community" style="color: #ef426f; text-decoration: none; font-size: 14px;">Website</a>
+                    <a href="https://www.devsa.community" style="color: #ef426f; text-decoration: none; font-size: 14px;">Website</a>
                   </td>
                   <td style="color: #4b5563;">•</td>
                   <td style="padding: 0 8px;">
-                    <a href="https://devsa.community/events/morehumanthanhuman" style="color: #ef426f; text-decoration: none; font-size: 14px;">Event Page</a>
+                    <a href="https://www.devsa.community/events/morehumanthanhuman" style="color: #ef426f; text-decoration: none; font-size: 14px;">Event Page</a>
                   </td>
                 </tr>
               </table>

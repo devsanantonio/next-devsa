@@ -32,7 +32,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   
   // Check if it's a community (static or Firestore)
   const community = await findCommunity(slug)

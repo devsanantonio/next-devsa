@@ -4,7 +4,7 @@ import { getDb, COLLECTIONS, type Bounty } from "@/lib/firebase-admin"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { BountyDetailClient, type BountyDetail } from "@/components/bounties/bounty-detail-client"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 interface Props {
   params: Promise<{ slug: string }>

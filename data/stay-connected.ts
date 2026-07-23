@@ -4,7 +4,7 @@
  */
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 /** Build a QR target on the canonical domain with a scan-source tag. */
 export function stayConnectedUrl(src: string) {

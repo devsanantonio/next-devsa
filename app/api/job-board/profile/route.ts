@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     // Fire-and-forget; email failure should never block account creation.
     if (isResendConfigured() && resend && result.email) {
       try {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
         await resend.emails.send({
           from: EMAIL_FROM,
           to: result.email,

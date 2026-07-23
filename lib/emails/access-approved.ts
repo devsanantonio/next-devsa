@@ -90,7 +90,7 @@ export function AccessApprovedEmail({ name, email, communityOrg }: AccessApprove
                             Go to the Admin Page
                           </p>
                           <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.5;">
-                            Visit <a href="https://devsa.community/admin" style="color: #ef426f; text-decoration: none;">devsa.community/admin</a>
+                            Visit <a href="https://www.devsa.community/admin" style="color: #ef426f; text-decoration: none;">devsa.community/admin</a>
                           </p>
                         </td>
                       </tr>
@@ -141,7 +141,7 @@ export function AccessApprovedEmail({ name, email, communityOrg }: AccessApprove
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center" style="padding: 8px 0;">
-                    <a href="https://devsa.community/admin" style="display: inline-block; background: linear-gradient(135deg, #ef426f 0%, #b03454 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600;">
+                    <a href="https://www.devsa.community/admin" style="display: inline-block; background: linear-gradient(135deg, #ef426f 0%, #b03454 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600;">
                       Go to Admin Dashboard →
                     </a>
                   </td>

@@ -6,7 +6,7 @@ import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { PartnerCta } from "@/components/partners/partner-cta"
 import { DonationCta } from "@/components/partners/donation-cta"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "San Antonio Tech Communities & Partners | DEVSA",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 }
 
 export default function GroupsPage() {
-  const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+  const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   return (
     <>
       <script

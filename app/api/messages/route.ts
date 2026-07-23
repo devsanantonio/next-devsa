@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
     // back-and-forth chats: one email per "they're not currently engaged"
     // window. Fire-and-forget so a slow Resend call doesn't delay the API.
     if (isResendConfigured() && resend) {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
       const jobTitle: string | undefined = convoData.jobId
         ? await (async () => {
             try {

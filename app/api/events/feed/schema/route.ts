@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
-const DEVSA_NAMESPACE = 'https://devsa.community/ns/event-feed/1.0';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
+const DEVSA_NAMESPACE = 'https://www.devsa.community/ns/event-feed/1.0';
 
 export async function GET() {
   // Keep this schema contract in sync with app/api/events/feed/route.ts whenever

@@ -134,7 +134,7 @@ export function AccessRequestReceivedEmail({ name, communityOrg }: AccessRequest
               <div style="height: 1px; background: linear-gradient(to right, transparent, #2a2a2a, transparent); margin: 24px 0;"></div>
 
               <p style="margin: 0; font-size: 14px; color: #9ca3af; line-height: 1.6;">
-                In the meantime, check out our <a href="https://devsa.community/events" style="color: #ef426f; text-decoration: none;">upcoming events</a> or connect with us on social media.
+                In the meantime, check out our <a href="https://www.devsa.community/events" style="color: #ef426f; text-decoration: none;">upcoming events</a> or connect with us on social media.
               </p>
 
             </td>

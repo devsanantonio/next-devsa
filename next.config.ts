@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       { source: "/jobs/:path*", destination: "/bounties/:path*", permanent: true },
       { source: "/api/jobs/:path*", destination: "/api/bounties/:path*", permanent: true },
       { source: "/api/og/jobs", destination: "/api/og/bounties", permanent: true },
+
+      // Legacy devsanantonio.com pages. That domain now redirects here
+      // path-for-path, so old indexed URLs must resolve instead of 404ing.
+      { source: "/mission", destination: "/buildingtogether", permanent: true },
     ];
   },
 };

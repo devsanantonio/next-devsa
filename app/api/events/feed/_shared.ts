@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 export const EVENT_TIMEZONE = 'America/Chicago';
-export const DEVSA_NAMESPACE = 'https://devsa.community/ns/event-feed/1.0';
+export const DEVSA_NAMESPACE = 'https://www.devsa.community/ns/event-feed/1.0';
 
 type FeedScope = 'upcoming' | 'past';
 

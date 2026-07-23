@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "PySanAntonio 2025 | Python Conference in San Antonio",
@@ -111,7 +111,7 @@ export default function PySanAntonioLayout({ children }: { children: React.React
       {
         "@type": "Organization",
         name: "DEVSA",
-        url: "https://devsa.community/",
+        url: "https://www.devsa.community/",
       },
     ],
     offers: {
@@ -126,7 +126,7 @@ export default function PySanAntonioLayout({ children }: { children: React.React
       "@type": "Organization",
       name: "Python Community",
     },
-    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/api/og/pysanantonio`,
+    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"}/api/og/pysanantonio`,
   }
 
   return (

@@ -55,7 +55,7 @@ describe('events feed contract', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    process.env.NEXT_PUBLIC_SITE_URL = 'https://devsa.community';
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://www.devsa.community';
   });
 
   it('returns the upcoming feed with structured extension fields and community filtering', async () => {
@@ -92,15 +92,15 @@ describe('events feed contract', () => {
     });
 
     const { GET } = await import('./route');
-    const response = await GET(new NextRequest('https://devsa.community/api/events/feed?communityId=alamo-python'));
+    const response = await GET(new NextRequest('https://www.devsa.community/api/events/feed?communityId=alamo-python'));
     const xml = await response.text();
 
     expect(response.headers.get('content-type')).toContain('application/rss+xml');
     expect(xml).toContain('<title>DEVSA Community Calendar: alamo-python</title>');
     expect(xml).toContain('Upcoming DEVSA community events involving alamo-python.');
     expect(xml).toContain('<devsa:eventTimezone>America/Chicago</devsa:eventTimezone>');
-    expect(xml).toContain('<devsa:detailsUrl>https://devsa.community/events/ai-builders-meetup</devsa:detailsUrl>');
-    expect(xml).toContain('<devsa:rsvpUrl>https://devsa.community/events/ai-builders-meetup#rsvp</devsa:rsvpUrl>');
+    expect(xml).toContain('<devsa:detailsUrl>https://www.devsa.community/events/ai-builders-meetup</devsa:detailsUrl>');
+    expect(xml).toContain('<devsa:rsvpUrl>https://www.devsa.community/events/ai-builders-meetup#rsvp</devsa:rsvpUrl>');
     expect(xml).toContain('<devsa:rsvpMode>internal</devsa:rsvpMode>');
     expect(xml).toContain('<devsa:host id="devsa">DEVSA</devsa:host>');
     expect(xml).toContain('<devsa:host id="alamo-python">Alamo Python</devsa:host>');
@@ -140,13 +140,13 @@ describe('events feed contract', () => {
     });
 
     const { GET } = await import('./past/route');
-    const response = await GET(new NextRequest('https://devsa.community/api/events/feed/past?communityId=devsa'));
+    const response = await GET(new NextRequest('https://www.devsa.community/api/events/feed/past?communityId=devsa'));
     const xml = await response.text();
 
     expect(xml).toContain('<title>DEVSA Community Calendar Past Events: devsa</title>');
     expect(xml).toContain('Past DEVSA community events involving devsa.');
-    expect(xml).toContain('<devsa:detailsUrl>https://devsa.community/events/founder-friday</devsa:detailsUrl>');
-    expect(xml).toContain('<devsa:link rel="details">https://devsa.community/events/founder-friday</devsa:link>');
+    expect(xml).toContain('<devsa:detailsUrl>https://www.devsa.community/events/founder-friday</devsa:detailsUrl>');
+    expect(xml).toContain('<devsa:link rel="details">https://www.devsa.community/events/founder-friday</devsa:link>');
     expect(xml).not.toContain('<devsa:rsvpUrl>');
     expect(xml).not.toContain('<devsa:rsvpMode>');
     expect(xml).not.toContain('rel="rsvp"');
@@ -159,8 +159,8 @@ describe('events feed contract', () => {
     const schema = await response.json();
 
     expect(schema.feed.variants).toEqual([
-      expect.objectContaining({ name: 'upcoming', feedUrl: 'https://devsa.community/api/events/feed' }),
-      expect.objectContaining({ name: 'past', feedUrl: 'https://devsa.community/api/events/feed/past' }),
+      expect.objectContaining({ name: 'upcoming', feedUrl: 'https://www.devsa.community/api/events/feed' }),
+      expect.objectContaining({ name: 'past', feedUrl: 'https://www.devsa.community/api/events/feed/past' }),
     ]);
     expect(schema.feed.filters).toEqual(
       expect.arrayContaining([
@@ -168,8 +168,8 @@ describe('events feed contract', () => {
           name: 'communityId',
           status: 'active',
           examples: expect.arrayContaining([
-            'https://devsa.community/api/events/feed?communityId=devsa',
-            'https://devsa.community/api/events/feed/past?communityId=devsa',
+            'https://www.devsa.community/api/events/feed?communityId=devsa',
+            'https://www.devsa.community/api/events/feed/past?communityId=devsa',
           ]),
         }),
       ])

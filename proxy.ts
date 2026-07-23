@@ -8,7 +8,7 @@ export function proxy(request: NextRequest) {
 
   if (host && OLD_DOMAINS.includes(host)) {
     const url = new URL(request.url);
-    url.hostname = "devsa.community";
+    url.hostname = "www.devsa.community";
     url.protocol = "https:";
     url.port = "";
 

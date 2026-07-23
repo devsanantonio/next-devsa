@@ -3,7 +3,7 @@ import { getProduct, parseSlug } from "@/lib/printify";
 import { ProductDetailClient } from "@/components/shop/product-detail-client";
 import { notFound } from "next/navigation";
 
-const BASE_URL = "https://devsa.community";
+const BASE_URL = "https://www.devsa.community";
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;

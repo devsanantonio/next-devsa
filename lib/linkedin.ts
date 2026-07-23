@@ -76,7 +76,7 @@ const locationLabels: Record<string, string> = {
 export async function shareJobToLinkedIn(job: LinkedInJobPayload): Promise<void> {
   if (!isLinkedInConfigured()) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
   const jobUrl = `${siteUrl}/bounties/${job.slug}`;
 
   const locationLine = `${locationLabels[job.locationType] || job.locationType}${job.location ? ` · ${job.location}` : ''}`;
@@ -105,7 +105,7 @@ export async function shareJobToLinkedIn(job: LinkedInJobPayload): Promise<void>
 export async function shareEventToLinkedIn(event: LinkedInEventPayload): Promise<void> {
   if (!isLinkedInConfigured()) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
   const eventUrl = `${siteUrl}/events/${event.slug}`;
 
   const eventDate = new Date(event.date);

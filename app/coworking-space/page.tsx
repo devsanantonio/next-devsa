@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { CoworkingSpaceClient } from "./coworking-space-client"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "DEVSA Community Space in Downtown San Antonio",
@@ -85,7 +85,7 @@ export default function CoworkingSpacePage() {
             "@type": "CoworkingSpace",
             name: "DEVSA Community Coworking Space",
             description: "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
-            url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"}/coworking-space`,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"}/coworking-space`,
             address: {
               "@type": "PostalAddress",
               streetAddress: "131 Houston Street",
@@ -129,7 +129,7 @@ export default function CoworkingSpacePage() {
             managedBy: {
               "@type": "Organization",
               name: "DEVSA",
-              url: "https://devsa.community",
+              url: "https://www.devsa.community",
             },
             parentOrganization: {
               "@type": "Organization", 

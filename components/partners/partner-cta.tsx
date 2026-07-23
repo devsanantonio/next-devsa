@@ -81,7 +81,7 @@ export function PartnerCta() {
               {/* CTAs */}
               <div className="space-y-3 pt-2">
                 <a
-                  href="mailto:partner@devsa.community?subject=Partner%20with%20DEVSA"
+                  href="mailto:jesse@devsanantonio.com?subject=Partner%20with%20DEVSA"
                   className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#ef426f] hover:bg-[#d93a62] text-white font-semibold py-3.5 text-base transition-colors"
                 >
                   <Handshake className="h-5 w-5" />
@@ -89,7 +89,7 @@ export function PartnerCta() {
                   <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
                 <a
-                  href="mailto:sponsor@devsa.community?subject=Sponsor%20a%20DEVSA%20event"
+                  href="mailto:jesse@devsanantonio.com?subject=Sponsor%20a%20DEVSA%20event"
                   className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white/6 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium py-3.5 text-sm md:text-base transition-all"
                 >
                   <Mail className="h-4 w-4" />

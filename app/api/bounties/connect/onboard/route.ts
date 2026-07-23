@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   if (result instanceof NextResponse) return result;
 
   try {
-    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community";
+    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community";
 
     const { url, accountId } = await startOnboarding({
       uid: result.uid,

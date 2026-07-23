@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getProducts } from "@/lib/printify";
 import { ShopClient } from "@/components/shop/shop-client";
 
-const BASE_URL = "https://devsa.community";
+const BASE_URL = "https://www.devsa.community";
 
 export const metadata: Metadata = {
   title: "Shop | DEVSA – Official Community Merch & Developer Apparel",

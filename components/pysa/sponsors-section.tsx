@@ -32,7 +32,7 @@ const allSponsorsAndPartners = [
   {
     name: "DEVSA",
     logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-26-devsa.png",
-    website: "https://devsa.community/",
+    website: "https://www.devsa.community/",
     description: "Activating San Antonio's tech community"
   }
 ]

@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         const hiringManagerDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(jobData.authorUid).get();
         const hiringManager = hiringManagerDoc.data();
         if (hiringManager?.email) {
-          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
           await resend.emails.send({
             from: EMAIL_FROM,
             to: hiringManager.email,
@@ -277,7 +277,7 @@ export async function PUT(request: NextRequest) {
     // Send email notification for shortlisted / rejected
     if ((status === 'shortlisted' || status === 'rejected') && isResendConfigured() && resend) {
       try {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
         const applicantDoc = await db.collection(COLLECTIONS.JOB_BOARD_USERS).doc(appData.applicantUid).get();
         const applicantEmail = applicantDoc.exists ? applicantDoc.data()?.email : null;
         const jobData = jobDoc.data();

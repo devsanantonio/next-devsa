@@ -27,7 +27,7 @@ interface StatusState {
 
 const POLL_INTERVAL_MS = 120_000
 const DISCORD_INVITE_URL = "https://discord.gg/cvHHzThrEw"
-const CONTACT_EMAIL = "coworking@devsa.community"
+const CONTACT_EMAIL = "jesse@devsanantonio.com"
 
 const fallbackStatus: StatusState = {
   ok: false,
@@ -266,7 +266,7 @@ export function HeroSection() {
                               href={`mailto:${CONTACT_EMAIL}`}
                               className="block text-sm font-medium text-gray-900 transition-colors hover:text-gray-700"
                             >
-                              Email {CONTACT_EMAIL} →
+                              Email →
                             </a>
                             <a
                               href={DISCORD_INVITE_URL}

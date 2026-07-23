@@ -80,7 +80,7 @@ export function TerminalDrawer({
                     <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full" />
                   </div>
                   <span className="text-[#ef426f] text-xs font-medium leading-none">
-                    builder@devsa.community
+                    ~/devsa
                   </span>
                 </div>
                 <button

@@ -17,7 +17,7 @@ export function RsvpThankYouEmail({
   communityName,
   eventUrl 
 }: RsvpThankYouEmailProps) {
-  const eventLink = eventUrl || 'https://devsa.community/events';
+  const eventLink = eventUrl || 'https://www.devsa.community/events';
   
   return `
 <!DOCTYPE html>
@@ -136,11 +136,11 @@ export function RsvpThankYouEmail({
               <table role="presentation" style="border-collapse: collapse;">
                 <tr>
                   <td style="padding: 0 8px;">
-                    <a href="https://devsa.community" style="color: #ef426f; text-decoration: none; font-size: 14px;">Website</a>
+                    <a href="https://www.devsa.community" style="color: #ef426f; text-decoration: none; font-size: 14px;">Website</a>
                   </td>
                   <td style="color: #4b5563;">•</td>
                   <td style="padding: 0 8px;">
-                    <a href="https://devsa.community/events" style="color: #ef426f; text-decoration: none; font-size: 14px;">Events</a>
+                    <a href="https://www.devsa.community/events" style="color: #ef426f; text-decoration: none; font-size: 14px;">Events</a>
                   </td>
                 </tr>
               </table>

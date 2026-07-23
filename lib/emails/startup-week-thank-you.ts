@@ -102,7 +102,7 @@ export function StartupWeekThankYouEmail({ name, sessionTitle, track }: StartupW
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center">
-                    <a href="https://devsa.community/events" style="display: inline-block; background-color: #171717; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 13px 28px; border-radius: 10px;">
+                    <a href="https://www.devsa.community/events" style="display: inline-block; background-color: #171717; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 13px 28px; border-radius: 10px;">
                       Explore the Community Calendar
                     </a>
                   </td>
@@ -121,7 +121,7 @@ export function StartupWeekThankYouEmail({ name, sessionTitle, track }: StartupW
               <table role="presentation" style="border-collapse: collapse;">
                 <tr>
                   <td style="padding: 0 8px;">
-                    <a href="https://devsa.community" style="color: #ec228d; text-decoration: none; font-size: 14px;">DEVSA</a>
+                    <a href="https://www.devsa.community" style="color: #ec228d; text-decoration: none; font-size: 14px;">DEVSA</a>
                   </td>
                   <td style="color: #d4d4d4;">&middot;</td>
                   <td style="padding: 0 8px;">

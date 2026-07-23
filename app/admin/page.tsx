@@ -1178,7 +1178,7 @@ export default function AdminPage() {
                     id="email"
                     name="email"
                     required
-                    placeholder="admin@devsa.community"
+                    placeholder="you@example.com"
                     className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-3 pl-10 pr-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                   />
                 </div>

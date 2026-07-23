@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
           : 'TBD';
 
         const eventLocation = eventData?.location || 'TBD';
-        const eventUrl = `https://devsa.community/events/${eventSlug}`;
+        const eventUrl = `https://www.devsa.community/events/${eventSlug}`;
 
         await resend.emails.send({
           from: EMAIL_FROM,

@@ -89,7 +89,7 @@ export function isEventsDiscordConfigured(): boolean {
 export async function shareJobToDiscord(job: DiscordJobPayload): Promise<void> {
   if (!isDiscordConfigured()) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
   const jobUrl = `${siteUrl}/bounties/${job.slug}`;
 
   const locationValue = `${locationLabels[job.locationType] || job.locationType}${job.location ? ` · ${job.location}` : ''}`;
@@ -158,7 +158,7 @@ export interface DigestEvent {
 export async function shareWeeklyDigestToDiscord(events: DigestEvent[]): Promise<void> {
   if (!isEventsDiscordConfigured()) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devsa.community';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 
   if (events.length === 0) {
     await fetch(DISCORD_EVENTS_WEBHOOK_URL!, {

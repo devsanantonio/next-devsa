@@ -36,7 +36,7 @@ export const partners: Partner[] = [
     image: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-26-devsa.png",
     description:
       "Activating the tech community in San Antonio through collaboration, strategic partnerships, and video content that connects developers.",
-    link: "https://devsa.community/",
+    link: "https://www.devsa.community/",
     linkText: "Visit DEVSA",
   },
 ]

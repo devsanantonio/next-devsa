@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devsa.community"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "Tech Events & Meetups in San Antonio | DEVSA Community Calendar",

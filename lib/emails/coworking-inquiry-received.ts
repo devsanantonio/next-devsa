@@ -63,7 +63,7 @@ export function CoworkingInquiryReceivedEmail({
                 In the meantime, you can:
               </p>
               <ul style="margin:0 0 24px 0;padding-left:20px;color:#d1d5db;font-size:14px;line-height:1.8;">
-                <li>Check our <a href="https://devsa.community/events" style="color:#ef426f;text-decoration:none;">community calendar</a> for upcoming events</li>
+                <li>Check our <a href="https://www.devsa.community/events" style="color:#ef426f;text-decoration:none;">community calendar</a> for upcoming events</li>
                 <li>Join us on <a href="https://discord.gg/cvHHzThrEw" style="color:#ef426f;text-decoration:none;">Discord</a> if you'd like real-time chat</li>
                 <li>Reply to this email if you have a follow-up</li>
               </ul>
@@ -82,7 +82,7 @@ export function CoworkingInquiryReceivedEmail({
                 Building San Antonio's tech community together
               </p>
               <p style="margin:0;font-size:12px;color:#6b7280;">
-                DEVSA · San Antonio, TX · <a href="https://devsa.community" style="color:#6b7280;text-decoration:underline;">devsa.community</a>
+                DEVSA · San Antonio, TX · <a href="https://www.devsa.community" style="color:#6b7280;text-decoration:underline;">devsa.community</a>
               </p>
             </td>
           </tr>
