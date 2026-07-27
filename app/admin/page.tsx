@@ -2749,7 +2749,19 @@ export default function AdminPage() {
                               const currentDate = new Date(editingEvent.date || new Date());
                               const [year, month, day] = e.target.value.split('-').map(Number);
                               currentDate.setFullYear(year, month - 1, day);
-                              setEditingEvent({ ...editingEvent, date: currentDate.toISOString() });
+                              const patch = { ...editingEvent, date: currentDate.toISOString() };
+                              // Keep the end time anchored to the same day as the
+                              // start so moving the date never leaves the end in
+                              // the past. Roll to the next day for overnight events.
+                              if (editingEvent.endTime) {
+                                const end = new Date(editingEvent.endTime);
+                                end.setFullYear(year, month - 1, day);
+                                if (end.getTime() <= currentDate.getTime()) {
+                                  end.setDate(end.getDate() + 1);
+                                }
+                                patch.endTime = end.toISOString();
+                              }
+                              setEditingEvent(patch);
                             }}
                             className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />
@@ -2785,10 +2797,16 @@ export default function AdminPage() {
                               return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                             })() : "20:00"}
                             onChange={(e) => {
-                              const baseDate = new Date(editingEvent.date || new Date());
+                              const start = new Date(editingEvent.date || new Date());
+                              const end = new Date(start);
                               const [hours, minutes] = e.target.value.split(':').map(Number);
-                              baseDate.setHours(hours, minutes);
-                              setEditingEvent({ ...editingEvent, endTime: baseDate.toISOString() });
+                              end.setHours(hours, minutes, 0, 0);
+                              // If the chosen end time is at or before the start,
+                              // treat it as an overnight event and roll to the next day.
+                              if (end.getTime() <= start.getTime()) {
+                                end.setDate(end.getDate() + 1);
+                              }
+                              setEditingEvent({ ...editingEvent, endTime: end.toISOString() });
                             }}
                             className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                           />

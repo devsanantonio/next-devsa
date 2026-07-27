@@ -177,6 +177,18 @@ interface MergedEvent {
   source: "firestore" | "static"
 }
 
+// Resolve an event's end as a timestamp. Ignores a missing, unparseable, or
+// inverted end time (one that lands before the start — a common data-entry
+// slip) and falls back to a 2 hour default, so a future event with a bad end
+// time is never silently treated as already-ended.
+function effectiveEndMs(event: { date: string; endTime?: string }): number {
+  const start = new Date(event.date).getTime()
+  const rawEnd = event.endTime ? new Date(event.endTime).getTime() : NaN
+  return Number.isFinite(rawEnd) && rawEnd > start
+    ? rawEnd
+    : start + 2 * 60 * 60 * 1000
+}
+
 // Generate calendar URLs for different providers
 function generateCalendarUrls(event: MergedEvent) {
   const startDate = new Date(event.date)
@@ -625,10 +637,7 @@ export function CommunityEventsSection() {
   // Helper function to get event status: "upcoming" | "happening" | "ended"
   const getEventStatus = (event: MergedEvent): "upcoming" | "happening" | "ended" => {
     const startTime = new Date(event.date).getTime()
-    // Default to 2 hours if no endTime provided
-    const endTime = event.endTime 
-      ? new Date(event.endTime).getTime()
-      : startTime + (2 * 60 * 60 * 1000)
+    const endTime = effectiveEndMs(event)
     const now = currentTime.getTime()
     
     if (now >= startTime && now < endTime) {
@@ -644,12 +653,9 @@ export function CommunityEventsSection() {
 
     return allEvents
       .filter((event) => {
-        // Filter out ended events (use endTime if available, otherwise 2 hours after start)
-        const startTime = new Date(event.date).getTime()
-        const endTime = event.endTime 
-          ? new Date(event.endTime).getTime()
-          : startTime + (2 * 60 * 60 * 1000) // Default 2 hour duration
-        return currentTime.getTime() < endTime
+        // Filter out ended events. effectiveEndMs ignores a missing, invalid, or
+        // inverted end time so a future event with bad end data is never hidden.
+        return currentTime.getTime() < effectiveEndMs(event)
       })
       .filter((event) => {
         if (!normalizedSearch) return true
