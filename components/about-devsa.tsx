@@ -3,12 +3,14 @@
 import { motion } from "motion/react"
 import { Play, ArrowUpRight } from "lucide-react"
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 
 const VIDEO_URL =
   "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
-const VIDEO_POSTER =
-  "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9676.jpg"
+// Resized 16:9 poster in public/photos/ — the S3 original is a 2180x1454 camera
+// frame, ~40x the bytes for a poster that never renders above ~1100px.
+const VIDEO_POSTER = "/photos/about-poster.webp"
 
 export function AboutDevsa() {
   const [playing, setPlaying] = useState(false)
@@ -47,10 +49,13 @@ export function AboutDevsa() {
               className="group absolute inset-0 h-full w-full cursor-pointer text-left"
               aria-label="Play the More Human Than Human recap"
             >
-              <img
+              <Image
                 src={VIDEO_POSTER}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                decoding="async"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
               {/* Scrim for caption legibility */}
               <span className="absolute inset-0 bg-linear-to-t from-black/85 via-black/25 to-black/10" />

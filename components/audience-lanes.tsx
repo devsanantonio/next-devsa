@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "motion/react"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
@@ -29,7 +30,7 @@ const lanes: Lane[] = [
     cta: "Build Your Network",
     href: "/events",
     accent: "text-[#00b2a9]",
-    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg",
+    image: "/photos/lane-pysa.webp",
     imageAlt: "Builders connecting at a DevSA community event",
   },
   {
@@ -41,7 +42,7 @@ const lanes: Lane[] = [
     cta: "Start your group",
     href: "/signin",
     accent: "text-[#ff8200]",
-    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/shebuilds/8O8A0023+2.jpg",
+    image: "/photos/lane-gdg.webp",
     imageAlt: "An organizer leading a DevSA workshop",
   },
   {
@@ -53,7 +54,7 @@ const lanes: Lane[] = [
     cta: "Become a partner",
     href: "/buildingtogether",
     accent: "text-[#ef426f]",
-    image: "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9743.jpg",
+    image: "/photos/lane-morehuman.webp",
     imageAlt: "Partners and community members at a DevSA conference",
   },
 ]
@@ -65,12 +66,13 @@ function LaneCard({ lane, index }: { lane: Lane; index: number }) {
     <div className="flex flex-col h-full">
       {/* Human anchor — photo blends into the card via a bottom scrim */}
       <div className="relative aspect-16/10 w-full overflow-hidden">
-        <img
+        <Image
           src={lane.image}
           alt={lane.imageAlt}
-          loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-t from-neutral-900 via-neutral-900/10 to-transparent" />
       </div>

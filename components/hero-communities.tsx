@@ -1,13 +1,13 @@
 "use client"
 
 import { motion } from "motion/react"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
 // Placeholder — a real DevSA event photo standing in until a hero community
-// shot is chosen.
-const COMMUNITY_PHOTO =
-  "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9580.jpg"
+// shot is chosen. Cropped 2:1 in public/photos/ to match the ~1280x600 box.
+const COMMUNITY_PHOTO = "/photos/community-close.webp"
 
 export function HeroCommunities() {
   return (
@@ -27,10 +27,13 @@ export function HeroCommunities() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="relative overflow-hidden rounded-3xl bg-neutral-900 shadow-2xl ring-1 ring-black/5"
           >
-            <img
+            <Image
               src={COMMUNITY_PHOTO}
               alt="The San Antonio tech community gathered at a DevSA event"
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              decoding="async"
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/45 to-black/20" />
             <div className="relative z-10 flex min-h-[60vh] md:min-h-150 flex-col justify-end p-8 sm:p-10 md:p-14 lg:p-16">

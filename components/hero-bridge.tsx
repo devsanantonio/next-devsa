@@ -1,27 +1,34 @@
 "use client"
 
 import { motion } from "motion/react"
-import { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { useEffect, useMemo, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
-// Images-only from DevSA conferences — videos removed for performance
+// Event photos from DEVSA conferences. These are pre-cropped to 3:4 and resized
+// to 800x1067 in public/hero/ — the cards render at ~260 CSS px, so the camera
+// originals on S3 (up to 6124x4082 / 9 MB each) were ~35 MB of wasted payload.
+// Regenerate with the same crop if you swap one in, or the aspect will shift.
 const mediaItems = [
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg", alt: "PySanAntonio After Party" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_4665.jpg", alt: "DevSA UTSA event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9743.jpg", alt: "More Human Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9580.jpg", alt: "More Human Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay13.jpg", alt: "DevSA Replay Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay7.jpg", alt: "GDG San Antonio" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday2.jpg", alt: "DevSA Tech Day" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/shebuilds/8O8A0023+2.jpg", alt: "SheBuilds Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9715.jpg", alt: "More Human Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg", alt: "DevSA Tech Day" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/IMG_3385.jpg", alt: "DevSA Event" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/replay9.jpg", alt: "Andrea from Geeks fam" },
-  { src: "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/0P3A9676.jpg", alt: "More Human Event" },
+  { src: "/hero/pysa.webp", alt: "PySanAntonio After Party" },
+  { src: "/hero/utsa.webp", alt: "DevSA UTSA event" },
+  { src: "/hero/morehuman-9743.webp", alt: "More Human Event" },
+  { src: "/hero/morehuman-9580.webp", alt: "More Human Event" },
+  { src: "/hero/replay13.webp", alt: "DevSA Replay Event" },
+  { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
+  { src: "/hero/techday2.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/shebuilds.webp", alt: "SheBuilds Event" },
+  { src: "/hero/morehuman-9715.webp", alt: "More Human Event" },
+  { src: "/hero/techday5.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/ltai-talk.webp", alt: "A speaker walking through a workflow at a DEVSA talk" },
+  { src: "/hero/replay9.webp", alt: "Andrea from Geeks fam" },
 ]
 
+// Columns are full-bleed behind the copy, so their top cards are in-viewport on
+// load. Eager-load the first card of each column to paint the gallery quickly;
+// everything below it lazy-loads as the animation brings it around.
+const EAGER_PER_COLUMN = 1
 
 type MediaItem = (typeof mediaItems)[number]
 
@@ -32,42 +39,27 @@ function splitIntoColumns(items: MediaItem[], cols: number): MediaItem[][] {
   return columns
 }
 
-// Lazy-loaded image card — only loads src when near viewport.
-// Images are decorative background; alt is empty so screen readers skip them.
-function LazyImage({ src }: { src: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: "200px" }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
+// Decorative background card. alt is empty so screen readers skip the gallery —
+// the section's meaning lives in the headline, not the photos.
+//
+// No IntersectionObserver here on purpose: the columns sit behind the copy at
+// inset-0, so everything is already in-viewport on load and a manual observer
+// only added work without deferring anything. Native lazy loading covers the
+// off-screen tail below the fold.
+function MediaCard({ src, eager }: { src: string; eager: boolean }) {
   return (
-    <div
-      ref={ref}
-      className="relative w-full rounded-xl overflow-hidden aspect-3/4 shrink-0 bg-neutral-900"
-    >
-      {isVisible && (
-        <img
-          src={src}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover"
-        />
-      )}
+    <div className="relative w-full rounded-xl overflow-hidden aspect-3/4 shrink-0 bg-neutral-900">
+      <Image
+        src={src}
+        alt=""
+        width={800}
+        height={1067}
+        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
+        priority={eager}
+        loading={eager ? undefined : "lazy"}
+        decoding="async"
+        className="w-full h-full object-cover"
+      />
     </div>
   )
 }
@@ -77,12 +69,15 @@ function ScrollingColumn({
   items,
   direction = "up",
   durationS = 60,
+  eagerCount = 0,
 }: {
   items: MediaItem[]
   direction?: "up" | "down"
   durationS?: number
+  eagerCount?: number
 }) {
-  // Duplicate for seamless loop
+  // Duplicate for seamless loop. Both halves reference the same files, so the
+  // duplicate costs DOM nodes but no extra network.
   const doubled = useMemo(() => [...items, ...items], [items])
 
   return (
@@ -94,7 +89,7 @@ function ScrollingColumn({
         }}
       >
         {doubled.map((item, i) => (
-          <LazyImage key={`${item.src}-${i}`} src={item.src} />
+          <MediaCard key={`${item.src}-${i}`} src={item.src} eager={i < eagerCount} />
         ))}
       </div>
     </div>
@@ -193,6 +188,7 @@ export function HeroBridge() {
               items={col}
               direction={i % 2 === 0 ? "up" : "down"}
               durationS={55 + i * 10}
+              eagerCount={EAGER_PER_COLUMN}
             />
           ))}
         </div>
