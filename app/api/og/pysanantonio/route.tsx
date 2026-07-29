@@ -1,11 +1,29 @@
+import { readFile } from "node:fs/promises"
+import path from "node:path"
 import { ImageResponse } from "next/og"
 import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import {
+  PYSA_2026,
+  PYSA_ASSETS,
+  PYSA_COLORS,
+  PYSA_WORDMARK,
+  getCfsPhase,
+} from "@/data/pysa/2026"
 
 export const runtime = "nodejs"
 
 export async function GET() {
   const fonts = await loadBrandFonts()
+  const isOpen = getCfsPhase() === "open"
+
+  // Inlined from disk rather than fetched over HTTP: the card must render even
+  // when the site's own origin is not reachable from the render (previews,
+  // local builds), and satori cannot rasterise the SVG version.
+  const wordmark = `data:image/png;base64,${(
+    await readFile(path.join(process.cwd(), "public", PYSA_WORDMARK.pngDark))
+  ).toString("base64")}`
+
   return new ImageResponse(
     (
       <div
@@ -14,23 +32,40 @@ export async function GET() {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#ffffff",
+          backgroundColor: PYSA_COLORS.ink,
           fontFamily: "Geist Sans",
           position: "relative",
         }}
       >
         <BrandGradientBar direction="ltr" />
-        {/* Subtle Python-blue accent gradient */}
+
+        {/* Mascot, bled off the right edge */}
+        <img
+          src={PYSA_ASSETS.mascotDark}
+          alt=""
+          width={460}
+          height={575}
+          style={{
+            position: "absolute",
+            right: -40,
+            bottom: 0,
+            height: 600,
+            width: 480,
+            objectFit: "cover",
+            objectPosition: "top center",
+          }}
+        />
+        {/* Fade the mascot into the card so the type stays readable */}
         <div
           style={{
             position: "absolute",
-            bottom: 0,
             right: 0,
-            width: 400,
-            height: 400,
-            background:
-              "radial-gradient(ellipse at 100% 100%, rgba(55, 118, 171, 0.08) 0%, transparent 60%)",
+            bottom: 0,
+            width: 560,
+            height: 630,
             display: "flex",
+            background:
+              "linear-gradient(90deg, #0a0a0a 0%, rgba(10,10,10,0.75) 35%, rgba(10,10,10,0) 75%)",
           }}
         />
 
@@ -40,178 +75,120 @@ export async function GET() {
             flexDirection: "column",
             flex: 1,
             padding: "44px 64px",
-          }}
-        >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            marginBottom: 48,
             zIndex: 1,
           }}
         >
-          <DevsaLogoMark size={40} />
-
-          {/* Badge */}
+          {/* Header */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "#eff6ff",
-              border: "2px solid #3776AB",
-              borderRadius: 24,
-              padding: "8px 22px",
+              justifyContent: "space-between",
+              width: "100%",
+              marginBottom: 40,
             }}
           >
-            <span
+            <DevsaLogoMark size={40} bodyColor="#1c1c1c" />
+
+            <div
               style={{
-                color: "#3776AB",
-                fontSize: 15,
-                fontWeight: 600,
-                letterSpacing: "0.01em",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: isOpen
+                  ? "rgba(248,184,0,0.14)"
+                  : "rgba(255,255,255,0.08)",
+                border: `2px solid ${isOpen ? PYSA_COLORS.yellow : "rgba(255,255,255,0.25)"}`,
+                borderRadius: 24,
+                padding: "8px 22px",
               }}
             >
-              Python Conference
-            </span>
+              <span
+                style={{
+                  color: isOpen ? PYSA_COLORS.yellow : "rgba(255,255,255,0.75)",
+                  fontSize: 15,
+                  fontWeight: 600,
+                }}
+              >
+                {isOpen ? "Call for speakers open" : "Python conference"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Main content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            justifyContent: "center",
-            zIndex: 1,
-          }}
-        >
-          {/* Main title */}
-          <h1
-            style={{
-              fontSize: 72,
-              fontWeight: 800,
-              color: "#111827",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 8,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            PySanAntonio
-          </h1>
-          <h2
-            style={{
-              fontSize: 48,
-              fontWeight: 700,
-              color: "#3776AB",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 24,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            First Python Conference
-          </h2>
-
-          {/* Subtitle */}
-          <p
-            style={{
-              fontSize: 22,
-              color: "#6b7280",
-              margin: 0,
-              marginBottom: 36,
-              maxWidth: 800,
-              lineHeight: 1.55,
-              fontWeight: 400,
-            }}
-          >
-            PySanAntonio brought together Python enthusiasts from across the region for a day of learning, networking, and community building.
-          </p>
-          {/* Event details */}
+          {/* Main content */}
           <div
             style={{
               display: "flex",
-              gap: 36,
+              flexDirection: "column",
+              flex: 1,
+              justifyContent: "center",
+              maxWidth: 720,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#3776AB" strokeWidth="2" />
-                <line x1="16" y1="2" x2="16" y2="6" stroke="#3776AB" strokeWidth="2" />
-                <line x1="8" y1="2" x2="8" y2="6" stroke="#3776AB" strokeWidth="2" />
-                <line x1="3" y1="10" x2="21" y2="10" stroke="#3776AB" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Alamo Python
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 14 }}>
+              <img
+                src={wordmark}
+                alt="PySanAntonio"
+                width={560}
+                height={130}
+                style={{ width: 560, height: 130 }}
+              />
+              <span
+                style={{
+                  fontSize: 64,
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  letterSpacing: "-0.03em",
+                  paddingBottom: 6,
+                }}
+              >
+                II
               </span>
             </div>
+            <h2
+              style={{
+                fontSize: 40,
+                fontWeight: 700,
+                color: PYSA_COLORS.blue,
+                lineHeight: 1.2,
+                margin: 0,
+                marginBottom: 28,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {PYSA_2026.dateLabel}
+            </h2>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#3776AB" strokeWidth="2" />
-                <circle cx="12" cy="10" r="3" stroke="#3776AB" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Geekdom, San Antonio
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <span style={{ color: "#d4d4d4", fontSize: 24, fontWeight: 500 }}>
+                {PYSA_2026.venue}, {PYSA_2026.venueDetail} · {PYSA_2026.timeLabel}
               </span>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#3776AB" strokeWidth="2" />
-                <circle cx="9" cy="7" r="4" stroke="#3776AB" strokeWidth="2" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#3776AB" strokeWidth="2" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#3776AB" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Free Admission
+              <span style={{ color: "#8a8a8a", fontSize: 20 }}>
+                Part of SA Startup + Tech Week · {PYSA_2026.superEvent.label}
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            paddingTop: 24,
-            borderTop: "2px solid #f3f4f6",
-            zIndex: 1,
-          }}
-        >
+          {/* Footer */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              justifyContent: "space-between",
+              width: "100%",
+              paddingTop: 24,
+              borderTop: "1px solid #262626",
             }}
           >
-            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              Powered by
+            <span style={{ color: "#8a8a8a", fontSize: 18, fontWeight: 500 }}>
+              Alamo Python · PyTexas Foundation · DEVSA
             </span>
-            <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              DEVSA + PyTexas
+            <span style={{ color: PYSA_COLORS.yellow, fontSize: 18, fontWeight: 600 }}>
+              devsa.community
             </span>
           </div>
-          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-            devsa.community/events/pysanantonio
-          </span>
         </div>
-        </div>
-        <BrandGradientBar direction="rtl" />
       </div>
     ),
-    {
-      width: 1200,
-      height: 630,
-      fonts,
-    }
+    { width: 1200, height: 630, fonts }
   )
 }

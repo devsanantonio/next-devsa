@@ -158,7 +158,7 @@ export function JobListingsClient({
         />
 
         {/* Foreground content */}
-        <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-20 sm:py-24 md:py-28 lg:py-32 flex flex-col">
+        <div className="relative z-20 page-shell py-20 sm:py-24 md:py-28 lg:py-32 flex flex-col">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -238,8 +238,8 @@ export function JobListingsClient({
       </section>
 
       {/* Job Listings */}
-      <section id="open-positions" className="w-full bg-white px-4 sm:px-6 pt-12 sm:pt-16 scroll-mt-4">
-        <div className="mx-auto max-w-7xl pb-16 sm:pb-24">
+      <section id="open-positions" className="w-full bg-white pt-12 sm:pt-16 scroll-mt-4">
+        <div className="page-shell pb-16 sm:pb-24">
           {/* Section header */}
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 leading-[1.2]">
@@ -276,7 +276,7 @@ export function JobListingsClient({
                 ? "No jobs match your filters"
                 : "No jobs posted yet"}
             </h3>
-            <p className="text-gray-500 text-sm leading-normal max-w-sm font-normal">
+            <p className="text-gray-500 text-sm leading-normal max-w-[40rem] font-normal">
               {searchQuery || selectedType !== "all" || selectedLocation !== "all" || selectedDatePosted !== "all"
                 ? "Try adjusting your search criteria or clearing filters."
                 : "Be the first to post a job and reach the DEVSA network across San Antonio and South Texas."}

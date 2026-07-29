@@ -16,8 +16,8 @@ export function HeroCommunities() {
       className="relative bg-white overflow-hidden"
       data-bg-type="light"
     >
-      <div className="relative z-10 px-4 md:px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative z-10 pt-16 pb-20 md:pt-24 md:pb-28">
+        <div className="page-shell">
           {/* Full-bleed community photo with the origin question overlaid —
               the emotional close, given real visual weight */}
           <motion.div

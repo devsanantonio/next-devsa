@@ -88,7 +88,7 @@ export function MerchSubmissionForm({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-[40rem] max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

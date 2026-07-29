@@ -209,7 +209,7 @@ export function EcosystemShowcase() {
         }
       `}</style>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
+      <div className="relative z-10 page-shell">
         <div className="lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-12 xl:gap-16">
           {/* Text rail — leads on mobile/tablet; sticky left column on desktop */}
           <motion.div
@@ -232,7 +232,7 @@ export function EcosystemShowcase() {
               </h2>
             </div>
 
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-4 max-w-5xl">
               <p className="text-pretty text-xl xl:text-2xl text-gray-600 leading-[1.45] font-light">
                 From grassroots meetups to enterprise partners — these are the
                 groups shaping San Antonio&apos;s{" "}

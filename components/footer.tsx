@@ -134,7 +134,7 @@ function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
         className="fixed inset-0 z-70 flex items-center justify-center p-4"
         onClick={onClose}
       >
-        <div className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full max-w-[40rem]" onClick={(e) => e.stopPropagation()}>
           <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
@@ -257,7 +257,7 @@ export function Footer() {
   return (
     <footer className="relative bg-neutral-950 border-t border-neutral-800/50 overflow-hidden">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 md:px-8 pt-20 pb-16">
+      <div className="page-shell pt-20 pb-16">
         <div className="flex flex-col lg:flex-row gap-14 lg:gap-20">
           {/* Left Side - Brand (terminal) */}
           <motion.div

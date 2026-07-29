@@ -16,7 +16,7 @@ export function SlideDrawer({
   onClose,
   title,
   subtitle,
-  widthClass = "max-w-md",
+  widthClass = "max-w-3xl",
   children,
 }: {
   open: boolean

@@ -1,0 +1,267 @@
+"use client"
+
+import Link from "next/link"
+import { motion, useReducedMotion } from "motion/react"
+import { CalendarDays, Clock, MapPin, ArrowRight } from "lucide-react"
+import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
+import { MascotSticker } from "@/components/pysa/2026/mascot-sticker"
+import {
+  disabledSlot,
+  primaryButton,
+  secondaryButton,
+} from "@/components/pysa/2026/button-styles"
+import {
+  PYSA_2026,
+  PYSA_ASSETS,
+  PYSA_COLORS,
+  PYSA_WORDMARK,
+  type CfsPhase,
+} from "@/data/pysa/2026"
+
+/**
+ * Feathers the clip's left edge — the one facing the copy — so its box never
+ * reads as a seam against the page.
+ *
+ * Kept shallow (opaque by 22%) on purpose: the mascot walks IN from the left of
+ * frame, so a deep fade here erases him for the first second of every loop.
+ *
+ * Deliberately one layer, too. Two gradients with mask-composite needs
+ * `intersect` alongside the legacy `-webkit-mask-composite: source-in`, and the
+ * two do not mean the same thing — combining them masked the figure almost
+ * away. Top and bottom need no help: the section's vertical vignette covers
+ * them, and the box is aspect-matched so there is no letterbox edge.
+ */
+const VIDEO_MASK = "linear-gradient(to right, transparent 0%, black 22%, black 100%)"
+
+/**
+ * Playback window, in seconds. The clip opens with the mascot walking in from
+ * off-frame and ends after he has walked out — roughly 2.4s of its 9.75s is an
+ * empty stage. Looping the whole thing leaves the hero blank a quarter of the
+ * time, so playback is held to the stretch where he is actually present, which
+ * also keeps the two-fingers beat (~5.7s) inside every pass.
+ */
+const CLIP_IN = 1.3
+const CLIP_OUT = 8.4
+
+/**
+ * PySanAntonio II hero.
+ *
+ * The primary CTA is a slot rather than a fixed button: while the call for
+ * speakers is open it drives submissions, and once it closes the same slot
+ * becomes the attendee path. That swap is driven by `phase`, which the page
+ * derives from CFS_CLOSES — nobody has to remember to edit this in August.
+ */
+export function PysaHero({
+  phase,
+  daysLeft,
+}: {
+  phase: CfsPhase
+  /**
+   * Computed on the server. The page revalidates hourly, so a whole-day count
+   * is never meaningfully stale — and passing it in beats a mount effect,
+   * which would both trip react-hooks/set-state-in-effect and flash an empty
+   * line on first paint.
+   */
+  daysLeft: number
+}) {
+  const isOpen = phase === "open"
+  // Respect prefers-reduced-motion: hold the poster still rather than looping.
+  // The poster is the two-fingers frame, so nothing is lost by not playing.
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <section
+      id="top"
+      data-bg-type="dark"
+      /* min-h-dvh from sm up only: filling the viewport is a desktop goal, and
+         on a phone the column is already tall enough that forcing a full
+         viewport only adds dead space above and below the copy. */
+      className="relative flex flex-col justify-center overflow-hidden bg-[#0a0a0a] text-white sm:min-h-dvh"
+    >
+      {/* Blue wash behind the mascot, echoing the guitar */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-20 top-1/4 h-140 w-140 rounded-full opacity-30 blur-[120px]"
+        style={{
+          background: `radial-gradient(circle, ${PYSA_COLORS.blue} 0%, transparent 65%)`,
+        }}
+      />
+
+      {/* Mascot clip, bled off the right rather than boxed in a card.
+          Desktop only: at 7 MB it must never reach a phone, which gets the
+          sticker treatment instead. The poster is a real frame from the clip,
+          so there is no jump when playback starts.
+
+          The box carries the clip's own 1114:720 ratio and is centred
+          vertically rather than stretched to the section height. That way
+          object-cover fills it exactly — no letterboxing, so VIDEO_MASK's edge
+          lands on the picture's edge instead of leaving a hard line. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-1/2 hidden aspect-[1114/720] w-[78%] -translate-y-1/2 select-none sm:block lg:w-[64%] xl:w-[58%]"
+      >
+        <video
+          src={PYSA_ASSETS.mascotVideo}
+          poster={PYSA_ASSETS.mascotVideoPoster}
+          autoPlay={!reduceMotion}
+          muted
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={(e) => {
+            e.currentTarget.currentTime = CLIP_IN
+          }}
+          onTimeUpdate={(e) => {
+            // Hand-rolled loop over the trimmed window instead of the `loop`
+            // attribute, which would replay the empty walk-in and walk-out.
+            const v = e.currentTarget
+            if (v.currentTime >= CLIP_OUT) v.currentTime = CLIP_IN
+          }}
+          className="h-full w-full object-cover"
+          style={{
+            maskImage: VIDEO_MASK,
+            WebkitMaskImage: VIDEO_MASK,
+          }}
+        />
+      </div>
+
+      {/* Left-to-right scrim: opaque under the copy, clear over the figure. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.9) 32%, rgba(10,10,10,0.35) 58%, rgba(10,10,10,0) 80%)",
+        }}
+      />
+      {/* Vertical vignette — settles the figure under the navbar and fades
+          its boots into the call-for-speakers section below. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 bg-linear-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"
+      />
+
+      {/* Mobile gets the sticker treatment instead of the standing figure.
+          Sits after the scrims (z-10) so the bottom vignette does not wash it
+          out, but under the copy (z-20) so it can never cover the CTA. Pinned
+          to the bottom-right corner, clear of the left-aligned column. */}
+      <MascotSticker
+        className="-bottom-6 -right-10 z-10 w-40 sm:hidden"
+        rotate={-8}
+        from="bottom"
+      />
+
+      <div className="page-shell relative z-20 pb-20 pt-28 md:pb-24 md:pt-32">
+        <div className="max-w-xl xl:max-w-2xl">
+          {/* Only the transform animates in. Fading from opacity:0 would ship
+              the headline and the primary CTA invisible in the server HTML,
+              leaving the hero blank if hydration is slow or fails. */}
+          <motion.div
+            initial={{ y: 20 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="flex flex-col gap-5">
+              {/* The event's own name leads. "Part of …" is a qualifier, so it
+                  follows the headline rather than introducing it — otherwise
+                  the modifier lands before the noun, and two display wordmarks
+                  end up stacked back to back competing for first glance. */}
+              <div className="flex flex-col gap-3">
+                {/* The wordmark is art, not type — Amador is Adobe-Fonts-only,
+                    so it cannot be set live. The alt text carries the name and
+                    "returns." stays real text, which keeps the h1 meaningful to
+                    screen readers and search engines. */}
+                <h1 className="flex flex-col items-start gap-1 font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] md:text-5xl lg:text-6xl xl:text-7xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={PYSA_WORDMARK.svgDark}
+                    alt="PySanAntonio"
+                    width={PYSA_WORDMARK.width}
+                    height={PYSA_WORDMARK.height}
+                    className="h-auto w-full max-w-[26rem] lg:max-w-[32rem] xl:max-w-[38rem]"
+                  />
+                  <span className="font-light italic" style={{ color: PYSA_COLORS.blue }}>
+                    returns.
+                  </span>
+                </h1>
+
+                <SastwLockup />
+              </div>
+
+              <p className="max-w-xl text-lg leading-relaxed text-white/70 md:text-xl">
+                San Antonio&apos;s Python conference is back for a second year —
+                an afternoon of{" "}
+                <strong className="font-semibold text-white">
+                  learning, networking, and community building
+                </strong>{" "}
+                with the people already doing the work here.
+              </p>
+            </div>
+
+            {/* Date / time / place rail */}
+            <dl className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-white/60">
+              <div className="inline-flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
+                <dt className="sr-only">Date</dt>
+                <dd>{PYSA_2026.dateLabel}</dd>
+              </div>
+              <div className="inline-flex items-center gap-2">
+                <Clock className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
+                <dt className="sr-only">Time</dt>
+                <dd>{PYSA_2026.timeLabel}</dd>
+              </div>
+              <div className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
+                <dt className="sr-only">Location</dt>
+                <dd>
+                  {PYSA_2026.venue}, {PYSA_2026.venueDetail}
+                </dd>
+              </div>
+            </dl>
+
+            {/* CTA slot — swaps with the call's phase */}
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                {isOpen ? (
+                  <Link href="#call-for-speakers" className={primaryButton}>
+                    Submit a talk
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Link>
+                ) : (
+                  <span className={disabledSlot}>Speaker lineup coming soon</span>
+                )}
+
+                <Link href="/events/pysanantonio/2025" className={secondaryButton}>
+                  Watch last year
+                </Link>
+              </div>
+
+              {isOpen && (
+                <p className="text-sm text-white/50">
+                  {daysLeft === 0 ? (
+                    <>Submissions close <span className="font-semibold text-white">today</span>.</>
+                  ) : (
+                    <>
+                      Submissions close in{" "}
+                      <span className="font-semibold" style={{ color: PYSA_COLORS.yellow }}>
+                        {daysLeft} {daysLeft === 1 ? "day" : "days"}
+                      </span>{" "}
+                      — August 15, 2026.
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom fade into the call for speakers, matching the hero treatment
+          on /buildingtogether. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-linear-to-t from-[#0a0a0a] to-transparent"
+      />
+    </section>
+  )
+}

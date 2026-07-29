@@ -10,7 +10,7 @@ export function ClosingCta() {
       className="bg-white py-16 md:py-24"
       data-bg-type="light"
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="page-shell">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -29,7 +29,7 @@ export function ClosingCta() {
             </h2>
           </div>
 
-          <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-2xl">
+          <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-[96rem]">
             Now that you know the space — tech talks, workshops, meetups, and
             conferences happen every week across San&nbsp;Antonio&apos;s tech
             community, all on{" "}

@@ -12,19 +12,33 @@
   --breakpoint-xl: 1280px; /* Large desktop and TV screens */
   --breakpoint-2xl: 1536px; /* Extra large screens */
 
-  /* Container max-widths for each breakpoint */
-  --container-xs: 100%;
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1536px;
+  /*
+   * THE page shell. One measure and one gutter scale for the whole site —
+   * navbar, every page section, and the footer — so the left edge agrees
+   * everywhere. See .page-shell below.
+   *
+   * The gutter scale matches what the navbar already used (24/40/64/80).
+   * The measure is 80rem, which is what most of the site was already on via
+   * max-w-7xl.
+   */
+  --page-measure: 80rem; /* 1280px of content between the gutters */
+  --page-gutter: 1.5rem; /* 24px */
 
   /* Spacing scale optimized for different screen sizes */
   --spacing-mobile: 1rem; /* 16px for mobile */
   --spacing-tablet: 1.5rem; /* 24px for tablet */
   --spacing-desktop: 2rem; /* 32px for desktop */
   --spacing-large: 3rem; /* 48px for large screens */
+}
+
+@media (min-width: 640px) {
+  :root { --page-gutter: 2.5rem; } /* 40px */
+}
+@media (min-width: 768px) {
+  :root { --page-gutter: 4rem; } /* 64px */
+}
+@media (min-width: 1024px) {
+  :root { --page-gutter: 5rem; } /* 80px */
 }
 
   @theme {
@@ -57,49 +71,46 @@ body {
   animation: admin-overlay-in 0.2s ease-out;
 }
 
-/* Custom responsive utilities for consistent spacing */
+/*
+ * The one page shell. Use this for anything that should line up with the
+ * navbar: page sections, hero copy, the footer.
+ *
+ * A single element does both jobs — the gutter is the padding, and the
+ * max-width includes it. So the left edge sits at exactly `--page-gutter`
+ * until the viewport outgrows measure + 2 gutters, and centres after that.
+ *
+ * Deliberately NOT Tailwind's `container`, whose max-width steps to each
+ * breakpoint — that makes the content edge jump around as you resize instead
+ * of moving monotonically.
+ *
+ * `.container-responsive` is the historical name and is kept as an alias so
+ * the pages already using it come along for free. Prefer .page-shell in new
+ * code.
+ */
+.page-shell,
 .container-responsive {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: var(--spacing-mobile);
-  padding-right: var(--spacing-mobile);
+  max-width: calc(var(--page-measure) + 2 * var(--page-gutter));
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
 }
 
-@media (min-width: 640px) {
-  .container-responsive {
-    max-width: var(--container-sm);
-    padding-left: var(--spacing-tablet);
-    padding-right: var(--spacing-tablet);
-  }
-}
-
-@media (min-width: 768px) {
-  .container-responsive {
-    max-width: var(--container-md);
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-responsive {
-    max-width: var(--container-lg);
-    padding-left: var(--spacing-desktop);
-    padding-right: var(--spacing-desktop);
-  }
-}
-
-@media (min-width: 1280px) {
-  .container-responsive {
-    max-width: var(--container-xl);
-    padding-left: var(--spacing-large);
-    padding-right: var(--spacing-large);
-  }
-}
-
-@media (min-width: 1536px) {
-  .container-responsive {
-    max-width: var(--container-2xl);
-  }
+/*
+ * Left-edge-only variant, for full-bleed split layouts where the right half is
+ * artwork that must stay flush to the viewport (the homepage hero). Centring a
+ * shell there would pull the artwork in and break the composition.
+ *
+ * Resolves to exactly the same left edge .page-shell produces: the gutter until
+ * the viewport outgrows the measure, then half the overflow. Pair it with
+ * matching pr-* utilities — this sets padding-left only.
+ */
+.page-inset-left {
+  padding-left: max(
+    var(--page-gutter),
+    calc((100vw - var(--page-measure)) / 2)
+  );
 }
 
 /* Typography scale for different screen sizes */

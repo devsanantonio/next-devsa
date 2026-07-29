@@ -191,7 +191,7 @@ export function BrandingKitPage() {
         <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
           Branding Kit
         </h1>
-        <p className="text-neutral-400 text-lg max-w-2xl leading-relaxed">
+        <p className="text-neutral-400 text-lg max-w-[96rem] leading-relaxed">
           Official brand guidelines for DEVSA — San Antonio&apos;s tech community.
           Use these assets for press, partnerships, events, and community collaborations.
         </p>
@@ -553,7 +553,7 @@ export function BrandingKitPage() {
       <section className="max-w-5xl mx-auto px-6 md:px-8 pb-24">
         <div className="border border-neutral-800/50 rounded-2xl p-8 bg-neutral-900/30 text-center">
           <h2 className="text-lg font-semibold text-white mb-2">Need something specific?</h2>
-          <p className="text-neutral-500 text-sm mb-5 max-w-md mx-auto">
+          <p className="text-neutral-500 text-sm mb-5 max-w-3xl mx-auto">
             For press inquiries, partnership materials, or custom assets, reach out to the DEVSA team.
           </p>
           <a

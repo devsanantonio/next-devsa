@@ -154,7 +154,7 @@ export function HeroBridge() {
       `}</style>
 
       {/* Headline — below the images on mobile; leads the left column on desktop */}
-      <div className="order-2 md:order-0 relative z-20 w-full md:max-w-[55%] px-6 sm:px-10 md:px-16 lg:px-20 pt-8 md:pt-0">
+      <div className="order-2 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 md:pt-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -210,14 +210,14 @@ export function HeroBridge() {
       </div>
 
       {/* Body copy + CTAs — after the images on mobile; continues the left column on desktop */}
-      <div className="order-3 md:order-0 relative z-20 w-full md:max-w-[55%] px-6 sm:px-10 md:px-16 lg:px-20 pt-8 pb-20 md:pt-8 md:pb-0">
+      <div className="order-3 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 pb-20 md:pt-8 md:pb-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="space-y-7 md:space-y-8"
         >
-          <div className="space-y-4 md:space-y-5 max-w-2xl md:max-w-xl">
+          <div className="space-y-4 md:space-y-5 max-w-[96rem] md:max-w-7xl">
             <p className="md:text-pretty text-lg md:text-2xl text-white/75 leading-relaxed md:leading-[1.45] font-normal">
               DEVSA bridges the gap between{" "}
               <strong className="font-semibold text-white">passionate builders</strong>,

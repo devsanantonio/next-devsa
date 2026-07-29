@@ -79,8 +79,6 @@ export type Spotlight = {
   key: string
   eyebrow: string
   title: string
-  /** When set, the hero renders this logo image in place of the text title. */
-  logo?: { src: string; alt: string; className?: string }
   /** When set, the slide renders this image as its left-side content. */
   image?: { src: string; alt: string }
   /** When set, the slide renders this muted autoplay video as its left-side content. */
@@ -183,34 +181,35 @@ export const SPOTLIGHTS: Spotlight[] = [
   },
   {
     key: "startup-week",
-    eyebrow: "DEVSA × Geekdom",
-    title: "San Antonio Startup Week",
-    logo: {
-      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/poweredbygeekdom.png",
-      alt: "San Antonio Startup Week — Powered by Geekdom",
+    eyebrow: "Sept 28 – Oct 2, 2026",
+    title: "SA Startup + Tech Week",
+    image: {
+      src: "/sastw/horizontal-magenta.svg",
+      alt: "SA Startup + Tech Week",
     },
     blurb:
-      "DEVSA and Geekdom are coming together for an open call for speakers across five tracks — founders, builders, applied AI, solopreneurs, and capital & community. Sept 28 – Oct 2, 2026.",
+      "A week of founder, builder, and investor programming across San Antonio. DEVSA is in it — PySanAntonio II closes the week on Friday, October 2 at Geekdom.",
     accent: "#ec228d",
     group: "happening",
-    href: "/startup-week-2026",
-    cta: "Submit a talk",
-    status: "Call for speakers open",
+    href: "https://www.sasw.co/",
+    cta: "Visit the official site",
+    status: "Sept 28 – Oct 2",
   },
   {
     key: "pysanantonio",
     eyebrow: "Upcoming conference: PySanAntonio II",
     title: "PySanAntonio II",
     video: {
-      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.mp4",
-      poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysanantonio2.jpg",
+      src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mp4",
+      poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2-bgdark.jpg",
     },
-    blurb: "",
-    accent: "#ffd343",
+    blurb:
+      "San Antonio's Python conference returns Friday, October 2 at Geekdom — an afternoon of learning, networking, and community building, led by Alamo Python with the PyTexas Foundation and DEVSA, inside SA Startup + Tech Week. The call for speakers is open through August 15.",
+    accent: "#f8b800",
     dark: true,
     group: "happening",
     href: "/events/pysanantonio",
-    cta: "View conference",
-    status: "Upcoming",
+    cta: "Submit a talk",
+    status: "Call for speakers open",
   },
 ]

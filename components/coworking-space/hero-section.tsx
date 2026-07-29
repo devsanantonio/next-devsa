@@ -221,7 +221,7 @@ export function HeroSection() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         transition={{ duration: 0.25 }}
-                        className="max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                        className="max-w-3xl overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                       >
                         <div className="space-y-4">
                           <div>
@@ -390,7 +390,7 @@ export function HeroSection() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-2xl"
+            className="relative w-full max-w-[96rem]"
             onClick={(e) => e.stopPropagation()}
           >
             <button

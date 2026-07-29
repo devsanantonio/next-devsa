@@ -25,8 +25,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${baseUrl}/events/pysanantonio`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/events/pysanantonio/2025`,
+      lastModified: new Date("2025-11-08"),
+      changeFrequency: "yearly",
+      priority: 0.5,
     },
     {
       url: `${baseUrl}/buildingtogether`,

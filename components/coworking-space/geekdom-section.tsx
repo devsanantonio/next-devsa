@@ -7,13 +7,13 @@ import Image from "next/image"
 export function GeekdomSection() {
   return (
     <section className="py-20 md:py-32 bg-black text-white" data-bg-type="dark">
-      <div className="container mx-auto px-6">
+      <div className="page-shell">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-7xl mx-auto"
+          className="w-full"
         >
           <div className="space-y-8 md:mb-12">
             {/* Mobile Layout - Stacked */}

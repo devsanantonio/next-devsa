@@ -110,7 +110,7 @@ export function Linktree() {
       data-bg-type="light"
       className="w-full bg-white px-6 py-16 md:py-24"
     >
-      <div className="mx-auto flex max-w-xl flex-col items-center text-center">
+      <div className="mx-auto flex max-w-7xl flex-col items-center text-center">
         {/* Core message */}
         <motion.div {...fade} transition={{ duration: 0.6 }} className="space-y-4">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-500">

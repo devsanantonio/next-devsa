@@ -71,7 +71,7 @@ export default function SessionsSection() {
   }
   return (
     <section className="relative bg-black text-white" data-testid="pysa-homepage-container-sessions" id="sessions" data-bg-type="dark">
-      <div className="flex flex-col gap-10 p-6 md:p-16 lg:p-20 container mx-auto">
+      <div className="page-shell flex flex-col gap-10 py-6 md:py-16 lg:py-20">
         {/* Section Title */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}

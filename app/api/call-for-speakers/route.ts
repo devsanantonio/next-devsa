@@ -4,6 +4,9 @@ import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
 import { StartupWeekThankYouEmail, getStartupWeekThankYouSubject } from '@/lib/emails/startup-week-thank-you';
+import { PysaThankYouEmail, getPysaThankYouSubject } from '@/lib/emails/pysa-thank-you';
+
+const DEFAULT_EVENT_ID = 'aiconference2026';
 
 interface SpeakerSubmissionRequest {
   name: string;
@@ -15,6 +18,9 @@ interface SpeakerSubmissionRequest {
   abstract: string;
   bio?: string;
   linkedin?: string;
+  audienceLevel?: string;
+  considerFor?: string;
+  accommodations?: string;
   eventId?: string;
 }
 
@@ -26,7 +32,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SpeakerSubmissionRequest = await request.json();
-    const { name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin, eventId } = body;
+    const {
+      name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin,
+      audienceLevel, considerFor, accommodations, eventId,
+    } = body;
 
     // Validate required fields
     if (!name || !email || !sessionTitle || !abstract) {
@@ -48,26 +57,60 @@ export async function POST(request: NextRequest) {
       abstract,
       bio: bio || null,
       linkedin: linkedin || null,
-      eventId: eventId || 'aiconference2026',
+      audienceLevel: audienceLevel || null,
+      considerFor: considerFor || null,
+      accommodations: accommodations || null,
+      eventId: eventId || DEFAULT_EVENT_ID,
       submittedAt: new Date(),
       status: 'pending',
     };
 
     const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
 
-    // Send thank you email if Resend is configured
-    const isStartupWeek = (eventId || 'aiconference2026') === 'startup-week-2026';
+    // Send thank you email if Resend is configured. Each event gets its own
+    // template — a new eventId without a case here falls back to the AI
+    // Conference email, which would be the wrong event entirely.
+    const resolvedEventId = eventId || DEFAULT_EVENT_ID;
+    const { subject, html } = (() => {
+      switch (resolvedEventId) {
+        // Retained for the submissions already in Firestore. DEVSA no longer
+        // hosts a Startup Week call for speakers — /startup-week-2026 now
+        // redirects to sasw.co — so nothing posts this eventId anymore.
+        case 'startup-week-2026':
+          return {
+            subject: getStartupWeekThankYouSubject(sessionTitle),
+            html: StartupWeekThankYouEmail({ name, sessionTitle, track: track || '' }),
+          };
+        case 'pysanantonio-2026':
+          return {
+            subject: getPysaThankYouSubject(sessionTitle),
+            html: PysaThankYouEmail({
+              name,
+              sessionTitle,
+              sessionFormat: sessionFormat || '',
+              audienceLevel: audienceLevel || '',
+              considerFor: considerFor || '',
+            }),
+          };
+        default:
+          return {
+            subject: getSpeakerThankYouSubject(sessionTitle),
+            html: SpeakerThankYouEmail({
+              name,
+              sessionTitle,
+              sessionFormat: sessionFormat || track || '',
+            }),
+          };
+      }
+    })();
+
     if (isResendConfigured() && resend) {
       try {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: email.toLowerCase(),
-          subject: isStartupWeek
-            ? getStartupWeekThankYouSubject(sessionTitle)
-            : getSpeakerThankYouSubject(sessionTitle),
-          html: isStartupWeek
-            ? StartupWeekThankYouEmail({ name, sessionTitle, track: track || "" })
-            : SpeakerThankYouEmail({ name, sessionTitle, sessionFormat: sessionFormat || track || "" }),
+          subject,
+          html,
         });
         console.log('Thank you email sent to:', email);
       } catch (emailError) {

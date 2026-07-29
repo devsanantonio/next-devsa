@@ -435,7 +435,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl max-h-[calc(100vh-4rem)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
           >
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
@@ -672,7 +672,7 @@ export function CommunityEventsSection() {
 
   return (
     <section className="relative bg-white py-16 sm:py-24" data-bg-type="light">
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="relative page-shell">
         {/* Header - Left aligned */}
         <div className="mb-12">
           <div className="space-y-4">

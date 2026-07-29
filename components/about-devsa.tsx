@@ -21,7 +21,7 @@ export function AboutDevsa() {
       className="w-full bg-white py-16 md:py-24 lg:py-28 relative overflow-hidden"
       data-bg-type="light"
     >
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 space-y-10 md:space-y-14">
+      <div className="relative z-10 page-shell space-y-10 md:space-y-14">
         {/* The video leads — carries the hero's visual momentum straight into
             About and introduces "who we are" before any framing copy. Founder
             quote overlays on desktop; sits below on mobile. */}
@@ -69,7 +69,7 @@ export function AboutDevsa() {
                   mobile it sits below the video so the play button never
                   covers it) */}
               <span className="hidden md:block absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-10 lg:p-12">
-                <span className="block max-w-2xl text-balance text-base font-light italic leading-[1.4] text-white sm:text-lg md:text-xl lg:text-2xl">
+                <span className="block max-w-[96rem] text-balance text-base font-light italic leading-[1.4] text-white sm:text-lg md:text-xl lg:text-2xl">
                   &ldquo;DEVSA is never going to be the final destination.
                   It&apos;s the platform that allows you to find your people, to
                   help build your future, to build your network.&rdquo;

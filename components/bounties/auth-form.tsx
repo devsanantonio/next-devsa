@@ -186,7 +186,7 @@ export function BountiesAuthForm({ mode }: AuthFormProps) {
 
   return (
     <main className="flex min-h-dvh flex-col justify-center bg-white px-5 pt-24 pb-8 sm:py-10">
-      <div className="mx-auto w-full max-w-sm">
+      <div className="mx-auto w-full max-w-[40rem]">
         <Link
           href="/bounties"
           className="inline-flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors mb-5"

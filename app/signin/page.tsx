@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react"
 export default function SignInPage() {
   return (
     <main className="flex min-h-screen flex-col justify-center bg-black px-4 py-8">
-      <div className="mx-auto w-full max-w-sm">
+      <div className="mx-auto w-full max-w-[40rem]">
         <Link
           href="/events"
           className="relative z-10 inline-flex items-center gap-2 text-[13px] font-medium text-gray-400 hover:text-white transition-colors mb-6"

@@ -47,7 +47,7 @@ function FeatureCard({ feature }: { feature: SpaceFeature }) {
 export function SpaceFeaturesSection({ features }: SpaceFeaturesSectionProps) {
   return (
     <section className="py-16 md:py-24 lg:py-32 bg-white" data-bg-type="light">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+      <div className="page-shell">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export function SpaceFeaturesSection({ features }: SpaceFeaturesSectionProps) {
               <span className="text-gray-600 font-light italic">Visit</span>.
             </h2>
           </div>
-          <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-2xl">
+          <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-[96rem]">
             Two of the most common questions about coming to the space —
             answered below.
           </p>

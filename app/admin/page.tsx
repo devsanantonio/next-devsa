@@ -68,6 +68,11 @@ interface SpeakerSubmission {
   sessionFormat?: string
   track?: string
   abstract: string
+  bio?: string
+  linkedin?: string
+  audienceLevel?: string
+  considerFor?: string
+  accommodations?: string
   eventId?: string
   submittedAt: string
   status: string
@@ -1142,7 +1147,7 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-black py-12 sm:py-20">
-        <div className="mx-auto max-w-md px-4">
+        <div className="mx-auto max-w-3xl px-4">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-8"
@@ -2000,12 +2005,27 @@ export default function AdminPage() {
                                 {speaker.track}
                               </span>
                             )}
+                            {speaker.audienceLevel && (
+                              <span className="rounded-full bg-[#4a90d9]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4a90d9]">
+                                {speaker.audienceLevel}
+                              </span>
+                            )}
                           </div>
                           <h3 className="text-lg font-bold tracking-tight text-white">{speaker.sessionTitle}</h3>
                           <p className="text-neutral-400 text-sm mt-1">
                             {speaker.name} {speaker.company && <span className="text-neutral-500">• {speaker.company}</span>}
                           </p>
                           <p className="text-neutral-500 text-sm">{speaker.email}</p>
+                          {speaker.linkedin && (
+                            <a
+                              href={speaker.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#4a90d9] text-sm hover:underline break-all"
+                            >
+                              {speaker.linkedin}
+                            </a>
+                          )}
                         </div>
                         <button
                           onClick={() => handleDeleteSpeaker(speaker.id)}
@@ -2020,16 +2040,36 @@ export default function AdminPage() {
                           Delete
                         </button>
                       </div>
-                      {speaker.sessionFormat && (
-                        <div className="mb-4">
-                          <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
-                          <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
-                        </div>
-                      )}
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        {speaker.sessionFormat && (
+                          <div>
+                            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
+                            <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
+                          </div>
+                        )}
+                        {speaker.considerFor && (
+                          <div>
+                            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Considered for</span>
+                            <p className="text-neutral-300 text-sm mt-1">{speaker.considerFor}</p>
+                          </div>
+                        )}
+                      </div>
                       <div>
                         <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Abstract</span>
                         <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
                       </div>
+                      {speaker.bio && (
+                        <div className="mt-4">
+                          <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Bio</span>
+                          <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.bio}</p>
+                        </div>
+                      )}
+                      {speaker.accommodations && (
+                        <div className="mt-4 rounded-lg border border-[#ffdd00]/25 bg-[#ffdd00]/5 p-3">
+                          <span className="text-xs font-semibold text-[#ffdd00] uppercase tracking-wider">Requests / accommodations</span>
+                          <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.accommodations}</p>
+                        </div>
+                      )}
                       <p className="mt-4 text-xs text-neutral-500">
                         Submitted: {new Date(speaker.submittedAt).toLocaleString()}
                       </p>
@@ -2469,7 +2509,7 @@ export default function AdminPage() {
                     className="admin-drawer-overlay absolute inset-0 bg-black/60 backdrop-blur-sm"
                     onClick={() => { setShowEditEvent(false); setEditingEvent(null) }}
                   />
-                  <div className="admin-drawer-panel absolute inset-y-0 right-0 flex w-full max-w-md flex-col overflow-hidden rounded-l-2xl border-l border-neutral-800 bg-neutral-900 shadow-2xl">
+                  <div className="admin-drawer-panel absolute inset-y-0 right-0 flex w-full max-w-3xl flex-col overflow-hidden rounded-l-2xl border-l border-neutral-800 bg-neutral-900 shadow-2xl">
                     <div className="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-5">
                       <div>
                         <h3 className="text-base font-semibold tracking-tight text-white">

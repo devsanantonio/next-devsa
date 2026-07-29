@@ -565,7 +565,7 @@ export function MoreHumanThanHuman() {
         </div>
 
         {/* Main Content - Two Column Layout */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-4">
+        <div className="relative z-10 page-shell py-4 sm:py-6 lg:py-4">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-14 items-start lg:items-center">
             
             {/* Left Column - Hero Content */}
@@ -608,7 +608,7 @@ export function MoreHumanThanHuman() {
                 <h2 className="font-mono text-lg md:text-xl text-[#00f2ff] tracking-[0.15em] sm:tracking-[0.2em] uppercase font-medium mb-2 sm:mb-3">
                   DEVSA AI Conference
                 </h2>
-                <p className="font-mono text-sm text-[#737373] tracking-wide leading-relaxed max-w-md mx-auto lg:mx-0">
+                <p className="font-mono text-sm text-[#737373] tracking-wide leading-relaxed max-w-3xl mx-auto lg:mx-0">
                   Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship. Submit your talk and share your expertise with the San Antonio tech community.
                 </p>
               </motion.div>

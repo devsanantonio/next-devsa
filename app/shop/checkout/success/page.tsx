@@ -28,7 +28,7 @@ export default function CheckoutSuccessPage() {
     return (
       <main className="min-h-screen bg-white text-gray-900">
         <div className="pt-28 pb-16 md:pt-32 md:pb-20">
-          <div className="container-responsive max-w-2xl mx-auto text-center">
+          <div className="container-responsive max-w-[96rem] mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">
               No session found
             </h1>
@@ -50,7 +50,7 @@ export default function CheckoutSuccessPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
       <div className="pt-28 pb-16 md:pt-32 md:pb-20">
-        <div className="container-responsive max-w-2xl mx-auto text-center">
+        <div className="container-responsive max-w-[96rem] mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Play, X, Music } from "lucide-react"
+import { Play, X, Music, ArrowLeft } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 const mediaItems = [
   {
@@ -71,6 +72,13 @@ export default function HeroSection() {
                 className="space-y-8"
               >
                 <div className="space-y-4">
+                  <Link
+                    href="/events/pysanantonio"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-white/60 transition-colors hover:text-white"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    PySanAntonio II is happening October 2, 2026
+                  </Link>
                   <p className="text-sm md:text-base font-medium text-[#FFD43B] uppercase tracking-[0.2em] letter-spacing-wide">
                     San Antonio&apos;s First Python Conference
                   </p>
@@ -235,7 +243,7 @@ export default function HeroSection() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-2xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 p-6"
+              className="relative w-full max-w-[96rem] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <button

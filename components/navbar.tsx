@@ -16,7 +16,11 @@ export function Navbar() {
   return (
     <>
       <nav className="w-full fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md border-b border-black/10">
-        <div className="w-full px-6 sm:px-10 md:px-16 lg:px-20">
+        {/* .page-shell — the same shell every page section and the footer use,
+            so the logo's left edge always agrees with the content below it. The
+            nav used to be full-bleed, which meant that above 1536px the logo
+            stayed pinned to the gutter while page content pulled inward. */}
+        <div className="page-shell">
           <div className="flex justify-between items-center">
             <div className="shrink-0">
               <LogoContextMenu>

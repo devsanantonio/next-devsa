@@ -40,7 +40,7 @@ const allSponsorsAndPartners = [
 export default function SponsorsSection() {
   return (
     <section className="w-full" data-bg-type="light">
-      <div className="flex flex-col gap-10 p-6 md:p-16 lg:p-20 container mx-auto">
+      <div className="page-shell flex flex-col gap-10 py-6 md:py-16 lg:py-20">
         {/* Section Header */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ export default function SponsorsSection() {
           <h2 className="font-sans text-black leading-none text-3xl lg:text-4xl xl:text-6xl font-semibold uppercase">
             Community Sponsors and Partners
           </h2>
-          <p className="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed max-w-md text-balance tracking-tight">
+          <p className="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl text-balance tracking-tight">
             We&apos;re incredibly grateful to our sponsors for making <strong>PySanAntonio</strong> possible! Huge thanks to <strong>Geekdom</strong> for allowing us to take over the 3rd floor, to <strong>HEB</strong> for sponsoring us through their Community Support program, and to the <strong>PyTexas Foundation</strong> for generously providing a ticket to <strong>PyTexas 2026</strong> for us to raffle off during the event.
           </p>
         </motion.header>

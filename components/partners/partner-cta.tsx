@@ -13,7 +13,7 @@ const useCases = [
 export function PartnerCta() {
   return (
     <section className="bg-black border-b border-gray-800" data-bg-type="dark">
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28">
+      <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Left: intro text */}
           <motion.div
@@ -21,7 +21,7 @@ export function PartnerCta() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="max-w-xl"
+            className="max-w-7xl"
           >
             <div className="space-y-4">
               <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
@@ -36,7 +36,7 @@ export function PartnerCta() {
               </h2>
             </div>
 
-            <div className="space-y-6 max-w-lg mt-8">
+            <div className="space-y-6 max-w-5xl mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
                 Workshops, conferences, and recurring programs —{" "}
                 <strong className="font-semibold text-white">
@@ -59,7 +59,7 @@ export function PartnerCta() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="flex items-center"
           >
-            <div className="w-full max-w-md rounded-2xl bg-white/4 border border-white/8 p-6 sm:p-8 space-y-6">
+            <div className="w-full max-w-3xl rounded-2xl bg-white/4 border border-white/8 p-6 sm:p-8 space-y-6">
               {/* Use cases */}
               <div>
                 <p className="text-xs md:text-sm font-medium text-white/40 uppercase tracking-[0.15em] mb-4">

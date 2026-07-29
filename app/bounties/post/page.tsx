@@ -199,7 +199,7 @@ export default function PostBountyPage() {
   if (userRole !== "hiring") {
     return (
       <div className="min-h-dvh bg-white">
-        <div className="mx-auto max-w-2xl px-5 py-20 text-center">
+        <div className="mx-auto max-w-[96rem] px-5 py-20 text-center">
           <h1 className="text-2xl font-extrabold text-slate-900 mb-4">Access Restricted</h1>
           <p className="text-slate-500 mb-6 leading-relaxed">
             Only accounts with the &quot;Hiring&quot; role can post bounties. Switch to the hiring role in your profile to continue.
@@ -218,7 +218,7 @@ export default function PostBountyPage() {
     const bountyUrl = `/bounties/${publishedSlug}`
     return (
       <div className="min-h-dvh bg-white">
-        <main className="mx-auto max-w-2xl px-5 sm:px-6 py-16 sm:py-24 text-center">
+        <main className="mx-auto max-w-[96rem] px-5 sm:px-6 py-16 sm:py-24 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
               <Clock className="h-8 w-8 text-amber-600" />
@@ -227,11 +227,11 @@ export default function PostBountyPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-snug mb-3">
             Bounty submitted!
           </h1>
-          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-8 max-w-md mx-auto">
+          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-8 max-w-3xl mx-auto">
             It&apos;s pending DEVSA review. Funding (escrow) is handled in the next step before it goes live.
           </p>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 mb-8 text-left max-w-md mx-auto">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 mb-8 text-left max-w-3xl mx-auto">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">What happens next</p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -305,7 +305,7 @@ export default function PostBountyPage() {
           <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-[1.05] tracking-[-0.02em]">
             Post a Bounty.
           </h1>
-          <p className="text-base sm:text-lg text-slate-600 leading-[1.55] max-w-2xl">
+          <p className="text-base sm:text-lg text-slate-600 leading-[1.55] max-w-[96rem]">
             Scope a bite-sized project for builders in the DEVSA network. DEVSA takes 8% on completion to fund workshops, conferences, and the coworking space.
           </p>
         </div>

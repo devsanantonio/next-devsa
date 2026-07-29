@@ -30,7 +30,7 @@ const boardMembers = [
 export function MeetTheTeam() {
   return (
     <section className="bg-black border-b border-gray-800" data-bg-type="dark">
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-28">
+      <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
         {/* Intro text */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

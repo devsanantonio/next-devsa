@@ -8,9 +8,9 @@ export function ProgramOverview() {
   return (
     <section
       data-bg-type="dark"
-      className="w-full bg-neutral-950 px-4 py-16 md:px-6 md:py-24"
+      className="w-full bg-neutral-950 py-16 md:py-24"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="page-shell">
         <motion.h2
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

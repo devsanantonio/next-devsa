@@ -235,7 +235,7 @@ export default function JobsAdminPage() {
   if (error) {
     return (
       <div className="min-h-dvh bg-white">
-        <div className="mx-auto max-w-2xl px-5 py-20 text-center">
+        <div className="mx-auto max-w-[96rem] px-5 py-20 text-center">
           <Shield className="h-12 w-12 text-slate-300 mx-auto mb-4" />
           <h1 className="text-2xl font-extrabold text-slate-900 mb-3 leading-[1.2]">Access Restricted</h1>
           <p className="text-slate-500 mb-6 leading-relaxed">{error}</p>

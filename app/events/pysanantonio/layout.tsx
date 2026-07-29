@@ -1,24 +1,28 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { PYSA_2026, SASTW_URL } from "@/data/pysa/2026"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
+const description =
+  "PySanAntonio II — Friday, October 2, 2026 at Geekdom, part of SA Startup + Tech Week. An afternoon of learning, networking, and community building for San Antonio's Python community, led by Alamo Python with the PyTexas Foundation and DEVSA. Call for speakers open through August 15."
+
 export const metadata: Metadata = {
-  title: "PySanAntonio 2025 | Python Conference in San Antonio",
-  description:
-    "PySanAntonio, A Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation featuring talks, networking, and celebrating the different industries building with Python from our community in San Antonio, Texas.",
+  title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+  description,
   keywords: [
     "PySanAntonio",
+    "PySanAntonio 2026",
     "PyTexas",
     "Python Conference",
     "San Antonio Python",
     "Alamo Python",
     "Geekdom",
+    "SA Startup Week",
+    "SA Tech Week",
+    "call for speakers",
     "Python Meetup",
     "Tech Conference San Antonio",
-    "Python Developers",
-    "Programming Conference",
-    "Texas Python",
     "DEVSA",
   ],
   authors: [{ name: "DEVSA Community" }],
@@ -29,9 +33,8 @@ export const metadata: Metadata = {
     canonical: "/events/pysanantonio",
   },
   openGraph: {
-    title: "PySanAntonio 2025 | Python Conference",
-    description:
-      "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
+    title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+    description,
     url: `${siteUrl}/events/pysanantonio`,
     siteName: "DEVSA",
     images: [
@@ -39,7 +42,7 @@ export const metadata: Metadata = {
         url: `${siteUrl}/api/og/pysanantonio`,
         width: 1200,
         height: 630,
-        alt: "PySanAntonio 2025 - Python Conference in San Antonio",
+        alt: "PySanAntonio II — October 2, 2026 at Geekdom, San Antonio",
         type: "image/png",
       },
     ],
@@ -48,9 +51,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PySanAntonio 2025 | Python Conference",
-    description:
-      "PySanAntonio, Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
+    title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+    description,
     images: [`${siteUrl}/api/og/pysanantonio`],
     creator: "@devsatx",
   },
@@ -67,28 +69,41 @@ export const metadata: Metadata = {
   },
 }
 
-export default function PySanAntonioLayout({ children }: { children: React.ReactNode }) {
+export default function PySanAntonioLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
-    name: "PySanAntonio 2025",
-    description:
-      "A Python conference hosted by Alamo Python, DEVSA, and the PyTexas Foundation featuring talks, networking, and celebrating the different industries building with Python from our community in San Antonio.",
-    startDate: "2025-11-08T13:00:00-06:00",
-    endDate: "2025-11-08T18:00:00-06:00",
+    name: PYSA_2026.name,
+    description,
+    startDate: PYSA_2026.start,
+    endDate: PYSA_2026.end,
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    url: `${siteUrl}/events/pysanantonio`,
     location: {
       "@type": "Place",
-      name: "Geekdom",
+      name: PYSA_2026.venue,
       address: {
         "@type": "PostalAddress",
-        streetAddress: "131 Soledad St",
-        addressLocality: "San Antonio",
-        addressRegion: "TX",
-        postalCode: "78205",
-        addressCountry: "US",
+        streetAddress: PYSA_2026.address.street,
+        addressLocality: PYSA_2026.address.city,
+        addressRegion: PYSA_2026.address.region,
+        postalCode: PYSA_2026.address.postalCode,
+        addressCountry: PYSA_2026.address.country,
       },
+    },
+    // The week that contains this event — the schema.org-correct way to say
+    // "part of SA Startup + Tech Week" rather than listing it as an organizer.
+    superEvent: {
+      "@type": "Event",
+      name: PYSA_2026.superEvent.name,
+      startDate: PYSA_2026.superEvent.start,
+      endDate: PYSA_2026.superEvent.end,
+      url: SASTW_URL,
     },
     organizer: [
       {
@@ -101,37 +116,25 @@ export default function PySanAntonioLayout({ children }: { children: React.React
         name: "PyTexas Foundation",
         url: "https://www.pytexas.org/",
       },
-    ],
-    sponsor: [
-      {
-        "@type": "Organization",
-        name: "Geekdom",
-        url: "https://geekdom.com/",
-      },
       {
         "@type": "Organization",
         name: "DEVSA",
         url: "https://www.devsa.community/",
       },
     ],
-    offers: {
-      "@type": "Offer",
-      url: "https://www.meetup.com/alamo-python/events/311325578/",
-      price: "0",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      validFrom: "2025-01-01T00:00:00-06:00",
-    },
-    performer: {
-      "@type": "Organization",
-      name: "Python Community",
-    },
-    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"}/api/og/pysanantonio`,
+    sponsor: [
+      { "@type": "Organization", name: "Geekdom", url: "https://geekdom.com/" },
+    ],
+    performer: { "@type": "Organization", name: "Python Community" },
+    image: `${siteUrl}/api/og/pysanantonio`,
   }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {children}
     </>
   )

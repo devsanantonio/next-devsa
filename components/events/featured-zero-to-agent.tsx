@@ -33,7 +33,7 @@ export function FeaturedZeroToAgent() {
       {/* Top accent line */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-white/20 to-transparent shrink-0" />
 
-      <div className="relative z-10 mx-auto max-w-7xl w-full px-4 sm:px-6 pt-16 pb-6 lg:pt-0 lg:py-10 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 page-shell pt-16 pb-6 lg:pt-0 lg:py-10 flex-1 flex flex-col justify-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,9 +56,9 @@ export function FeaturedZeroToAgent() {
                 
                 {/* Content overlay */}
                 <div className="relative z-10 flex flex-col justify-center gap-4 p-6 sm:p-8 lg:p-12 h-full">
-                  <ZeroToAgentLogo className="w-full max-w-xl text-white" />
+                  <ZeroToAgentLogo className="w-full max-w-7xl text-white" />
                   {/* Date + location */}
-                  <div className="flex items-center justify-between w-full max-w-xl">
+                  <div className="flex items-center justify-between w-full max-w-7xl">
                     <span className="font-geist-mono text-sm sm:text-base text-white/50 tracking-wider">
                       04.25.26
                     </span>
@@ -102,10 +102,10 @@ export function FeaturedZeroToAgent() {
 
                   <div className="h-px w-full bg-white/10 my-4" />
 
-                  <p className="text-white font-medium text-base leading-relaxed max-w-md mb-1">
+                  <p className="text-white font-medium text-base leading-relaxed max-w-3xl mb-1">
                     Find Your People. Build Your Future.
                   </p>
-                  <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                  <p className="text-white/60 text-sm font-normal leading-relaxed max-w-3xl">
                     DEVSA is the official San Antonio community partner for{" "}
                     <span className="text-white font-medium">Zero to Agent</span>—a
                     global 10-day initiative designed to take you from idea to deployed
@@ -116,13 +116,13 @@ export function FeaturedZeroToAgent() {
 
                   {/* Perks */}
                   <div className="space-y-2">
-                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-3xl">
                       <span className="text-white font-medium">$30 in v0 Credits</span> — every attendee, to power your builds during the event.
                     </p>
-                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-3xl">
                       <span className="text-white font-medium">$6,000+ Global Prize Pool</span> — including Vercel Platform and Pro credits.
                     </p>
-                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-md">
+                    <p className="text-white/60 text-sm font-normal leading-relaxed max-w-3xl">
                       <span className="text-white font-medium">Limited Edition Swag</span> — available only for this event.
                     </p>
                   </div>

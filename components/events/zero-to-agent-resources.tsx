@@ -252,7 +252,7 @@ export function ZeroToAgentResources() {
             </span>
           </div>
 
-          <ZeroToAgentLogo className="w-full max-w-lg text-white" />
+          <ZeroToAgentLogo className="w-full max-w-5xl text-white" />
 
           <div className="flex items-center gap-4">
             <span className="font-geist-mono text-sm text-white/50 tracking-wider">
@@ -263,11 +263,11 @@ export function ZeroToAgentResources() {
             </span>
           </div>
 
-          <h2 className="text-white text-2xl sm:text-3xl font-semibold leading-tight max-w-2xl">
+          <h2 className="text-white text-2xl sm:text-3xl font-semibold leading-tight max-w-[96rem]">
             Find Your People. Build Your Future.
           </h2>
 
-          <p className="text-white/80 text-base sm:text-lg font-normal leading-8 max-w-2xl">
+          <p className="text-white/80 text-base sm:text-lg font-normal leading-8 max-w-[96rem]">
             DEVSA is the official San Antonio community partner for Zero to Agent—a
             global 10-day initiative designed to take you from idea to deployed agent
             using the full power of the{" "}
@@ -342,7 +342,7 @@ export function ZeroToAgentResources() {
               </p>
             </div>
           </div>
-          <p className="font-geist-mono text-sm text-white/50 leading-7 max-w-2xl">
+          <p className="font-geist-mono text-sm text-white/50 leading-7 max-w-[96rem]">
             Each track layers a specialist tool on top — MCP for real-world data connections, the Workflow SDK for durable long-running agents, or the Chat SDK to deploy to Slack, Discord, WhatsApp, and more.
           </p>
         </motion.div>
@@ -368,7 +368,7 @@ export function ZeroToAgentResources() {
           <h2 className="text-white text-2xl sm:text-3xl font-semibold leading-tight">
             Choose Your Track
           </h2>
-          <p className="text-white/70 text-sm leading-7 max-w-2xl">
+          <p className="text-white/70 text-sm leading-7 max-w-[96rem]">
             Three specialized tracks. Pick the one that fits your vision — each is designed to get a working agent shipped in a 2-hour session.
           </p>
         </motion.div>
@@ -398,7 +398,7 @@ export function ZeroToAgentResources() {
                     track.title
                   )}
                 </h2>
-                <p className="text-white/75 text-sm leading-7 max-w-2xl">
+                <p className="text-white/75 text-sm leading-7 max-w-[96rem]">
                   {track.description}
                 </p>
               </div>
@@ -675,7 +675,7 @@ export function ZeroToAgentResources() {
           <p className="text-white text-lg sm:text-xl font-semibold leading-tight">
             Turn &ldquo;I have an idea&rdquo; into &ldquo;I just shipped it.&rdquo;
           </p>
-          <p className="text-white/60 text-sm leading-6 max-w-lg mx-auto">
+          <p className="text-white/60 text-sm leading-6 max-w-5xl mx-auto">
             Come join the active builders in San Antonio and find your breakthrough shipping real AI agents with{" "}
             <V0Logo className="inline-block w-4 h-4 text-white align-text-bottom" />{" "}
             and{" "}

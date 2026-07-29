@@ -51,7 +51,7 @@ export function ShopClient({ products }: ShopClientProps) {
     <>
       {/* Hero Section */}
       <section className="relative bg-white pt-28 pb-16 md:pt-32 md:pb-20 border-b border-gray-200">
-        <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div className="page-shell relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -112,7 +112,7 @@ export function ShopClient({ products }: ShopClientProps) {
 
       {/* PSF Credential Band */}
       <section className="bg-white border-b border-gray-100 py-6 md:py-7">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div className="page-shell">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -176,7 +176,7 @@ export function ShopClient({ products }: ShopClientProps) {
 
       {/* Community CTA */}
       <section className="bg-black border-t border-gray-800 pt-16 pb-20 md:pt-20 md:pb-24" data-bg-type="dark">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div className="page-shell">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

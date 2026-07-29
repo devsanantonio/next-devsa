@@ -33,7 +33,7 @@ export function CartSlideOut() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-sm lg:max-w-[25%] bg-white z-50 flex flex-col shadow-2xl"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-[40rem] lg:max-w-[25%] bg-white z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">

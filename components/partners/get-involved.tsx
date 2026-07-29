@@ -11,7 +11,7 @@ export function GetInvolved() {
       className="w-full bg-white py-16 sm:py-20 md:py-24"
       data-bg-type="light"
     >
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
           {/* Left — the invitation */}
           <motion.div
@@ -30,7 +30,7 @@ export function GetInvolved() {
                 <span className="text-gray-600 font-light italic">Show</span> Up.
               </h2>
             </div>
-            <p className="max-w-lg text-lg md:text-xl text-gray-600 leading-[1.45] font-light">
+            <p className="max-w-5xl text-lg md:text-xl text-gray-600 leading-[1.45] font-light">
               Subscribe to the community calendar for every meetup, workshop, and
               conference — embed it on your site or pull the{" "}
               <strong className="font-semibold text-gray-900">RSS feed</strong>.

@@ -80,7 +80,7 @@ export function FeaturedDevsaEvent() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="mt-4 max-w-2xl text-base font-normal leading-7 text-[#737373] sm:text-lg sm:leading-8"
+            className="mt-4 max-w-[96rem] text-base font-normal leading-7 text-[#737373] sm:text-lg sm:leading-8"
           >
             Join us at this upcoming event to connect with the community and DEVSA team.
           </motion.p>

@@ -128,7 +128,7 @@ function PartnerModal({ partner, isOpen, onClose }: PartnerModalProps) {
         onClick={onClose}
       >
         <div 
-          className={isEasterEgg ? 'w-full max-w-3xl' : 'w-full max-w-xs md:max-w-sm'}
+          className={isEasterEgg ? 'w-full max-w-3xl' : 'w-full max-w-full md:max-w-[40rem]'}
           onClick={(e) => e.stopPropagation()}
         >
           <div className={`bg-slate-950 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-2xl ${
@@ -220,7 +220,7 @@ export function PartnersSection() {
     <>
       <section className="w-full bg-white py-8 md:py-16 relative overflow-hidden" data-bg-type="light">
         <div className="relative z-10">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 mb-10 md:mb-14">
+          <div className="page-shell mb-10 md:mb-14">
             {/* Section Heading */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -254,7 +254,7 @@ export function PartnersSection() {
           </div>
 
           {/* Partner Logos Grid */}
-          <div className="w-full max-w-7xl mx-auto px-4 md:px-6">
+          <div className="page-shell">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

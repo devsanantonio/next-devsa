@@ -217,7 +217,7 @@ export default function EditJobPage() {
   if (error && !jobData) {
     return (
       <div className="min-h-dvh bg-white">
-        <div className="mx-auto max-w-2xl px-5 py-20 text-center">
+        <div className="mx-auto max-w-[96rem] px-5 py-20 text-center">
           <h1 className="text-2xl font-extrabold text-slate-900 mb-4">{error}</h1>
           <Link href="/bounties/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -482,7 +482,7 @@ export default function EditJobPage() {
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-8 max-w-sm w-full shadow-2xl">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-8 max-w-[40rem] w-full shadow-2xl">
               <h3 className="text-lg font-bold text-slate-900 mb-2">Delete this job?</h3>
               <p className="text-sm text-slate-500 mb-6 leading-relaxed">
                 This action cannot be undone. All applications and comments for this listing will remain but the job will be removed.

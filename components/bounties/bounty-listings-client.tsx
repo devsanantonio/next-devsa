@@ -122,7 +122,7 @@ export function BountyListingsClient({
           }}
         />
 
-        <div className="relative z-20 mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 py-20 sm:py-24 md:py-28 lg:py-32 flex flex-col">
+        <div className="relative z-20 page-shell py-20 sm:py-24 md:py-28 lg:py-32 flex flex-col">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -203,11 +203,11 @@ export function BountyListingsClient({
           workspace header has room from the viewport top. */}
       <section
         id="open-bounties"
-        className={`w-full bg-white px-4 sm:px-6 scroll-mt-4 ${
+        className={`w-full bg-white scroll-mt-4 ${
           isSignedIn ? "pt-10 sm:pt-16" : "pt-12 sm:pt-16"
         }`}
       >
-        <div className="mx-auto max-w-7xl pb-16 sm:pb-24">
+        <div className="page-shell pb-16 sm:pb-24">
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 leading-[1.2]">
               Open Bounties
@@ -241,7 +241,7 @@ export function BountyListingsClient({
                   ? "No bounties match your filters"
                   : "No bounties posted yet"}
               </h3>
-              <p className="text-gray-500 text-sm leading-normal max-w-sm font-normal">
+              <p className="text-gray-500 text-sm leading-normal max-w-[40rem] font-normal">
                 {searchQuery || selectedCategory !== "all" || selectedAmount !== "all" || selectedDatePosted !== "all"
                   ? "Try adjusting your search criteria or clearing filters."
                   : "Be the first to post a bounty. Local nonprofits and startups are most welcome."}

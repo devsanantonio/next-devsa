@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { QRCode } from "@/components/qr-code"
 import { GlowingEffect } from "@/components/glowing-effect"
-import { StartupWeekIntro } from "@/components/startup-week/intro"
 import { WhoServesCards } from "@/components/stay-connected/who-serves-cards"
 import { CommunityGrid } from "@/components/stay-connected/community-grid"
 import { SPOTLIGHTS, stayConnectedUrl } from "@/data/stay-connected"
@@ -78,12 +77,10 @@ export function SpotlightHero() {
                 transition={{ duration: 0.5 }}
                 className={cn(
                   "space-y-6 xl:space-y-8",
-                  dark ? "max-w-2xl xl:max-w-3xl" : "max-w-xl xl:max-w-2xl"
+                  dark ? "max-w-[96rem] xl:max-w-3xl" : "max-w-7xl xl:max-w-[96rem]"
                 )}
               >
-                {item.key === "startup-week" ? (
-                  <StartupWeekIntro size="lg" showTracks={false} showDeadline={false} />
-                ) : item.events ? (
+                {item.events ? (
                   <>
                     <p
                       className={cn(
@@ -125,7 +122,7 @@ export function SpotlightHero() {
                       muted
                       loop
                       playsInline
-                      className="max-h-[60dvh] w-full max-w-2xl rounded-2xl object-contain xl:max-w-3xl"
+                      className="max-h-[60dvh] w-full max-w-[96rem] rounded-2xl object-contain xl:max-w-3xl"
                     />
                   </>
                 ) : item.image ? (
@@ -147,6 +144,16 @@ export function SpotlightHero() {
                         dark ? "ring-white/10" : "ring-black/10"
                       )}
                     />
+                    {item.blurb && (
+                      <p
+                        className={cn(
+                          "max-w-3xl text-balance text-base leading-relaxed md:text-lg xl:max-w-5xl xl:text-xl",
+                          dark ? "text-white/65" : "text-neutral-600"
+                        )}
+                      >
+                        {item.blurb}
+                      </p>
+                    )}
                   </>
                 ) : (
                   <>
@@ -169,7 +176,7 @@ export function SpotlightHero() {
                     {item.blurb && (
                       <p
                         className={cn(
-                          "max-w-md text-balance text-base leading-relaxed md:text-lg xl:max-w-lg xl:text-xl",
+                          "max-w-3xl text-balance text-base leading-relaxed md:text-lg xl:max-w-5xl xl:text-xl",
                           dark ? "text-white/65" : "text-neutral-600"
                         )}
                       >

@@ -118,7 +118,7 @@ export default function CheckoutPage() {
     return (
       <main className="min-h-screen bg-white text-gray-900">
         <div className="pt-28 pb-16 md:pt-32 md:pb-20">
-          <div className="container-responsive max-w-2xl mx-auto text-center">
+          <div className="container-responsive max-w-[96rem] mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">Checkout</h1>
             <p className="text-gray-500 mb-8">Your cart is empty.</p>
             <Link

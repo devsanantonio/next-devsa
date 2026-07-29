@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
       // Legacy devsanantonio.com pages. That domain now redirects here
       // path-for-path, so old indexed URLs must resolve instead of 404ing.
       { source: "/mission", destination: "/buildingtogether", permanent: true },
+
+      // SA Startup + Tech Week runs its own site, so DEVSA no longer hosts a
+      // landing page or call for speakers for it. Permanent (308) — a future
+      // year would live at its own slug, not this one.
+      { source: "/startup-week-2026", destination: "https://www.sasw.co/", permanent: true },
     ];
   },
 };

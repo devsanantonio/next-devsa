@@ -118,6 +118,16 @@ export interface SpeakerSubmission {
   bio?: string | null;
   /** Speaker LinkedIn or website URL. */
   linkedin?: string | null;
+  /** Who the talk is pitched at — e.g. PySanAntonio's Beginner/Intermediate/Advanced. */
+  audienceLevel?: string | null;
+  /**
+   * Which lineup the speaker wants to be considered for. PySanAntonio asks
+   * this so a talk that doesn't fit the conference can be routed to Alamo
+   * Python's regular meetups instead of being turned down.
+   */
+  considerFor?: string | null;
+  /** Accessibility, scheduling or A/V requests. */
+  accommodations?: string | null;
   eventId?: string;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
