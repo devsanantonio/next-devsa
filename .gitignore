@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# claude — settings.json is shared, settings.local.json is machine-specific and
+# accumulates literal command invocations (which have historically included keys)
+.claude/settings.local.json
+
 # vercel
 .vercel
 
