@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { AlertCircle, CheckCircle2, Send } from "lucide-react"
-import { useMagen } from "@/lib/hooks/use-magen"
 import { TrackCombobox } from "@/components/startup-week/track-combobox"
 
 const ACCENT = "#ec228d"
@@ -26,7 +25,6 @@ export function SpeakerForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
-  const { verify } = useMagen()
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -45,17 +43,10 @@ export function SpeakerForm() {
     }
     setIsSubmitting(true)
     try {
-      const clientResult = await verify()
       const res = await fetch("/api/call-for-speakers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          eventId: "startup-week-2026",
-          magenSessionId: clientResult?.session_id || null,
-          magenVerdict: clientResult?.verdict || null,
-          magenScore: clientResult?.score || null,
-        }),
+        body: JSON.stringify({ ...formData, eventId: "startup-week-2026" }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to submit")

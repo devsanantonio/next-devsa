@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Loader2, Mail, Building2, User, CheckCircle, AlertCircle } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useMagen } from "@/lib/hooks/use-magen"
 
 interface AccessRequestFormProps {
   onSuccess?: () => void
@@ -19,7 +18,6 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,23 +25,10 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
     setIsLoading(true)
 
     try {
-      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
-      const clientResult = await verify()
-      console.log('[MAGEN] Access request verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
-
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (clientResult && clientResult.verdict !== 'verified') { ... }
-      // if (!serverVerified) { ... }
-
       const response = await fetch('/api/access-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          magenSessionId: clientResult?.session_id || null,
-          magenVerdict: clientResult?.verdict || null,
-          magenScore: clientResult?.score || null,
-        }),
+        body: JSON.stringify(formData),
       })
 
       const data = await response.json()
@@ -176,13 +161,13 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
 
           <button
             type="submit"
-            disabled={isLoading || isVerifying}
+            disabled={isLoading}
             className="w-full rounded-xl bg-[#ef426f] px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
           >
-            {isLoading || isVerifying ? (
+            {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>{isVerifying ? 'Verifying...' : 'Submitting...'}</span>
+                <span>Submitting...</span>
               </>
             ) : (
               <span>Submit Request</span>
@@ -199,20 +184,6 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
           >
             Go to Admin
           </Link>
-        </p>
-
-        {/* Magen protection notice */}
-        <p className="mt-3 text-center text-[11px] font-normal text-gray-400 leading-[1.6]">
-          Protected by{" "}
-          <Link
-            href="https://magentrust.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#b45309] hover:text-[#92400e] font-medium transition-colors"
-          >
-            Magen
-          </Link>
-          {" "}bot detection
         </p>
       </div>
     </div>

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type NewsletterSubscription } from '@/lib/firebase-admin';
-import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
+import { checkBotId } from 'botid/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const body = await request.json();
-    const { email, source, magenSessionId, magenVerdict, magenScore } = body;
+    const { email, source } = body;
 
     // Validate email
     if (!email) {
@@ -21,16 +26,6 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid email format' },
         { status: 400 }
       );
-    }
-
-    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
-    if (isMagenConfigured() && magenSessionId) {
-      const result = await verifySession(magenSessionId);
-      console.log('[MAGEN] Newsletter verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (result.success && shouldBlock(result)) {
-      //   return NextResponse.json({ error: 'Verification failed' }, { status: 403 });
-      // }
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -53,9 +48,6 @@ export async function POST(request: NextRequest) {
           status: 'active',
           subscribedAt: new Date(),
           source: source ?? null,
-          magenSessionId: magenSessionId ?? null,
-          magenVerdict: magenVerdict ?? null,
-          magenScore: magenScore ?? null,
         });
         return NextResponse.json({
           success: true,
@@ -74,9 +66,6 @@ export async function POST(request: NextRequest) {
       email: normalizedEmail,
       subscribedAt: new Date(),
       source: source ?? null,
-      magenSessionId: magenSessionId ?? null,
-      magenVerdict: magenVerdict ?? null,
-      magenScore: magenScore ?? null,
       status: 'active',
     };
 

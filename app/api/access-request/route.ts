@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
+import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { AccessRequestReceivedEmail } from '@/lib/emails/access-request-received';
@@ -8,15 +8,17 @@ interface AccessRequestBody {
   name: string;
   email: string;
   communityOrg: string;
-  magenSessionId?: string;
-  magenVerdict?: string;
-  magenScore?: number;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const body: AccessRequestBody = await request.json();
-    const { name, email, communityOrg, magenSessionId, magenVerdict, magenScore } = body;
+    const { name, email, communityOrg } = body;
 
     // Validate required fields
     if (!name || !email || !communityOrg) {
@@ -33,16 +35,6 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid email format' },
         { status: 400 }
       );
-    }
-
-    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
-    if (isMagenConfigured() && magenSessionId) {
-      const result = await verifySession(magenSessionId);
-      console.log('[MAGEN] Access request verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (result.success && shouldBlock(result)) {
-      //   return NextResponse.json({ error: 'Verification failed', reason: 'Unverified traffic' }, { status: 403 });
-      // }
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -91,9 +83,6 @@ export async function POST(request: NextRequest) {
       email: normalizedEmail,
       communityOrg,
       submittedAt: new Date(),
-      magenSessionId: magenSessionId ?? null,
-      magenVerdict: magenVerdict ?? null,
-      magenScore: magenScore ?? null,
       status: 'pending',
     };
 

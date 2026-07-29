@@ -1,30 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
-import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
+import { checkBotId } from 'botid/server';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-thank-you';
 
 // Submit an RSVP (public endpoint)
 export async function POST(request: NextRequest) {
   try {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const body = await request.json();
-    const { eventId, eventSlug, communityId, firstName, lastName, email, joinNewsletter, magenSessionId, magenVerdict, magenScore } = body;
+    const { eventId, eventSlug, communityId, firstName, lastName, email, joinNewsletter } = body;
 
     if (!eventId || !eventSlug || !communityId || !firstName || !lastName || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
-    }
-
-    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
-    if (isMagenConfigured() && magenSessionId) {
-      const result = await verifySession(magenSessionId);
-      console.log('[MAGEN] RSVP verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (result.success && shouldBlock(result)) {
-      //   return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 403 });
-      // }
     }
 
     // Validate email format

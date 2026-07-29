@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
 import { Calendar, MapPin, Send, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useMagen } from "@/lib/hooks/use-magen"
 
 const sessionFormats = [
   { id: "talk", label: "Talk (30-45 min)", description: "Standard presentation with Q&A" },
@@ -24,7 +23,6 @@ export function CallForSpeakers() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -39,27 +37,10 @@ export function CallForSpeakers() {
     setError(null)
 
     try {
-      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
-      const clientResult = await verify()
-      console.log('[MAGEN] Call-for-speakers verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
-
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (clientResult && clientResult.verdict !== 'verified') {
-      //   setError("Verification failed. Please try again.")
-      //   setIsSubmitting(false)
-      //   return
-      // }
-
-      // Submit to API with verification data
       const response = await fetch('/api/call-for-speakers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          magenSessionId: clientResult?.session_id || null,
-          magenVerdict: clientResult?.verdict || null,
-          magenScore: clientResult?.score || null,
-        }),
+        body: JSON.stringify(formData),
       })
 
       const data = await response.json()
@@ -280,20 +261,6 @@ export function CallForSpeakers() {
                   </a>
                 </p>
               </div>
-
-              {/* Magen protection notice */}
-              <p className="text-center text-xs text-gray-400">
-                Protected by{" "}
-                <Link
-                  href="https://magentrust.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#b45309] hover:text-[#92400e] font-medium transition-colors"
-                >
-                  Magen
-                </Link>
-                {" "}bot detection
-              </p>
             </div>
           </form>
         </motion.div>

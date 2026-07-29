@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 
 const nextConfig: NextConfig = {
     images: {
@@ -38,4 +39,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withBotId adds the proxy rewrites BotID needs. Without it the challenge
+// script is served from a third-party origin and ad-blockers defeat it.
+export default withBotId(nextConfig);

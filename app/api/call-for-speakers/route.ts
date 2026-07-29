@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isMagenConfigured, verifySession, shouldBlock } from '@/lib/magen';
+import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
@@ -15,16 +15,18 @@ interface SpeakerSubmissionRequest {
   abstract: string;
   bio?: string;
   linkedin?: string;
-  magenSessionId?: string;
-  magenVerdict?: string;
-  magenScore?: number;
   eventId?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const body: SpeakerSubmissionRequest = await request.json();
-    const { name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin, magenSessionId, magenVerdict, magenScore, eventId } = body;
+    const { name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin, eventId } = body;
 
     // Validate required fields
     if (!name || !email || !sessionTitle || !abstract) {
@@ -32,18 +34,6 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields' },
         { status: 400 }
       );
-    }
-
-    // Server-side MAGEN verification (log-only mode until client SDK collects behavioral signals)
-    if (isMagenConfigured() && magenSessionId) {
-      const result = await verifySession(magenSessionId);
-      console.log('[MAGEN] Speaker submission verification:', { session_id: magenSessionId, verdict: result.verdict, score: result.score, is_human: result.is_human });
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (result.success && shouldBlock(result)) {
-      //   return NextResponse.json({ error: 'Verification failed', reason: 'Unverified traffic' }, { status: 403 });
-      // }
-    } else {
-      console.log('[MAGEN] Verification skipped - not configured');
     }
 
     // Submit to Firestore (use null instead of undefined for Firestore compatibility)
@@ -60,9 +50,6 @@ export async function POST(request: NextRequest) {
       linkedin: linkedin || null,
       eventId: eventId || 'aiconference2026',
       submittedAt: new Date(),
-      magenSessionId: magenSessionId ?? null,
-      magenVerdict: magenVerdict ?? null,
-      magenScore: magenScore ?? null,
       status: 'pending',
     };
 

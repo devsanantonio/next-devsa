@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 import { Loader2, CheckCircle, Mail } from "lucide-react"
-import Link from "next/link"
-import { useMagen } from "@/lib/hooks/use-magen"
 
 interface NewsletterFormProps {
   source?: string
@@ -14,7 +12,6 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
-  const { verify, verifyOnServer, isVerifying } = useMagen()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,24 +19,10 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
     setErrorMessage("")
 
     try {
-      // Client-side MAGEN verification (log-only until SDK sends behavioral signals)
-      const clientResult = await verify()
-      console.log('[MAGEN] Newsletter verification:', clientResult ? { verdict: clientResult.verdict, score: clientResult.score } : 'no session')
-
-      // TODO: Enable blocking once MAGEN client SDK sends behavioral events
-      // if (clientResult && clientResult.verdict !== 'verified') { ... }
-      // if (!serverVerified) { ... }
-
       const response = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          source,
-          magenSessionId: clientResult?.session_id || null,
-          magenVerdict: clientResult?.verdict || null,
-          magenScore: clientResult?.score || null,
-        }),
+        body: JSON.stringify({ email, source }),
       })
 
       const data = await response.json()
@@ -82,13 +65,13 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
         </div>
         <button
           type="submit"
-          disabled={status === "loading" || isVerifying}
+          disabled={status === "loading"}
           className="rounded-lg bg-[#ef426f] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
         >
-          {status === "loading" || isVerifying ? (
+          {status === "loading" ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              {isVerifying ? 'Verifying...' : 'Subscribing...'}
+              Subscribing...
             </>
           ) : (
             "Subscribe"
@@ -98,17 +81,6 @@ export function NewsletterForm({ source = "footer", className = "" }: Newsletter
       {status === "error" && (
         <p className="mt-2 text-sm text-red-400">{errorMessage}</p>
       )}
-      <p className="mt-2 text-xs text-gray-500">
-        Protected by{" "}
-        <Link
-          href="https://magentrust.ai"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#f59e0b] hover:text-[#fbbf24] transition-colors"
-        >
-          Magen
-        </Link>
-      </p>
     </form>
   )
 }

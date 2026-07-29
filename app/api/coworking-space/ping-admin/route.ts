@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeInput } from "@/lib/sanitize";
-import { isMagenConfigured, verifySession } from "@/lib/magen";
+import { checkBotId } from "botid/server";
 import { resend, EMAIL_FROM, isResendConfigured } from "@/lib/resend";
 import { CoworkingInquiryReceivedEmail } from "@/lib/emails/coworking-inquiry-received";
 import { CoworkingInquiryOpsEmail } from "@/lib/emails/coworking-inquiry-ops";
@@ -90,7 +90,6 @@ export async function POST(request: Request) {
   let userName: string | undefined;
   let userMessage: string | undefined;
   let userEmail: string | null = null;
-  let magenSessionId: string | undefined;
 
   try {
     const body = await request.json();
@@ -112,9 +111,6 @@ export async function POST(request: Request) {
         );
       }
     }
-    if (typeof body?.magenSessionId === "string") {
-      magenSessionId = body.magenSessionId;
-    }
   } catch {
     // Invalid JSON
   }
@@ -132,21 +128,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // Magen — only block confirmed bots; review verdicts fall through (rate-limited anyway)
-  if (isMagenConfigured() && magenSessionId) {
-    const result = await verifySession(magenSessionId);
-    console.log("[MAGEN] Coworking inquiry verification:", {
-      session_id: magenSessionId,
-      verdict: result.verdict,
-      score: result.score,
-      is_human: result.is_human,
-    });
-    if (result.success && result.verdict === "unverified") {
-      return NextResponse.json(
-        { ok: false, code: "VERIFICATION_FAILED", message: "Verification failed. Please try again." },
-        { status: 403 },
-      );
-    }
+  // This route pings a real human in the coworking space, so bots cost someone's attention.
+  const { isBot } = await checkBotId();
+  if (isBot) {
+    return NextResponse.json(
+      { ok: false, code: "VERIFICATION_FAILED", message: "Verification failed. Please try again." },
+      { status: 403 },
+    );
   }
 
   // Fire bot + email paths in parallel
