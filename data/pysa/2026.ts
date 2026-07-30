@@ -146,6 +146,11 @@ export const PYSA_ASSETS = {
    */
   mascotVideoPoster: "/pysa/mascot-video-poster.webp",
   /**
+   * Standing cut-out as a transparent PNG, for the corner of the Open Graph
+   * card. A PNG rather than the .webp sticker for the same satori reason.
+   */
+  mascotOgFigure: "/pysa/mascot-og-figure.png",
+  /**
    * 2025 livestream, deep-linked past the pre-roll. Currently unreferenced —
    * the archive card links to /events/pysanantonio/2025 instead, and that page
    * embeds the stream itself. Kept as the canonical URL for the recording.

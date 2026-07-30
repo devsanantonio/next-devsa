@@ -1,6 +1,8 @@
 import { Metadata } from "next"
+import { FeaturedPySanAntonio } from "@/components/events/featured-pysanantonio"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
+import { daysUntilClose, getCfsPhase } from "@/data/pysa/2026"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -59,7 +61,15 @@ export const metadata: Metadata = {
   },
 }
 
+/**
+ * Revalidate hourly so the featured event's call-for-speakers countdown stays
+ * accurate without a deploy, and drops away on its own once the call closes.
+ */
+export const revalidate = 3600
+
 export default function EventsPage() {
+  const phase = getCfsPhase()
+
   return (
     <>
       <script
@@ -89,6 +99,7 @@ export default function EventsPage() {
         }}
       />
       <main className="min-h-screen bg-white text-gray-900">
+        <FeaturedPySanAntonio phase={phase} daysLeft={daysUntilClose()} />
         <CommunityEventsSection />
         <FeaturedOnDemandEvent />
       </main>

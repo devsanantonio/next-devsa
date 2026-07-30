@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { motion, useReducedMotion } from "motion/react"
 import { AlertCircle, CalendarClock, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { submitButton } from "@/components/pysa/2026/button-styles"
@@ -89,6 +90,30 @@ export function PysaSpeakerForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const reduceMotion = useReducedMotion()
+  const formRef = useRef<HTMLFormElement>(null)
+  const successRef = useRef<HTMLDivElement>(null)
+  /**
+   * The form's rendered height, captured the moment it succeeds. The success
+   * card is a fraction of that height, so without this the column collapses in
+   * a single frame and the whole page appears to snap upward. Holding the old
+   * height and easing down to the new one turns that into a deliberate
+   * collapse.
+   */
+  const [collapseFrom, setCollapseFrom] = useState<number | null>(null)
+
+  // After the collapse settles, bring the message into view — someone who was
+  // at the bottom of a tall form would otherwise be left looking at whitespace.
+  useEffect(() => {
+    if (!submitted) return
+    const t = setTimeout(() => {
+      successRef.current?.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center",
+      })
+    }, reduceMotion ? 0 : 420)
+    return () => clearTimeout(t)
+  }, [submitted, reduceMotion])
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -129,6 +154,7 @@ export function PysaSpeakerForm({
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to submit")
+      setCollapseFrom(formRef.current?.offsetHeight ?? null)
       setSubmitted(true)
       onSubmitted?.()
     } catch (err) {
@@ -166,31 +192,48 @@ export function PysaSpeakerForm({
 
   if (submitted) {
     return (
-      <div className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/3 p-10 text-center">
-        {/* The mascot moves in here rather than floating in the section, where
-            the collapsing grid used to throw him across the copy. */}
-        <Image
-          src={PYSA_ASSETS.mascotBust}
-          alt=""
-          aria-hidden
-          width={PYSA_ASSETS.mascotBustWidth}
-          height={PYSA_ASSETS.mascotBustHeight}
-          sizes="160px"
-          className="pointer-events-none absolute bottom-3 right-3 w-24 select-none sm:w-28"
-        />
-        <CheckCircle2 className="h-12 w-12" style={{ color: YELLOW }} />
-        <h3 className="text-xl font-bold text-white">Talk submitted</h3>
-        <p className="max-w-sm text-sm leading-relaxed text-white/60">
-          Thanks, {form.name.split(" ")[0] || "friend"} — your proposal is in.
-          The call closes August 15, and you&apos;ll hear from us by email either
-          way. Sharing what you know is how this community gets built.
-        </p>
-      </div>
+      <motion.div
+        // Holds the form's height for a beat, then eases down to the card's own.
+        initial={reduceMotion ? false : { height: collapseFrom ?? "auto" }}
+        animate={{ height: "auto" }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="overflow-hidden"
+      >
+        <motion.div
+          ref={successRef}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: reduceMotion ? 0 : 0.18, duration: 0.35 }}
+          // pr is wider than the rest of the padding so the centred copy is
+          // pushed clear of the mascot's corner instead of running under it.
+          className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/3 p-10 pr-28 text-center sm:pr-32"
+        >
+          {/* Full figure, boots included — the bust crop read as though he had
+              been cut off. Kept small and in the corner. */}
+          <Image
+            src={PYSA_ASSETS.mascotSticker}
+            alt=""
+            aria-hidden
+            width={PYSA_ASSETS.mascotStickerWidth}
+            height={PYSA_ASSETS.mascotStickerHeight}
+            sizes="120px"
+            className="pointer-events-none absolute bottom-4 right-4 w-20 select-none sm:w-24"
+          />
+          <CheckCircle2 className="h-12 w-12" style={{ color: YELLOW }} />
+          <h3 className="text-xl font-bold text-white">Talk submitted</h3>
+          <p className="max-w-sm text-sm leading-relaxed text-white/60">
+            Thanks, {form.name.split(" ")[0] || "friend"} — your proposal is in.
+            The call closes August 15, and you&apos;ll hear from us by email either
+            way. Sharing what you know is how this community gets built.
+          </p>
+        </motion.div>
+      </motion.div>
     )
   }
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="flex w-full flex-col rounded-2xl border border-white/10 bg-white/3 p-5 sm:p-7"
     >

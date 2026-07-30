@@ -17,11 +17,19 @@ export async function GET() {
   const fonts = await loadBrandFonts()
   const isOpen = getCfsPhase() === "open"
 
+  // The traced SVG, so the wordmark stays vector-crisp at any card scale.
   // Inlined from disk rather than fetched over HTTP: the card must render even
-  // when the site's own origin is not reachable from the render (previews,
-  // local builds), and satori cannot rasterise the SVG version.
-  const wordmark = `data:image/png;base64,${(
-    await readFile(path.join(process.cwd(), "public", PYSA_WORDMARK.pngDark))
+  // when the site's own origin is unreachable from the render (previews, local
+  // builds).
+  const wordmark = `data:image/svg+xml;base64,${(
+    await readFile(path.join(process.cwd(), "public", PYSA_WORDMARK.svgDark))
+  ).toString("base64")}`
+
+  // Standing cut-out for the corner. A PNG, not the .webp sticker: satori
+  // decodes PNG, JPEG and SVG but NOT WebP — a WebP fails the whole render
+  // with "u2 is not iterable".
+  const mascot = `data:image/png;base64,${(
+    await readFile(path.join(process.cwd(), "public", PYSA_ASSETS.mascotOgFigure))
   ).toString("base64")}`
 
   return new ImageResponse(
@@ -39,34 +47,15 @@ export async function GET() {
       >
         <BrandGradientBar direction="ltr" />
 
-        {/* Mascot, bled off the right edge */}
+        {/* Mascot in the lower-right corner — a supporting note, not the
+            subject. Held clear of the footer rule and well right of the copy's
+            720px column, so nothing overlaps. */}
         <img
-          src={PYSA_ASSETS.mascotDark}
+          src={mascot}
           alt=""
-          width={460}
-          height={575}
-          style={{
-            position: "absolute",
-            right: -40,
-            bottom: 0,
-            height: 600,
-            width: 480,
-            objectFit: "cover",
-            objectPosition: "top center",
-          }}
-        />
-        {/* Fade the mascot into the card so the type stays readable */}
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            bottom: 0,
-            width: 560,
-            height: 630,
-            display: "flex",
-            background:
-              "linear-gradient(90deg, #0a0a0a 0%, rgba(10,10,10,0.75) 35%, rgba(10,10,10,0) 75%)",
-          }}
+          width={140}
+          height={300}
+          style={{ position: "absolute", right: 64, bottom: 96, width: 140, height: 300 }}
         />
 
         <div
@@ -95,7 +84,7 @@ export async function GET() {
                 display: "flex",
                 alignItems: "center",
                 backgroundColor: isOpen
-                  ? "rgba(248,184,0,0.14)"
+                  ? "rgba(255,221,0,0.14)"
                   : "rgba(255,255,255,0.08)",
                 border: `2px solid ${isOpen ? PYSA_COLORS.yellow : "rgba(255,255,255,0.25)"}`,
                 borderRadius: 24,
@@ -124,46 +113,41 @@ export async function GET() {
               maxWidth: 720,
             }}
           >
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 14 }}>
-              <img
-                src={wordmark}
-                alt="PySanAntonio"
-                width={560}
-                height={130}
-                style={{ width: 560, height: 130 }}
-              />
-              <span
-                style={{
-                  fontSize: 64,
-                  fontWeight: 800,
-                  color: "#ffffff",
-                  letterSpacing: "-0.03em",
-                  paddingBottom: 6,
-                }}
-              >
-                II
-              </span>
-            </div>
+            {/* The wordmark alone, no "II" alongside it — set in Geist the two
+                strokes read as a pause icon rather than a numeral. The edition
+                is carried by the line below and by the mascot's two fingers. */}
+            <img
+              src={wordmark}
+              alt="PySanAntonio"
+              width={800}
+              height={188}
+              style={{ width: 800, height: 188, marginBottom: 4 }}
+            />
+            {/* The page's actual hook. Weight 400 rather than italic: only
+                upright Geist faces are bundled, and satori does not synthesise
+                a slant, so asking for italic would silently do nothing. */}
             <h2
               style={{
-                fontSize: 40,
-                fontWeight: 700,
+                fontSize: 46,
+                fontWeight: 400,
                 color: PYSA_COLORS.blue,
                 lineHeight: 1.2,
                 margin: 0,
-                marginBottom: 28,
+                marginBottom: 26,
                 letterSpacing: "-0.01em",
               }}
             >
-              {PYSA_2026.dateLabel}
+              returns October 2026
             </h2>
 
+            {/* The date leads this stack now that the headline carries the hook
+                instead — it is the one fact a share card cannot drop. */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <span style={{ color: "#d4d4d4", fontSize: 24, fontWeight: 500 }}>
-                {PYSA_2026.venue}, {PYSA_2026.venueDetail} · {PYSA_2026.timeLabel}
+              <span style={{ color: "#ffffff", fontSize: 26, fontWeight: 700 }}>
+                {PYSA_2026.dateLabel} · {PYSA_2026.timeLabel}
               </span>
-              <span style={{ color: "#8a8a8a", fontSize: 20 }}>
-                Part of SA Startup + Tech Week · {PYSA_2026.superEvent.label}
+              <span style={{ color: "#a3a3a3", fontSize: 20, fontWeight: 500 }}>
+                {PYSA_2026.venue}, {PYSA_2026.venueDetail} · Part of SA Startup + Tech Week
               </span>
             </div>
           </div>

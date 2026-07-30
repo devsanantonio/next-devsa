@@ -671,7 +671,13 @@ export function CommunityEventsSection() {
   }, [allEvents, search, selectedDate, currentTime])
 
   return (
-    <section className="relative bg-white py-16 sm:py-24" data-bg-type="light">
+    // id + scroll-mt so the featured event above can jump straight here past a
+    // full screen of promo, without the fixed navbar covering the heading.
+    <section
+      id="community-calendar"
+      className="relative scroll-mt-20 bg-white py-16 sm:py-24"
+      data-bg-type="light"
+    >
       <div className="relative page-shell">
         {/* Header - Left aligned */}
         <div className="mb-12">
@@ -680,11 +686,14 @@ export function CommunityEventsSection() {
               Community Calendar
             </p>
 
-            <h2 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            {/* The page's h1. This section is the subject of /events, so the
+                headline belongs here rather than on the featured-event promo
+                above it, which rotates and is deliberately an h2. */}
+            <h1 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               Find Your Next Event.{" "}
               <span className="text-gray-600 font-light italic">Build Your</span>{" "}
               Network.
-            </h2>
+            </h1>
           </div>
 
           <div className="space-y-6 max-w-3xl mt-8">
