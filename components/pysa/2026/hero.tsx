@@ -2,14 +2,9 @@
 
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
-import { CalendarDays, Clock, MapPin, ArrowRight } from "lucide-react"
+import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
-import { MascotSticker } from "@/components/pysa/2026/mascot-sticker"
-import {
-  disabledSlot,
-  primaryButton,
-  secondaryButton,
-} from "@/components/pysa/2026/button-styles"
+import { disabledSlot, primaryButton } from "@/components/pysa/2026/button-styles"
 import {
   PYSA_2026,
   PYSA_ASSETS,
@@ -140,17 +135,11 @@ export function PysaHero({
         className="pointer-events-none absolute inset-0 z-10 bg-linear-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"
       />
 
-      {/* Mobile gets the sticker treatment instead of the standing figure.
-          Sits after the scrims (z-10) so the bottom vignette does not wash it
-          out, but under the copy (z-20) so it can never cover the CTA. Pinned
-          to the bottom-right corner, clear of the left-aligned column. */}
-      <MascotSticker
-        className="-bottom-6 -right-10 z-10 w-40 sm:hidden"
-        rotate={-8}
-        from="bottom"
-      />
-
-      <div className="page-shell relative z-20 pb-20 pt-28 md:pb-24 md:pt-32">
+      {/* No mascot inside the hero on mobile — he gets his own interlude
+          section between here and the call for speakers. Reserving a band for
+          him in here pushed the countdown line below the fold on small
+          phones. */}
+      <div className="page-shell relative z-20 pb-20 pt-24 md:pb-24 md:pt-32">
         <div className="max-w-xl xl:max-w-2xl">
           {/* Only the transform animates in. Fading from opacity:0 would ship
               the headline and the primary CTA invisible in the server HTML,
@@ -159,9 +148,9 @@ export function PysaHero({
             initial={{ y: 20 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-5 sm:gap-6"
           >
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4 sm:gap-5">
               {/* The event's own name leads. "Part of …" is a qualifier, so it
                   follows the headline rather than introducing it — otherwise
                   the modifier lands before the noun, and two display wordmarks
@@ -181,14 +170,14 @@ export function PysaHero({
                     className="h-auto w-full max-w-[26rem] lg:max-w-[32rem] xl:max-w-[38rem]"
                   />
                   <span className="font-light italic" style={{ color: PYSA_COLORS.blue }}>
-                    returns.
+                    returns October 2026
                   </span>
                 </h1>
 
                 <SastwLockup />
               </div>
 
-              <p className="max-w-xl text-lg leading-relaxed text-white/70 md:text-xl">
+              <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
                 San Antonio&apos;s Python conference is back for a second year —
                 an afternoon of{" "}
                 <strong className="font-semibold text-white">
@@ -219,21 +208,18 @@ export function PysaHero({
               </div>
             </dl>
 
-            {/* CTA slot — swaps with the call's phase */}
+            {/* CTA slot — swaps with the call's phase. Single action on
+                purpose: last year's recap is reachable from the archive card
+                further down, and it was competing here. */}
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 {isOpen ? (
                   <Link href="#call-for-speakers" className={primaryButton}>
                     Submit a talk
-                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 ) : (
                   <span className={disabledSlot}>Speaker lineup coming soon</span>
                 )}
-
-                <Link href="/events/pysanantonio/2025" className={secondaryButton}>
-                  Watch last year
-                </Link>
               </div>
 
               {isOpen && (

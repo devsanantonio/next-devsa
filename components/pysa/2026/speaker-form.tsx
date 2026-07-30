@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { AlertCircle, CalendarClock, CheckCircle2, Send } from "lucide-react"
+import Image from "next/image"
+import { AlertCircle, CalendarClock, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { submitButton } from "@/components/pysa/2026/button-styles"
 import {
   AUDIENCE_LEVELS,
   CONSIDER_FOR,
+  PYSA_ASSETS,
   PYSA_COLORS,
   PYSA_EVENT_ID,
   SESSION_FORMATS,
@@ -58,7 +60,19 @@ function ChipRadio({
   )
 }
 
-export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
+export function PysaSpeakerForm({
+  phase,
+  /**
+   * Fired once on a successful submission. The section uses it to retire its
+   * decorative mascot: the success card is far shorter than the form, so the
+   * grid row collapses and a sticker anchored to its bottom rides up onto the
+   * copy in the left column.
+   */
+  onSubmitted,
+}: {
+  phase: CfsPhase
+  onSubmitted?: () => void
+}) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -116,6 +130,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to submit")
       setSubmitted(true)
+      onSubmitted?.()
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to submit. Please try again."
@@ -151,7 +166,18 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/3 p-10 text-center">
+      <div className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/3 p-10 text-center">
+        {/* The mascot moves in here rather than floating in the section, where
+            the collapsing grid used to throw him across the copy. */}
+        <Image
+          src={PYSA_ASSETS.mascotBust}
+          alt=""
+          aria-hidden
+          width={PYSA_ASSETS.mascotBustWidth}
+          height={PYSA_ASSETS.mascotBustHeight}
+          sizes="160px"
+          className="pointer-events-none absolute bottom-3 right-3 w-24 select-none sm:w-28"
+        />
         <CheckCircle2 className="h-12 w-12" style={{ color: YELLOW }} />
         <h3 className="text-xl font-bold text-white">Talk submitted</h3>
         <p className="max-w-sm text-sm leading-relaxed text-white/60">
@@ -169,7 +195,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
       className="flex w-full flex-col rounded-2xl border border-white/10 bg-white/3 p-5 sm:p-7"
     >
       <div className="mb-6">
-        <h2 className="text-xl font-bold tracking-tight text-white">Submit a talk</h2>
+        <h3 className="text-xl font-bold tracking-tight text-white">Submit a talk</h3>
         <p className="mt-1 text-sm text-white/50">
           Beginner-friendly talks are as welcome as deep dives. If this would be
           your first time on a stage, it&apos;s a good one to start on.
@@ -180,7 +206,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="pysa-name" className={labelClass}>
-              Full name <span style={{ color: YELLOW }}>*</span>
+              Full name <span style={{ color: BLUE }}>*</span>
             </label>
             <input
               id="pysa-name"
@@ -194,7 +220,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
           </div>
           <div>
             <label htmlFor="pysa-email" className={labelClass}>
-              Email <span style={{ color: YELLOW }}>*</span>
+              Email <span style={{ color: BLUE }}>*</span>
             </label>
             <input
               id="pysa-email"
@@ -241,7 +267,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
 
         <div>
           <label htmlFor="pysa-title" className={labelClass}>
-            Talk title <span style={{ color: YELLOW }}>*</span>
+            Talk title <span style={{ color: BLUE }}>*</span>
           </label>
           <input
             id="pysa-title"
@@ -256,7 +282,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
 
         <fieldset>
           <legend className={labelClass}>
-            Preferred format <span style={{ color: YELLOW }}>*</span>
+            Preferred format <span style={{ color: BLUE }}>*</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {SESSION_FORMATS.map((f) => (
@@ -275,7 +301,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
 
         <fieldset>
           <legend className={labelClass}>
-            Audience level <span style={{ color: YELLOW }}>*</span>
+            Audience level <span style={{ color: BLUE }}>*</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {AUDIENCE_LEVELS.map((l) => (
@@ -324,7 +350,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
 
         <div>
           <label htmlFor="pysa-abstract" className={labelClass}>
-            Abstract <span style={{ color: YELLOW }}>*</span>
+            Abstract <span style={{ color: BLUE }}>*</span>
           </label>
           <textarea
             id="pysa-abstract"
@@ -380,8 +406,7 @@ export function PysaSpeakerForm({ phase }: { phase: CfsPhase }) {
         )}
 
         <button type="submit" disabled={isSubmitting} className={submitButton}>
-          {isSubmitting ? "Submitting…" : "Submit talk"}
-          {!isSubmitting && <Send className="h-4 w-4" />}
+          {isSubmitting ? "Submitting…" : "Submit a talk"}
         </button>
 
         <p className="text-center text-xs text-white/35">

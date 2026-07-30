@@ -58,6 +58,17 @@ export function MascotSticker({
   const offset =
     from === "left" ? { x: -28, y: 0 } : from === "right" ? { x: 28, y: 0 } : { x: 0, y: 32 }
 
+  const figure = (
+    <Image
+      src={art.src}
+      alt=""
+      width={art.width}
+      height={art.height}
+      sizes="(max-width: 640px) 50vw, 25vw"
+      className={cn("h-auto w-full", flip && "-scale-x-100")}
+    />
+  )
+
   return (
     <motion.div
       aria-hidden
@@ -72,14 +83,7 @@ export function MascotSticker({
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className={cn("pointer-events-none absolute select-none", className)}
     >
-      <Image
-        src={art.src}
-        alt=""
-        width={art.width}
-        height={art.height}
-        sizes="(max-width: 640px) 50vw, 25vw"
-        className={cn("h-auto w-full", flip && "-scale-x-100")}
-      />
+      {figure}
     </motion.div>
   )
 }

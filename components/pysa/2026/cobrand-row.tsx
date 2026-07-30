@@ -28,17 +28,27 @@ export function SastwLockup({ className }: { className?: string }) {
         aria-label={`${PYSA_2026.superEvent.name} — official site`}
         className="transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60"
       >
+        {/* Held at 85%: the mark is pure white while the label beside it is
+            white/40 and the date white/55, so at full strength it punched
+            harder than its place in the hierarchy warranted. Dimming settles it
+            into the line without shrinking it — the 0.74:1 ratio against the
+            headline is the part that should not change. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={SASTW_LOGO.white}
           alt={PYSA_2026.superEvent.name}
-          className="h-9 w-auto sm:h-11 lg:h-12"
+          className="h-9 w-auto opacity-85 sm:h-11 lg:h-12"
         />
       </a>
-      <span aria-hidden className="text-white/25">
+      {/* Hidden on phones: the date rail right below already carries Oct 2, so
+          the week's range is redundant detail at that width and it was the only
+          thing forcing this lockup to wrap. */}
+      <span aria-hidden className="hidden text-white/25 sm:inline">
         ·
       </span>
-      <span className="text-white/55">{PYSA_2026.superEvent.label}</span>
+      <span className="hidden text-white/55 sm:inline">
+        {PYSA_2026.superEvent.label}
+      </span>
     </div>
   )
 }

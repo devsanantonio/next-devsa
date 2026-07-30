@@ -133,7 +133,11 @@ export const PYSA_ASSETS = {
    * has asked for reduced motion.
    */
   mascotVideoPoster: "/pysa/mascot-video-poster.webp",
-  /** 2025 livestream, deep-linked past the pre-roll. */
+  /**
+   * 2025 livestream, deep-linked past the pre-roll. Currently unreferenced —
+   * the archive card links to /events/pysanantonio/2025 instead, and that page
+   * embeds the stream itself. Kept as the canonical URL for the recording.
+   */
   livestream2025: "https://www.youtube.com/embed/3jZ9ktAFGpk?start=1782",
 } as const
 
