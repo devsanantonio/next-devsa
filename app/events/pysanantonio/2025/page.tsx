@@ -1,5 +1,3 @@
-"use client"
-
 import HeroSection from "@/components/pysa/2025/hero-section"
 import SessionsSection from "@/components/pysa/2025/sessions-section"
 import SponsorsSection from "@/components/pysa/2025/sponsors-section"

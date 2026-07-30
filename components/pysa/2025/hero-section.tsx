@@ -2,194 +2,187 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Play, X, Music, ArrowLeft } from "lucide-react"
+import { ArrowRight, Play, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { primaryButton, secondaryButton } from "@/components/pysa/2026/button-styles"
+import { PYSA_COLORS } from "@/data/pysa/2026"
 
-const mediaItems = [
+const S3 = "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa"
+
+/**
+ * The lead still: a speaker mid-talk with the deck behind him. Of the eight
+ * frames from 2025 it is the only one that reads as "conference" at a glance,
+ * which is what earns it the large cell — and the play affordance, since the
+ * livestream is a recording of exactly this.
+ */
+const LEAD = {
+  src: `${S3}/pysa3.jpg`,
+  alt: "A speaker presenting at PySanAntonio 2025 with slides behind him",
+  width: 1616,
+  height: 1080,
+}
+
+/** Two supporting frames: the size of the room, then the people in it. */
+const SUPPORTING = [
   {
-    type: "video",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.mov",
-    poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg",
-    alt: "PySanAntonio Conference",
+    src: `${S3}/pysa7.jpg`,
+    alt: "The full room of attendees at PySanAntonio 2025",
+    width: 1544,
+    height: 1032,
   },
   {
-    type: "image",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg",
-    alt: "PySanAntonio Conference Audience",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    type: "image",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa8.jpg",
-    alt: "PySanAntonio Conference Audience",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    type: "video",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mov",
-    poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa-mauricio.png",
-    alt: "PySanAntonio Speaker",
-  },
-  {
-    type: "image",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa5.jpg",
-    alt: "PySanAntonio Conference",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    type: "video",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa6.MOV",
-    poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa3.jpg",
-    alt: "PySanAntonio Conference Audience",
-  },
-  {
-    type: "image",
-    src: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa.jpg",
-    alt: "PySanAntonio After Party",
-    width: 1600,
-    height: 1067,
+    // Portrait 3:4 in a 4:3 cell, so the crop takes the middle band —
+    // which is where the two faces sit. Do not switch this to object-top.
+    src: `${S3}/pysa8.jpg`,
+    alt: "Two attendees outside the venue after PySanAntonio 2025",
+    width: 3912,
+    height: 5217,
   },
 ]
 
 export default function HeroSection() {
   const [isLiveStreamOpen, setIsLiveStreamOpen] = useState(false)
-  const [isMusicOpen, setIsMusicOpen] = useState(false)
 
   return (
-    <section className="relative" data-testid="pysa-homepage-container-carousel" id="carousel" data-bg-type="light">
-      <div className="-mt-px pt-[calc(1.5rem-var(--header-height))] md:pt-[calc(6rem-var(--header-height))] lg:pt-[calc(12rem-var(--header-height))] pb-6 md:pb-24 text-white bg-[#0a0a0a]">
-        <div className="flex flex-col gap-6 md:gap-y-12 lg:gap-y-10">
-          <div className="my-0! gap-10 lg:gap-5 container-responsive grid grid-cols-1 lg:grid-cols-[repeat(18,1fr)]">
-            <div className="lg:col-span-11 flex flex-col gap-y-12 items-start mt-20 md:mt-24">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-8"
+    <section className="relative bg-[#0a0a0a] text-white" data-bg-type="dark">
+      {/* pt clears the fixed navbar. The old value here was
+          calc(1.5rem - var(--header-height)) — that custom property is not
+          defined anywhere in the app, so the whole declaration was dropped and
+          the copy tucked under the header. */}
+      <div className="page-shell grid items-center gap-10 pb-14 pt-28 md:pb-20 md:pt-32 lg:grid-cols-2 lg:gap-16 lg:pb-24">
+        {/* Left: the copy */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-start gap-8"
+        >
+          {/* Forward pointer to the live event. This is an archive, so the most
+              useful thing on it is the way out to the current edition — a
+              badged callout above the headline rather than the grey one-line
+              text link it used to be, and an ArrowRight, since 2026 is ahead
+              of this page rather than behind it. */}
+          <Link
+            href="/events/pysanantonio"
+            className="group inline-flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm transition-colors hover:border-white/30 hover:bg-white/10"
+          >
+            <span
+              className="rounded-md px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-[#0a0a0a]"
+              style={{ backgroundColor: PYSA_COLORS.yellow }}
+            >
+              Next up
+            </span>
+            <span className="font-medium text-white">
+              PySanAntonio II · October 2, 2026
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-white/50 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
+          </Link>
+
+          <div className="space-y-4">
+            <p
+              className="text-sm font-medium uppercase tracking-[0.2em] md:text-base"
+              style={{ color: PYSA_COLORS.yellow }}
+            >
+              San Antonio&apos;s First Python Conference
+            </p>
+            <h1 className="font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl xl:text-6xl">
+              Thank You{" "}
+              <span className="font-light italic" style={{ color: PYSA_COLORS.blue }}>
+                for an
+              </span>{" "}
+              Incredible Experience.
+            </h1>
+          </div>
+
+          <div className="space-y-5">
+            <p className="text-xl font-light leading-[1.4] text-gray-300 md:text-2xl">
+              PySanAntonio 2025 brought together Python enthusiasts from across the
+              region for a day of{" "}
+              <strong className="font-semibold text-white">
+                learning, networking, and community building.
+              </strong>
+            </p>
+
+            <p className="text-lg leading-relaxed text-gray-400">
+              The whole day is still here — watch the livestream, browse every
+              session, and meet us for the second edition.
+            </p>
+          </div>
+
+          {/* Both actions share the site's button shape (rounded-lg, one size)
+              so they line up instead of being two differently coloured pills. */}
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={() => setIsLiveStreamOpen(true)}
+              className={primaryButton}
+            >
+              <Play className="h-4 w-4 fill-current" />
+              Watch the livestream
+            </button>
+
+            <Link href="#sessions" className={secondaryButton}>
+              Browse the sessions
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Right: the event itself — one spotlight frame over two supporting
+            ones. Replaces the full-bleed marquee, which auto-played three
+            .mov files (a container Chrome will not decode) purely for motion. */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="flex flex-col gap-3 sm:gap-4"
+        >
+          <button
+            type="button"
+            onClick={() => setIsLiveStreamOpen(true)}
+            className="group relative block w-full overflow-hidden rounded-xl ring-1 ring-white/10 transition-colors hover:ring-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffdd00]"
+          >
+            <Image
+              src={LEAD.src}
+              alt={LEAD.alt}
+              width={LEAD.width}
+              height={LEAD.height}
+              priority
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="aspect-3/2 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/85 to-transparent"
+            />
+            <span className="absolute inset-x-4 bottom-4 flex items-center gap-3 text-left">
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#0a0a0a] transition-transform group-hover:scale-110"
+                style={{ backgroundColor: PYSA_COLORS.yellow }}
               >
-                <div className="space-y-4">
-                  <Link
-                    href="/events/pysanantonio"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-white/60 transition-colors hover:text-white"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    PySanAntonio II is happening October 2, 2026
-                  </Link>
-                  <p className="text-sm md:text-base font-medium text-[#FFD43B] uppercase tracking-[0.2em] letter-spacing-wide">
-                    San Antonio&apos;s First Python Conference
-                  </p>
-                  <h1 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-                    Thank You{" "}
-                    <span className="text-[#4B8BBE] font-light italic">for an</span>{" "}
-                    Incredible Experience.
-                  </h1>
-                </div>
+                <Play className="h-4 w-4 fill-current" />
+              </span>
+              <span className="text-sm font-semibold text-white">
+                Watch the 2025 livestream
+              </span>
+            </span>
+          </button>
 
-                <div className="space-y-6 max-w-3xl">
-                  <p className="text-xl md:text-2xl text-gray-300 leading-[1.4] font-light">
-                    PySanAntonio 2025 brought together Python enthusiasts from across the region for a day of{" "}
-                    <strong className="font-semibold text-white">learning, networking, and community building.</strong>
-                  </p>
-
-                  <p className="text-lg md:text-xl text-gray-400 leading-relaxed">
-                    Relive the memories below and{" "}
-                    <strong className="font-semibold text-white">stay tuned</strong> for future events!
-                  </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => setIsLiveStreamOpen(true)}
-                    className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-[#FFD43B] px-8 font-bold text-base text-[#0a0a0a] transition-all hover:bg-[#FFD43B]/90 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FFD43B] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] shadow-lg shadow-[#FFD43B]/30"
-                  >
-                    <Play className="mr-2 h-5 w-5 fill-current" />
-                    <span>Watch Livestream</span>
-                  </button>
-
-                  <button
-                    onClick={() => setIsMusicOpen(true)}
-                    className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-[#4B8BBE] px-8 font-bold text-base text-white transition-all hover:bg-[#4B8BBE]/90 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#4B8BBE] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] shadow-lg shadow-[#4B8BBE]/30"
-                  >
-                    <Music className="mr-2 h-5 w-5" />
-                    <span>Conference Music</span>
-                  </button>
-                </div>
-              </motion.div>
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {SUPPORTING.map((photo) => (
+              <Image
+                key={photo.src}
+                src={photo.src}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                loading="lazy"
+                sizes="(min-width: 1024px) 20vw, 50vw"
+                className="aspect-4/3 w-full rounded-xl object-cover ring-1 ring-white/10"
+              />
+            ))}
           </div>
-
-          {/* Marquee Carousel */}
-          <div className="relative w-full overflow-hidden">
-            <div className="flex gap-8 animate-marquee-slow lg:animate-marquee">
-              {/* First set of items */}
-              {mediaItems.map((item, index) => (
-                <div key={`${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
-                  <div className="relative aspect-4/5 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900 rounded-lg"></div>
-                    {item.type === "image" ? (
-                      <Image
-                        alt={item.alt}
-                        loading="lazy"
-                        width={item.width || 1067}
-                        height={item.height || 1600}
-                        className="rounded-lg sepia-[0.3] object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                        src={item.src}
-                      />
-                    ) : (
-                      <video
-                        className="rounded-lg sepia-[0.3] w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        poster={item.poster}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      >
-                        <source src={item.src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Duplicate set for seamless loop */}
-              {mediaItems.map((item, index) => (
-                <div key={`duplicate-${item.alt}-${index}`} className="flex w-80 shrink-0 flex-col justify-end">
-                  <div className="relative aspect-4/5 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900 rounded-lg"></div>
-                    {item.type === "image" ? (
-                      <Image
-                        alt={item.alt}
-                        loading="lazy"
-                        width={item.width || 1067}
-                        height={item.height || 1600}
-                        className="rounded-lg sepia-[0.3] object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                        src={item.src}
-                      />
-                    ) : (
-                      <video
-                        className="rounded-lg sepia-[0.3] w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        poster={item.poster}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      >
-                        <source src={item.src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Livestream Modal */}
@@ -199,19 +192,20 @@ export default function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
             onClick={() => setIsLiveStreamOpen(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              className="relative aspect-video w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setIsLiveStreamOpen(false)}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 transition-colors"
+                aria-label="Close the livestream"
+                className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-white/20"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -223,50 +217,6 @@ export default function HeroSection() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 className="border-0"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Music Modal */}
-      <AnimatePresence>
-        {isMusicOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
-            onClick={() => setIsMusicOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-[96rem] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setIsMusicOpen(false)}
-                className="absolute top-4 right-4 z-10 p-3 rounded-full bg-[#FFD43B] text-[#0a0a0a] hover:bg-[#FFD43B]/90 transition-all hover:scale-110 shadow-lg"
-              >
-                <X className="h-6 w-6 md:h-7 md:w-7 font-bold" strokeWidth={3} />
-              </button>
-              <div className="mb-4">
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                  PySanAntonio Conference Playlist
-                </h3>
-                <p className="text-gray-400 text-sm md:text-base">
-                  Music for the first Python conference in San Antonio
-                </p>
-              </div>
-              <iframe
-                allow="autoplay *; encrypted-media *;"
-                className="border-0"
-                height="450"
-                style={{ width: "100%", maxWidth: "660px", overflow: "hidden", background: "transparent" }}
-                sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
-                src="https://embed.music.apple.com/us/playlist/music-for-the-first-python-conference-in-san-antonio/pl.u-PJpZILNbDqW3"
               />
             </motion.div>
           </motion.div>
