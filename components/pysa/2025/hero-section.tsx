@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { ArrowRight, Play, X } from "lucide-react"
+import { ArrowUpRight, Play, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { primaryButton, secondaryButton } from "@/components/pysa/2026/button-styles"
@@ -76,7 +76,11 @@ export default function HeroSection() {
             <span className="font-medium text-white">
               PySanAntonio II · October 2, 2026
             </span>
-            <ArrowRight className="h-4 w-4 shrink-0 text-white/50 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
+            {/* Hidden on phones: with the badge and the date already on the
+                line there is no room left, so the arrow wrapped onto a row of
+                its own. From sm up it is the site's standard hop — the same
+                ArrowUpRight treatment as about-devsa and hero-bridge. */}
+            <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-white/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white sm:block" />
           </Link>
 
           <div className="space-y-4">
