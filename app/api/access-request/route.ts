@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
-import { AccessRequestReceivedEmail } from '@/lib/emails/access-request-received';
+import {
+  AccessRequestReceivedEmail,
+  getAccessRequestReceivedSubject,
+} from '@/lib/emails/access-request-received';
 
 interface AccessRequestBody {
   name: string;
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: normalizedEmail,
-          subject: 'Access Request Received - DEVSA',
+          subject: getAccessRequestReceivedSubject(communityOrg),
           html: AccessRequestReceivedEmail({ name, communityOrg }),
         });
       } catch (emailError) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -9,12 +9,23 @@ export interface AdminComboboxOption {
   label: string
   /** Optional trailing count shown muted on the right of each row. */
   count?: number
+  /**
+   * Optional section heading. Options carrying the same `group` are rendered
+   * under one label; a heading appears each time the value changes, so keep
+   * grouped options adjacent in the array. Omit it and the list stays flat —
+   * which is what every admin dropdown does.
+   */
+  group?: string
 }
 
 /**
- * Dark-themed, accessible combobox for the admin portal. Mirrors the pattern of
- * the public TrackCombobox but styled to the admin surface (neutral-900 / pink
- * #ef426f accent) so every dropdown in the portal reads as one system.
+ * Accessible combobox, styled to the DEVSA pink (#ef426f) accent so every
+ * dropdown in the app reads as one system.
+ *
+ * `variant="dark"` (the default) is the admin portal's neutral-800 surface.
+ * `variant="light"` is the same control on a white page — used by the public
+ * /signin access request form, which is why this lives on more than the admin
+ * routes despite the name.
  *
  * Keyboard: ArrowUp/Down to move, Enter/Space to select, Escape to close.
  */
@@ -26,6 +37,7 @@ export function AdminCombobox({
   className,
   buttonClassName,
   accent = "#ef426f",
+  variant = "dark",
 }: {
   options: AdminComboboxOption[]
   value: string
@@ -34,7 +46,9 @@ export function AdminCombobox({
   className?: string
   buttonClassName?: string
   accent?: string
+  variant?: "dark" | "light"
 }) {
+  const isLight = variant === "light"
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -106,48 +120,98 @@ export function AdminCombobox({
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-lg border border-neutral-700 bg-neutral-800 px-3.5 py-2.5 text-left text-sm text-white transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20",
+          "flex w-full items-center justify-between gap-2 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20",
+          isLight
+            ? "border-gray-300 bg-white text-gray-900"
+            : "border-neutral-700 bg-neutral-800 text-white",
           buttonClassName
         )}
       >
-        <span className={cn("truncate", !selected && "text-neutral-500")}>
+        <span
+          className={cn(
+            "truncate",
+            !selected && (isLight ? "text-gray-400" : "text-neutral-500")
+          )}
+        >
           {selected ? selected.label : placeholder}
         </span>
         <ChevronDown
-          className={cn("h-4 w-4 shrink-0 text-neutral-400 transition-transform", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 shrink-0 transition-transform",
+            isLight ? "text-gray-400" : "text-neutral-400",
+            open && "rotate-180"
+          )}
         />
       </button>
 
       {open && (
         <ul
           role="listbox"
-          className="absolute right-0 z-50 mt-2 max-h-72 w-full min-w-56 overflow-auto rounded-xl border border-neutral-700 bg-neutral-800 p-1.5 shadow-xl"
+          className={cn(
+            "absolute right-0 z-50 mt-2 max-h-72 w-full min-w-56 overflow-auto rounded-xl border p-1.5 shadow-xl",
+            isLight ? "border-gray-200 bg-white" : "border-neutral-700 bg-neutral-800"
+          )}
         >
           {options.map((opt, i) => {
             const isSelected = opt.value === value
             const isActive = i === activeIndex
+            // Heading rows are presentational, so they sit outside the option
+            // indices the keyboard handler walks.
+            const heading =
+              opt.group && opt.group !== options[i - 1]?.group ? opt.group : null
             return (
-              <li
-                key={opt.value}
-                ref={(el) => {
-                  optionRefs.current[i] = el
-                }}
-                role="option"
-                aria-selected={isSelected}
-                onMouseEnter={() => setActiveIndex(i)}
-                onClick={() => select(opt)}
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                  isActive ? "bg-neutral-700/70" : "hover:bg-neutral-700/40",
-                  isSelected ? "text-white" : "text-neutral-300"
+              <Fragment key={opt.value}>
+                {heading && (
+                  <li
+                    role="presentation"
+                    className={cn(
+                      "px-3 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-[0.12em]",
+                      isLight ? "text-gray-400" : "text-neutral-500"
+                    )}
+                  >
+                    {heading}
+                  </li>
                 )}
-              >
-                <span className="flex-1 truncate">{opt.label}</span>
-                {typeof opt.count === "number" && (
-                  <span className="text-xs tabular-nums text-neutral-500">{opt.count}</span>
-                )}
-                {isSelected && <Check className="h-4 w-4 shrink-0" style={{ color: accent }} />}
-              </li>
+                <li
+                  ref={(el) => {
+                    optionRefs.current[i] = el
+                  }}
+                  role="option"
+                  aria-selected={isSelected}
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => select(opt)}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isLight
+                      ? isActive
+                        ? "bg-gray-100"
+                        : "hover:bg-gray-50"
+                      : isActive
+                        ? "bg-neutral-700/70"
+                        : "hover:bg-neutral-700/40",
+                    isLight
+                      ? isSelected
+                        ? "text-gray-900"
+                        : "text-gray-600"
+                      : isSelected
+                        ? "text-white"
+                        : "text-neutral-300"
+                  )}
+                >
+                  <span className="flex-1 truncate">{opt.label}</span>
+                  {typeof opt.count === "number" && (
+                    <span
+                      className={cn(
+                        "text-xs tabular-nums",
+                        isLight ? "text-gray-400" : "text-neutral-500"
+                      )}
+                    >
+                      {opt.count}
+                    </span>
+                  )}
+                  {isSelected && <Check className="h-4 w-4 shrink-0" style={{ color: accent }} />}
+                </li>
+              </Fragment>
             )
           })}
         </ul>

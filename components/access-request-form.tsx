@@ -1,46 +1,126 @@
 "use client"
 
-import { useState } from "react"
-import { Loader2, Mail, Building2, User, CheckCircle, AlertCircle } from "lucide-react"
-import Image from "next/image"
+import { useEffect, useMemo, useState } from "react"
+import { Loader2, Mail, User, CheckCircle, AlertCircle, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
+import { AdminCombobox, type AdminComboboxOption } from "@/components/admin/admin-combobox"
+import { COMMUNITY_LOGOS } from "@/data/communities"
+import { partners } from "@/data/partners"
 
 interface AccessRequestFormProps {
   onSuccess?: () => void
 }
 
+/**
+ * Sentinel for "we're not on the list yet", which swaps the combobox for a free
+ * text field. It is a value no real organization can collide with.
+ */
+const OTHER = "__other__"
+
+const inputClasses =
+  "w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50"
+
+/**
+ * Request organizer access to the DEVSA admin portal.
+ *
+ * The community field is a combobox rather than free text: almost everyone
+ * asking is an organizer for a group that is *already* listed on Building
+ * Together, and a typed "PySA" or "alamo py" cannot be matched to the community
+ * document an approval has to attach the account to. Picking from the live list
+ * means the name arrives exactly as Firestore spells it.
+ */
 export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    communityOrg: "",
-  })
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  /** The combobox selection: an organization name, or the OTHER sentinel. */
+  const [selectedOrg, setSelectedOrg] = useState("")
+  const [otherOrg, setOtherOrg] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /**
+   * Firestore is the source of truth for communities, so the list is fetched;
+   * data/communities.ts seeds it so the field is usable on first paint and
+   * still works if the fetch fails. Partners come from the static file — that
+   * list changes rarely and is not worth a second request here.
+   */
+  const [liveCommunities, setLiveCommunities] = useState<string[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/communities")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const names: string[] = (data?.communities ?? [])
+          .map((c: { name?: string }) => c.name)
+          .filter((n: unknown): n is string => typeof n === "string" && n.length > 0)
+        if (!cancelled && names.length > 0) setLiveCommunities(names)
+      })
+      .catch(() => {
+        // Falls back to the static snapshot below.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const options = useMemo<AdminComboboxOption[]>(() => {
+    const communityNames = liveCommunities ?? COMMUNITY_LOGOS.map((c) => c.name)
+    const seen = new Set(communityNames.map((n) => n.toLowerCase()))
+
+    const communityOptions = [...communityNames]
+      .sort((a, b) => a.localeCompare(b))
+      .map((n) => ({ value: n, label: n, group: "Community groups" }))
+
+    // A partner that is also a listed community would otherwise appear twice.
+    const partnerOptions = partners
+      .map((p) => p.name)
+      .filter((n) => !seen.has(n.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b))
+      .map((n) => ({ value: n, label: n, group: "Partners" }))
+
+    return [
+      ...communityOptions,
+      ...partnerOptions,
+      { value: OTHER, label: "My group isn't listed yet", group: "Something else" },
+    ]
+  }, [liveCommunities])
+
+  const communityOrg = selectedOrg === OTHER ? otherOrg.trim() : selectedOrg
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!communityOrg) {
+      setError(
+        selectedOrg === OTHER
+          ? "Tell us the name of your group."
+          : "Choose the group you organize for."
+      )
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/access-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      const response = await fetch("/api/access-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, communityOrg }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit request')
+        throw new Error(data.error || "Failed to submit request")
       }
 
       setIsSuccess(true)
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit request')
+      setError(err instanceof Error ? err.message : "Failed to submit request")
     } finally {
       setIsLoading(false)
     }
@@ -48,144 +128,149 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
 
   if (isSuccess) {
     return (
-      <div className="w-full max-w-[40rem] mx-auto">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 text-center shadow-sm">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
-            <CheckCircle className="h-7 w-7 text-green-600" />
-          </div>
-          <h2 className="text-xl font-semibold tracking-tight text-gray-900 leading-[1.3] mb-2">
-            Request Submitted!
-          </h2>
-          <p className="text-sm font-light text-gray-500 leading-[1.6]">
-            Your access request has been submitted. The DEVSA admin team will review and notify you when approved.
-          </p>
-          <Link
-            href="/events"
-            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#ef426f] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#d63760] transition-colors"
-          >
-            Back to Events
-          </Link>
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+          <CheckCircle className="h-7 w-7 text-emerald-600" />
         </div>
+        <h2 className="mb-2 text-xl font-semibold tracking-tight text-gray-900">
+          Request sent
+        </h2>
+        <p className="text-sm leading-relaxed text-gray-500">
+          We&apos;ll review it and email{" "}
+          <span className="font-medium text-gray-900">{email}</span> as soon as
+          you&apos;re approved. Most requests are handled within a couple of days.
+        </p>
+        <Link
+          href="/events"
+          className="group mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
+        >
+          Browse the calendar
+          <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-[40rem] mx-auto">
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="mx-auto mb-2 md:mb-4 relative h-14 w-full scale-320 md:scale-440">
-            <Image
-              src="https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-8-hero+(1).png"
-              alt="DEVSA"
-              fill
-              className="object-contain"
-              priority
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold tracking-tight text-gray-900">
+          Request organizer access
+        </h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+          Free for San Antonio tech communities. No account needed to ask.
+        </p>
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 p-3"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+          <p className="text-[13px] leading-relaxed text-red-700">{error}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="mb-1.5 block text-[13px] font-medium text-gray-900">
+            Full name <span className="text-[#ef426f]">*</span>
+          </label>
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              id="name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              disabled={isLoading}
+              className={inputClasses}
             />
           </div>
-          <h2 className="text-xl font-semibold tracking-tight text-gray-900 leading-[1.3] mb-1.5">
-            Request Organizer Access
-          </h2>
-          <p className="text-sm font-light leading-[1.6] text-gray-500">
-            List your group on Building Together and add events to the DEVSA community calendar.
+        </div>
+
+        <div>
+          <label
+            htmlFor="communityOrg"
+            className="mb-1.5 block text-[13px] font-medium text-gray-900"
+          >
+            Which group do you organize? <span className="text-[#ef426f]">*</span>
+          </label>
+          <AdminCombobox
+            variant="light"
+            options={options}
+            value={selectedOrg}
+            onChange={(v) => {
+              setSelectedOrg(v)
+              setError(null)
+            }}
+            placeholder="Select your community or partner"
+          />
+          {selectedOrg === OTHER && (
+            <input
+              type="text"
+              id="communityOrg"
+              required
+              value={otherOrg}
+              onChange={(e) => setOtherOrg(e.target.value)}
+              placeholder="Name of your group"
+              disabled={isLoading}
+              aria-label="Name of your group"
+              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50"
+            />
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-gray-900">
+            Email address <span className="text-[#ef426f]">*</span>
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="email"
+              id="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              disabled={isLoading}
+              className={inputClasses}
+            />
+          </div>
+          <p className="mt-1.5 text-xs text-gray-500">
+            This becomes your sign-in — use one you check.
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-xl bg-red-50 border border-red-100 p-3">
-            <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-[13px] font-normal leading-[1.6] text-red-700">{error}</p>
-          </div>
-        )}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending request
+            </>
+          ) : (
+            "Request access"
+          )}
+        </button>
+      </form>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-[13px] font-medium text-gray-900 mb-1.5">
-              Full Name <span className="text-[#ef426f]">*</span>
-            </label>
-            <div className="relative">
-              <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                id="name"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Your name"
-                disabled={isLoading}
-                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50 transition-all leading-normal"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="communityOrg" className="block text-[13px] font-medium text-gray-900 mb-1.5">
-              Community / Organization <span className="text-[#ef426f]">*</span>
-            </label>
-            <div className="relative">
-              <Building2 className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                id="communityOrg"
-                required
-                value={formData.communityOrg}
-                onChange={(e) => setFormData({ ...formData, communityOrg: e.target.value })}
-                placeholder="SA Tech Bloc, PySA, etc."
-                disabled={isLoading}
-                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50 transition-all leading-normal"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-[13px] font-medium text-gray-900 mb-1.5">
-              Email Address <span className="text-[#ef426f]">*</span>
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                type="email"
-                id="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="you@example.com"
-                disabled={isLoading}
-                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50 transition-all leading-normal"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-xl bg-[#ef426f] px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#d63760] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              <span>Submit Request</span>
-            )}
-          </button>
-        </form>
-
-        {/* Footer */}
-        <p className="mt-5 text-center text-[13px] font-normal leading-[1.6] text-gray-500">
-          Already have access?{" "}
-          <Link
-            href="/admin"
-            className="text-[#ef426f] hover:text-[#d63760] font-medium transition-colors"
-          >
-            Go to Admin
-          </Link>
-        </p>
-      </div>
+      <p className="mt-5 text-center text-[13px] leading-relaxed text-gray-500">
+        Already approved?{" "}
+        <Link
+          href="/admin"
+          className="font-medium text-[#ef426f] transition-colors hover:text-[#d63760]"
+        >
+          Sign in to the portal
+        </Link>
+      </p>
     </div>
   )
 }

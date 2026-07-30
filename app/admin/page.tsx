@@ -322,14 +322,19 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Keep the URL in sync as the active section changes (shareable, back-button friendly)
+  // Keep the URL in sync as the active section changes (shareable, back-button
+  // friendly). Gated on being signed in: the tab state exists from first render,
+  // so without this the sign-in screen stamped ?tab=events onto its own URL —
+  // a link to a section the visitor cannot see yet. An explicit ?tab= they
+  // arrived with is left alone, so a deep link still survives the sign-in.
   useEffect(() => {
+    if (!isAuthenticated) return
     const params = new URLSearchParams(window.location.search)
     if (params.get("tab") !== activeTab) {
       params.set("tab", activeTab)
       window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`)
     }
-  }, [activeTab])
+  }, [activeTab, isAuthenticated])
 
   // Close the event drawer on Escape
   useEffect(() => {
@@ -1207,64 +1212,106 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-black py-12 sm:py-20">
-        <div className="mx-auto max-w-3xl px-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-8"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
+      // Matches the rest of the app: #0a0a0a rather than pure black, the shared
+      // page-shell gutter, Geist's display scale for the heading, and the
+      // site's rounded-lg button shape. /admin skips the marketing chrome (see
+      // components/layout-chrome.tsx), so this owns its own way back out.
+      <main className="flex min-h-dvh items-center bg-[#0a0a0a] py-16">
+        <div className="page-shell">
+          <div className="mx-auto flex w-full max-w-[26rem] flex-col gap-6">
+            <Link
+              href="/"
+              className="inline-flex w-fit items-center gap-2 text-[13px] font-medium text-neutral-400 transition-colors hover:text-white"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to devsa.community
+            </Link>
 
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
-            <div className="text-center mb-8">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#ef426f]/20">
-                <Shield className="h-8 w-8 text-[#ef426f]" />
-              </div>
-              <h1 className="text-2xl font-bold text-white mb-2">Admin Access</h1>
-              <p className="text-neutral-400">Enter your email to access the admin panel</p>
-            </div>
+            <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/80">
+              {/* The DEVSA gradient hairline — the same accent the site's OG
+                  cards and section rules use. */}
+              <div
+                aria-hidden
+                className="h-1 w-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #00b2a9, #ef426f, #ff8200)",
+                }}
+              />
 
-            {error && (
-              <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/20 p-4 text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    placeholder="you@example.com"
-                    className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-3 pl-10 pr-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                  />
+              <div className="p-6 sm:p-8">
+                <div className="mb-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                    DEVSA Portal
+                  </p>
+                  <h1 className="mt-2 font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-white">
+                    Sign in
+                  </h1>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                    Enter the email your access was approved under.
+                  </p>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isCheckingAuth}
-                className="w-full rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isCheckingAuth ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Access Admin Panel"
+                {error && (
+                  <div
+                    role="alert"
+                    className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/10 p-3"
+                  >
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                    <p className="text-[13px] leading-relaxed text-red-300">{error}</p>
+                  </div>
                 )}
-              </button>
-            </form>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-1.5 block text-[13px] font-medium text-neutral-200"
+                    >
+                      Email address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-neutral-500 transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isCheckingAuth}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isCheckingAuth ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Verifying
+                      </>
+                    ) : (
+                      "Continue"
+                    )}
+                  </button>
+                </form>
+
+                {/* Previously a dead end for anyone not yet approved. */}
+                <p className="mt-5 text-center text-[13px] leading-relaxed text-neutral-500">
+                  Organize a community and need access?{" "}
+                  <Link
+                    href="/signin"
+                    className="font-medium text-[#ef426f] transition-colors hover:text-[#ff7096]"
+                  >
+                    Request it here
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
