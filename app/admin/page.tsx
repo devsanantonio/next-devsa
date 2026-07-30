@@ -192,6 +192,18 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("events")
+  /**
+   * Whether the page was opened with an explicit ?tab= deep link. Captured at
+   * first render on purpose: an effect below syncs the active tab back into the
+   * query string on mount, so by the time the async auth check runs every load
+   * would otherwise look deep-linked and the role-based default would never
+   * apply.
+   */
+  const [openedWithTabParam] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("tab")
+  )
   
   // Data states
   const [newsletter, setNewsletter] = useState<NewsletterSubscription[]>([])
@@ -349,9 +361,11 @@ export default function AdminPage() {
         setAdminProfileImage(data.profileImage || "")
         setIsAuthenticated(true)
         localStorage.setItem("devsa-admin-email", email)
-        // Default to Events, unless the URL already deep-links a specific section (?tab=)
-        if (!new URLSearchParams(window.location.search).get("tab")) {
-          setActiveTab("events")
+        // Land on the section that matters most for the role — organizers open
+        // on their own community, everyone else on Events. Skipped when the URL
+        // already deep-links a section, so shared links still win.
+        if (!openedWithTabParam) {
+          setActiveTab(data.role === "organizer" ? "communities" : "events")
         }
         await fetchData(email, data.role, data.communityId)
       } else {
@@ -381,13 +395,17 @@ export default function AdminPage() {
       const partnersData = await partnersRes.json()
 
       if (adminDataRes.ok) {
-        // Only admins/superadmins should see newsletter, speakers, access requests, and admins data
-        // The API should also enforce this, but we double-check on the frontend
+        // Only admins/superadmins should see newsletter, access requests, and
+        // admins data. The API also enforces this; we double-check here.
         const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
         setNewsletter(isAdmin ? (adminData.newsletter || []) : [])
-        setSpeakers(isAdmin ? (adminData.speakers || []) : [])
         setAccessRequests(isAdmin ? (adminData.accessRequests || []) : [])
         setAdmins(isAdmin ? (adminData.admins || []) : [])
+        // Speakers is deliberately NOT gated here. The API returns the full set
+        // for admins and, for an organizer, only the PySanAntonio submissions
+        // when their community hosts it — so a client-side role check would
+        // throw away exactly the data those organizers are meant to see.
+        setSpeakers(adminData.speakers || [])
       }
       
       if (communitiesRes.ok) {
@@ -444,6 +462,49 @@ export default function AdminPage() {
     } catch {
       setError("Failed to fetch data")
     }
+  }
+
+  /**
+   * Speaker submissions export.
+   *
+   * Built in the browser from the rows already on screen rather than a
+   * server-side CSV endpoint like RSVPs use. The list arrives from
+   * /api/admin/data already scoped to what the caller may see — every event for
+   * an admin, only PySanAntonio for a host community's organizer — so exporting
+   * the loaded rows needs no second permission surface and honours whichever
+   * event filter is active.
+   */
+  const handleExportSpeakers = (rows: SpeakerSubmission[], scope: string) => {
+    // Abstracts and bios contain commas and newlines, so every field is quoted
+    // and embedded quotes are doubled per RFC 4180.
+    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+    const headers = [
+      "Name", "Email", "Company", "Talk title", "Format", "Audience level",
+      "Considered for", "Abstract", "Bio", "Links", "Accessibility requests",
+      "Event", "Status", "Submitted at",
+    ]
+    const csv = [
+      headers.join(","),
+      ...rows.map((s) =>
+        [
+          s.name, s.email, s.company, s.sessionTitle, s.sessionFormat,
+          s.audienceLevel, s.considerFor, s.abstract, s.bio, s.linkedin,
+          s.accommodations, s.eventId, s.status,
+          s.submittedAt ? new Date(s.submittedAt).toISOString() : "",
+        ].map(cell).join(",")
+      ),
+    ].join("\r\n")
+
+    // BOM so Excel opens UTF-8 names and em dashes correctly.
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `speaker-submissions-${scope}-${new Date().toISOString().split("T")[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   }
 
   const handleExportRsvps = async (eventId?: string) => {
@@ -1214,18 +1275,33 @@ export default function AdminPage() {
   const pendingAccessCount = accessRequests.filter((r) => r.status === "pending").length
   const pendingMerchCount = merchSubmissions.filter((s) => s.status === "pending").length
 
-  const mainNav: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }[] = [
-    { id: "events", label: "Events", icon: CalendarDays, count: events.length },
-    { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length },
-    {
-      id: "communities",
-      label: adminRole === "organizer" ? "My Community" : "Communities",
-      icon: Building2,
-      count: adminRole === "organizer" ? undefined : communities.length,
-    },
-  ]
+  type NavItem = { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }
 
-  const adminNav: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }[] = [
+  const isOrganizer = adminRole === "organizer"
+
+  const myCommunityNav: NavItem = {
+    id: "communities",
+    label: isOrganizer ? "My Community" : "Communities",
+    icon: Building2,
+    count: isOrganizer ? undefined : communities.length,
+  }
+  const eventsNav: NavItem = { id: "events", label: "Events", icon: CalendarDays, count: events.length }
+  const rsvpsNav: NavItem = { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length }
+  const speakersNav: NavItem = { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length }
+
+  // Organizers lead with their own community, then the things they run. Speakers
+  // only appears for them when the API actually returned submissions — i.e. when
+  // their community hosts the conference — so it is never an empty dead end.
+  const mainNav: NavItem[] = isOrganizer
+    ? [
+        myCommunityNav,
+        eventsNav,
+        rsvpsNav,
+        ...(speakers.length > 0 ? [speakersNav] : []),
+      ]
+    : [eventsNav, rsvpsNav, myCommunityNav]
+
+  const adminNav: NavItem[] = [
     { id: "partners", label: "Partners", icon: Handshake, count: partners.length },
     { id: "devsa", label: "DEVSA Subscribers", icon: RocketIcon, count: devsaSubs.length },
     { id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.length },
@@ -1954,8 +2030,10 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Speakers Tab - Admin Only */}
-          {activeTab === "speakers" && hasAdminAccess(adminRole) && (() => {
+          {/* Speakers Tab — admins see every event; a host community's
+              organizers see only their conference's submissions, scoped by the
+              API rather than here. */}
+          {activeTab === "speakers" && (() => {
             const speakerEvents = Array.from(
               new Set(speakers.map((s) => s.eventId || "—"))
             ).sort()
@@ -1972,19 +2050,29 @@ export default function AdminPage() {
                     ({filteredSpeakers.length})
                   </span>
                 </h2>
-                <AdminCombobox
-                  className="w-64"
-                  value={speakerEventFilter}
-                  onChange={setSpeakerEventFilter}
-                  options={[
-                    { value: "all", label: "All events", count: speakers.length },
-                    ...speakerEvents.map((ev) => ({
-                      value: ev,
-                      label: ev,
-                      count: speakers.filter((s) => (s.eventId || "—") === ev).length,
-                    })),
-                  ]}
-                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <AdminCombobox
+                    className="w-64"
+                    value={speakerEventFilter}
+                    onChange={setSpeakerEventFilter}
+                    options={[
+                      { value: "all", label: "All events", count: speakers.length },
+                      ...speakerEvents.map((ev) => ({
+                        value: ev,
+                        label: ev,
+                        count: speakers.filter((s) => (s.eventId || "—") === ev).length,
+                      })),
+                    ]}
+                  />
+                  <button
+                    onClick={() => handleExportSpeakers(filteredSpeakers, speakerEventFilter)}
+                    disabled={filteredSpeakers.length === 0}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export CSV
+                  </button>
+                </div>
               </div>
               {filteredSpeakers.length === 0 ? (
                 <p className="text-neutral-400 text-center py-8">No speaker submissions yet.</p>
@@ -2027,6 +2115,10 @@ export default function AdminPage() {
                             </a>
                           )}
                         </div>
+                        {/* Deleting a submission is admin/superadmin only on the
+                            API side, so organizers do not get a button that
+                            would only ever return 403. */}
+                        {hasAdminAccess(adminRole) && (
                         <button
                           onClick={() => handleDeleteSpeaker(speaker.id)}
                           disabled={isDeletingSpeaker === speaker.id}
@@ -2039,6 +2131,7 @@ export default function AdminPage() {
                           )}
                           Delete
                         </button>
+                        )}
                       </div>
                       <div className="mb-4 grid gap-4 sm:grid-cols-2">
                         {speaker.sessionFormat && (

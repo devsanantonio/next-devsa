@@ -63,6 +63,9 @@ export function PysaThankYouEmail({
                 width="280"
                 style="display: block; width: 280px; max-width: 80%; height: auto; border: 0;"
               />
+              <p style="margin: 12px 0 0 0; font-size: 15px; color: #4a90d9; font-style: italic;">
+                returns October 2026
+              </p>
             </td>
           </tr>
 
@@ -75,7 +78,7 @@ export function PysaThankYouEmail({
               </h1>
 
               <p style="margin: 0 0 24px 0; font-size: 16px; color: #a3a3a3; line-height: 1.6;">
-                Thanks for answering the call for speakers. San Antonio&rsquo;s Python conference is back for a second year, and the lineup gets built out of submissions like yours.
+                Thanks for answering the call for speakers. San Antonio&rsquo;s Python conference is back for a second year &mdash; an afternoon of <strong style="color: #e5e5e5;">learning, networking, and community building</strong> &mdash; and the schedule comes together from whoever raises a hand.
               </p>
 
               <!-- Submission Details -->
@@ -105,6 +108,7 @@ export function PysaThankYouEmail({
                       <li style="margin-bottom: 6px;">The call closes <strong style="color: #ffdd00;">August 15</strong> &mdash; we review everything after that</li>
                       <li style="margin-bottom: 6px;">You&rsquo;ll hear back by email either way</li>
                       <li style="margin-bottom: 6px;">Selected speakers get the run of show and A/V details</li>
+                      <li style="margin-bottom: 6px;">If it doesn&rsquo;t land a conference slot, it gets first look for Alamo Python&rsquo;s regular meetups &mdash; the work still finds a room</li>
                     </ul>
                   </td>
                 </tr>
@@ -132,7 +136,7 @@ export function PysaThankYouEmail({
                 <tr>
                   <td align="center">
                     <a href="https://www.devsa.community/events/pysanantonio" style="display: inline-block; background-color: #ffdd00; color: #0a0a0a; text-decoration: none; font-size: 14px; font-weight: 700; padding: 13px 28px; border-radius: 8px;">
-                      View the conference page
+                      See the conference page
                     </a>
                   </td>
                 </tr>

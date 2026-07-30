@@ -11,6 +11,18 @@
 /** Firestore/admin key. The admin Speakers tab groups submissions by this. */
 export const PYSA_EVENT_ID = "pysanantonio-2026"
 
+/**
+ * The community that owns this conference. Organizers belonging to it see the
+ * PySanAntonio speaker submissions in the admin portal — and only those; every
+ * other event's submissions stay admin-only.
+ *
+ * Matched on the community's name rather than its document id because community
+ * docs are keyed by generated slugs that would be guesswork to hardcode here.
+ * If the community is ever renamed in the admin, this string has to follow.
+ * See app/api/admin/data/route.ts.
+ */
+export const PYSA_HOST_COMMUNITY = "Alamo Python"
+
 export const PYSA_2026 = {
   name: "PySanAntonio II",
   /** Doors 1:00 PM — October 2 is CDT, so the offset is -05:00, not -06:00. */
