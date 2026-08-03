@@ -1,84 +1,63 @@
 "use client"
 
-import { useRef } from "react"
-import Image from "next/image"
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "motion/react"
-import { PYSA_ASSETS } from "@/data/pysa/2026"
-
-/** Full-scale figure height, and therefore the height the section reserves. */
-const STAGE = "h-96" // 384px; the w-44 figure stands 378px tall
+import { useReducedMotion } from "motion/react"
+import { PYSA_ASSETS, PYSA_VIDEO_CLIP } from "@/data/pysa/2026"
 
 /**
  * Mobile-only interlude between the hero and the call for speakers.
  *
- * The mascot is the whole point of this stretch of scroll, so he gets his own
- * band rather than being tucked into a hero corner — which also kept the hero's
- * countdown line above the fold on small phones.
+ * The same mascot clip desktop plays inside the hero, given its own full-bleed
+ * band here. Phones have no room for it beside the hero copy — that is why the
+ * hero's video box is `hidden sm:block` — so it lands below instead, where it
+ * gets the full width.
  *
- * He grows as the section travels up the viewport, anchored at his boots so he
- * rises off the floor rather than inflating from his middle. The section keeps
- * a fixed height so the growth never reflows the page.
+ * This replaced a scroll-driven sticker that grew as the section travelled up
+ * the viewport. Worth knowing what that bought: the sticker is ~40 KB and the
+ * clip is 6.8 MB, so mobile now pays for the video it previously never
+ * downloaded.
  *
- * Purely decorative: aria-hidden, empty alt, no tab stop. Honours
- * prefers-reduced-motion by simply standing at full size.
+ * Purely decorative: aria-hidden, no tab stop. Honours prefers-reduced-motion
+ * by holding the poster — which is the two-fingers frame, so nothing is lost.
  */
 export function MascotInterlude() {
-  const ref = useRef<HTMLElement>(null)
   const reduceMotion = useReducedMotion()
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    // 0 when the section's top reaches the bottom of the viewport, 1 once its
-    // centre reaches the centre — so he is full size by the time he is the
-    // thing you are looking at.
-    offset: ["start end", "center center"],
-  })
-
-  // Spring it so the growth trails the scroll slightly instead of tracking it
-  // pixel-for-pixel, which reads mechanical.
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
-    restDelta: 0.001,
-  })
-  const scale = useTransform(progress, [0, 1], [0.58, 1])
-  const opacity = useTransform(progress, [0, 0.35], [0.35, 1])
 
   return (
     <section
-      ref={ref}
       aria-hidden
       data-bg-type="dark"
-      className={`relative flex ${STAGE} items-end justify-center overflow-hidden bg-[#0a0a0a] sm:hidden`}
+      className="relative overflow-hidden bg-[#0a0a0a] sm:hidden"
     >
-      <motion.div
-        className="w-44"
-        style={
-          reduceMotion
-            ? undefined
-            : { scale, opacity, transformOrigin: "bottom center" }
-        }
-      >
-        <Image
-          src={PYSA_ASSETS.mascotSticker}
-          alt=""
-          width={PYSA_ASSETS.mascotStickerWidth}
-          height={PYSA_ASSETS.mascotStickerHeight}
-          sizes="50vw"
-          className="h-auto w-full"
-        />
-      </motion.div>
+      {/* The clip's own 1114:720 ratio, so object-cover fills the box exactly
+          and there is no letterbox edge for the fades below to sit against. */}
+      <video
+        src={PYSA_ASSETS.mascotVideo}
+        poster={PYSA_ASSETS.mascotVideoPoster}
+        autoPlay={!reduceMotion}
+        muted
+        playsInline
+        preload="metadata"
+        onLoadedMetadata={(e) => {
+          e.currentTarget.currentTime = PYSA_VIDEO_CLIP.start
+        }}
+        onTimeUpdate={(e) => {
+          // Hand-rolled loop over the trimmed window instead of the `loop`
+          // attribute, which would replay the empty walk-in and walk-out.
+          const v = e.currentTarget
+          if (v.currentTime >= PYSA_VIDEO_CLIP.end) v.currentTime = PYSA_VIDEO_CLIP.start
+        }}
+        className="aspect-1114/720 w-full object-cover"
+      />
 
-      {/* Floor line — grounds the boots and hands off to the section below. */}
+      {/* Top and bottom fades so the band reads as part of the page rather than
+          a video pasted onto it — the same vertical vignette the hero uses. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-[#0a0a0a] to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-linear-to-b from-[#0a0a0a] to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-[#0a0a0a] to-transparent"
       />
     </section>
   )

@@ -16,8 +16,8 @@ export default function PySanAntonioPage() {
   return (
     <main className="overflow-x-hidden bg-[#0a0a0a]" data-bg-type="dark">
       <PysaHero phase={phase} daysLeft={daysUntilClose()} />
-      {/* Mobile only — the mascot grows on scroll as the handoff into the call
-          for speakers. Desktop has him in the hero video instead. */}
+      {/* Mobile only — the mascot clip as the handoff into the call for
+          speakers. Desktop plays it inside the hero instead. */}
       <MascotInterlude />
       <CallForSpeakersSection phase={phase} />
       <ArchiveCta2025 />

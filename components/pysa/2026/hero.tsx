@@ -9,6 +9,7 @@ import {
   PYSA_2026,
   PYSA_ASSETS,
   PYSA_COLORS,
+  PYSA_VIDEO_CLIP,
   PYSA_WORDMARK,
   type CfsPhase,
 } from "@/data/pysa/2026"
@@ -27,16 +28,6 @@ import {
  * them, and the box is aspect-matched so there is no letterbox edge.
  */
 const VIDEO_MASK = "linear-gradient(to right, transparent 0%, black 22%, black 100%)"
-
-/**
- * Playback window, in seconds. The clip opens with the mascot walking in from
- * off-frame and ends after he has walked out — roughly 2.4s of its 9.75s is an
- * empty stage. Looping the whole thing leaves the hero blank a quarter of the
- * time, so playback is held to the stretch where he is actually present, which
- * also keeps the two-fingers beat (~5.7s) inside every pass.
- */
-const CLIP_IN = 1.3
-const CLIP_OUT = 8.4
 
 /**
  * PySanAntonio II hero.
@@ -93,7 +84,7 @@ export function PysaHero({
           lands on the picture's edge instead of leaving a hard line. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-1/2 hidden aspect-[1114/720] w-[78%] -translate-y-1/2 select-none sm:block lg:w-[64%] xl:w-[58%]"
+        className="pointer-events-none absolute right-0 top-1/2 hidden aspect-1114/720 w-[78%] -translate-y-1/2 select-none sm:block lg:w-[64%] xl:w-[58%]"
       >
         <video
           src={PYSA_ASSETS.mascotVideo}
@@ -103,13 +94,13 @@ export function PysaHero({
           playsInline
           preload="metadata"
           onLoadedMetadata={(e) => {
-            e.currentTarget.currentTime = CLIP_IN
+            e.currentTarget.currentTime = PYSA_VIDEO_CLIP.start
           }}
           onTimeUpdate={(e) => {
             // Hand-rolled loop over the trimmed window instead of the `loop`
             // attribute, which would replay the empty walk-in and walk-out.
             const v = e.currentTarget
-            if (v.currentTime >= CLIP_OUT) v.currentTime = CLIP_IN
+            if (v.currentTime >= PYSA_VIDEO_CLIP.end) v.currentTime = PYSA_VIDEO_CLIP.start
           }}
           className="h-full w-full object-cover"
           style={{

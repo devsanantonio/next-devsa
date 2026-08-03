@@ -158,6 +158,20 @@ export const PYSA_ASSETS = {
   livestream2025: "https://www.youtube.com/embed/3jZ9ktAFGpk?start=1782",
 } as const
 
+/**
+ * Playback window for `mascotVideo`, in seconds.
+ *
+ * The clip opens with the mascot walking in from off-frame and ends after he
+ * has walked out — roughly 2.4s of its 9.75s is an empty stage. Looping the
+ * whole thing leaves the frame blank a quarter of the time, so playback is held
+ * to the stretch where he is actually present, which also keeps the
+ * two-fingers beat (~5.7s) inside every pass.
+ *
+ * Read by both the desktop hero and the mobile interlude so the two never
+ * drift apart.
+ */
+export const PYSA_VIDEO_CLIP = { start: 1.3, end: 8.4 } as const
+
 export type CoBrand = {
   name: string
   logo: string
