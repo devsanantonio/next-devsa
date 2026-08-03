@@ -30,6 +30,59 @@ import {
 const VIDEO_MASK = "linear-gradient(to right, transparent 0%, black 22%, black 100%)"
 
 /**
+ * The mobile counterpart. There the clip runs full-bleed inside the copy flow,
+ * so the edges that need help are the horizontal ones — this melts them into
+ * the page instead of leaving the frame sitting on it like a card.
+ *
+ * One layer again, for the reason above: the left and right edges are the
+ * viewport's own, so nothing has to be composited across two gradients.
+ */
+const MOBILE_MASK =
+  "linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)"
+
+/**
+ * The mascot clip. Rendered twice — bled off the right on desktop, in the copy
+ * flow on mobile — so the two never drift apart. Only one is ever displayed;
+ * the other is `display: none` at its breakpoint.
+ *
+ * Purely decorative, so no captions track: the clip is silent and carries no
+ * information the copy beside it does not.
+ */
+function MascotClip({
+  className,
+  style,
+  reduceMotion,
+}: {
+  className?: string
+  style?: React.CSSProperties
+  /** Hold the poster instead of looping. It is the two-fingers frame, so
+      nothing is lost by not playing. */
+  reduceMotion: boolean | null
+}) {
+  return (
+    <video
+      src={PYSA_ASSETS.mascotVideo}
+      poster={PYSA_ASSETS.mascotVideoPoster}
+      autoPlay={!reduceMotion}
+      muted
+      playsInline
+      preload="metadata"
+      onLoadedMetadata={(e) => {
+        e.currentTarget.currentTime = PYSA_VIDEO_CLIP.start
+      }}
+      onTimeUpdate={(e) => {
+        // Hand-rolled loop over the trimmed window instead of the `loop`
+        // attribute, which would replay the empty walk-in and walk-out.
+        const v = e.currentTarget
+        if (v.currentTime >= PYSA_VIDEO_CLIP.end) v.currentTime = PYSA_VIDEO_CLIP.start
+      }}
+      className={className}
+      style={style}
+    />
+  )
+}
+
+/**
  * PySanAntonio II hero.
  *
  * The primary CTA is a slot rather than a fixed button: while the call for
@@ -64,10 +117,14 @@ export function PysaHero({
          viewport only adds dead space above and below the copy. */
       className="relative flex flex-col justify-center overflow-hidden bg-[#0a0a0a] text-white sm:min-h-dvh"
     >
-      {/* Blue wash behind the mascot, echoing the guitar */}
+      {/* Blue wash behind the mascot, echoing the guitar. Desktop only: it is
+          sized and placed for the figure bled off the right edge, and on a
+          phone — where the clip sits in the copy flow instead — all it does is
+          lift the background's blue channel from 10 to 15 down the right half,
+          which reads as a stray glow with a visible edge. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-20 top-1/4 h-140 w-140 rounded-full opacity-30 blur-[120px]"
+        className="pointer-events-none absolute -right-20 top-1/4 hidden h-140 w-140 rounded-full opacity-30 blur-[120px] sm:block"
         style={{
           background: `radial-gradient(circle, ${PYSA_COLORS.blue} 0%, transparent 65%)`,
         }}
@@ -86,27 +143,10 @@ export function PysaHero({
         aria-hidden
         className="pointer-events-none absolute right-0 top-1/2 hidden aspect-1114/720 w-[78%] -translate-y-1/2 select-none sm:block lg:w-[64%] xl:w-[58%]"
       >
-        <video
-          src={PYSA_ASSETS.mascotVideo}
-          poster={PYSA_ASSETS.mascotVideoPoster}
-          autoPlay={!reduceMotion}
-          muted
-          playsInline
-          preload="metadata"
-          onLoadedMetadata={(e) => {
-            e.currentTarget.currentTime = PYSA_VIDEO_CLIP.start
-          }}
-          onTimeUpdate={(e) => {
-            // Hand-rolled loop over the trimmed window instead of the `loop`
-            // attribute, which would replay the empty walk-in and walk-out.
-            const v = e.currentTarget
-            if (v.currentTime >= PYSA_VIDEO_CLIP.end) v.currentTime = PYSA_VIDEO_CLIP.start
-          }}
+        <MascotClip
+          reduceMotion={reduceMotion}
           className="h-full w-full object-cover"
-          style={{
-            maskImage: VIDEO_MASK,
-            WebkitMaskImage: VIDEO_MASK,
-          }}
+          style={{ maskImage: VIDEO_MASK, WebkitMaskImage: VIDEO_MASK }}
         />
       </div>
 
@@ -126,10 +166,6 @@ export function PysaHero({
         className="pointer-events-none absolute inset-0 z-10 bg-linear-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"
       />
 
-      {/* No mascot inside the hero on mobile — he gets his own interlude
-          section between here and the call for speakers. Reserving a band for
-          him in here pushed the countdown line below the fold on small
-          phones. */}
       <div className="page-shell relative z-20 pb-20 pt-24 md:pb-24 md:pt-32">
         <div className="max-w-xl xl:max-w-2xl">
           {/* Only the transform animates in. Fading from opacity:0 would ship
@@ -167,6 +203,22 @@ export function PysaHero({
 
                 <SastwLockup />
               </div>
+
+              {/* Phones get the clip here, in the copy flow between the week
+                  lockup and the pitch, rather than beside the copy — there is
+                  no room for it beside anything at this width.
+
+                  No corners, no ring, and -mx-6 breaks it out of the page
+                  gutter (1.5rem at this width, and it never renders wider) so
+                  there are no side edges at all. The clip's own frame is
+                  already near-black at every edge — within a few points of the
+                  page — so with MOBILE_MASK melting the top and bottom, the
+                  only thing left on screen is the mascot. */}
+              <MascotClip
+                reduceMotion={reduceMotion}
+                className="-mx-6 aspect-1114/720 w-auto object-cover sm:hidden"
+                style={{ maskImage: MOBILE_MASK, WebkitMaskImage: MOBILE_MASK }}
+              />
 
               <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
                 San Antonio&apos;s Python conference is back for a second year —
