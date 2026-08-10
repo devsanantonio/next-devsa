@@ -1,15 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { motion, useReducedMotion } from "motion/react"
+import { motion } from "motion/react"
 import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
+import { MascotClip } from "@/components/pysa/2026/mascot-clip"
 import { disabledSlot, primaryButton } from "@/components/pysa/2026/button-styles"
 import {
   PYSA_2026,
-  PYSA_ASSETS,
   PYSA_COLORS,
-  PYSA_VIDEO_CLIP,
   PYSA_WORDMARK,
   type CfsPhase,
 } from "@/data/pysa/2026"
@@ -18,8 +17,11 @@ import {
  * Feathers the clip's left edge — the one facing the copy — so its box never
  * reads as a seam against the page.
  *
- * Kept shallow (opaque by 22%) on purpose: the mascot walks IN from the left of
- * frame, so a deep fade here erases him for the first second of every loop.
+ * Kept shallow (opaque by 22%) on purpose: the mascot starts the loop left of
+ * where he settles and drifts right across it, so a deep fade here erases him
+ * for the opening seconds of every pass. (This used to say he walks in from
+ * off-frame — that was true of the untrimmed take; the clip now starts with
+ * him already on stage, but he is still at his leftmost there.)
  *
  * Deliberately one layer, too. Two gradients with mask-composite needs
  * `intersect` alongside the legacy `-webkit-mask-composite: source-in`, and the
@@ -39,48 +41,6 @@ const VIDEO_MASK = "linear-gradient(to right, transparent 0%, black 22%, black 1
  */
 const MOBILE_MASK =
   "linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)"
-
-/**
- * The mascot clip. Rendered twice — bled off the right on desktop, in the copy
- * flow on mobile — so the two never drift apart. Only one is ever displayed;
- * the other is `display: none` at its breakpoint.
- *
- * Purely decorative, so no captions track: the clip is silent and carries no
- * information the copy beside it does not.
- */
-function MascotClip({
-  className,
-  style,
-  reduceMotion,
-}: {
-  className?: string
-  style?: React.CSSProperties
-  /** Hold the poster instead of looping. It is the two-fingers frame, so
-      nothing is lost by not playing. */
-  reduceMotion: boolean | null
-}) {
-  return (
-    <video
-      src={PYSA_ASSETS.mascotVideo}
-      poster={PYSA_ASSETS.mascotVideoPoster}
-      autoPlay={!reduceMotion}
-      muted
-      playsInline
-      preload="metadata"
-      onLoadedMetadata={(e) => {
-        e.currentTarget.currentTime = PYSA_VIDEO_CLIP.start
-      }}
-      onTimeUpdate={(e) => {
-        // Hand-rolled loop over the trimmed window instead of the `loop`
-        // attribute, which would replay the empty walk-in and walk-out.
-        const v = e.currentTarget
-        if (v.currentTime >= PYSA_VIDEO_CLIP.end) v.currentTime = PYSA_VIDEO_CLIP.start
-      }}
-      className={className}
-      style={style}
-    />
-  )
-}
 
 /**
  * PySanAntonio II hero.
@@ -104,9 +64,6 @@ export function PysaHero({
   daysLeft: number
 }) {
   const isOpen = phase === "open"
-  // Respect prefers-reduced-motion: hold the poster still rather than looping.
-  // The poster is the two-fingers frame, so nothing is lost by not playing.
-  const reduceMotion = useReducedMotion()
 
   return (
     <section
@@ -131,9 +88,9 @@ export function PysaHero({
       />
 
       {/* Mascot clip, bled off the right rather than boxed in a card.
-          Desktop only: at 7 MB it must never reach a phone, which gets the
-          sticker treatment instead. The poster is a real frame from the clip,
-          so there is no jump when playback starts.
+          Desktop only — the phone gets its own copy further down, in the copy
+          flow. Both pull the same 900 KB file, so neither placement is the
+          expensive one any more.
 
           The box carries the clip's own 1114:720 ratio and is centred
           vertically rather than stretched to the section height. That way
@@ -144,7 +101,6 @@ export function PysaHero({
         className="pointer-events-none absolute right-0 top-1/2 hidden aspect-1114/720 w-[78%] -translate-y-1/2 select-none sm:block lg:w-[64%] xl:w-[58%]"
       >
         <MascotClip
-          reduceMotion={reduceMotion}
           className="h-full w-full object-cover"
           style={{ maskImage: VIDEO_MASK, WebkitMaskImage: VIDEO_MASK }}
         />
@@ -215,7 +171,6 @@ export function PysaHero({
                   page — so with MOBILE_MASK melting the top and bottom, the
                   only thing left on screen is the mascot. */}
               <MascotClip
-                reduceMotion={reduceMotion}
                 className="-mx-6 aspect-1114/720 w-auto object-cover sm:hidden"
                 style={{ maskImage: MOBILE_MASK, WebkitMaskImage: MOBILE_MASK }}
               />

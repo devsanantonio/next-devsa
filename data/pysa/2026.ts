@@ -137,9 +137,23 @@ export const PYSA_ASSETS = {
   mascotBust: "/pysa/mascot-bust.webp",
   mascotBustWidth: 600,
   mascotBustHeight: 515,
-  mascotVideo: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mp4",
   /**
-   * Poster frame lifted from the clip at 5.70s — the beat where the mascot
+   * The mascot clip, pre-trimmed to the stretch where he is actually on stage.
+   *
+   * The S3 original (`pysa/pysa2.mp4`) is the untrimmed 9.75s take at 5.8 Mbps
+   * — 6.8 MB for a decorative loop, and 2.65s of that is an empty frame before
+   * he walks in and after he walks out. This is the same footage cut to the
+   * 1.3–8.4s window and re-encoded at a bitrate suited to flat animation:
+   * 900 KB, VMAF 92 against the original. It also faststarts, so playback
+   * begins before the whole file lands.
+   *
+   * Because the trim is baked in, the element loops natively — see the hero,
+   * which used to seek back on every `timeupdate` to fake this window.
+   */
+  mascotVideo: "/pysa/mascot-clip.mp4",
+  /**
+   * Poster frame lifted from the original take at 5.70s — 4.40s into the
+   * trimmed `mascotVideo` above — the beat where the mascot
    * holds up two fingers, which is the whole point for a second edition. Also
    * what anyone sees if the video is blocked, still downloading, or the visitor
    * has asked for reduced motion.
@@ -157,20 +171,6 @@ export const PYSA_ASSETS = {
    */
   livestream2025: "https://www.youtube.com/embed/3jZ9ktAFGpk?start=1782",
 } as const
-
-/**
- * Playback window for `mascotVideo`, in seconds.
- *
- * The clip opens with the mascot walking in from off-frame and ends after he
- * has walked out — roughly 2.4s of its 9.75s is an empty stage. Looping the
- * whole thing leaves the frame blank a quarter of the time, so playback is held
- * to the stretch where he is actually present, which also keeps the
- * two-fingers beat (~5.7s) inside every pass.
- *
- * Read by both the desktop hero and the mobile interlude so the two never
- * drift apart.
- */
-export const PYSA_VIDEO_CLIP = { start: 1.3, end: 8.4 } as const
 
 export type CoBrand = {
   name: string

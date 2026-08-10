@@ -1,29 +1,46 @@
-import Image from "next/image"
 import Link from "next/link"
 import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
+import { MascotClip } from "@/components/pysa/2026/mascot-clip"
 import { primaryButton, secondaryButton } from "@/components/pysa/2026/button-styles"
 import {
   PYSA_2026,
-  PYSA_ASSETS,
   PYSA_COLORS,
   PYSA_WORDMARK,
   type CfsPhase,
 } from "@/data/pysa/2026"
 
-/** Feathers the still's left edge so its box never reads as a seam. */
+/**
+ * Feathers the clip's left edge — the one facing the copy — so its box never
+ * reads as a seam.
+ *
+ * Shallow (opaque by 15%) because the figure MOVES. This was 30% when the box
+ * held a still, and that still was the clip's best frame: the mascot settled
+ * right of centre, well clear of the fade. Over the loop he drifts about 170px
+ * left of there, far enough that a 30% fade washed out his face and bow tie
+ * for the opening seconds of every pass.
+ *
+ * Little is lost by pulling it back, because this fade was largely redundant:
+ * the desktop scrim below clears at 80% of the viewport, which is already the
+ * left 63% of this box. The scrim hides the seam; the mask only has to soften
+ * what is left.
+ */
 const IMAGE_MASK =
-  "linear-gradient(to right, transparent 0%, black 30%, black 100%)"
+  "linear-gradient(to right, transparent 0%, black 15%, black 100%)"
 
 /**
  * Featured-event hero for the community calendar, built from the PySanAntonio
  * hero so the two read as the same event.
  *
- * Deliberately not a copy of that hero. It uses the poster still rather than the
- * 7 MB clip — this is a promo on a page whose real job is the calendar below it —
- * and it stays a compact band instead of claiming a full viewport. The heading is
- * an h2 for the same reason: the calendar section owns the page's subject, so a
- * promo should not outrank it in the outline.
+ * Deliberately not a copy of that hero. It crops the clip to a taller, narrower
+ * window and stays a band rather than claiming the page, and the heading is an
+ * h2: the calendar section below owns this page's subject, so a promo should
+ * not outrank it in the outline.
+ *
+ * It held the poster still instead of the clip while the clip was 6.8 MB —
+ * too much to spend on a promo above the thing the page is actually for. At
+ * 900 KB that tradeoff is gone, and the still it was showing is now this
+ * video's poster frame, so nothing regresses if playback never starts.
  */
 export function FeaturedPySanAntonio({
   phase,
@@ -47,37 +64,28 @@ export function FeaturedPySanAntonio({
         }}
       />
 
-      {/* Desktop only: the still, bled off the right edge. Now that the box is
+      {/* Desktop only: the clip, bled off the right edge. Now that the box is
           viewport-tall it crops the sides rather than the top, so the raised
           fingers survive — but the figure sits right of centre in the frame, so
-          the window is biased that way to keep the guitar from clipping. */}
+          the window is biased that way to keep the guitar from clipping.
+
+          Box, crop and mask are unchanged from the still this replaced — the
+          poster below IS that still, so the section looks identical until
+          playback starts and then simply moves. */}
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] select-none md:block">
-        <Image
-          src={PYSA_ASSETS.mascotVideoPoster}
-          alt=""
-          aria-hidden
-          fill
-          sizes="54vw"
-          className="object-cover object-[58%_center]"
+        <MascotClip
+          className="h-full w-full object-cover object-[58%_center]"
           style={{ maskImage: IMAGE_MASK, WebkitMaskImage: IMAGE_MASK }}
         />
       </div>
 
-      {/* Phones get the standing mascot in the lower-right instead of the still.
-          bottom-0 puts his boots on the section edge so nothing crops him, and
-          the copy's tall bottom padding reserves the band he stands in — that is
-          what keeps him off the full-width button and the countdown line. */}
-      <Image
-        src={PYSA_ASSETS.mascotSticker}
-        alt=""
-        aria-hidden
-        width={PYSA_ASSETS.mascotStickerWidth}
-        height={PYSA_ASSETS.mascotStickerHeight}
-        sizes="120px"
-        className="pointer-events-none absolute bottom-0 right-4 z-10 h-auto w-24 select-none sm:hidden"
-      />
+      {/* No mascot on phones. He stood in the lower-right here, which meant the
+          copy had to reserve a tall band below itself to keep him off the
+          full-width button — a lot of dead space on the one viewport that can
+          least afford it, to carry art that is already on the conference page.
+          The clip above is desktop-only, so phones get the copy and the wash. */}
 
-      {/* Desktop scrim: solid under the copy, clearing before the still. */}
+      {/* Desktop scrim: solid under the copy, clearing before the clip. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-10 hidden md:block"
@@ -88,10 +96,10 @@ export function FeaturedPySanAntonio({
       />
 
       {/* pt clears the fixed navbar even on a viewport too short for the content
-          to stay centred. pb-60 at base reserves the 206px band the mobile
-          mascot stands in, with clearance, so he can never reach the button;
-          from sm up he is gone and it returns to normal. */}
-      <div className="page-shell relative z-20 pb-60 pt-24 sm:pb-16 md:pb-20 md:pt-28">
+          to stay centred. Base pb used to be pb-60, reserving the band the
+          mobile mascot stood in; with him gone every breakpoint just gets
+          normal spacing. */}
+      <div className="page-shell relative z-20 pb-16 pt-24 md:pb-20 md:pt-28">
         <div className="flex max-w-[36rem] flex-col gap-6 xl:max-w-[40rem]">
           <div className="flex flex-col gap-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
