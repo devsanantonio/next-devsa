@@ -68,10 +68,15 @@ function ChipRadio({
  * who would happily do either had to decide which page they were on before
  * they could answer, and someone who wanted both had to fill in two forms.
  *
- * So: an intent picker at the top, and the rest of the form follows from it.
- * The talk fields only exist for `talk` and `both`; the volunteer path is name,
- * email and a free-text note, because there is nothing else worth asking (see
- * AG_VOLUNTEER for why the role picker went).
+ * So: a two-way intent picker at the top, and the rest of the form follows
+ * from it. The talk fields only exist on the `talk` path; the volunteer path is
+ * name, email and a free-text note, because there is nothing else worth asking
+ * (see AG_VOLUNTEER for why the role picker went).
+ *
+ * Doing both is a checkbox on the talk path, not a third radio option. A radio
+ * group whose third choice is the union of the first two is a checkbox group in
+ * disguise, and it made someone parse three identities to answer two
+ * independent yes/no questions.
  *
  * ## Submission
  *
@@ -82,11 +87,11 @@ function ChipRadio({
  *     PySanAntonio uses, which switches its confirmation email on the event id
  *   · a volunteer POSTs /api/volunteers
  *
- * `both` posts to both, talk first. If the talk write succeeds and the
- * volunteer write fails, the submission is still reported as a success and the
- * failure is logged — losing a conference talk because a secondary signup
- * 500'd would be the worse outcome, and the organisers can see from the
- * speaker record that someone offered.
+ * Ticking the opt-in posts to both, talk first. If the talk write succeeds and
+ * the volunteer write fails, the submission is still reported as a success and
+ * the failure is logged — losing a conference talk because a secondary signup
+ * 500'd would be the worse outcome, and the organisers can see from the speaker
+ * record that someone offered.
  */
 export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
   const [intent, setIntent] = useState<AgIntent>("talk")
@@ -103,12 +108,16 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
     notes: "",
   })
   const [firstTimer, setFirstTimer] = useState(false)
+  /** The presenter path's opt-in to also help on the day. */
+  const [alsoHelp, setAlsoHelp] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
-  const wantsTalk = intent === "talk" || intent === "both"
-  const wantsVolunteer = intent === "volunteer" || intent === "both"
+  const wantsTalk = intent === "talk"
+  // Either the whole point of the visit, or a tick-box on the way out of a
+  // talk submission. Both produce the same volunteer record.
+  const wantsVolunteer = intent === "volunteer" || (intent === "talk" && alsoHelp)
 
   // Once the call for talks closes the picker is pointless — volunteering is
   // the only thing still open, so the form becomes that and says so.
@@ -170,7 +179,7 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
             considerFor: firstTimer ? AG_FIRST_TIME_SPEAKER : "",
             // Tells the confirmation and the organiser notification that the
             // same person is also signing up to help.
-            alsoVolunteering: intent === "both",
+            alsoVolunteering: alsoHelp,
             eventId: AG_EVENT_ID,
           }),
         })
@@ -188,10 +197,11 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
               email: form.email,
               notes: form.notes,
               eventId: AG_EVENT_ID,
-              // Suppressed on "Both" — the speaker confirmation already says
-              // they offered to help, and two emails for one submit reads as
-              // a bug. The organiser notification still fires either way.
-              sendConfirmation: intent !== "both",
+              // Suppressed whenever a talk was submitted in the same breath —
+              // that confirmation already says they offered to help, and two
+              // emails for one submit reads as a bug. The organiser
+              // notification still fires either way.
+              sendConfirmation: !(wantsTalk && !talkClosed),
             }),
           })
           if (!res.ok) {
@@ -230,6 +240,9 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
           {spoke
             ? `The call closes ${AG_CFS_CLOSES_LABEL} and you'll hear back by email either way.`
             : "One of the organisers will be in touch with what we need covered."}
+          {spoke && alsoHelp
+            ? " Thanks for offering to help on the day too — someone will be in touch about that separately."
+            : ""}
           {spoke && firstTimer
             ? " We'll also be in touch about pairing you with someone for a practice run."
             : ""}
@@ -426,6 +439,32 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
             />
           </div>
 
+          {/* Doing both, as an opt-in rather than a third identity to pick.
+              Only on this path: adding "I can also help" to a talk is a small
+              extra, whereas adding a whole talk to a volunteer signup is a
+              different commitment, and the radio above is where that belongs. */}
+          <label
+            className={cn(
+              "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
+              alsoHelp
+                ? "border-[#ffb800]/50 bg-[#ffb800]/5"
+                : "border-white/15 hover:border-white/25"
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={alsoHelp}
+              onChange={(e) => setAlsoHelp(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#ffb800]"
+            />
+            <span className="text-sm text-white/70">
+              <strong className="font-semibold text-white">
+                I can also help run the room on the day.
+              </strong>{" "}
+              Whatever happens with the talk. {AG_VOLUNTEER.followUp}
+            </span>
+          </label>
+
           {/* The reserved slot, asked directly rather than left in the copy.
               Someone who has never done this needs to be invited. */}
           <label
@@ -472,7 +511,9 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
               : "Hours you can cover, anything you'd rather not do, kit you can bring — optional"
           }
         />
-        {(wantsVolunteer || talkClosed) && (
+        {/* Only on the volunteer path. When it rides along with a talk the
+            opt-in checkbox above already carries this line. */}
+        {(intent === "volunteer" || talkClosed) && (
           <p className={hintClass}>{AG_VOLUNTEER.followUp}</p>
         )}
       </div>

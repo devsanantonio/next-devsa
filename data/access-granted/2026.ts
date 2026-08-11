@@ -238,13 +238,19 @@ export const AG_AUDIENCE_LEVELS = [
  * One form rather than two, because they are the same question asked of the
  * same person — "do you want to be part of running this" — and a visitor who
  * is unsure which they are should not have to pick a page before they can
- * answer. `both` exists because the people most likely to speak are the people
- * most likely to also help, and making them submit twice loses half of them.
+ * answer.
+ *
+ * There used to be a third option, "Both". It came out: a radio group whose
+ * third choice is the union of the first two is a checkbox group wearing a
+ * disguise, and it made someone parse three identities to answer what are
+ * really two independent yes/no questions. Doing both is now an opt-in
+ * checkbox on the presenter path, which is also the honest asymmetry —
+ * adding "I can also help" to a talk is a small extra, whereas adding a whole
+ * talk to a volunteer signup is a different commitment.
  */
 export const AG_INTENTS = [
   { value: "talk", label: "Present something" },
   { value: "volunteer", label: "Help run the room" },
-  { value: "both", label: "Both" },
 ] as const
 
 export type AgIntent = (typeof AG_INTENTS)[number]["value"]
