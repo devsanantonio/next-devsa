@@ -160,6 +160,22 @@ export const PYSA_ASSETS = {
    */
   mascotVideoPoster: "/pysa/mascot-video-poster.webp",
   /**
+   * The same poster frame as a PNG, with its edges feathered to transparent.
+   *
+   * Two reasons it cannot just be the .webp above. Satori decodes PNG, JPEG
+   * and SVG but NOT WebP — a WebP fails the whole render with "u2 is not
+   * iterable" — and the frame is a hard-edged rectangle whose near-black
+   * ground is close to, but not exactly, the card's #0a0a0a, so dropped in
+   * unmodified it reads as a slightly-wrong grey box. The alpha ramp (10% of
+   * each edge) dissolves it into whatever it is placed on.
+   *
+   * Generated from the .webp, so reshooting the poster means regenerating
+   * this too.
+   */
+  mascotOgPoster: "/pysa/mascot-og-poster.png",
+  mascotOgPosterWidth: 1114,
+  mascotOgPosterHeight: 720,
+  /**
    * Standing cut-out as a transparent PNG, for the corner of the Open Graph
    * card. A PNG rather than the .webp sticker for the same satori reason.
    */

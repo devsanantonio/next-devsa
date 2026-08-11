@@ -5,6 +5,15 @@ import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
 import { StartupWeekThankYouEmail, getStartupWeekThankYouSubject } from '@/lib/emails/startup-week-thank-you';
 import { PysaThankYouEmail, getPysaThankYouSubject } from '@/lib/emails/pysa-thank-you';
+import {
+  AccessGrantedThankYouEmail,
+  getAccessGrantedThankYouSubject,
+} from '@/lib/emails/access-granted-thank-you';
+import {
+  AccessGrantedInternalEmail,
+  getAccessGrantedInternalSubject,
+} from '@/lib/emails/access-granted-internal';
+import { AG_EVENT_ID, AG_FIRST_TIME_SPEAKER, AG_NOTIFY_EMAILS } from '@/data/access-granted/2026';
 
 const DEFAULT_EVENT_ID = 'aiconference2026';
 
@@ -22,6 +31,12 @@ interface SpeakerSubmissionRequest {
   considerFor?: string;
   accommodations?: string;
   eventId?: string;
+  /**
+   * Set by the Access Granted form when one person picked "Both". It is not
+   * persisted — the volunteer signup is its own record — it only tells the
+   * confirmation and the organiser notification to say so.
+   */
+  alsoVolunteering?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -34,7 +49,7 @@ export async function POST(request: NextRequest) {
     const body: SpeakerSubmissionRequest = await request.json();
     const {
       name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin,
-      audienceLevel, considerFor, accommodations, eventId,
+      audienceLevel, considerFor, accommodations, eventId, alsoVolunteering,
     } = body;
 
     // Validate required fields
@@ -92,6 +107,21 @@ export async function POST(request: NextRequest) {
               considerFor: considerFor || '',
             }),
           };
+        case AG_EVENT_ID:
+          return {
+            subject: getAccessGrantedThankYouSubject(sessionTitle),
+            html: AccessGrantedThankYouEmail({
+              name,
+              sessionTitle,
+              sessionFormat: sessionFormat || '',
+              audienceLevel: audienceLevel || '',
+              // The Access Granted form reuses `considerFor` to carry the
+              // first-time-speaker answer rather than adding a column to
+              // SpeakerSubmission for one event — see the form's own note.
+              firstTimeSpeaker: considerFor === AG_FIRST_TIME_SPEAKER,
+              alsoVolunteering: alsoVolunteering === true,
+            }),
+          };
         default:
           return {
             subject: getSpeakerThankYouSubject(sessionTitle),
@@ -119,6 +149,38 @@ export async function POST(request: NextRequest) {
       }
     } else {
       console.log('Resend not configured - skipping thank you email');
+    }
+
+    // Organiser notification. Access Granted only for now — other events have
+    // no recipient list — and swallowed like the confirmation above, because a
+    // mail failure must never cost someone their submission.
+    if (resolvedEventId === AG_EVENT_ID && isResendConfigured() && resend) {
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: [...AG_NOTIFY_EMAILS],
+          replyTo: email.toLowerCase(),
+          subject: getAccessGrantedInternalSubject({ kind: 'talk', name, sessionTitle }),
+          html: AccessGrantedInternalEmail({
+            kind: 'talk',
+            name,
+            email: email.toLowerCase(),
+            sessionTitle,
+            sessionFormat,
+            audienceLevel,
+            abstract,
+            bio,
+            company,
+            linkedin,
+            notes: accommodations,
+            firstTimeSpeaker: considerFor === AG_FIRST_TIME_SPEAKER,
+            alsoVolunteering: alsoVolunteering === true,
+          }),
+        });
+        console.log('Organiser notification sent for %s submission:', 'talk', AG_NOTIFY_EMAILS.join(', '));
+      } catch (notifyError) {
+        console.error('Failed to send organiser notification:', notifyError);
+      }
     }
 
     return NextResponse.json({

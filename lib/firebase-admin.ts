@@ -66,6 +66,7 @@ export const COLLECTIONS = {
   NEWSLETTER: 'newsletter_subscriptions',
   SPEAKERS: 'speaker_submissions',
   ACCESS_REQUESTS: 'access_requests',
+  VOLUNTEER_SIGNUPS: 'volunteer_signups',
   APPROVED_ADMINS: 'approved_admins',
   EVENTS: 'events',
   COMMUNITIES: 'communities',
@@ -139,6 +140,34 @@ export interface AccessRequest {
   communityOrg: string;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
+}
+
+/**
+ * Someone offering to help run an event, as opposed to speak at one.
+ *
+ * Kept separate from SpeakerSubmission rather than folded into it with a role
+ * flag: the admin Speakers tab treats every document in that collection as a
+ * talk to accept or reject, and a volunteer has no title or abstract to judge.
+ *
+ * `eventId` matches the speaker submissions' key (e.g. 'access-granted-2026')
+ * so both halves of one event's open call can be pulled with the same filter.
+ */
+export interface VolunteerSignup {
+  name: string;
+  email: string;
+  /** Which org they're turning up with, if any. */
+  org?: string | null;
+  /**
+   * What they put their hand up for, when the event asks. Optional: Access
+   * Granted has no role picker — a signup there means "I'm in" and organisers
+   * assign work by reaching out — so this is null for those records.
+   */
+  role?: string | null;
+  /** Free text: what they'd bring, what they can't cover, when they can be there. */
+  notes?: string | null;
+  eventId: string;
+  submittedAt: Date;
+  status: 'pending' | 'confirmed' | 'declined';
 }
 
 export interface ApprovedAdmin {

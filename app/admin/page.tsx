@@ -59,6 +59,23 @@ interface NewsletterSubscription {
   status: string
 }
 
+/**
+ * A volunteer signup. Access Granted is the only event using these so far, and
+ * it asks no `role` — a signup there means "I'm in" and organisers assign work
+ * by reaching out — so most of these fields are absent in practice.
+ */
+interface VolunteerSignup {
+  id: string
+  name: string
+  email: string
+  org?: string | null
+  role?: string | null
+  notes?: string | null
+  eventId: string
+  submittedAt: string
+  status: string
+}
+
 interface SpeakerSubmission {
   id: string
   name: string
@@ -163,7 +180,7 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "devsa" | "speakers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch"
+type Tab = "newsletter" | "devsa" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch"
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -208,6 +225,8 @@ export default function AdminPage() {
   // Data states
   const [newsletter, setNewsletter] = useState<NewsletterSubscription[]>([])
   const [speakers, setSpeakers] = useState<SpeakerSubmission[]>([])
+  const [volunteers, setVolunteers] = useState<VolunteerSignup[]>([])
+  const [volunteerEventFilter, setVolunteerEventFilter] = useState<string>("all")
   const [speakerEventFilter, setSpeakerEventFilter] = useState<string>("all")
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
@@ -241,6 +260,7 @@ export default function AdminPage() {
   const [editingCommunity, setEditingCommunity] = useState<Community | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
+  const [isDeletingVolunteer, setIsDeletingVolunteer] = useState<string | null>(null)
   const [isDeletingNewsletter, setIsDeletingNewsletter] = useState<string | null>(null)
   const [isDeletingRsvp, setIsDeletingRsvp] = useState<string | null>(null)
   const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
@@ -315,7 +335,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "devsa", "speakers", "access", "admins", "events", "communities", "partners", "rsvps", "merch",
+      "newsletter", "devsa", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "merch",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -411,6 +431,8 @@ export default function AdminPage() {
         // when their community hosts it — so a client-side role check would
         // throw away exactly the data those organizers are meant to see.
         setSpeakers(adminData.speakers || [])
+        // Same reasoning as speakers: the API decides what an organizer may see.
+        setVolunteers(adminData.volunteers || [])
       }
       
       if (communitiesRes.ok) {
@@ -467,6 +489,29 @@ export default function AdminPage() {
     } catch {
       setError("Failed to fetch data")
     }
+  }
+
+  /**
+   * Volunteer signups export. Same shape as the speaker export so both
+   * download and open the same way.
+   */
+  const handleExportVolunteers = (rows: VolunteerSignup[], scope: string) => {
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+    const header = ["Name", "Email", "Org", "Role", "Notes", "Event", "Status", "Submitted"]
+    const csv = [
+      header.join(","),
+      ...rows.map((r) =>
+        [r.name, r.email, r.org, r.role, r.notes, r.eventId, r.status, r.submittedAt]
+          .map(esc)
+          .join(",")
+      ),
+    ].join("\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const a = document.createElement("a")
+    a.href = URL.createObjectURL(blob)
+    a.download = `volunteer-signups-${scope}-${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
   }
 
   /**
@@ -828,6 +873,31 @@ export default function AdminPage() {
       setError("Failed to delete subscription")
     } finally {
       setIsDeletingNewsletter(null)
+    }
+  }
+
+  const handleDeleteVolunteer = async (signupId: string) => {
+    if (!confirm("Delete this volunteer signup? This cannot be undone.")) return
+
+    setIsDeletingVolunteer(signupId)
+    try {
+      const response = await fetch("/api/volunteers", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signupId, adminEmail }),
+      })
+
+      if (response.ok) {
+        setVolunteers((prev) => prev.filter((v) => v.id !== signupId))
+        setSuccessMessage("Volunteer signup deleted")
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete volunteer signup")
+      }
+    } catch {
+      setError("Failed to delete volunteer signup")
+    } finally {
+      setIsDeletingVolunteer(null)
     }
   }
 
@@ -1335,6 +1405,7 @@ export default function AdminPage() {
   const eventsNav: NavItem = { id: "events", label: "Events", icon: CalendarDays, count: events.length }
   const rsvpsNav: NavItem = { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length }
   const speakersNav: NavItem = { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length }
+  const volunteersNav: NavItem = { id: "volunteers", label: "Volunteers", icon: Users, count: volunteers.length }
 
   // Organizers lead with their own community, then the things they run. Speakers
   // only appears for them when the API actually returned submissions — i.e. when
@@ -1345,6 +1416,7 @@ export default function AdminPage() {
         eventsNav,
         rsvpsNav,
         ...(speakers.length > 0 ? [speakersNav] : []),
+        ...(volunteers.length > 0 ? [volunteersNav] : []),
       ]
     : [eventsNav, rsvpsNav, myCommunityNav]
 
@@ -1353,6 +1425,7 @@ export default function AdminPage() {
     { id: "devsa", label: "DEVSA Subscribers", icon: RocketIcon, count: devsaSubs.length },
     { id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.length },
     { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length },
+    { id: "volunteers", label: "Volunteers", icon: Users, count: volunteers.length },
     { id: "access", label: "Access Requests", icon: Users, count: accessRequests.length, alert: pendingAccessCount },
     { id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length },
     { id: "merch", label: "Merch Submissions", icon: Upload, count: merchSubmissions.length, alert: pendingMerchCount },
@@ -1366,6 +1439,7 @@ export default function AdminPage() {
     devsa: "DEVSA Subscribers",
     newsletter: "Newsletter",
     speakers: "Speakers",
+    volunteers: "Volunteers",
     access: "Access Requests",
     admins: "Manage Admins",
     merch: "Merch Submissions",
@@ -2218,6 +2292,129 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+            )
+          })()}
+
+          {/* Volunteers Tab — the other half of an event's open call. Scoped by
+              the API exactly as speakers are: admins see every event, a host
+              community's organizers see only their own. Delete is
+              admin/superadmin only, matching every other destructive action
+              here. */}
+          {activeTab === "volunteers" && (() => {
+            const volunteerEvents = Array.from(
+              new Set(volunteers.map((v) => v.eventId || "—"))
+            ).sort()
+            const filteredVolunteers =
+              volunteerEventFilter === "all"
+                ? volunteers
+                : volunteers.filter((v) => (v.eventId || "—") === volunteerEventFilter)
+            return (
+              <div>
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                  <h2 className="text-xl font-bold tracking-tight text-white">
+                    Volunteer Signups{" "}
+                    <span className="text-base font-normal text-neutral-500">
+                      ({filteredVolunteers.length})
+                    </span>
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <AdminCombobox
+                      className="w-64"
+                      value={volunteerEventFilter}
+                      onChange={setVolunteerEventFilter}
+                      options={[
+                        { value: "all", label: "All events", count: volunteers.length },
+                        ...volunteerEvents.map((ev) => ({
+                          value: ev,
+                          label: ev,
+                          count: volunteers.filter((v) => (v.eventId || "—") === ev).length,
+                        })),
+                      ]}
+                    />
+                    <button
+                      onClick={() => handleExportVolunteers(filteredVolunteers, volunteerEventFilter)}
+                      disabled={filteredVolunteers.length === 0}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export CSV
+                    </button>
+                  </div>
+                </div>
+                {filteredVolunteers.length === 0 ? (
+                  <p className="py-8 text-center text-neutral-400">No volunteer signups yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredVolunteers.map((volunteer) => (
+                      <div
+                        key={volunteer.id}
+                        className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 transition-colors hover:bg-neutral-800/50"
+                      >
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          {volunteer.eventId && (
+                            <span className="rounded-full bg-neutral-700/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
+                              {volunteer.eventId}
+                            </span>
+                          )}
+                          {/* Only shown when the event asked. Access Granted
+                              does not, so this is usually absent. */}
+                          {volunteer.role && (
+                            <span className="rounded-full bg-[#ffb800]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ffb800]">
+                              {volunteer.role}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{volunteer.name}</h3>
+                            <a
+                              href={`mailto:${volunteer.email}`}
+                              className="text-sm text-neutral-400 hover:text-white"
+                            >
+                              {volunteer.email}
+                            </a>
+                          </div>
+                          {/* Admin/superadmin only, matching the API. An
+                              organizer would only ever get a 403 from it, and
+                              this collection is shared across events — one
+                              community's organizer must not be able to empty
+                              another's crew list. */}
+                          {hasAdminAccess(adminRole) && (
+                            <button
+                              onClick={() => handleDeleteVolunteer(volunteer.id)}
+                              disabled={isDeletingVolunteer === volunteer.id}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-50"
+                            >
+                              {isDeletingVolunteer === volunteer.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                        {volunteer.org && (
+                          <p className="mt-1 text-sm text-neutral-400">With: {volunteer.org}</p>
+                        )}
+                        {volunteer.notes && (
+                          <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/60 p-4">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                              Notes
+                            </p>
+                            <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
+                              {volunteer.notes}
+                            </p>
+                          </div>
+                        )}
+                        <p className="mt-4 text-xs text-neutral-500">
+                          Submitted: {new Date(volunteer.submittedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )
           })()}
 
