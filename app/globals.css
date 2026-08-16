@@ -370,3 +370,14 @@ body {
 .rgb-split-scroll {
   animation: rgb-split 0.5s ease-out;
 }
+
+/* ─── SASTW bolt: confine the WebGL flow canvas to the bolt silhouette ───
+   next-sasw calls this `.bolt-mask`; namespaced here because "bolt" alone is
+   not a reserved word on a site with five other brands on it. The canvas is a
+   plain rectangle — this is the only thing that makes it a lightning bolt, so
+   losing this rule means a magenta box on the featured band, not a missing
+   effect. See components/sastw/bolt-shader.tsx. */
+.sastw-bolt-mask {
+  -webkit-mask: url("/sastw/bolt.svg") center / contain no-repeat;
+  mask: url("/sastw/bolt.svg") center / contain no-repeat;
+}

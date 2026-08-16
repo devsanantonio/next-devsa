@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { FeaturedPySanAntonio } from "@/components/events/featured-pysanantonio"
+import { FeaturedSastw } from "@/components/events/featured-sastw"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 import { daysUntilClose, getCfsPhase } from "@/data/pysa/2026"
@@ -62,8 +62,12 @@ export const metadata: Metadata = {
 }
 
 /**
- * Revalidate hourly so the featured event's call-for-speakers countdown stays
+ * Revalidate hourly so the featured band's call-for-speakers countdown stays
  * accurate without a deploy, and drops away on its own once the call closes.
+ *
+ * The band is Startup + Tech Week now rather than PySanAntonio alone, but the
+ * only thing on it that expires is still PySanAntonio's call, so the countdown
+ * is still what sets this window.
  */
 export const revalidate = 3600
 
@@ -99,7 +103,7 @@ export default function EventsPage() {
         }}
       />
       <main className="min-h-screen bg-white text-gray-900">
-        <FeaturedPySanAntonio phase={phase} daysLeft={daysUntilClose()} />
+        <FeaturedSastw phase={phase} daysLeft={daysUntilClose()} />
         <CommunityEventsSection />
         <FeaturedOnDemandEvent />
       </main>
