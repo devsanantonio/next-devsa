@@ -105,7 +105,7 @@ export function PysaThankYouEmail({
                       What happens next
                     </h3>
                     <ul style="margin: 0; padding: 0 0 0 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
-                      <li style="margin-bottom: 6px;">The call closes <strong style="color: #ffdd00;">August 15</strong> &mdash; we review everything after that</li>
+                      <li style="margin-bottom: 6px;">The call closes <strong style="color: #ffdd00;">August 22</strong> &mdash; we review everything after that</li>
                       <li style="margin-bottom: 6px;">You&rsquo;ll hear back by email either way</li>
                       <li style="margin-bottom: 6px;">Selected speakers get the run of show and A/V details</li>
                       <li style="margin-bottom: 6px;">If it doesn&rsquo;t land a conference slot, it gets first look for Alamo Python&rsquo;s regular meetups &mdash; the work still finds a room</li>

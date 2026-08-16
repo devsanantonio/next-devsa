@@ -49,11 +49,36 @@ export const PYSA_2026 = {
 } as const
 
 /**
- * Call for speakers closes end of day Aug 15, 2026. Everything that switches
+ * Call for speakers closes end of day Aug 22, 2026. Everything that switches
  * the page between "submit a talk" and "call closed" derives from this — the
  * status pill, the countdown, the form, and the hero's primary CTA.
+ *
+ * Extended by a week from Aug 15, the original close. The prose copies that
+ * name the date are not derived from this constant — see CFS_CLOSES_LABEL for
+ * why, and grep for that label before moving this again.
  */
-export const CFS_CLOSES = "2026-08-15T23:59:59-05:00"
+export const CFS_CLOSES = "2026-08-22T23:59:59-05:00"
+
+/**
+ * The same date, written out for display, on the pattern
+ * data/access-granted/2026.ts already uses.
+ *
+ * Kept beside the ISO value rather than formatted from it at render time: the
+ * ISO string is timestamped -05:00, so a naive toLocaleDateString on a server
+ * in UTC renders the day after. Two constants that must be edited together are
+ * a smaller trap than a date that is silently wrong by one.
+ *
+ * Not every surface reads it. The marketing prose in data/events.ts,
+ * data/stay-connected.ts and the layout's meta description are static strings
+ * that also name the date, and the thank-you email builds its own sentence
+ * around it — those are copy, not UI state, and inlining a constant into each
+ * would not make them any harder to forget. This is the list to walk:
+ *
+ *   app/events/pysanantonio/layout.tsx · components/pysa/2026/hero.tsx
+ *   components/pysa/2026/speaker-form.tsx · data/events.ts
+ *   data/stay-connected.ts · lib/emails/pysa-thank-you.ts
+ */
+export const CFS_CLOSES_LABEL = "August 22, 2026"
 
 export type CfsPhase = "open" | "closed"
 

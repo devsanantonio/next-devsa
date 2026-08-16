@@ -5,7 +5,7 @@ import { PYSA_2026, SASTW_URL } from "@/data/pysa/2026"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 const description =
-  "PySanAntonio II — Friday, October 2, 2026 at Geekdom, part of SA Startup + Tech Week. An afternoon of learning, networking, and community building for San Antonio's Python community, led by Alamo Python with the PyTexas Foundation and DEVSA. Call for speakers open through August 15."
+  "PySanAntonio II — Friday, October 2, 2026 at Geekdom, part of SA Startup + Tech Week. An afternoon of learning, networking, and community building for San Antonio's Python community, led by Alamo Python with the PyTexas Foundation and DEVSA. Call for speakers open through August 22."
 
 export const metadata: Metadata = {
   title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",

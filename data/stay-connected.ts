@@ -204,7 +204,7 @@ export const SPOTLIGHTS: Spotlight[] = [
       poster: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2-bgdark.jpg",
     },
     blurb:
-      "San Antonio's Python conference returns Friday, October 2 at Geekdom — an afternoon of learning, networking, and community building, led by Alamo Python with the PyTexas Foundation and DEVSA, inside SA Startup + Tech Week. The call for speakers is open through August 15.",
+      "San Antonio's Python conference returns Friday, October 2 at Geekdom — an afternoon of learning, networking, and community building, led by Alamo Python with the PyTexas Foundation and DEVSA, inside SA Startup + Tech Week. The call for speakers is open through August 22.",
     accent: "#f8b800",
     dark: true,
     group: "happening",
