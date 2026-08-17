@@ -158,7 +158,7 @@ export function FeaturedSastw({
           flat SVG, and it needs the cursor — the scrim above it stays inert so
           the events reach the canvas. */}
       <div className="absolute inset-y-0 right-0 hidden w-[52%] select-none items-center justify-center md:flex">
-        <BoltShader className="aspect-square w-[78%] max-w-[34rem]" />
+        <BoltShader className="aspect-square w-[78%] max-w-136" />
       </div>
 
       {/* Desktop scrim: solid under the copy, clearing before the bolt. */}
@@ -174,7 +174,7 @@ export function FeaturedSastw({
       {/* pt clears the fixed navbar even on a viewport too short for the
           content to stay centred. */}
       <div className="page-shell relative z-20 pb-16 pt-24 md:pb-20 md:pt-28">
-        <div className="flex max-w-[36rem] flex-col gap-6 xl:max-w-[40rem]">
+        <div className="flex max-w-xl flex-col gap-6 xl:max-w-160">
           <div className="flex flex-col gap-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
               Featured event
@@ -197,7 +197,7 @@ export function FeaturedSastw({
                 alt={SASTW_2026.name}
                 width={1200}
                 height={300}
-                className="h-auto w-full max-w-[26rem] lg:max-w-[32rem]"
+                className="h-auto w-full max-w-104 lg:max-w-lg"
               />
             </h2>
           </div>
