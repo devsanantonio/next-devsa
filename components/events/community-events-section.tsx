@@ -8,9 +8,11 @@ import Image from "next/image"
 import Link from "next/link"
 import {
   buildCalendarLinks,
+  dayKeyFromParts,
   downloadIcs,
   effectiveEndMs,
   formatDayHeading,
+  formatDayShort,
   formatTime,
   getEventStatus,
   localDayKey,
@@ -47,28 +49,43 @@ function stripMarkdown(text: string): string {
 }
 
 interface EventCalendarProps {
+  /**
+   * Only events that have not ended.
+   *
+   * This used to receive every event, so days in the past were marked as
+   * having events and stayed clickable — but the list below excludes ended
+   * events, so clicking one filtered to nothing and reported "No events match
+   * your filters". The picker was offering days it could not deliver.
+   */
   events: Array<{ date: string }>
-  selectedDate: Date | null
-  onSelectDate: (date: Date | null) => void
+  /** A `localDayKey`, not a Date — see the note on `eventDays`. */
+  selectedDay: string | null
+  onSelectDay: (day: string | null) => void
 }
 
 function EventCalendar({
   events,
-  selectedDate,
-  onSelectDate,
+  selectedDay,
+  onSelectDay,
 }: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay()
 
-  const eventDates = useMemo(() => {
-    const dates = new Set<string>()
-    events.forEach((event) => {
-      const date = new Date(event.date)
-      dates.add(date.toDateString())
-    })
-    return dates
+  /**
+   * Which days have events, keyed the way the list groups them.
+   *
+   * `toDateString()` before, which resolves in the reader's own timezone while
+   * the list groups in San Antonio's. For anyone outside Central those two
+   * disagreed: a 7pm Thursday event is Friday in London, so the dot sat on
+   * Friday and clicking it filtered against a list that had filed the event
+   * under Thursday. Same bug as the detail page's, one surface further out.
+   */
+  const eventDays = useMemo(() => {
+    const days = new Set<string>()
+    events.forEach((event) => days.add(localDayKey(event.date)))
+    return days
   }, [events])
 
   const goToPreviousMonth = () => {
@@ -80,12 +97,13 @@ function EventCalendar({
   }
 
   const handleDateClick = (day: number) => {
-    const clickedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    if (selectedDate && clickedDate.toDateString() === selectedDate.toDateString()) {
-      onSelectDate(null)
-    } else if (eventDates.has(clickedDate.toDateString())) {
-      onSelectDate(clickedDate)
-    }
+    const key = dayKeyFromParts(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    )
+    if (selectedDay === key) onSelectDay(null)
+    else if (eventDays.has(key)) onSelectDay(key)
   }
 
   return (
@@ -129,10 +147,13 @@ function EventCalendar({
         ))}
         {Array.from({ length: daysInMonth }).map((_, index) => {
           const day = index + 1
-          const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-          const dateString = date.toDateString()
-          const hasEvent = eventDates.has(dateString)
-          const isSelected = selectedDate && dateString === selectedDate.toDateString()
+          const key = dayKeyFromParts(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth(),
+            day
+          )
+          const hasEvent = eventDays.has(key)
+          const isSelected = selectedDay === key
 
           return (
             <button
@@ -535,13 +556,25 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
   )
 }
 
-export function CommunityEventsSection() {
+export function CommunityEventsSection({
+  featured,
+}: {
+  /**
+   * The featured-event band, rendered between this section's headline and its
+   * list rather than above the whole page.
+   *
+   * A slot rather than an import, because what is featured rotates — it was
+   * PySanAntonio, it is Startup + Tech Week — and the calendar should not have
+   * to know which. The page decides; this decides where.
+   */
+  featured?: React.ReactNode
+}) {
   const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(true)
   const [allCommunities, setAllCommunities] = useState<TechCommunity[]>([])
   
   const [search, setSearch] = useState("")
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [showRssFeed, setShowRssFeed] = useState(false)
   const [showCalendarSubscribe, setShowCalendarSubscribe] = useState(false)
   const [showMobileCalendar, setShowMobileCalendar] = useState(false)
@@ -602,27 +635,38 @@ export function CommunityEventsSection() {
     }))
   }, [firestoreEvents])
 
+  /**
+   * Everything that has not ended yet, sorted.
+   *
+   * The one source both the month picker and the list are built from. They
+   * used to derive separately — the picker from every event, the list from
+   * upcoming ones — so the picker marked past days as selectable and clicking
+   * one produced an empty list. Deriving both from here means the picker can
+   * only ever offer a day the list can actually show.
+   *
+   * Deliberately not narrowed by `search`: the picker's job is "which days
+   * have events", and letting a search term erase dots would take away the
+   * one control that shows what else is on.
+   */
+  const upcomingEvents = useMemo(() => {
+    // effectiveEndMs ignores a missing, invalid, or inverted end time, so a
+    // future event with bad end data is never hidden.
+    return allEvents
+      .filter((event) => currentTime.getTime() < effectiveEndMs(event))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }, [allEvents, currentTime])
+
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
 
-    return allEvents
-      .filter((event) => {
-        // Filter out ended events. effectiveEndMs ignores a missing, invalid, or
-        // inverted end time so a future event with bad end data is never hidden.
-        return currentTime.getTime() < effectiveEndMs(event)
-      })
+    return upcomingEvents
       .filter((event) => {
         if (!normalizedSearch) return true
         const haystack = `${event.title} ${event.description} ${event.location}`.toLowerCase()
         return haystack.includes(normalizedSearch)
       })
-      .filter((event) => {
-        if (!selectedDate) return true
-        const eventDate = new Date(event.date)
-        return eventDate.toDateString() === selectedDate.toDateString()
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [allEvents, search, selectedDate, currentTime])
+      .filter((event) => !selectedDay || localDayKey(event.date) === selectedDay)
+  }, [upcomingEvents, search, selectedDay])
 
   /**
    * The same events, bucketed into the days they fall on.
@@ -644,11 +688,11 @@ export function CommunityEventsSection() {
     return days
   }, [filteredEvents])
 
-  const hasActiveFilters = Boolean(search || selectedDate)
+  const hasActiveFilters = Boolean(search || selectedDay)
 
   const clearFilters = useCallback(() => {
     setSearch("")
-    setSelectedDate(null)
+    setSelectedDay(null)
   }, [])
 
   return (
@@ -733,6 +777,10 @@ export function CommunityEventsSection() {
           </div>
         </div>
 
+        {/* The featured band, after the headline and before the list. The page
+            says what it is, makes its pitch, then delivers. */}
+        {featured && <div className="mb-12">{featured}</div>}
+
         {/* Mobile Calendar */}
         <div className="lg:hidden mb-8">
           <button
@@ -755,7 +803,7 @@ export function CommunityEventsSection() {
                 className="overflow-hidden"
               >
                 <div className="pt-4">
-                  <EventCalendar events={allEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                  <EventCalendar events={upcomingEvents} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
                 </div>
               </motion.div>
             )}
@@ -784,13 +832,13 @@ export function CommunityEventsSection() {
                 <p className="text-[13px] font-normal text-gray-400">
                   {isLoadingEvents ? '...' : `${filteredEvents.length} upcoming event${filteredEvents.length !== 1 ? 's' : ''}`}
                 </p>
-                {selectedDate && (
+                {selectedDay && (
                   <button
-                    onClick={() => setSelectedDate(null)}
+                    onClick={() => setSelectedDay(null)}
                     className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                   >
                     <CalendarIcon className="h-3 w-3 text-gray-500" />
-                    {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {formatDayShort(selectedDay)}
                     <span className="ml-0.5 text-gray-400">×</span>
                   </button>
                 )}
@@ -1161,7 +1209,7 @@ export function CommunityEventsSection() {
                 the page barely moved. Now that the list flows into the page,
                 this rail actually travels, so the offset has to be right. */}
             <div className="sticky top-20">
-              <EventCalendar events={allEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+              <EventCalendar events={upcomingEvents} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
             </div>
           </div>
         </div>

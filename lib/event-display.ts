@@ -101,6 +101,26 @@ export function formatDayHeading(dayKey: string): string {
   })
 }
 
+/** "Aug 18" — from a `localDayKey`. Same UTC-midday trick as above. */
+export function formatDayShort(dayKey: string): string {
+  return new Date(`${dayKey}T12:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  })
+}
+
+/**
+ * The calendar day a grid cell stands for, as a `localDayKey`.
+ *
+ * Built from the cell's own year/month/day rather than by converting a Date,
+ * because the cell is not an instant — it is a square labelled "18". Running it
+ * through a timezone would move it.
+ */
+export function dayKeyFromParts(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+}
+
 /** The full date, for surfaces that show one event rather than a day's worth. */
 export function formatFullDate(value: string): string {
   return new Date(value).toLocaleDateString("en-US", {
