@@ -61,8 +61,6 @@ const base =
 
 const primaryButton = `${base} bg-[#ff32a0] text-[#0a0a0a] hover:bg-[#e62c90] focus-visible:ring-[#ff32a0]`
 
-const secondaryButton = `${base} border border-white/20 bg-white/5 text-white hover:border-white/30 hover:bg-white/10 focus-visible:ring-white/60`
-
 const META = [
   { Icon: CalendarDays, label: "Date", value: SASTW_2026.dateLabel },
   { Icon: Zap, label: "Edition", value: SASTW_2026.edition },
@@ -133,9 +131,23 @@ export function FeaturedSastw({
   daysLeft: number
 }) {
   return (
+    // A contained band inside the calendar, not a hero in front of it.
+    //
+    // This used to be `min-h-dvh` and full-bleed, which meant a visitor who
+    // clicked a nav item labelled "Community Calendar" landed on a screen with
+    // no calendar on it and nothing indicating one existed. It also put a
+    // permanent full-viewport promo above twenty other groups' events on the
+    // surface whose whole value is being the neutral index — and it needed a
+    // "Community Calendar" skip button, which is a design admitting its own
+    // hero is in the way.
+    //
+    // Rounded and inset now, sitting between the calendar's headline and its
+    // list. The page says what it is, makes its pitch, then delivers, and the
+    // feature reads as an item inside the calendar rather than a toll gate in
+    // front of it.
     <section
       data-bg-type="dark"
-      className="relative flex min-h-dvh flex-col justify-center overflow-hidden border-b border-white/10 bg-[#0a0a0a] text-white"
+      className="relative overflow-hidden rounded-2xl bg-[#0a0a0a] text-white"
     >
       {/* Magenta wash, standing in for the glow the shader canvas throws. */}
       <div
@@ -171,9 +183,11 @@ export function FeaturedSastw({
         }}
       />
 
-      {/* pt clears the fixed navbar even on a viewport too short for the
-          content to stay centred. */}
-      <div className="page-shell relative z-20 pb-16 pt-24 md:pb-20 md:pt-28">
+      {/* Own padding, not `page-shell`. The band is inset within the calendar's
+          shell now, so borrowing the page gutter again would indent the copy
+          twice. The navbar-clearing top padding is gone with the same change —
+          nothing sits under the navbar any more. */}
+      <div className="relative z-20 px-6 py-12 sm:px-8 md:py-14 lg:px-12">
         <div className="flex max-w-xl flex-col gap-6 xl:max-w-160">
           <div className="flex flex-col gap-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
@@ -271,9 +285,15 @@ export function FeaturedSastw({
           </div>
 
           <div className="flex flex-col gap-3">
-            {/* Two paths out. The band fills the viewport, so someone who came
-                to browse events would otherwise have to scroll past a whole
-                screen of promo to reach the thing this page is actually for. */}
+            {/* One action, not two.
+
+                There was a "Community Calendar" button beside this one, whose
+                job was to let someone escape a full-viewport promo and reach
+                the list. The band sits inside the calendar now, with the list
+                directly beneath it, so a link to the section it lives in would
+                point at itself. Removing it is the check that the reorder
+                actually worked — if the band still needed an escape hatch, it
+                would still be in the way. */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
                 href={SASTW_REGISTER_URL}
@@ -283,9 +303,6 @@ export function FeaturedSastw({
               >
                 Register for the week
               </a>
-              <Link href="#community-calendar" className={secondaryButton}>
-                Community Calendar
-              </Link>
             </div>
 
             {/* The one call still taking submissions gets a line. It is the

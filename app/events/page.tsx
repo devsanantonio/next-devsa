@@ -102,9 +102,21 @@ export default function EventsPage() {
           }),
         }}
       />
+      {/* The featured band goes INSIDE the calendar section, between its
+          headline and its list — not above it.
+
+          It used to lead the page at full viewport height, which meant this
+          page opened with no calendar visible on a laptop and no sign that one
+          existed. On the surface every entry point calls "Community Calendar",
+          and on the surface whose value is being the city's neutral index,
+          that put a permanent promo above twenty other groups' events.
+
+          Passed as a slot so the calendar never has to know what is currently
+          featured — that rotates, and the page is what decides. */}
       <main className="min-h-screen bg-white text-gray-900">
-        <FeaturedSastw phase={phase} daysLeft={daysUntilClose()} />
-        <CommunityEventsSection />
+        <CommunityEventsSection
+          featured={<FeaturedSastw phase={phase} daysLeft={daysUntilClose()} />}
+        />
         <FeaturedOnDemandEvent />
       </main>
     </>
