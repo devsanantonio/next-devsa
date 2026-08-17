@@ -3,9 +3,20 @@
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
 import { ArrowRight, X, Loader2 } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 
-const DEVSA_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
+/**
+ * The original mark — the terminal window with the teal/pink/orange title bar.
+ * The navbar wears the monochrome alternate; this is the colour one, so the two
+ * ends of the page are the same logo in its two registers rather than the same
+ * file twice.
+ *
+ * Local rather than the S3 bucket the navbar reads from. It is 2 KB of vector,
+ * it renders on every page, and a footer that cannot draw its own logo when a
+ * bucket hiccups is a worse trade than checking the file in.
+ */
+const DEVSA_LOGO = "/branding/devsa-logo.svg"
+
 const PRESET_AMOUNTS = [50, 100, 250, 500]
 
 const communityGroups = [
@@ -19,64 +30,6 @@ const communityGroups = [
   { id: "dotnet-user-group", name: ".NET User Group" },
   { id: "datanauts", name: "Datanauts" },
 ]
-
-// Confetti burst effect for logo easter egg
-function LogoConfetti({ isActive }: { isActive: boolean }) {
-  const [pieces, setPieces] = useState<Array<{
-    id: number; x: number; y: number; color: string; size: number
-    rotation: number; speedX: number; speedY: number; rotationSpeed: number
-  }>>([])
-
-  useEffect(() => {
-    if (!isActive) { setPieces([]); return }
-
-    const colors = ['#f59e0b', '#fbbf24', '#fcd34d', '#ec4899', '#f472b6', '#ffffff']
-    setPieces(Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: 40 + Math.random() * 20,
-      y: 50,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 5 + 2,
-      rotation: Math.random() * 360,
-      speedX: (Math.random() - 0.5) * 8,
-      speedY: Math.random() * -10 - 6,
-      rotationSpeed: (Math.random() - 0.5) * 20,
-    })))
-
-    const interval = setInterval(() => {
-      setPieces(prev => prev.map(p => ({
-        ...p,
-        x: p.x + p.speedX,
-        y: p.y + p.speedY,
-        rotation: p.rotation + p.rotationSpeed,
-        speedX: p.speedX * 0.98,
-        speedY: p.speedY + 0.8,
-      })).filter(p => p.y < 150 && p.y > -50 && p.x > -20 && p.x < 120))
-    }, 40)
-
-    const timeout = setTimeout(() => { clearInterval(interval); setPieces([]) }, 1500)
-    return () => { clearInterval(interval); clearTimeout(timeout) }
-  }, [isActive])
-
-  if (!isActive) return null
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {pieces.map(p => (
-        <div
-          key={p.id}
-          className="absolute"
-          style={{
-            left: `${p.x}%`, top: `${p.y}%`,
-            width: `${p.size}px`, height: `${p.size}px`,
-            backgroundColor: p.color,
-            transform: `rotate(${p.rotation}deg)`,
-            borderRadius: Math.random() > 0.5 ? '50%' : '0%',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
 
 // Donate modal (mirrors DonationCta from building together page)
 function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -134,7 +87,7 @@ function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
         className="fixed inset-0 z-70 flex items-center justify-center p-4"
         onClick={onClose}
       >
-        <div className="w-full max-w-[40rem]" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full max-w-160" onClick={(e) => e.stopPropagation()}>
           <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
@@ -249,10 +202,7 @@ function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
-  const [isLogoHovered, setIsLogoHovered] = useState(false)
-  const [showVideo, setShowVideo] = useState(false)
   const [showDonate, setShowDonate] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   return (
     <footer className="relative bg-neutral-950 border-t border-neutral-800/50 overflow-hidden">
@@ -267,70 +217,35 @@ export function Footer() {
             transition={{ duration: 0.5 }}
             className="lg:w-1/4 shrink-0"
           >
-            <div className="font-mono">
-              {/* Terminal header */}
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="flex items-center space-x-1.5">
-                  <div className="w-2.5 h-2.5 bg-[#00b2a9] rounded-full" />
-                  <div className="w-2.5 h-2.5 bg-[#ef426f] rounded-full" />
-                  <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full" />
-                </div>
-                <span className="text-[#ef426f] text-[10px] leading-none">
-                  ~/devsa
-                </span>
-              </div>
+            {/* The mark, standing on its own.
 
-              {/* ASCII Art DEVSA — clickable for video, hover for confetti */}
-              <div
-                className="relative inline-block mb-5 cursor-pointer"
-                onMouseEnter={() => setIsLogoHovered(true)}
-                onMouseLeave={() => setIsLogoHovered(false)}
-                onClick={() => setShowVideo(true)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    setShowVideo(true)
-                  }
-                }}
-                aria-label="Watch the DEVSA conference recap"
-              >
-                <div className="absolute -inset-8 z-20 pointer-events-none">
-                  <LogoConfetti isActive={isLogoHovered} />
-                </div>
-                <pre
-                  className="text-[#ef426f] text-[9px] sm:text-[10px] leading-tight whitespace-pre relative z-10 transition-transform duration-200 hover:scale-[1.02]"
-                  aria-hidden="true"
-                >{`██████╗ ███████╗██╗   ██╗███████╗ █████╗
-██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗
-██║  ██║█████╗  ██║   ██║███████╗███████║
-██║  ██║██╔══╝  ╚██╗ ██╔╝╚════██║██╔══██║
-██████╔╝███████╗ ╚████╔╝ ███████║██║  ██║
-╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝`}</pre>
-              </div>
+                What used to be here: an ASCII-art DEVSA inside a fake terminal
+                — three window dots, a `~/devsa` path, a `$` prompt, a blinking
+                cursor — that opened a conference video on click and threw
+                confetti on hover.
 
-              {/* Tagline as terminal output */}
-              <p className="text-white/70 text-xs sm:text-sm leading-normal mb-2">
-                <span className="text-[#ef426f]">$</span> Find Your People.
-                Build Your Future.
-              </p>
+                The terminal chrome went with the ASCII, not as extra scope. The
+                dots and the prompt existed to frame type as a shell session,
+                and the logo is itself a terminal window with those same three
+                colours across its title bar. Kept, they would have been a
+                second window drawn around the first, and the blinking cursor
+                would have been a prompt with nothing left to prompt. */}
+            <Link
+              href="/"
+              aria-label="DEVSA — home"
+              className="inline-block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={DEVSA_LOGO}
+                alt="DEVSA"
+                width={736}
+                height={552}
+                className="h-auto w-28 sm:w-32"
+              />
+            </Link>
 
-              {/* Blinking cursor */}
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-[#ef426f]">
-                <span>$</span>
-                <span
-                  className="inline-block w-1.5 h-3 bg-[#ef426f] animate-pulse"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-
-            <div className="mt-7 space-y-0.5 text-neutral-500 text-[12px] font-normal leading-relaxed">
-              <p>110 E Houston St, 6th Floor</p>
-              <p>San Antonio, TX 78205</p>
-            </div>
-            <p className="mt-5 text-neutral-400 text-[13px] font-normal leading-normal">
+            <p className="mt-7 text-neutral-400 text-[13px] font-normal leading-normal">
               © {currentYear} DEVSA. All rights reserved.
             </p>
             <p className="text-neutral-400 text-[13px] font-normal mt-2 leading-normal">
@@ -360,7 +275,6 @@ export function Footer() {
                 <li><Link href="/buildingtogether" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Building Together</Link></li>
                 <li><Link href="/coworking-space" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Coworking Space</Link></li>
                 <li><Link href="/events" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Community Calendar</Link></li>
-                <li><Link href="/bounties" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Bounty Board <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-400 border border-amber-500/30">Testing</span></Link></li>
                 <li><Link href="/shop" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Shop</Link></li>
               </ul>
             </div>
@@ -405,48 +319,6 @@ export function Footer() {
           </motion.div>
         </div>
       </div>
-
-      {/* Video Modal */}
-      <AnimatePresence>
-        {showVideo && (
-          <>
-            <motion.div
-              key="video-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60"
-              onClick={() => setShowVideo(false)}
-            />
-            <motion.div
-              key="video-player"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-70 flex items-center justify-center p-4"
-              onClick={() => setShowVideo(false)}
-            >
-              <div className="relative w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => setShowVideo(false)}
-                  className="absolute -top-10 right-0 text-neutral-400 hover:text-white transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-                <video
-                  ref={videoRef}
-                  className="w-full h-full rounded-xl shadow-2xl"
-                  controls
-                  autoPlay
-                  playsInline
-                >
-                  <source src={DEVSA_VIDEO_URL} type="video/mp4" />
-                </video>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Donate Modal */}
       <AnimatePresence>

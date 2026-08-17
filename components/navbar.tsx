@@ -26,24 +26,28 @@ export function Navbar() {
               <LogoContextMenu>
                 <Link
                   href="/"
-                  className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg block"
+                  className="block cursor-pointer rounded-lg focus:outline-none focus:ring-2 focus:ring-white/20"
                   aria-label="Go to home page"
                 >
-                  <span className="relative block w-10 h-10 md:w-12 md:h-12">
-                    {/* Alternate (monochrome) logo — default, fades out on hover */}
-                    <img
-                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-altlogo.png"
-                      alt="DEVSA - San Antonio Developer Community"
-                      className="absolute inset-0 h-full w-full object-contain transition-opacity duration-200 group-hover:opacity-0"
-                    />
-                    {/* Original (color) logo — fades in on hover */}
-                    <img
-                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 h-full w-full object-contain opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                    />
-                  </span>
+                  {/* The monochrome alternate, and only that. The two marks
+                      used to cross-fade here — alt at rest, the colour original
+                      on hover — which spent the colour logo on a state most
+                      visitors never see. The two now split by position instead
+                      of by hover: alt at the top of the page, original in the
+                      footer.
+
+                      Local vector rather than the S3 PNG this used to load. It
+                      is the same artwork, it is already checked in for the
+                      branding kit and the logo context menu, and the navbar is
+                      on every page — no reason for it to depend on a bucket. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/branding/devsa-alt-logo.svg"
+                    alt="DEVSA - San Antonio Developer Community"
+                    width={736}
+                    height={552}
+                    className="block h-10 w-10 object-contain md:h-12 md:w-12"
+                  />
                 </Link>
               </LogoContextMenu>
             </div>
