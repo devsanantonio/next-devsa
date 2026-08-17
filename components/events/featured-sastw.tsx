@@ -1,4 +1,3 @@
-import Link from "next/link"
 import { CalendarDays, MapPin, Zap } from "lucide-react"
 import {
   SASTW_2026,
@@ -11,7 +10,7 @@ import {
   type SastwActivation,
 } from "@/data/sastw/2026"
 import { ACCESS_GREEN } from "@/data/access-granted/2026"
-import { PYSA_WORDMARK, type CfsPhase } from "@/data/pysa/2026"
+import { PYSA_WORDMARK } from "@/data/pysa/2026"
 import { BoltShader } from "@/components/sastw/bolt-shader"
 
 /**
@@ -121,15 +120,13 @@ function ActivationLockup({ lockup }: { lockup: SastwActivation["lockup"] }) {
   )
 }
 
-export function FeaturedSastw({
-  phase,
-  daysLeft,
-}: {
-  /** PySanAntonio's call for speakers. Computed on the server. */
-  phase: CfsPhase
-  /** Whole days left on that call; the page revalidates hourly. */
-  daysLeft: number
-}) {
+/**
+ * Takes no props. It carried `phase` and `daysLeft` for a line under the
+ * button counting down PySanAntonio's call for speakers; with that gone the
+ * band is entirely static content, which is also what let /events stop
+ * revalidating hourly.
+ */
+export function FeaturedSastw() {
   return (
     // A contained band inside the calendar, not a hero in front of it.
     //
@@ -304,41 +301,6 @@ export function FeaturedSastw({
                 Register for the week
               </a>
             </div>
-
-            {/* The one call still taking submissions gets a line. It is the
-                only reason a reader would need to act before September, and
-                the countdown drops away on its own when the call closes.
-
-                Now the band's only route to a DEVSA event page: the three
-                lockups above all point at sasw.co, which is right for someone
-                asking what is on and wrong for someone with a talk to submit.
-                This line is where that second reader is, so it carries the
-                link. */}
-            {phase === "open" && (
-              <p className="text-sm text-white/50">
-                <Link
-                  href="/events/pysanantonio"
-                  className="underline decoration-white/25 underline-offset-4 transition-colors hover:text-white/80 hover:decoration-white/50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60"
-                >
-                  PySanAntonio&apos;s call for speakers
-                </Link>{" "}
-                closes{" "}
-                {daysLeft === 0 ? (
-                  <span className="font-semibold text-white">today</span>
-                ) : (
-                  <>
-                    in{" "}
-                    <span
-                      className="font-semibold"
-                      style={{ color: SASTW_MAGENTA }}
-                    >
-                      {daysLeft} {daysLeft === 1 ? "day" : "days"}
-                    </span>
-                  </>
-                )}
-                .
-              </p>
-            )}
           </div>
         </div>
       </div>

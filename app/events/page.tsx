@@ -2,7 +2,6 @@ import { Metadata } from "next"
 import { FeaturedSastw } from "@/components/events/featured-sastw"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
-import { daysUntilClose, getCfsPhase } from "@/data/pysa/2026"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -62,18 +61,13 @@ export const metadata: Metadata = {
 }
 
 /**
- * Revalidate hourly so the featured band's call-for-speakers countdown stays
- * accurate without a deploy, and drops away on its own once the call closes.
- *
- * The band is Startup + Tech Week now rather than PySanAntonio alone, but the
- * only thing on it that expires is still PySanAntonio's call, so the countdown
- * is still what sets this window.
+ * No `revalidate`. It was set to an hour purely to keep the featured band's
+ * call-for-speakers countdown accurate; with that line removed nothing this
+ * page renders on the server expires — the event list, the search and the
+ * month picker all fetch client-side, so they are live regardless of how long
+ * the shell is cached.
  */
-export const revalidate = 3600
-
 export default function EventsPage() {
-  const phase = getCfsPhase()
-
   return (
     <>
       <script
@@ -115,7 +109,7 @@ export default function EventsPage() {
           featured — that rotates, and the page is what decides. */}
       <main className="min-h-screen bg-white text-gray-900">
         <CommunityEventsSection
-          featured={<FeaturedSastw phase={phase} daysLeft={daysUntilClose()} />}
+          featured={<FeaturedSastw />}
         />
         <FeaturedOnDemandEvent />
       </main>
