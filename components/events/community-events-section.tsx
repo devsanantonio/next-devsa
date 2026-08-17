@@ -6,6 +6,16 @@ import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, Cal
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
+import {
+  buildCalendarLinks,
+  downloadIcs,
+  effectiveEndMs,
+  formatDayHeading,
+  formatTime,
+  getEventStatus,
+  localDayKey,
+  relativeDayLabel,
+} from "@/lib/event-display"
 
 interface FirestoreEvent {
   id: string
@@ -180,119 +190,10 @@ interface MergedEvent {
   source: "firestore" | "static"
 }
 
-// Resolve an event's end as a timestamp. Ignores a missing, unparseable, or
-// inverted end time (one that lands before the start — a common data-entry
-// slip) and falls back to a 2 hour default, so a future event with a bad end
-// time is never silently treated as already-ended.
-function effectiveEndMs(event: { date: string; endTime?: string }): number {
-  const start = new Date(event.date).getTime()
-  const rawEnd = event.endTime ? new Date(event.endTime).getTime() : NaN
-  return Number.isFinite(rawEnd) && rawEnd > start
-    ? rawEnd
-    : start + 2 * 60 * 60 * 1000
-}
-
-/**
- * The calendar is pinned to San Antonio, not to the reader.
- *
- * Every date the list groups by, labels, or compares against "today" has to be
- * resolved in Central Time or the grouping is wrong for anyone outside it: a
- * 7pm Thursday meetup is Friday to a visitor in London, and grouping on their
- * local day would file it under a heading nobody in San Antonio would
- * recognise. The card times were already pinned this way — these put the day
- * boundaries on the same footing.
- */
-const TZ = "America/Chicago"
-
-/** `YYYY-MM-DD` for the event's local day in San Antonio. Sorts lexically. */
-function localDayKey(value: string | Date): string {
-  const d = typeof value === "string" ? new Date(value) : value
-  // en-CA gives ISO order (2026-08-21) without hand-assembling parts.
-  return d.toLocaleDateString("en-CA", { timeZone: TZ })
-}
-
-/**
- * "Thursday, August 21" — the group heading, from a `localDayKey`.
- *
- * Rendered in UTC, NOT in TZ, and that is not an oversight. The key is already
- * the San Antonio calendar day; it does not need converting again. Converting
- * it twice is an off-by-one: `new Date("2026-08-21")` parses as UTC midnight,
- * and asking for that instant in Central rolls it back to 7pm on the 20th, so
- * every heading on the page would name the day before its own events. Pinning
- * the parse to midday and formatting in UTC keeps the key's own date intact and
- * leaves enough clearance that no offset can drag it across a boundary.
- */
-function formatDayHeading(dayKey: string): string {
-  return new Date(`${dayKey}T12:00:00Z`).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  })
-}
-
-/**
- * "Today" / "Tomorrow" where it applies, otherwise nothing.
- *
- * Only two labels, and only these two. "This week" was tried and dropped: the
- * week boundary is ambiguous (a Sunday or a Monday, rolling or calendar), and a
- * label that half the readers compute differently is worse than no label. Today
- * and tomorrow are unambiguous to everyone.
- */
-function relativeDayLabel(dayKey: string, now: Date): string | null {
-  const today = localDayKey(now)
-  if (dayKey === today) return "Today"
-  const tomorrow = localDayKey(new Date(now.getTime() + 86_400_000))
-  if (dayKey === tomorrow) return "Tomorrow"
-  return null
-}
-
-/** The card's own time, e.g. "6:00 PM". */
-function formatTime(value: string): string {
-  return new Date(value).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: TZ,
-  })
-}
-
-// Generate calendar URLs for different providers
-function generateCalendarUrls(event: MergedEvent) {
-  const startDate = new Date(event.date)
-  const endDate = event.endTime 
-    ? new Date(event.endTime) 
-    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000) // Default 2 hours
-
-  // Format for Google Calendar (YYYYMMDDTHHmmssZ)
-  const formatForGoogle = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-  }
-
-  // Format for ICS (YYYYMMDDTHHMMSS)
-  const formatForICS = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
-  }
-
-  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatForGoogle(startDate)}/${formatForGoogle(endDate)}&location=${encodeURIComponent(event.location)}&details=${encodeURIComponent(event.description + (event.url ? `\n\nMore info: ${event.url}` : ''))}`
-
-  // Generate ICS file content
-  const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//DEVSA//Community Calendar//EN
-BEGIN:VEVENT
-DTSTART:${formatForICS(startDate)}
-DTEND:${formatForICS(endDate)}
-SUMMARY:${event.title}
-LOCATION:${event.location}
-DESCRIPTION:${event.description.replace(/\n/g, '\\n')}${event.url ? `\\n\\nMore info: ${event.url}` : ''}
-END:VEVENT
-END:VCALENDAR`
-
-  const icsBlob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
-  const icsUrl = URL.createObjectURL(icsBlob)
-
-  return { googleUrl, icsUrl, icsContent }
-}
+// Every date, status and calendar-link helper this list used to define
+// itself now lives in lib/event-display.ts, shared with the detail page at
+// /events/[slug]. Two copies of these semantics is what let the two
+// surfaces disagree about whether an event had ended.
 
 const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/feed`
 const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/calendar`
@@ -701,20 +602,6 @@ export function CommunityEventsSection() {
     }))
   }, [firestoreEvents])
 
-  // Helper function to get event status: "upcoming" | "happening" | "ended"
-  const getEventStatus = (event: MergedEvent): "upcoming" | "happening" | "ended" => {
-    const startTime = new Date(event.date).getTime()
-    const endTime = effectiveEndMs(event)
-    const now = currentTime.getTime()
-    
-    if (now >= startTime && now < endTime) {
-      return "happening"
-    } else if (now >= endTime) {
-      return "ended"
-    }
-    return "upcoming"
-  }
-
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
 
@@ -1068,23 +955,35 @@ export function CommunityEventsSection() {
                           const eventLink = event.slug
                             ? `/events/${event.slug}`
                             : event.url
-                          const eventStatus = getEventStatus(event)
+                          const eventStatus = getEventStatus(event, currentTime)
                           const isNextUp = day.key === eventsByDay[0]?.key && index === 0
 
                           return (
-                            <motion.article
+                            /* A plain article. These cards used to be
+                               `motion.article` with `initial={{opacity: 0}}`
+                               and `whileInView`, and that made the content's
+                               visibility depend on an IntersectionObserver
+                               callback firing.
+
+                               When it does not fire, the cards are still in the
+                               DOM, still occupying their full height, and
+                               drawing nothing. Printing the calendar is the
+                               case that reaches real people: correct date
+                               headings above blank white gaps, every event
+                               missing. It also renders the page unverifiable in
+                               a headless browser, which is how this was found —
+                               all eight articles sat at
+                               `opacity: 0; transform: translateY(10px)` with no
+                               flag able to shake them loose.
+
+                               The stagger had already been cut back twice for
+                               being animation cost on a list people scan. It is
+                               not worth a mechanism that can leave the page
+                               blank, so it is gone rather than repaired. The
+                               hover lift stays — that one is a real affordance
+                               and it degrades to nothing. */
+                            <article
                               key={event.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              /* Capped at five steps. The delay was
-                                 `index * 0.05` against the flat list index, so
-                                 with a full calendar the last card waited the
-                                 better part of a second after entering view —
-                                 animation cost on a list people are scanning,
-                                 with nothing to say for itself. Within a day
-                                 the stagger still reads. */
-                              transition={{ duration: 0.3, delay: Math.min(index, 5) * 0.04 }}
                               className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                                 eventStatus === "happening"
                                   ? "border-green-300 bg-green-50/30 hover:border-green-400"
@@ -1106,18 +1005,25 @@ export function CommunityEventsSection() {
                                     twice the size without the card growing to
                                     match. `sizes` follows the box — it said 48px
                                     while the box changed, which is how a logo
-                                    ends up soft. */}
-                                {primaryLogo && (
-                                  <div className="relative h-14 w-14 shrink-0 rounded-lg bg-gray-950 p-2">
-                                    <Image
-                                      src={primaryLogo}
-                                      alt=""
-                                      fill
-                                      className="object-contain p-2"
-                                      sizes="56px"
-                                    />
-                                  </div>
-                                )}
+                                    ends up soft. And it is no longer
+                                    conditional. Rendered only when a logo
+                                    existed, a community without one produced a
+                                    card whose text began 72px left of every
+                                    other card, breaking the left rail the
+                                    column is read down. The detail page already
+                                    falls back to the DEVSA mark for exactly
+                                    this; the list does the same, so the rail
+                                    holds and the card still reads as belonging
+                                    to somebody. */}
+                                <div className="relative h-14 w-14 shrink-0 rounded-lg bg-gray-950 p-2">
+                                  <Image
+                                    src={primaryLogo || "/devsa-gradient.svg"}
+                                    alt=""
+                                    fill
+                                    className="object-contain p-2"
+                                    sizes="56px"
+                                  />
+                                </div>
 
                                 <div className="min-w-0 flex-1">
                                   {/* Time and host on one line, above the title.
@@ -1205,7 +1111,7 @@ export function CommunityEventsSection() {
                                 <div className="flex items-center gap-1.5">
                                   <span className="mr-0.5 text-[12px] font-normal text-gray-400">Add to</span>
                                   <a
-                                    href={generateCalendarUrls(event).googleUrl}
+                                    href={buildCalendarLinks(event).googleUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
@@ -1219,16 +1125,7 @@ export function CommunityEventsSection() {
                                     Google
                                   </a>
                                   <button
-                                    onClick={() => {
-                                      const { icsContent } = generateCalendarUrls(event)
-                                      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
-                                      const url = URL.createObjectURL(blob)
-                                      const a = document.createElement('a')
-                                      a.href = url
-                                      a.download = `${event.slug || event.id}.ics`
-                                      a.click()
-                                      URL.revokeObjectURL(url)
-                                    }}
+                                    onClick={() => downloadIcs(event)}
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
                                     title="Download .ics for Apple Calendar or Outlook"
                                   >
@@ -1245,7 +1142,7 @@ export function CommunityEventsSection() {
                                   </Link>
                                 )}
                               </div>
-                            </motion.article>
+                            </article>
                           )
                         })}
                       </div>
