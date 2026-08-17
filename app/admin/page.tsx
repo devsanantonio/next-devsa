@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { 
   ArrowLeft, 
+  GripVertical,
   Mail, 
   Users, 
   Mic2, 
@@ -40,6 +41,7 @@ import {
 import { RichTextEditor } from "@/components/rich-text-editor"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
+import { useDragOrder } from "@/lib/hooks/use-drag-order"
 
 interface DevSASubscriber {
   id: string
@@ -404,6 +406,48 @@ export default function AdminPage() {
       setIsLoading(false)
     }
   }
+
+  /**
+   * Drag-to-reorder for both directories.
+   *
+   * The order set here is what the public site renders — the APIs sort on the
+   * same `order` field, and every partner and community surface reads those
+   * APIs, so a drag here moves the logo walls, the Building Together directory
+   * and the dropdowns together.
+   *
+   * `orderedIds` is the full list rather than a moved id and an index: a
+   * partial write would leave every other record holding a stale position, and
+   * two admins dragging at once would interleave into an order neither chose.
+   */
+  const persistOrder = async (
+    endpoint: "communities" | "partners",
+    orderedIds: string[]
+  ) => {
+    setError(null)
+    try {
+      const res = await fetch(`/api/${endpoint}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderedIds, adminEmail }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || "Failed to save order")
+        return
+      }
+      // Re-read so the screen shows what was actually stored. The hook keeps
+      // its own arrangement on screen until this lands, so there is no flicker
+      // back through the old order in between.
+      await fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)
+    } catch {
+      setError("Failed to save order")
+    }
+  }
+
+  const communityOrder = useDragOrder(communities, (ids) =>
+    persistOrder("communities", ids)
+  )
+  const partnerOrder = useDragOrder(partners, (ids) => persistOrder("partners", ids))
 
   const fetchData = async (email: string, role?: string, communityId?: string) => {
     try {
@@ -1108,6 +1152,56 @@ export default function AdminPage() {
       setError('Failed to upload logo')
     } finally {
       setIsUploadingLogo(false)
+    }
+  }
+
+  /**
+   * Partner logos, uploaded from a local file.
+   *
+   * The partner forms only ever accepted a URL, so adding a partner meant
+   * hosting the logo somewhere else first — while communities right beside
+   * them had a file picker. Same endpoint, same 5 MB and image-type limits;
+   * `partnerId` is what routes the blob to `partners/` and forces the
+   * admin-only permission branch.
+   *
+   * Takes a setter rather than reading state, because the create form and the
+   * edit form hold their partner in different places and this needs to serve
+   * both.
+   */
+  const [isUploadingPartnerLogo, setIsUploadingPartnerLogo] = useState(false)
+
+  const handlePartnerLogoUpload = async (
+    file: File,
+    partnerId: string,
+    apply: (url: string) => void
+  ) => {
+    setIsUploadingPartnerLogo(true)
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('adminEmail', adminEmail)
+      // Empty string is meaningful: the route reads `partnerId !== null`, so an
+      // unsaved partner still takes the partner path and lands as `new-<ts>`.
+      formData.append('partnerId', partnerId)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.json()
+
+      if (response.ok) {
+        apply(data.url)
+        setSuccessMessage('Logo uploaded successfully!')
+      } else {
+        setError(data.error || 'Failed to upload logo')
+      }
+    } catch {
+      setError('Failed to upload logo')
+    } finally {
+      setIsUploadingPartnerLogo(false)
     }
   }
 
@@ -3491,9 +3585,30 @@ export default function AdminPage() {
                   {communities.length === 0 ? (
                     <p className="text-neutral-400 text-center py-8">No communities found.</p>
                   ) : (
-                    communities.map((community) => (
-                      <div key={community.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-4 hover:bg-neutral-800/50 transition-colors">
+                    communityOrder.items.map((community) => (
+                      <div
+                        key={community.id}
+                        {...communityOrder.getRowProps(community.id)}
+                        className={`rounded-xl border bg-neutral-800/30 p-4 transition-colors ${
+                          communityOrder.draggingId === community.id
+                            ? "border-[#ef426f]/60 opacity-50"
+                            : communityOrder.overId === community.id
+                              ? "border-[#ef426f] bg-neutral-800/60"
+                              : "border-neutral-800 hover:bg-neutral-800/50"
+                        }`}
+                      >
                         <div className="flex items-start gap-4">
+                          {/* Grab handle. A real button so it is focusable and
+                              takes arrow keys — HTML5 drag events only fire for
+                              a pointer, so without this the list is
+                              mouse-only. */}
+                          <button
+                            type="button"
+                            {...communityOrder.getHandleProps(community.id)}
+                            className="mt-0.5 shrink-0 cursor-grab rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-800 hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ef426f] active:cursor-grabbing"
+                          >
+                            <GripVertical className="h-4 w-4" />
+                          </button>
                           {community.logo && (
                             <img 
                               src={community.logo} 
@@ -4098,8 +4213,25 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {partners.map((partner) => (
-                    <div key={partner.id} className="flex gap-4 rounded-xl border border-neutral-800 bg-neutral-800/30 p-4">
+                  {partnerOrder.items.map((partner) => (
+                    <div
+                      key={partner.id}
+                      {...partnerOrder.getRowProps(partner.id)}
+                      className={`flex gap-4 rounded-xl border bg-neutral-800/30 p-4 transition-colors ${
+                        partnerOrder.draggingId === partner.id
+                          ? "border-[#ef426f]/60 opacity-50"
+                          : partnerOrder.overId === partner.id
+                            ? "border-[#ef426f] bg-neutral-800/60"
+                            : "border-neutral-800"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        {...partnerOrder.getHandleProps(partner.id)}
+                        className="mt-0.5 shrink-0 cursor-grab rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-800 hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ef426f] active:cursor-grabbing"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-800 bg-white/5">
                         {partner.logo ? (
                           <img src={partner.logo} alt={partner.name} className="h-full w-full object-contain p-1" />
@@ -4177,7 +4309,33 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo URL *</label>
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo *</label>
+                    {/* Upload or paste. The URL field stays — some partner
+                        logos are already hosted and re-uploading them would
+                        just make a second copy. */}
+                    <div className="mb-2 relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {{ handlePartnerLogoUpload(file, newPartner.id, (url) => setNewPartner((prev) => ({ ...prev, logo: url }))) }}
+                        }}
+                        disabled={isUploadingPartnerLogo}
+                        className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
+                      />
+                      {isUploadingPartnerLogo && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          <Loader2 className="h-5 w-5 animate-spin text-[#ef426f]" />
+                        </div>
+                      )}
+                    </div>
+                    {newPartner.logo && (
+                      <div className="mb-2 flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-800/40 p-2">
+                        <img src={newPartner.logo} alt="" className="h-8 w-8 object-contain" />
+                        <span className="truncate text-xs text-neutral-400">{newPartner.logo}</span>
+                      </div>
+                    )}
                     <input
                       type="url"
                       required
@@ -4256,7 +4414,27 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo URL</label>
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">Logo</label>
+                    {/* Upload or paste. The URL field stays — some partner
+                          logos are already hosted and re-uploading them would
+                          just make a second copy. */}
+                      <div className="mb-2 relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {{ handlePartnerLogoUpload(file, editingPartner.id, (url) => setEditingPartner((prev) => (prev ? { ...prev, logo: url } : prev))) }}
+                          }}
+                          disabled={isUploadingPartnerLogo}
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white file:mr-4 file:rounded-md file:border-0 file:bg-[#ef426f] file:px-3 file:py-1 file:text-sm file:text-white hover:file:bg-[#d63760] file:cursor-pointer"
+                        />
+                        {isUploadingPartnerLogo && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <Loader2 className="h-5 w-5 animate-spin text-[#ef426f]" />
+                          </div>
+                        )}
+                      </div>
                       {editingPartner.logo && (
                         <div className="mb-2 flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-800/40 p-2">
                           <img src={editingPartner.logo} alt="" className="h-8 w-8 object-contain" />

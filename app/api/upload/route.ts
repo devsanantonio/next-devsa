@@ -8,6 +8,10 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const adminEmail = formData.get('adminEmail') as string;
     const communityId = formData.get('communityId') as string;
+    // Partner logos land in their own prefix. Without this every upload went to
+    // `communities/`, so a partner logo would have been filed under a community
+    // id it has nothing to do with.
+    const partnerId = formData.get('partnerId') as string | null;
 
     if (!file || !adminEmail) {
       return NextResponse.json(
@@ -34,13 +38,28 @@ export async function POST(request: NextRequest) {
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
     const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
-    const isOrganizerForCommunity = adminData.role === 'organizer' && adminData.communityId === communityId;
 
-    if (!isAdmin && !isOrganizerForCommunity) {
-      return NextResponse.json(
-        { error: 'Unauthorized - you can only upload for your assigned community' },
-        { status: 403 }
-      );
+    if (partnerId !== null) {
+      // Partners are admin-managed — there is no organizer scoped to one, so
+      // the organizer branch below must not be reachable for them. An organizer
+      // passing a partnerId would otherwise fall through to the community check
+      // and pass it whenever their own communityId happened to be empty.
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - only admins can upload partner logos' },
+          { status: 403 }
+        );
+      }
+    } else {
+      const isOrganizerForCommunity =
+        adminData.role === 'organizer' && adminData.communityId === communityId;
+
+      if (!isAdmin && !isOrganizerForCommunity) {
+        return NextResponse.json(
+          { error: 'Unauthorized - you can only upload for your assigned community' },
+          { status: 403 }
+        );
+      }
     }
 
     // Validate file type
@@ -63,7 +82,10 @@ export async function POST(request: NextRequest) {
 
     // Generate a unique filename
     const extension = file.name.split('.').pop() || 'png';
-    const filename = `communities/${communityId || 'new'}-${Date.now()}.${extension}`;
+    const filename =
+      partnerId !== null
+        ? `partners/${partnerId || 'new'}-${Date.now()}.${extension}`
+        : `communities/${communityId || 'new'}-${Date.now()}.${extension}`;
 
     // Upload to Vercel Blob
     const blob = await put(filename, file, {

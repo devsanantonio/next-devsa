@@ -105,6 +105,26 @@ export const COLLECTIONS = {
   ORDERS: 'orders',
 } as const;
 
+/**
+ * Sort comparator for anything with an optional `order` and a `name`.
+ *
+ * Deliberately applied in memory rather than as a Firestore `orderBy('order')`.
+ * Firestore excludes documents that lack the ordered field entirely, so the
+ * moment one record is dragged into position every record that has never been
+ * dragged would vanish from the site — a reorder silently becoming a delete.
+ *
+ * Ordered records come first in their set order; the rest fall to the end
+ * alphabetically, which is where they already were.
+ */
+export type Orderable = { id: string; order?: number; name?: string }
+
+export function byDisplayOrder(a: Orderable, b: Orderable): number {
+  const ao = a.order ?? Number.MAX_SAFE_INTEGER;
+  const bo = b.order ?? Number.MAX_SAFE_INTEGER;
+  if (ao !== bo) return ao - bo;
+  return (a.name || '').localeCompare(b.name || '');
+}
+
 // Types for Firestore documents
 export interface NewsletterSubscription {
   email: string;
@@ -192,6 +212,12 @@ export interface ApprovedAdmin {
 export interface Community {
   id: string; // Firestore doc ID matches this
   name: string;
+  /**
+   * Display position, set by dragging in the admin. Absent until someone
+   * reorders — see `byDisplayOrder`, which is what keeps unordered records
+   * visible rather than letting a Firestore orderBy drop them.
+   */
+  order?: number;
   logo: string;
   description: string;
   website?: string;
@@ -213,6 +239,8 @@ export interface Community {
 export interface Partner {
   id: string; // Firestore doc ID matches this
   name: string;
+  /** Display position, set by dragging in the admin. See `byDisplayOrder`. */
+  order?: number;
   logo: string;
   description: string;
   website?: string;

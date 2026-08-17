@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, type Partner, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Partner, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // Only admins/superadmins may create, edit, or delete partners.
 async function requireAdmin(db: FirebaseFirestore.Firestore, adminEmail: string) {
@@ -23,12 +23,12 @@ export async function GET() {
   try {
     const db = getDb();
 
+    // No Firestore orderBy — see byDisplayOrder.
     const partnersSnapshot = await db
       .collection(COLLECTIONS.PARTNERS)
-      .orderBy('name')
       .get();
 
-    const partners = partnersSnapshot.docs.map(doc => {
+    const partners: Orderable[] = partnersSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -37,6 +37,8 @@ export async function GET() {
         updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
       };
     });
+
+    partners.sort(byDisplayOrder);
 
     return NextResponse.json({ partners, source: 'firestore' });
   } catch (error) {
@@ -150,5 +152,62 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Delete partner error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH — persist a new display order (admin only).
+ *
+ * Takes the full list of ids in their intended order and writes `order: index`
+ * across them in one batch. The whole list rather than a moved id and a target
+ * index, because a partial update leaves the rest of the collection holding
+ * stale indices and two admins reordering at once would interleave into
+ * nonsense. One write, one complete picture.
+ *
+ * Admin-only even where the resource has an organizer branch elsewhere:
+ * ordering is a site-wide presentation decision, not something scoped to the
+ * community whose row is being dragged.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { orderedIds, adminEmail } = body as { orderedIds?: unknown; adminEmail?: string };
+
+    if (!Array.isArray(orderedIds) || !orderedIds.every((id) => typeof id === 'string')) {
+      return NextResponse.json({ error: 'orderedIds must be an array of ids' }, { status: 400 });
+    }
+    if (!adminEmail) {
+      return NextResponse.json({ error: 'adminEmail is required' }, { status: 400 });
+    }
+
+    const db = getDb();
+
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', adminEmail.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (adminQuery.empty) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+    const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
+    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - only admins can reorder' },
+        { status: 403 }
+      );
+    }
+
+    const batch = db.batch();
+    orderedIds.forEach((id, index) => {
+      batch.update(db.collection(COLLECTIONS.PARTNERS).doc(id), { order: index, updatedAt: new Date() });
+    });
+    await batch.commit();
+
+    return NextResponse.json({ success: true, count: orderedIds.length });
+  } catch (error) {
+    console.error('Reorder error:', error);
+    return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
   }
 }
