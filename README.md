@@ -20,7 +20,7 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 - **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google OAuth + email/password
 - **Email:** [Resend](https://resend.com/)
 - **Bot protection:** [Vercel BotID](https://vercel.com/docs/botid)
-- **Payments:** [Stripe](https://stripe.com/) (+ Stripe Connect for bounty payouts)
+- **Payments:** [Stripe](https://stripe.com/)
 - **Merch fulfillment:** [Printify](https://printify.com/)
 - **Storage:** [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
 - **Deployment:** Vercel
@@ -64,11 +64,9 @@ curl -X POST https://your-domain.com/api/admin/setup \
 
 Standard Next.js App Router layout — routes in [app/](app/), UI in [components/](components/), server helpers and third-party clients in [lib/](lib/), and static seed data in [data/](data/).
 
-Two things worth knowing before you start:
+One thing worth knowing before you start:
 
 **Firestore is the source of truth; [data/](data/) is a fallback.** Communities, partners, and events are read from Firestore and fall back to the checked-in TypeScript files when Firestore is unavailable or a document is missing. If you add a community or partner, it needs to exist in both places to render reliably.
-
-**Components under [components/jobs/](components/jobs/) belong to the bounty marketplace.** The job board was renamed to "bounties" — routes live at `/bounties`, and `/jobs` permanently redirects. The directory name is leftover.
 
 ---
 
@@ -82,9 +80,6 @@ The Geekdom coworking partnership page, including a "ping an admin" inquiry form
 
 ### Partners + Communities (`/buildingtogether`)
 Discover 20+ local tech communities and partner organizations.
-
-### Bounties (`/bounties`)
-Marketplace for paid community work. Firebase Auth for posting and claiming, Stripe Connect for payouts.
 
 ### Shop (`/shop`)
 DEVSA merch, checked out through Stripe and fulfilled by Printify.

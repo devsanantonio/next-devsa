@@ -1,18 +1,6 @@
 {
   "crons": [
     {
-      "path": "/api/events/weekly-digest",
-      "schedule": "0 15 * * 1"
-    },
-    {
-      "path": "/api/news-digest",
-      "schedule": "0 */4 * * *"
-    },
-    {
-      "path": "/api/youtube-digest",
-      "schedule": "30 */4 * * *"
-    },
-    {
       "path": "/api/shop/reconcile?fix=1",
       "schedule": "0 9 * * *"
     }

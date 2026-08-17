@@ -29,9 +29,23 @@ A route that calls `checkBotId()` without a matching entry in `instrumentation-c
 
 `checkBotId()` always returns `isBot: false` in local dev. In production it blocks `curl` and direct navigation by design — test protected routes with a `fetch` from a page in the app, not from a terminal.
 
+## Removed: the bounty board and the Discord digests
+
+`/bounties` and everything under it is gone — pages, API routes, `components/jobs/`, `components/bounties/`, the account layer (`/api/auth/verify`, `/api/messages`, `/api/notifications`, `lib/auth-middleware.ts`), Stripe Connect payouts, and the job/bounty types in `lib/firebase-admin.ts`. `/jobs` and `/bounties` now 404; the old redirects went with them.
+
+The three Discord digest crons went too — `/api/events/weekly-digest`, `/api/news-digest`, `/api/youtube-digest` — and with them all of `lib/discord.ts` and the `rss-parser` dependency. `vercel.json` is down to one cron, `/api/shop/reconcile`.
+
+Their thirteen Firestore collections were counted before removal and every one was empty, so no data was orphaned. See the `COLLECTIONS` comment in `lib/firebase-admin.ts` for the list.
+
+Two things that survived and look like they shouldn't:
+
+- **Stripe** — the shop uses it. Only Connect went.
+- **`STATUS_API_TOKEN` and `DISCORD_BOT_BASE_URL`** — these drive the Discord *bot* behind the coworking page's live status and "ping an admin", not the digest webhooks. `CRON_SECRET` likewise still guards `/api/shop/reconcile` and `/api/shop/orders`.
+
+The dead Vercel env vars (`DISCORD_JOBS_WEBHOOK_URL`, `DISCORD_EVENTS_WEBHOOK_URL`, `DISCORD_NEWS_WEBHOOK_URL`, `DISCORD_YOUTUBE_WEBHOOK_URL`, `LINKEDIN_ACCESS_TOKEN`, `LINKEDIN_ORG_ID`) have been deleted from the project.
+
 ## Naming leftovers
 
-- `components/jobs/` holds the **bounty** marketplace UI. The job board was renamed; `/jobs` and `/api/jobs` permanently redirect to `/bounties` (see `next.config.ts`).
 - Canonical host is `www.devsa.community`. Bare `devsa.community` and the legacy `devsanantonio.com` redirect to it, so absolute URLs should use the `www` form.
 
 ## Working here

@@ -19,10 +19,9 @@ DEVSA serves as the connective tissue for San Antonio's tech ecosystem. The orga
 
 1. **Aggregates Tech Events**: Collects and displays events from 20+ local tech community groups in a single calendar
 2. **Provides Free Coworking Space**: A volunteer-managed workspace at Geekdom in downtown San Antonio
-3. **Runs a Tech Job Board**: Listings automatically shared across the website, Discord, and LinkedIn
-4. **Produces Content**: DEVSA TV creates documentary-style videos about the local tech community
-5. **Hosts Conferences**: Including "More Human Than Human" AI Conference and PySanAntonio Python conference
-6. **Connects Communities**: Bridges the gap between 20+ independent tech groups
+3. **Produces Content**: DEVSA TV creates documentary-style videos about the local tech community
+4. **Hosts Conferences**: Including "More Human Than Human" AI Conference and PySanAntonio Python conference
+5. **Connects Communities**: Bridges the gap between 20+ independent tech groups
 
 ## Pages & Features
 
@@ -52,13 +51,6 @@ A free, volunteer-managed community workspace located at:
 
 ### Tech Communities & Partners (https://devsa.community/buildingtogether)
 Directory of 20+ tech community groups and strategic partners in the San Antonio area. Each community has its own profile with description, meeting schedule, and links.
-
-### Job Board (https://devsa.community/jobs)
-Tech job listings covering San Antonio, the I-35 corridor, and the Rio Grande Valley. Features:
-- Free job posting during community launch
-- Automatic distribution to website, Discord, and LinkedIn
-- Search and filter by role type, location, and technology
-- Employer dashboard for managing listings
 
 ### DEVSA TV (https://devsa.community/devsatv)
 Documentary-style video content showcasing San Antonio's tech community. Includes:
