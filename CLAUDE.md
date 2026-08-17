@@ -35,7 +35,13 @@ A route that calls `checkBotId()` without a matching entry in `instrumentation-c
 
 The three Discord digest crons went too — `/api/events/weekly-digest`, `/api/news-digest`, `/api/youtube-digest` — and with them all of `lib/discord.ts` and the `rss-parser` dependency. `vercel.json` is down to one cron, `/api/shop/reconcile`.
 
-Their thirteen Firestore collections were counted before removal and every one was empty, so no data was orphaned. See the `COLLECTIONS` comment in `lib/firebase-admin.ts` for the list.
+**Their thirteen Firestore collections still hold 2,444 documents.** Nothing reads them, but the data is there — including 12 `job_board_users`, real accounts whose owners can no longer sign in. See the `COLLECTIONS` comment in `lib/firebase-admin.ts` for the counts and what is safe to clear.
+
+## Firestore uses a NAMED database
+
+`getDb()` opens `getFirestore(app, 'devsa')`. There is also a `(default)` database in the same project holding an unrelated app's data — `crm_*`, `blog_posts`, a 4-document `events` collection.
+
+Any script written against this data must pass `'devsa'` explicitly. `getFirestore(app)` connects to `(default)` without erroring and returns zero for every DEVSA collection, which reads as "empty" rather than "wrong database". This has already produced one false all-clear in this repo.
 
 Two things that survived and look like they shouldn't:
 

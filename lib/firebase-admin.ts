@@ -81,11 +81,24 @@ export const COLLECTIONS = {
   //
   // Removed with the Discord digest crons: news_articles, youtube_videos.
   //
-  // All thirteen were counted in Firestore before being dropped from this map
-  // and every one held zero documents, so nothing was orphaned and there is no
-  // clean-up owed. Named here rather than silently deleted because "the code
-  // stopped referencing it" and "the data is gone" are different claims, and
-  // the next person to audit this project deserves the second one in writing.
+  // ALL THIRTEEN STILL HOLD DATA. Counted against the `devsa` database on
+  // 2026-08-16: 2,444 documents, of which 12 are job_board_users — real
+  // accounts, whose owners can no longer sign in now that the auth layer is
+  // gone. The bulk is digest cache (news_articles 1150, youtube_videos 1265),
+  // which is genuinely inert; the job_board_* and conversations/messages/
+  // notifications/saved_jobs rows involve people and deserve a decision rather
+  // than a delete.
+  //
+  // An earlier pass in this repo claimed all thirteen were empty. That count
+  // was taken against the DEFAULT database. getDb() below opens the NAMED
+  // database 'devsa', and getFirestore(app) without that argument silently
+  // reads a different, near-empty one in the same project. Any script that
+  // audits this data must pass 'devsa' explicitly or it will report zeros for
+  // everything and look like a clean bill of health.
+  //
+  // Named here rather than silently dropped because "the code stopped
+  // referencing it" and "the data is gone" are different claims, and only the
+  // first one is true.
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
   MERCH_SUBMISSIONS: 'merch_submissions',
   FAILED_ORDERS: 'failed_orders',
