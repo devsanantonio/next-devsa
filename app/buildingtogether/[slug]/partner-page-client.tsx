@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import type { Partner } from "@/lib/partners"
+import { logoOnLight } from "@/lib/logo-invert"
 import { ArrowLeft, ExternalLink, Globe } from "lucide-react"
 import { motion } from "motion/react"
 
@@ -55,12 +56,21 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
                 the link below, which is enough for it to read as the accent
                 without colouring a whole panel. */}
             <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border-b border-slate-100">
-              <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-2xl bg-black p-4 shadow-md">
+              {/* No plate. This sat on a fixed black tile, which assumed every
+                  logo was light artwork — so a black wordmark uploaded from the
+                  admin landed black-on-black and disappeared.
+                  
+                  The card is already white and so is the page, so the tile was
+                  never doing anything a background needed to do; it was only
+                  creating a second surface for the artwork to disagree with.
+                  Light marks get the same `invert` the logo walls use, which
+                  means one rule covers every light surface on the site. */}
+              <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0">
                 <Image
                   src={partner.logo}
                   alt={partner.name}
                   fill
-                  className="object-contain p-2"
+                  className={`object-contain ${logoOnLight(partner)}`}
                   sizes="112px"
                 />
               </div>

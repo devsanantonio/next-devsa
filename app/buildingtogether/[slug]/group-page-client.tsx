@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "motion/react"
+import { logoOnLight } from "@/lib/logo-invert"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -206,13 +207,15 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
           >
             {/* Header with brand color */}
             <div className="p-8 sm:p-12 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-              <div 
-                className="relative h-28 w-28 sm:h-32 sm:w-32 shrink-0 rounded-2xl bg-slate-900 p-4 shadow-xl">
+              {/* No plate — see the note on the partner page. The card is
+                  white, so a dark tile only gave the artwork a second surface
+                  to conflict with. */}
+              <div className="relative h-28 w-28 sm:h-32 sm:w-32 shrink-0">
                 <Image
                   src={community.logo}
                   alt={community.name}
                   fill
-                  className="object-contain p-3"
+                  className={`object-contain ${logoOnLight(community)}`}
                   sizes="128px"
                 />
               </div>

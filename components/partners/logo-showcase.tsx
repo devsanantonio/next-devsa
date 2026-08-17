@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "motion/react"
+import { logoOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
@@ -15,52 +16,22 @@ interface LogoItem {
   type: LogoType
 }
 
-/**
- * White-on-transparent marks that need inverting to read on a light surface.
- *
- * A hardcoded guess about somebody else's artwork, and it is fragile by
- * construction: it is keyed on the record id, not on the file, so it keeps
- * applying after the file changes. `434media` was on this list and came off
- * when a black wordmark was uploaded to replace the white one — invert turned
- * it white again and it disappeared into the page.
- *
- * Now that logos can be uploaded from the admin, this will drift again. The
- * durable fix is a per-record flag set beside the upload, so the person who
- * chooses the file also says how it should be treated. Until then, anyone
- * swapping a logo has to check this list in BOTH ecosystem-showcase.tsx and
- * partners/logo-showcase.tsx.
- *
- * `digital-canvas` stays only as a reminder of that: the partner is deleted and
- * the entry is inert.
- */
-const INVERT_PARTNER_IDS = ["youth-code-jam"]
-const INVERT_COMMUNITY_NAMES = [
-  "aws user group",
-  "alamo city locksport",
-  "alamo python",
-  "alamo tech collective",
-  "datanauts",
-  "greater gaming society",
-  "red hat user group",
-  "unreal engine",
-  "women in data",
-]
+
 
 // Horizontal wordmark logos that read small in a square box — give them room.
+//
+// Still an id list, and still a guess — but a guess about the artwork's aspect
+// ratio, which does not change when someone swaps a white mark for a black one.
+// Unlike the invert list this replaced, a stale entry here makes a logo the
+// wrong size rather than invisible.
 const LARGE_PARTNER_IDS = [
   "tech-bloc",
   "geekdom",
   "youth-code-jam",
-  "digital-canvas",
   "utsa",
   "learn2ai",
   "project-quest",
 ]
-
-function shouldInvert(logo: LogoItem) {
-  if (logo.type === "partner") return INVERT_PARTNER_IDS.includes(logo.id)
-  return INVERT_COMMUNITY_NAMES.some((n) => logo.name.toLowerCase().includes(n))
-}
 
 function isLargeLogo(logo: LogoItem) {
   return logo.type === "partner" && LARGE_PARTNER_IDS.includes(logo.id)
@@ -74,8 +45,7 @@ function splitIntoRows<T>(items: T[], rows: number): T[][] {
 
 /* Desktop — a logo-forward tile, on the canvas (no card). */
 function LogoTile({ logo }: { logo: LogoItem }) {
-  const invert = shouldInvert(logo)
-  const large = isLargeLogo(logo)
+    const large = isLargeLogo(logo)
   return (
     <Link href={`/buildingtogether/${logo.id}`} className="group/logo block h-full">
       <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center">
@@ -86,7 +56,7 @@ function LogoTile({ logo }: { logo: LogoItem }) {
             fill
             unoptimized
             sizes={large ? "64px" : "48px"}
-            className={`object-contain${invert ? " invert" : ""}`}
+            className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>
         <span className="text-sm font-medium leading-tight text-gray-600 transition-colors duration-200 group-hover/logo:text-gray-900">
@@ -99,8 +69,7 @@ function LogoTile({ logo }: { logo: LogoItem }) {
 
 /* Mobile — a compact chip used inside the scrolling marquee */
 function MarqueeChip({ logo }: { logo: LogoItem }) {
-  const invert = shouldInvert(logo)
-  return (
+    return (
     <Link href={`/buildingtogether/${logo.id}`} className="shrink-0">
       <div className="flex items-center gap-2 px-2 py-1.5">
         <div className="relative h-6 w-6 shrink-0">
@@ -110,7 +79,7 @@ function MarqueeChip({ logo }: { logo: LogoItem }) {
             fill
             unoptimized
             sizes="24px"
-            className={`object-contain${invert ? " invert" : ""}`}
+            className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>
         <span className="whitespace-nowrap text-xs font-medium text-gray-700">
@@ -163,7 +132,12 @@ export function LogoShowcase() {
         items: Array<{ id: string; name: string; logo: string }>,
         type: LogoItem["type"]
       ): LogoItem[] =>
-        items.map((i) => ({ id: i.id, name: i.name, logo: i.logo, type }))
+        items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          logo: i.logo,
+          type,
+        }))
 
       let partnerLogos: LogoItem[] = []
       try {
