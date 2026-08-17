@@ -57,7 +57,10 @@ export const featuredOnDemandEvent: OnDemandEvent | null = {
 export const moreHumanThanHumanEvent: OnDemandEvent | null = {
   id: "more-human-than-human-2026",
   type: "on-demand",
-  title: "More Human Than Human: AI Conference powered by the DEVSA Community",
+  // No "powered by the DEVSA Community" here any more. The section this card
+  // sits in is headed "Watch Past Conferences Powered by DEVSA", so the card
+  // was saying it a second time inside the block that already said it.
+  title: "More Human Than Human: AI Conference",
   date: "2026-02-28T00:00:00.000Z",
   location: "Geekdom",
   description: "As AI shifts from a tool we use to an agent that acts, the boundary between human and machine is disappearing. Join San Antonio's builders, dreamers, and technologists for a deep dive into how AI is fundamentally re-architecting the way we write code, secure the internet, and lead organizations.",

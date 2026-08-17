@@ -70,68 +70,13 @@ export function FeaturedOnDemandEvent() {
           </motion.div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* PySanAntonio */}
-            {featuredOnDemandEvent && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-              >
-                <Link
-                  href={featuredOnDemandEvent.url || "#"}
-                  className="group block h-full overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition-all duration-300 hover:border-white/20 hover:bg-neutral-900/70"
-                >
-                  <div className="relative aspect-video overflow-hidden bg-black">
-                    <Image
-                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg"
-                      alt={featuredOnDemandEvent.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-
-                    <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/80">
-                      Past Event
-                    </span>
-
-                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white">
-                      <Play className="h-3 w-3 fill-white" />
-                      Full Event
-                    </span>
-                  </div>
-
-                  <div className="p-5 sm:p-6">
-                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/40 mb-2">
-                      {formatPastDate(featuredOnDemandEvent.date)} ·{" "}
-                      {featuredOnDemandEvent.location}
-                    </p>
-
-                    <h3 className="text-lg sm:text-xl font-bold leading-tight tracking-tight text-white mb-3">
-                      {featuredOnDemandEvent.title}
-                    </h3>
-
-                    <p className="text-sm text-white/55 leading-relaxed mb-5">
-                      {featuredOnDemandEvent.description}
-                    </p>
-
-                    <span className="inline-flex items-center gap-2 text-sm font-medium text-white transition-colors group-hover:text-white/80">
-                      View all sessions
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            )}
-
             {/* More Human Than Human */}
             {moreHumanThanHumanEvent && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.5 }}
               >
                 <button
                   type="button"
@@ -187,6 +132,61 @@ export function FeaturedOnDemandEvent() {
                     </span>
                   </div>
                 </button>
+              </motion.div>
+            )}
+
+            {/* PySanAntonio */}
+            {featuredOnDemandEvent && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Link
+                  href={featuredOnDemandEvent.url || "#"}
+                  className="group block h-full overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition-all duration-300 hover:border-white/20 hover:bg-neutral-900/70"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-black">
+                    <Image
+                      src="https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa7.jpg"
+                      alt={featuredOnDemandEvent.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+
+                    <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/80">
+                      Past Event
+                    </span>
+
+                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white">
+                      <Play className="h-3 w-3 fill-white" />
+                      Full Event
+                    </span>
+                  </div>
+
+                  <div className="p-5 sm:p-6">
+                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/40 mb-2">
+                      {formatPastDate(featuredOnDemandEvent.date)} ·{" "}
+                      {featuredOnDemandEvent.location}
+                    </p>
+
+                    <h3 className="text-lg sm:text-xl font-bold leading-tight tracking-tight text-white mb-3">
+                      {featuredOnDemandEvent.title}
+                    </h3>
+
+                    <p className="text-sm text-white/55 leading-relaxed mb-5">
+                      {featuredOnDemandEvent.description}
+                    </p>
+
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-white transition-colors group-hover:text-white/80">
+                      View all sessions
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </Link>
               </motion.div>
             )}
           </div>
