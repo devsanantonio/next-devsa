@@ -236,7 +236,7 @@ export function FeaturedSastw({
                 </span>
               </span>{" "}
               Five days across downtown — keynotes, pitch stages, workshops, and a week full of activations powered by
-              DEVSA:
+              DEVSA.
             </p>
 
             {/* A list, not three more sentences. Each one is a brand, and the
