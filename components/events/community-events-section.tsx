@@ -79,7 +79,10 @@ function EventCalendar({
   }
 
   return (
-    <div className="sticky top-6 rounded-xl border border-gray-200 bg-white p-5">
+    // Sticky lives on the rail wrapper below, not here — this used to declare
+    // it too, which did nothing (the outer element already sticks) and hid
+    // where the offset actually comes from.
+    <div className="rounded-xl border border-gray-200 bg-white p-5">
       <div className="mb-5 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900 leading-normal">
           {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
@@ -187,6 +190,70 @@ function effectiveEndMs(event: { date: string; endTime?: string }): number {
   return Number.isFinite(rawEnd) && rawEnd > start
     ? rawEnd
     : start + 2 * 60 * 60 * 1000
+}
+
+/**
+ * The calendar is pinned to San Antonio, not to the reader.
+ *
+ * Every date the list groups by, labels, or compares against "today" has to be
+ * resolved in Central Time or the grouping is wrong for anyone outside it: a
+ * 7pm Thursday meetup is Friday to a visitor in London, and grouping on their
+ * local day would file it under a heading nobody in San Antonio would
+ * recognise. The card times were already pinned this way — these put the day
+ * boundaries on the same footing.
+ */
+const TZ = "America/Chicago"
+
+/** `YYYY-MM-DD` for the event's local day in San Antonio. Sorts lexically. */
+function localDayKey(value: string | Date): string {
+  const d = typeof value === "string" ? new Date(value) : value
+  // en-CA gives ISO order (2026-08-21) without hand-assembling parts.
+  return d.toLocaleDateString("en-CA", { timeZone: TZ })
+}
+
+/**
+ * "Thursday, August 21" — the group heading, from a `localDayKey`.
+ *
+ * Rendered in UTC, NOT in TZ, and that is not an oversight. The key is already
+ * the San Antonio calendar day; it does not need converting again. Converting
+ * it twice is an off-by-one: `new Date("2026-08-21")` parses as UTC midnight,
+ * and asking for that instant in Central rolls it back to 7pm on the 20th, so
+ * every heading on the page would name the day before its own events. Pinning
+ * the parse to midday and formatting in UTC keeps the key's own date intact and
+ * leaves enough clearance that no offset can drag it across a boundary.
+ */
+function formatDayHeading(dayKey: string): string {
+  return new Date(`${dayKey}T12:00:00Z`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  })
+}
+
+/**
+ * "Today" / "Tomorrow" where it applies, otherwise nothing.
+ *
+ * Only two labels, and only these two. "This week" was tried and dropped: the
+ * week boundary is ambiguous (a Sunday or a Monday, rolling or calendar), and a
+ * label that half the readers compute differently is worse than no label. Today
+ * and tomorrow are unambiguous to everyone.
+ */
+function relativeDayLabel(dayKey: string, now: Date): string | null {
+  const today = localDayKey(now)
+  if (dayKey === today) return "Today"
+  const tomorrow = localDayKey(new Date(now.getTime() + 86_400_000))
+  if (dayKey === tomorrow) return "Tomorrow"
+  return null
+}
+
+/** The card's own time, e.g. "6:00 PM". */
+function formatTime(value: string): string {
+  return new Date(value).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: TZ,
+  })
 }
 
 // Generate calendar URLs for different providers
@@ -670,6 +737,33 @@ export function CommunityEventsSection() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [allEvents, search, selectedDate, currentTime])
 
+  /**
+   * The same events, bucketed into the days they fall on.
+   *
+   * This is what turns the list from a column of near-identical cards into
+   * something with rhythm — the date becomes a heading you scan past rather
+   * than a 13px label repeated on every card. `filteredEvents` is already
+   * sorted, so a single pass keeps the days and the events inside them in
+   * order without a second sort.
+   */
+  const eventsByDay = useMemo(() => {
+    const days: Array<{ key: string; events: MergedEvent[] }> = []
+    for (const event of filteredEvents) {
+      const key = localDayKey(event.date)
+      const last = days[days.length - 1]
+      if (last && last.key === key) last.events.push(event)
+      else days.push({ key, events: [event] })
+    }
+    return days
+  }, [filteredEvents])
+
+  const hasActiveFilters = Boolean(search || selectedDate)
+
+  const clearFilters = useCallback(() => {
+    setSearch("")
+    setSelectedDate(null)
+  }, [])
+
   return (
     // id + scroll-mt so the featured event above can jump straight here past a
     // full screen of promo, without the fixed navbar covering the heading.
@@ -696,20 +790,23 @@ export function CommunityEventsSection() {
             </h1>
           </div>
 
-          <div className="space-y-6 max-w-3xl mt-8">
+          {/* One paragraph, not two.
+
+              The second used to read "Focus on building, learning, and
+              connecting with the people shipping the future. Part of Building
+              Together — DEVSA's 501(c)(3) platform." Its first sentence named
+              three things the calendar does not do differently from any other
+              calendar, and the whole block sat between a reader and the events
+              they came for — on a section already below a full-viewport promo.
+              The attribution was the only load-bearing part, so it moved into
+              the line above it. */}
+          <div className="space-y-5 max-w-3xl mt-6">
             <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
               One calendar for every community. Stop hunting for links — DEVSA brings San Antonio&apos;s tech groups together in{" "}
-              <strong className="font-semibold text-gray-900">one place</strong>.
-            </p>
-
-            <p className="text-base md:text-lg text-gray-500 leading-relaxed">
-              Focus on{" "}
-              <span className="font-medium text-gray-700">building</span>,{" "}
-              <span className="font-medium text-gray-700">learning</span>, and{" "}
-              <span className="font-medium text-gray-700">connecting</span>{" "}
-              with the people shipping the future. Part of{" "}
-              <span className="font-medium text-gray-700">Building Together</span>{" "}
-              — DEVSA&apos;s 501(c)(3) platform.
+              <strong className="font-semibold text-gray-900">one place</strong>.{" "}
+              <span className="text-gray-500">
+                Part of Building Together, DEVSA&apos;s 501(c)(3) platform.
+              </span>
             </p>
 
             <div className="flex items-center gap-3 flex-wrap">
@@ -778,7 +875,10 @@ export function CommunityEventsSection() {
           </AnimatePresence>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+        {/* minmax(0,1fr) rather than 1fr: a bare 1fr grid track floors at its
+            content's min-content width, so one long unbroken string in a title
+            could push the column wider than the grid and shove the rail off. */}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* Left column: Search and Events */}
           <div className="space-y-6">
             {/* Search bar */}
@@ -819,206 +919,351 @@ export function CommunityEventsSection() {
               </div>
             </div>
 
-            {/* Events list */}
-            <div className="min-h-100 max-h-175 overflow-y-auto rounded-xl border border-gray-200 p-4 sm:p-5">
-              {isLoadingEvents ? (
-                <div className="space-y-5">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="animate-pulse rounded-xl border border-gray-100 p-5 sm:p-6">
-                      <div className="mb-3 flex items-center gap-2.5">
-                        <div className="h-4 w-32 rounded bg-gray-100" />
-                        {i === 0 && <div className="h-5 w-16 rounded-full bg-gray-100" />}
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="hidden sm:block h-12 w-12 shrink-0 rounded-lg bg-gray-100" />
-                        <div className="flex-1 space-y-2.5">
-                          <div className="h-5 w-3/4 rounded bg-gray-100" />
-                          <div className="h-4 w-1/2 rounded bg-gray-100" />
-                          <div className="h-4 w-full rounded bg-gray-50" />
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-gray-50">
-                        <div className="flex justify-between">
-                          <div className="h-4 w-24 rounded bg-gray-50" />
-                          <div className="h-8 w-28 rounded-lg bg-gray-100" />
-                        </div>
+            {/* Events list.
+
+                No longer a scroll container. It used to be
+                `min-h-100 max-h-175 overflow-y-auto`, which put a second
+                scrollbar inside a scrolling page: trackpad momentum got
+                captured and released at the boundary, browser find-in-page
+                could only reach the rendered slice, there was no way to link
+                to a position, and the visible list was capped at ~700px no
+                matter how tall the display was — a 27" monitor showed the same
+                three cards a laptop did. The usual reason to accept all that
+                is keeping a sidebar in view, and the sticky rail already does
+                that. So the list flows into the page and the page scrolls. */}
+            {isLoadingEvents ? (
+              <div className="space-y-5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-xl border border-gray-200 p-5 sm:p-6">
+                    <div className="flex gap-4">
+                      <div className="h-14 w-14 shrink-0 rounded-lg bg-gray-100" />
+                      <div className="flex-1 space-y-2.5">
+                        <div className="h-4 w-40 rounded bg-gray-100" />
+                        <div className="h-5 w-3/4 rounded bg-gray-100" />
+                        <div className="h-4 w-1/2 rounded bg-gray-50" />
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : filteredEvents.length === 0 ? (
-                <div className="flex h-full min-h-75 items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-base font-normal text-gray-500">No events found</p>
-                    <p className="mt-1 text-sm font-normal text-gray-400">Check back later for new events!</p>
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex justify-between">
+                        <div className="h-8 w-32 rounded bg-gray-50" />
+                        <div className="h-8 w-28 rounded-lg bg-gray-100" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {filteredEvents.map((event, index) => {
-                    // Support comma-separated communityIds for collaborative events
-                    const communityIds = (event.communityId || '').split(',').map(id => id.trim()).filter(Boolean)
-                    const eventCommunities = communityIds.map(id => {
-                      const c = allCommunities.find((c) => c.id === id)
-                      return { id, name: c?.name || event.communityName || id, logo: c?.logo || '' }
-                    })
-                    // Fallback to communityName/Logo from API response if no communities found
-                    if (eventCommunities.length === 0 && event.communityName) {
-                      eventCommunities.push({ id: event.communityId, name: event.communityName, logo: event.communityLogo || '' })
-                    }
-                    const primaryLogo = eventCommunities[0]?.logo || event.communityLogo
-                    const primaryName = eventCommunities[0]?.name || event.communityId
-                    const isFirst = index === 0
-                    const eventLink = event.slug 
-                      ? `/events/${event.slug}`
-                      : event.url
-                    const eventStatus = getEventStatus(event)
+                ))}
+              </div>
+            ) : filteredEvents.length === 0 ? (
+              /* An empty state with somewhere to go.
 
-                    return (
-                      <motion.article
-                        key={event.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
-                          eventStatus === "happening"
-                            ? "border-green-300 bg-green-50/30 hover:border-green-400"
-                            : "border-gray-200 bg-white hover:border-gray-300"
-                        }`}
+                 It used to say "No events found / Check back later for new
+                 events!" and stop there — the one moment a visitor is most
+                 likely to leave, offering them nothing. Which of the three
+                 ways out leads depends on why the list is empty: if filters
+                 are on, the likeliest fix is clearing them; if the calendar
+                 is genuinely empty, the useful moves are subscribing so the
+                 next event finds them, or adding one. */
+              <div className="rounded-xl border border-dashed border-gray-300 px-6 py-14 text-center">
+                <p className="text-base font-medium text-gray-700">
+                  {hasActiveFilters ? "No events match your filters" : "No upcoming events yet"}
+                </p>
+                <p className="mx-auto mt-1.5 max-w-sm text-sm font-light leading-[1.6] text-gray-500">
+                  {hasActiveFilters
+                    ? "Try a different date or search term — there may be events on other days."
+                    : "New events are added by the communities themselves. Subscribe and the next one lands in your calendar automatically."}
+                </p>
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+                  {hasActiveFilters ? (
+                    <>
+                      <button
+                        onClick={clearFilters}
+                        className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
                       >
-                        {/* Date, time, and badge row */}
-                        <div className="mb-3 flex flex-wrap items-center gap-2.5">
-                          <time className="text-[13px] font-medium text-gray-500 uppercase tracking-widest">
-                            {new Date(event.date).toLocaleDateString("en-US", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                              timeZone: "America/Chicago",
-                            })}
-                            {" · "}
-                            {new Date(event.date).toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              timeZone: "America/Chicago",
-                            })}
-                          </time>
-                          {eventStatus === "happening" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
-                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                              Happening Now
-                            </span>
-                          ) : isFirst && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
-                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                              Next Up
-                            </span>
-                          )}
-                          {event.eventType && event.eventType !== 'in-person' && (
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest leading-none ${
-                              event.eventType === 'hybrid'
-                                ? 'bg-gray-100 text-gray-600 border border-gray-200'
-                                : 'bg-gray-100 text-gray-600 border border-gray-200'
-                            }`}>
-                              {event.eventType}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex gap-4">
-                          {primaryLogo && (
-                            <div className="relative hidden h-12 w-12 shrink-0 sm:block rounded-lg bg-gray-950 p-1.5">
-                              <Image
-                                src={primaryLogo}
-                                alt={primaryName}
-                                fill
-                                className="object-contain p-1"
-                                sizes="48px"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold leading-[1.3] text-gray-900 group-hover:text-gray-600 transition-colors">
-                              {event.title}
-                            </h3>
-                            <p className="mt-1.5 text-[13px] font-normal text-gray-500 leading-normal">
-                              📍 {event.venue || event.location}
-                            </p>
-                            <p className="mt-2.5 text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
-                              {stripMarkdown(event.description)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-gray-100">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {eventCommunities.map((ec) => (
-                              <span key={ec.id} className="inline-flex items-center gap-1.5 text-[13px] font-normal text-gray-500">
-                                <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
-                                {ec.name}
-                              </span>
-                            ))}
-                            {eventCommunities.length > 1 && (
-                              <span className="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
-                                Collab
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {/* Save to Calendar - inline buttons */}
-                            <a
-                              href={generateCalendarUrls(event).googleUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:border-gray-300"
-                              title="Add to Google Calendar"
-                            >
-                              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                              </svg>
-                            </a>
-                            <button
-                              onClick={() => {
-                                const { icsContent } = generateCalendarUrls(event)
-                                const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
-                                const url = URL.createObjectURL(blob)
-                                const a = document.createElement('a')
-                                a.href = url
-                                a.download = `${event.slug || event.id}.ics`
-                                a.click()
-                                URL.revokeObjectURL(url)
-                              }}
-                              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:border-gray-300"
-                              title="Download .ics file (Apple/Outlook)"
-                            >
-                              <CalendarPlus className="h-4 w-4" />
-                            </button>
-                            {eventLink && (
-                              <Link
-                                href={eventLink}
-                                className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
-                              >
-                                View Details →
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      </motion.article>
-                    )
-                  })}
+                        <X className="h-3.5 w-3.5" />
+                        Clear filters
+                      </button>
+                      <button
+                        onClick={() => setShowCalendarSubscribe(true)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                      >
+                        <CalendarPlus className="h-3.5 w-3.5" />
+                        Subscribe
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setShowCalendarSubscribe(true)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+                      >
+                        <CalendarPlus className="h-3.5 w-3.5" />
+                        Subscribe
+                      </button>
+                      <Link
+                        href="/signin"
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add your event
+                      </Link>
+                    </>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-10">
+                {eventsByDay.map((day) => {
+                  const relative = relativeDayLabel(day.key, currentTime)
+
+                  return (
+                    <section key={day.key} aria-labelledby={`day-${day.key}`}>
+                      {/* The date, promoted.
+
+                          It was a 13px uppercase gray-500 label repeated on
+                          every card — label styling for the list's primary
+                          scanning key. People scan a calendar by when, then
+                          decide by what, so the date now heads a group and the
+                          cards under it only carry a time. That also gives the
+                          column the thing it most lacked: rhythm. A run of
+                          fifteen near-identical cards reads as a wall; the same
+                          fifteen under four dated headings read as a week. */}
+                      <div className="mb-4 flex items-baseline gap-3">
+                        {/* h2, not h3. These headings are the list's structure
+                            now, and they sit directly under this section's h1
+                            — jumping a level would leave the outline reading
+                            h1 → h3 with nothing between. */}
+                        <h2
+                          id={`day-${day.key}`}
+                          className="shrink-0 text-xl font-black tracking-[-0.01em] text-gray-900 sm:text-2xl"
+                        >
+                          {formatDayHeading(day.key)}
+                        </h2>
+                        {relative && (
+                          <span className="shrink-0 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
+                            {relative}
+                          </span>
+                        )}
+                        <span aria-hidden className="h-px min-w-4 flex-1 bg-gray-200" />
+                        <span className="shrink-0 text-[13px] font-normal text-gray-400">
+                          {day.events.length} event{day.events.length !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+
+                      <div className="space-y-5">
+                        {day.events.map((event, index) => {
+                          // Support comma-separated communityIds for collaborative events
+                          const communityIds = (event.communityId || '').split(',').map(id => id.trim()).filter(Boolean)
+                          const eventCommunities = communityIds.map(id => {
+                            const c = allCommunities.find((c) => c.id === id)
+                            return { id, name: c?.name || event.communityName || id, logo: c?.logo || '' }
+                          })
+                          // Fallback to communityName/Logo from API response if no communities found
+                          if (eventCommunities.length === 0 && event.communityName) {
+                            eventCommunities.push({ id: event.communityId, name: event.communityName, logo: event.communityLogo || '' })
+                          }
+                          const primaryLogo = eventCommunities[0]?.logo || event.communityLogo
+                          const primaryName = eventCommunities[0]?.name || event.communityId
+                          const hostLabel = eventCommunities.length
+                            ? eventCommunities.map((ec) => ec.name).join(" + ")
+                            : primaryName
+                          const eventLink = event.slug
+                            ? `/events/${event.slug}`
+                            : event.url
+                          const eventStatus = getEventStatus(event)
+                          const isNextUp = day.key === eventsByDay[0]?.key && index === 0
+
+                          return (
+                            <motion.article
+                              key={event.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              /* Capped at five steps. The delay was
+                                 `index * 0.05` against the flat list index, so
+                                 with a full calendar the last card waited the
+                                 better part of a second after entering view —
+                                 animation cost on a list people are scanning,
+                                 with nothing to say for itself. Within a day
+                                 the stagger still reads. */
+                              transition={{ duration: 0.3, delay: Math.min(index, 5) * 0.04 }}
+                              className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
+                                eventStatus === "happening"
+                                  ? "border-green-300 bg-green-50/30 hover:border-green-400"
+                                  : "border-gray-200 bg-white hover:border-gray-300"
+                              }`}
+                            >
+                              <div className="flex gap-4">
+                                {/* The host mark, on every viewport.
+
+                                    Two changes. It was `hidden sm:block`, so it
+                                    vanished on phones — the one width where the
+                                    host is hardest to establish, and likely most
+                                    of the traffic for "what's on tonight". And
+                                    it was padded twice, `p-1.5` on the plate plus
+                                    `p-1` on the image inside it, which left a
+                                    48px box drawing about 28px of actual
+                                    artwork. One layer of padding now, on a
+                                    56px plate, so the mark reads at roughly
+                                    twice the size without the card growing to
+                                    match. `sizes` follows the box — it said 48px
+                                    while the box changed, which is how a logo
+                                    ends up soft. */}
+                                {primaryLogo && (
+                                  <div className="relative h-14 w-14 shrink-0 rounded-lg bg-gray-950 p-2">
+                                    <Image
+                                      src={primaryLogo}
+                                      alt=""
+                                      fill
+                                      className="object-contain p-2"
+                                      sizes="56px"
+                                    />
+                                  </div>
+                                )}
+
+                                <div className="min-w-0 flex-1">
+                                  {/* Time and host on one line, above the title.
+
+                                      The host used to sit in the footer under a
+                                      divider while its logo sat up here, so the
+                                      two halves of one fact — whose event is
+                                      this — were split across the card with the
+                                      description in between. They're a unit now.
+
+                                      `tabular-nums` so a column of times aligns
+                                      on the colon instead of shifting with the
+                                      width of each digit. */}
+                                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                                    <time
+                                      dateTime={event.date}
+                                      className="text-[15px] font-bold tabular-nums text-gray-900"
+                                    >
+                                      {formatTime(event.date)}
+                                    </time>
+                                    <span aria-hidden className="text-gray-300">·</span>
+                                    <span className="truncate text-[13px] font-medium text-gray-600">
+                                      {hostLabel}
+                                    </span>
+                                    {eventCommunities.length > 1 && (
+                                      <span className="inline-flex shrink-0 items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
+                                        Collab
+                                      </span>
+                                    )}
+                                    {eventStatus === "happening" ? (
+                                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                                        Happening Now
+                                      </span>
+                                    ) : isNextUp && (
+                                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                                        Next Up
+                                      </span>
+                                    )}
+                                    {event.eventType && event.eventType !== 'in-person' && (
+                                      <span className="inline-flex shrink-0 items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest leading-none text-gray-600">
+                                        {event.eventType}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
+                                    {event.title}
+                                  </h3>
+
+                                  {/* MapPin, not 📍. The emoji was the only one
+                                      in an otherwise all-Lucide system: it drew
+                                      differently on every platform, ignored
+                                      `currentColor`, and sat at its own optical
+                                      weight beside the icons around it. */}
+                                  <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-normal leading-normal text-gray-500">
+                                    <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden />
+                                    <span className="truncate">{event.venue || event.location}</span>
+                                  </p>
+
+                                  {/* Capped measure. The column is free to grow
+                                      to ~900px on a wide display, which is a
+                                      long run for two clamped lines of 14px
+                                      text. */}
+                                  <p className="mt-2.5 max-w-2xl text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
+                                    {stripMarkdown(event.description)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Footer */}
+                              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                                {/* Labelled, and visibly secondary.
+
+                                    These were two unlabelled 36px icon squares
+                                    — a Google glyph and a calendar glyph — that
+                                    you had to hover to tell apart, sized and
+                                    weighted to compete with the actual primary
+                                    action beside them. Now they read as what
+                                    they are: "Add to · Google · .ics", quiet
+                                    text buttons under a shared label, with
+                                    "View Details" left as the only filled
+                                    control on the card. */}
+                                <div className="flex items-center gap-1.5">
+                                  <span className="mr-0.5 text-[12px] font-normal text-gray-400">Add to</span>
+                                  <a
+                                    href={generateCalendarUrls(event).googleUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                                  >
+                                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" aria-hidden>
+                                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                    </svg>
+                                    Google
+                                  </a>
+                                  <button
+                                    onClick={() => {
+                                      const { icsContent } = generateCalendarUrls(event)
+                                      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+                                      const url = URL.createObjectURL(blob)
+                                      const a = document.createElement('a')
+                                      a.href = url
+                                      a.download = `${event.slug || event.id}.ics`
+                                      a.click()
+                                      URL.revokeObjectURL(url)
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                                    title="Download .ics for Apple Calendar or Outlook"
+                                  >
+                                    <CalendarPlus className="h-3.5 w-3.5" aria-hidden />
+                                    .ics
+                                  </button>
+                                </div>
+                                {eventLink && (
+                                  <Link
+                                    href={eventLink}
+                                    className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+                                  >
+                                    View Details →
+                                  </Link>
+                                )}
+                              </div>
+                            </motion.article>
+                          )
+                        })}
+                      </div>
+                    </section>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right column: Calendar */}
           <div className="hidden lg:block">
-            <div className="sticky top-6">
+            {/* top-20 clears the fixed navbar (~49px) with air to spare. It was
+                top-6, which tucked the calendar under the bar as soon as it
+                stuck — unnoticed while the list scrolled inside its own box and
+                the page barely moved. Now that the list flows into the page,
+                this rail actually travels, so the offset has to be right. */}
+            <div className="sticky top-20">
               <EventCalendar events={allEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
             </div>
           </div>
