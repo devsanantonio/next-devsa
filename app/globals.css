@@ -371,6 +371,40 @@ body {
   animation: rgb-split 0.5s ease-out;
 }
 
+/* ─── Print: unhide anything a scroll animation left invisible ─────────────
+   28 components across this site reveal themselves with Motion's
+   `whileInView`, which starts them at `opacity: 0` and waits on an
+   IntersectionObserver callback. Printing never scrolls, so that callback
+   never fires and the elements print as blank space at full height — the
+   community calendar prints correct date headings above empty gaps where
+   every event should be.
+
+   Motion writes its state as an inline style, so overriding it needs
+   `!important`. Attribute selectors are the only handle available: the
+   elements carry no shared class.
+
+   Scoped to the two properties those animations actually use. Anything
+   deliberately hidden for print should say so with `display: none`, which this
+   does not touch, and closed modals are unmounted rather than transparent, so
+   there is nothing here for this to accidentally reveal. */
+@media print {
+  [style*="opacity: 0"],
+  [style*="opacity:0"] {
+    opacity: 1 !important;
+  }
+  [style*="translateY"],
+  [style*="translateX"] {
+    transform: none !important;
+  }
+
+  /* The navbar is `position: fixed`, and print repeats a fixed element on
+     every sheet — so it stamped a black bar across the top of each page and
+     covered whatever content was underneath. Static prints it once, in place. */
+  nav.fixed {
+    position: static !important;
+  }
+}
+
 /* ─── SASTW bolt: confine the WebGL flow canvas to the bolt silhouette ───
    next-sasw calls this `.bolt-mask`; namespaced here because "bolt" alone is
    not a reserved word on a site with five other brands on it. The canvas is a
