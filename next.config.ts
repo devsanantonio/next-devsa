@@ -25,12 +25,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Job board → bounty marketplace pivot. Permanent (308) so old Discord
-      // and LinkedIn links keep working and search engines re-index.
-      { source: "/jobs", destination: "/bounties", permanent: true },
-      { source: "/jobs/:path*", destination: "/bounties/:path*", permanent: true },
-      { source: "/api/jobs/:path*", destination: "/api/bounties/:path*", permanent: true },
-      { source: "/api/og/jobs", destination: "/api/og/bounties", permanent: true },
+      // The /jobs → /bounties redirects are gone with the bounty board itself.
+      // They were the job-board-to-bounty-marketplace pivot, and forwarding one
+      // removed feature to another removed feature is a 308 into a 404 — worse
+      // than the 404 on its own, because a permanent redirect is cached by the
+      // browser and the crawler that followed it. Both paths now 404, which is
+      // what a withdrawn feature should do.
 
       // Legacy devsanantonio.com pages. That domain now redirects here
       // path-for-path, so old indexed URLs must resolve instead of 404ing.

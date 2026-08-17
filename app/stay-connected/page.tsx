@@ -6,7 +6,7 @@ import { SITE_URL } from "@/data/stay-connected"
 export const metadata: Metadata = {
   title: "Stay Connected | DEVSA",
   description:
-    "Find your people, build your future. Connect with DEVSA — San Antonio's tech community. Discover Startup Week, the AI Builder Program, the Bounty Program, and join us on Discord, Instagram, LinkedIn, and X.",
+    "Find your people, build your future. Connect with DEVSA — San Antonio's tech community. Discover Startup Week, the AI Builder Program, the community calendar, and join us on Discord, Instagram, LinkedIn, and X.",
   alternates: { canonical: "/stay-connected" },
   openGraph: {
     title: "Stay Connected | DEVSA",
