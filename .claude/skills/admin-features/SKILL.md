@@ -30,7 +30,9 @@ Names are centralized in `COLLECTIONS` in `lib/firebase-admin.ts` — import fro
 
 ## Patterns that repeat
 
-**Static fallback.** `GET /api/events` merges Firestore events with the seed events in `data/events.ts`. Firestore wins on slug collision. Communities and partners follow the same shape. Anything you add to the dashboard should assume both sources exist.
+**Static fallback — events only.** `GET /api/events` merges Firestore events with the seed events in `data/events.ts`; Firestore wins on slug collision.
+
+Communities and partners no longer work this way. `data/communities.ts` holds a type and a logo list, no records, and `data/partners.ts` is gone — partners are read through `lib/partners.ts` on the server or `/api/partners` on the client. Do not reintroduce a static list for either; the last one caused a partner deleted in the admin to keep rendering across the site.
 
 **Slugs are generated, not user-supplied.** Event titles become URL-safe slugs with a random suffix (`monthly-meetup-k5f3a2`) so duplicate titles don't collide.
 
@@ -46,4 +48,13 @@ Event descriptions are HTML strings produced by `components/rich-text-editor.tsx
 
 ## Uploads
 
-Community logos go to Vercel Blob via `POST /api/upload` under `communities/{communityId}-{timestamp}.{ext}`. Allow-list: JPEG, PNG, WebP, SVG, GIF, max 5 MB. The route re-checks admin/organizer permissions — it is not an open upload endpoint.
+Logos go to Vercel Blob via `POST /api/upload`. Allow-list: JPEG, PNG, WebP, SVG, GIF, max 5 MB. The route re-checks permissions — it is not an open upload endpoint.
+
+Which prefix and which permission depends on the field sent:
+
+| field sent | blob path | who may upload |
+|---|---|---|
+| `communityId` | `communities/{id}-{ts}.{ext}` | admin, or the organizer assigned to that community |
+| `partnerId` | `partners/{id}-{ts}.{ext}` | admin/superadmin only |
+
+The branch keys on `partnerId !== null`, not on truthiness, so an unsaved record can still upload — it lands as `new-{ts}` and the form carries the returned URL into the create request. That distinction is also what stops an organizer reaching the partner path: sending `partnerId` takes the admin-only branch instead of falling through to the community check.

@@ -12,11 +12,31 @@ Deleting or renaming an API route poisons the Turbopack route-type cache: the bu
 
 ## Firestore
 
-Firestore is the source of truth; the TypeScript files in `data/` are a static fallback rendered when a document is missing or Firestore is unreachable. Adding a community, partner, or event usually means writing to both — about 15 files read the fallback path.
+Firestore is the source of truth for **communities, partners and events**, and nothing shadows it. Add or delete one in the admin and every surface follows.
 
-Firestore rejects `undefined`. Coerce optional fields with `?? null` before writing, never leave them undefined.
+This used to say `data/` held a static fallback and that adding a record meant writing to both places. That is no longer true, and while it was, it was not really a fallback:
 
-`GOOGLE_SERVICE_ACCOUNT_KEY` is the entire service-account JSON as a single env string, parsed lazily in `lib/firebase-admin.ts`. A malformed value throws on first Firestore call, not at boot, so failures surface deep in a request.
+- **Communities** migrated first. `data/communities.ts` is now a `TechCommunity` type and a small `COMMUNITY_LOGOS` array that seeds one dropdown — no records.
+- **Partners** migrated after a partner deleted in the admin kept rendering on the homepage, on Building Together and on its own URL. Every surface imported `data/partners.ts` at module scope and none of them called `/api/partners`, so the static list was the primary and Firestore was the copy nobody read. The two had drifted to eleven records against ten. That file is gone; read partners through `lib/partners.ts` on the server or `/api/partners` on the client.
+
+The lesson worth keeping: a "fallback" that is consulted unconditionally is not a fallback, it is a second source of truth, and it will drift. If you add one, make it fire only on error.
+
+`/api/admin/migrate` no longer writes partners. It used to seed Firestore from the static file, which meant running a migration would resurrect a partner an admin had deliberately deleted. Both halves are no-ops now.
+
+## Real time is the contract for admin changes
+
+Adds, edits and deletes in the admin must show on the public site immediately. Every client-facing surface honours this by reading its data at request time:
+
+- the homepage wall, `/buildingtogether`, the calendar list and the event pages all fetch `/api/communities`, `/api/partners` or `/api/events` client-side — always live
+- `/buildingtogether/[slug]` and `/events/[slug]` render per request, with **no** `generateStaticParams` and no `revalidate`
+
+`/buildingtogether/[slug]` was briefly prerendered with `dynamicParams = false`. That bought a correct 404 status, and cost a deploy before any newly added partner or community had a page — `generateStaticParams` only runs at build time. The trade was wrong for admin-managed content and was reverted. **Do not reintroduce it.** If prerendering is ever wanted back, it needs a deploy webhook on admin writes first.
+
+## Unknown slugs answer 200, and are noindexed
+
+`notFound()` fires after the response has begun streaming, so it cannot take back a status header already sent. `/buildingtogether/<unknown>` and `/events/<unknown>` therefore render the not-found page with a **200**. Things that were tried and do not change it: adding `app/not-found.tsx` (it improves the page, not the status), and removing `generateStaticParams` to make the route fully dynamic. Only `dynamicParams = false` produces a real 404, by moving the decision to the router — and that is the option ruled out above.
+
+The exposure was search engines indexing soft 404s, so `generateMetadata` on both routes returns `robots: { index: false, follow: false }` for slugs that resolve to nothing. Crawlers drop them; the status stays imperfect. If you touch either `generateMetadata`, keep that branch.
 
 ## Bot protection
 
