@@ -147,7 +147,127 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+/**
+ * Event rich results — the date, venue and price Google shows inside the search
+ * listing itself.
+ *
+ * These pages had none. /events, PySanAntonio, Access Granted and zero-to-agent
+ * all emit structured data; the individual event pages, which are the ones most
+ * likely to actually earn a rich result, emitted nothing. Every field here is
+ * already fetched for the metadata above, so this costs no extra read.
+ *
+ * Server-rendered rather than added in the client component, because a crawler
+ * that does not execute JavaScript still gets it.
+ */
+function eventJsonLd(
+  event: NonNullable<Awaited<ReturnType<typeof getEventBySlug>>>,
+  siteUrl: string
+) {
+  const url = `${siteUrl}/events/${event.slug}`
+
+  // `endDate` is only emitted when the stored end time is real and after the
+  // start — the same guard lib/event-display applies to the UI. Publishing an
+  // inverted range in structured data would have search engines show an event
+  // that ends before it begins.
+  const start = new Date(event.date).getTime()
+  const rawEnd = event.endTime ? new Date(event.endTime).getTime() : NaN
+  const endDate =
+    Number.isFinite(rawEnd) && rawEnd > start
+      ? new Date(rawEnd).toISOString()
+      : undefined
+
+  const attendanceMode =
+    event.eventType === "virtual"
+      ? "https://schema.org/OnlineEventAttendanceMode"
+      : event.eventType === "hybrid"
+        ? "https://schema.org/MixedEventAttendanceMode"
+        : "https://schema.org/OfflineEventAttendanceMode"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: event.title,
+    startDate: new Date(event.date).toISOString(),
+    ...(endDate ? { endDate } : {}),
+    eventAttendanceMode: attendanceMode,
+    eventStatus: "https://schema.org/EventScheduled",
+    // Plain text: the description is authored as markdown, and schema.org
+    // expects prose, not syntax.
+    description: event.description
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 500),
+    url,
+    // Virtual events take a VirtualLocation; anything with a physical room gets
+    // a Place with whatever address parts were actually recorded.
+    location:
+      event.eventType === "virtual"
+        ? {
+            "@type": "VirtualLocation",
+            url: event.url || url,
+          }
+        : {
+            "@type": "Place",
+            name: event.venue || event.location,
+            address: event.address
+              ? {
+                  "@type": "PostalAddress",
+                  streetAddress: event.address,
+                  addressLocality: "San Antonio",
+                  addressRegion: "TX",
+                  addressCountry: "US",
+                }
+              : {
+                  "@type": "PostalAddress",
+                  addressLocality: "San Antonio",
+                  addressRegion: "TX",
+                  addressCountry: "US",
+                },
+          },
+    organizer: {
+      "@type": "Organization",
+      name: event.communityName,
+      url: event.communityId
+        ? `${siteUrl}/buildingtogether/${event.communityId}`
+        : siteUrl,
+    },
+    image: [`${siteUrl}/api/og/event/${event.slug}`],
+    // Every event on this calendar is free to attend. Stated explicitly because
+    // "Free" is one of the few things Google renders in the listing itself, and
+    // an Event without an `offers` block does not get it.
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: event.externalRsvpUrl || event.url || url,
+      validFrom: new Date(
+        (event.createdAt as string) || event.date
+      ).toISOString(),
+    },
+    isAccessibleForFree: true,
+  }
+}
+
 export default async function EventPage({ params }: PageProps) {
   const { slug } = await params
-  return <EventPageClient slug={slug} />
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
+  const event = await getEventBySlug(slug)
+
+  return (
+    <>
+      {event && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(eventJsonLd(event, siteUrl)),
+          }}
+        />
+      )}
+      <EventPageClient slug={slug} />
+    </>
+  )
 }
