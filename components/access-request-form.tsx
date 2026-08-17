@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react"
 import { Loader2, Mail, User, CheckCircle, AlertCircle, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { AdminCombobox, type AdminComboboxOption } from "@/components/admin/admin-combobox"
-import { COMMUNITY_LOGOS } from "@/data/communities"
 
 interface AccessRequestFormProps {
   onSuccess?: () => void
@@ -39,15 +38,16 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Firestore is the source of truth for both lists, so both are fetched.
-   * COMMUNITY_LOGOS still seeds the community field so it is usable on first
-   * paint and survives a failed fetch.
+   * Both lists come from Firestore. Neither has a checked-in seed any more.
    *
-   * Partners have no seed. They used to come from data/partners.ts on the
-   * grounds that the list "changes rarely and is not worth a second request" —
-   * which was true right up until a partner was deleted and this dropdown kept
-   * offering it. A name that no longer exists is worse than a name that
-   * arrives a moment late.
+   * Communities used to fall back to COMMUNITY_LOGOS so the field was usable on
+   * first paint, and partners used to come from data/partners.ts outright. Both
+   * static lists are gone: they drifted from Firestore in exactly the way a
+   * second source of truth always does — a deleted partner kept being offered
+   * here, and the community list drifted from Firestore the same way.
+   *
+   * A name that arrives a moment late is better than a name that no longer
+   * exists.
    */
   const [liveCommunities, setLiveCommunities] = useState<string[] | null>(null)
   const [livePartners, setLivePartners] = useState<string[]>([])
@@ -85,7 +85,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   }, [])
 
   const options = useMemo<AdminComboboxOption[]>(() => {
-    const communityNames = liveCommunities ?? COMMUNITY_LOGOS.map((c) => c.name)
+    const communityNames = liveCommunities ?? []
     const seen = new Set(communityNames.map((n) => n.toLowerCase()))
 
     const communityOptions = [...communityNames]

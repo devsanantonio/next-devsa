@@ -1,7 +1,10 @@
 import { Metadata } from "next"
 import { LogoParticles } from "@/components/ai-builder/logo-particles"
 import { ProgramOverview } from "@/components/ai-builder/program-overview"
-import { SITE_URL } from "@/data/stay-connected"
+
+// Inlined, as in every other page here. It used to come from
+// data/stay-connected.ts, which was BSides booth content and is gone.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
   title: "AI Builder Program | DEVSA",

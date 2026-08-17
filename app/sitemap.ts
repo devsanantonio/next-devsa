@@ -34,7 +34,6 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/events/zero-to-agent`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/devsatv`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${baseUrl}/stay-connected`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/branding`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: `${baseUrl}/signin`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ]

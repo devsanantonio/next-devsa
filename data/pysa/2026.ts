@@ -68,15 +68,18 @@ export const CFS_CLOSES = "2026-08-22T23:59:59-05:00"
  * in UTC renders the day after. Two constants that must be edited together are
  * a smaller trap than a date that is silently wrong by one.
  *
- * Not every surface reads it. The marketing prose in data/events.ts,
- * data/stay-connected.ts and the layout's meta description are static strings
- * that also name the date, and the thank-you email builds its own sentence
- * around it — those are copy, not UI state, and inlining a constant into each
- * would not make them any harder to forget. This is the list to walk:
+ * Not every surface reads it. The marketing prose in data/events.ts and the
+ * layout's meta description are static strings that also name the date, and
+ * the thank-you email builds its own sentence around it — those are copy, not
+ * UI state, and inlining a constant into each would not make them any harder
+ * to forget. This is the list to walk:
  *
  *   app/events/pysanantonio/layout.tsx · components/pysa/2026/hero.tsx
  *   components/pysa/2026/speaker-form.tsx · data/events.ts
- *   data/stay-connected.ts · lib/emails/pysa-thank-you.ts
+ *   lib/emails/pysa-thank-you.ts
+ *
+ * (data/stay-connected.ts was on this list until the BSides booth page it
+ * belonged to was removed.)
  */
 export const CFS_CLOSES_LABEL = "August 22, 2026"
 
