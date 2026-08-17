@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { EventPageClient } from "./event-page-client"
 import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
+import { notFound } from "next/navigation"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -116,13 +117,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  // Fallback metadata if event not found
+  // Fallback metadata if event not found. noindex for the same reason
+  // /buildingtogether/[slug] carries it: the page below calls notFound(), but
+  // `notFound()` after streaming has begun cannot take back a 200, so the
+  // defence against a soft 404 being indexed is the robots directive.
   const fallbackTitle = "Community Event | DEVSA"
   const fallbackDescription = "Join the San Antonio tech community. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem."
   
   return {
     title: fallbackTitle,
     description: fallbackDescription,
+    robots: { index: false, follow: false },
     openGraph: {
       title: "Community Event",
       description: fallbackDescription,
@@ -256,6 +261,16 @@ export default async function EventPage({ params }: PageProps) {
   const { slug } = await params
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   const event = await getEventBySlug(slug)
+
+  // A missing event is a 404, not a 200 with an apology inside it.
+  //
+  // This page used to render EventPageClient unconditionally and let the
+  // client draw its own "Event Not Found" panel after fetching. That looked
+  // like a handled case and was not one: the response was a success, the
+  // document had no structured data and no signal to a crawler, and a retired
+  // event URL stayed indexable forever. The record is already fetched here for
+  // the metadata, so the check costs nothing.
+  if (!event) notFound()
 
   return (
     <>
