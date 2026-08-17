@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
-import { partners } from "@/data/partners"
+import { getPartner } from "@/lib/partners"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 import { loadBrandFonts } from "@/lib/og-fonts"
 
@@ -195,7 +195,7 @@ export async function GET(
   }
 
   // Check if it's a partner
-  const partner = partners.find((p) => p.id === slug)
+  const partner = await getPartner(slug)
   if (partner) {
     return new ImageResponse(
       (

@@ -5,7 +5,6 @@ import { Loader2, Mail, User, CheckCircle, AlertCircle, ArrowUpRight } from "luc
 import Link from "next/link"
 import { AdminCombobox, type AdminComboboxOption } from "@/components/admin/admin-combobox"
 import { COMMUNITY_LOGOS } from "@/data/communities"
-import { partners } from "@/data/partners"
 
 interface AccessRequestFormProps {
   onSuccess?: () => void
@@ -40,26 +39,46 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Firestore is the source of truth for communities, so the list is fetched;
-   * data/communities.ts seeds it so the field is usable on first paint and
-   * still works if the fetch fails. Partners come from the static file — that
-   * list changes rarely and is not worth a second request here.
+   * Firestore is the source of truth for both lists, so both are fetched.
+   * COMMUNITY_LOGOS still seeds the community field so it is usable on first
+   * paint and survives a failed fetch.
+   *
+   * Partners have no seed. They used to come from data/partners.ts on the
+   * grounds that the list "changes rarely and is not worth a second request" —
+   * which was true right up until a partner was deleted and this dropdown kept
+   * offering it. A name that no longer exists is worse than a name that
+   * arrives a moment late.
    */
   const [liveCommunities, setLiveCommunities] = useState<string[] | null>(null)
+  const [livePartners, setLivePartners] = useState<string[]>([])
 
   useEffect(() => {
     let cancelled = false
+
+    const names = (list: unknown): string[] =>
+      (Array.isArray(list) ? list : [])
+        .map((x) => (x as { name?: string })?.name)
+        .filter((n: unknown): n is string => typeof n === "string" && n.length > 0)
+
     fetch("/api/communities")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        const names: string[] = (data?.communities ?? [])
-          .map((c: { name?: string }) => c.name)
-          .filter((n: unknown): n is string => typeof n === "string" && n.length > 0)
-        if (!cancelled && names.length > 0) setLiveCommunities(names)
+        const list = names(data?.communities)
+        if (!cancelled && list.length > 0) setLiveCommunities(list)
       })
       .catch(() => {
         // Falls back to the static snapshot below.
       })
+
+    fetch("/api/partners")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setLivePartners(names(data?.partners))
+      })
+      .catch(() => {
+        // No seed to fall back to; the group simply does not render.
+      })
+
     return () => {
       cancelled = true
     }
@@ -74,8 +93,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
       .map((n) => ({ value: n, label: n, group: "Community groups" }))
 
     // A partner that is also a listed community would otherwise appear twice.
-    const partnerOptions = partners
-      .map((p) => p.name)
+    const partnerOptions = livePartners
       .filter((n) => !seen.has(n.toLowerCase()))
       .sort((a, b) => a.localeCompare(b))
       .map((n) => ({ value: n, label: n, group: "Partners" }))
@@ -85,7 +103,7 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
       ...partnerOptions,
       { value: OTHER, label: "My group isn't listed yet", group: "Something else" },
     ]
-  }, [liveCommunities])
+  }, [liveCommunities, livePartners])
 
   const communityOrg = selectedOrg === OTHER ? otherOrg.trim() : selectedOrg
 

@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react"
 import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import { partners } from "@/data/partners"
 import { Loader2, ArrowUpRight } from "lucide-react"
 
 type LogoType = "community" | "partner"
@@ -16,8 +15,25 @@ interface LogoItem {
   type: LogoType
 }
 
-// White-on-transparent marks that need inverting to read on a light surface.
-const INVERT_PARTNER_IDS = ["youth-code-jam", "434media", "digital-canvas"]
+/**
+ * White-on-transparent marks that need inverting to read on a light surface.
+ *
+ * A hardcoded guess about somebody else's artwork, and it is fragile by
+ * construction: it is keyed on the record id, not on the file, so it keeps
+ * applying after the file changes. `434media` was on this list and came off
+ * when a black wordmark was uploaded to replace the white one — invert turned
+ * it white again and it disappeared into the page.
+ *
+ * Now that logos can be uploaded from the admin, this will drift again. The
+ * durable fix is a per-record flag set beside the upload, so the person who
+ * chooses the file also says how it should be treated. Until then, anyone
+ * swapping a logo has to check this list in BOTH ecosystem-showcase.tsx and
+ * partners/logo-showcase.tsx.
+ *
+ * `digital-canvas` stays only as a reminder of that: the partner is deleted and
+ * the entry is inert.
+ */
+const INVERT_PARTNER_IDS = ["youth-code-jam"]
 const INVERT_COMMUNITY_NAMES = [
   "aws user group",
   "alamo city locksport",
@@ -50,13 +66,14 @@ function isLargeLogo(logo: LogoItem) {
   return logo.type === "partner" && LARGE_PARTNER_IDS.includes(logo.id)
 }
 
-function partnersAsLogos(): LogoItem[] {
-  return partners.map((p) => ({
-    id: p.id,
-    name: p.name,
-    logo: p.logo,
-    type: "partner" as const,
-  }))
+interface ApiLogo {
+  id: string
+  name: string
+  logo: string
+}
+
+function asLogos(items: ApiLogo[], type: LogoItem["type"]): LogoItem[] {
+  return items.map((i) => ({ id: i.id, name: i.name, logo: i.logo, type }))
 }
 
 function splitIntoRows<T>(items: T[], rows: number): T[][] {
@@ -157,31 +174,29 @@ function MarqueeRow({
 
 export function EcosystemShowcase() {
   const [communities, setCommunities] = useState<LogoItem[]>([])
+  const [partnerLogos, setPartnerLogos] = useState<LogoItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [paused, setPaused] = useState(false)
-  const partnerLogos = useMemo(() => partnersAsLogos(), [])
 
+  // Partners come from Firestore now, the same as communities. They used to be
+  // a module-scope import from data/partners.ts, which is why a partner deleted
+  // in the admin kept appearing here. Both are fetched together so one wall
+  // cannot be fresh while the other is months stale.
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const res = await fetch("/api/communities")
-        if (res.ok) {
-          const data = await res.json()
-          const list: LogoItem[] = (data.communities || []).map(
-            (c: { id: string; name: string; logo: string }) => ({
-              id: c.id,
-              name: c.name,
-              logo: c.logo,
-              type: "community" as const,
-            })
-          )
-          setCommunities(list)
-        }
-      } catch {
-        // fall back to partners only
-      } finally {
-        setIsLoading(false)
+      const [communityRes, partnerRes] = await Promise.allSettled([
+        fetch("/api/communities"),
+        fetch("/api/partners"),
+      ])
+      if (communityRes.status === "fulfilled" && communityRes.value.ok) {
+        const data = await communityRes.value.json()
+        setCommunities(asLogos(data.communities || [], "community"))
       }
+      if (partnerRes.status === "fulfilled" && partnerRes.value.ok) {
+        const data = await partnerRes.value.json()
+        setPartnerLogos(asLogos(data.partners || [], "partner"))
+      }
+      setIsLoading(false)
     }
     fetchData()
   }, [])

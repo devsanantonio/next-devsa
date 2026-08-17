@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin, type Partner } from '@/lib/firebase-admin';
-import { partners } from '@/data/partners';
+import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // POST - Migrate static data to Firestore (super admin only)
 export async function POST(request: NextRequest) {
@@ -26,7 +25,7 @@ export async function POST(request: NextRequest) {
     const db = getDb();
     const results = {
       communities: { migrated: 0, skipped: 0, errors: 0, message: 'Communities are now managed in Firestore directly' },
-      partners: { migrated: 0, skipped: 0, errors: 0 },
+      partners: { migrated: 0, skipped: 0, errors: 0, message: 'Partners are now managed in Firestore directly' },
       devsaSubscribers: { migrated: 0, skipped: 0, errors: 0 },
     };
 
@@ -35,36 +34,15 @@ export async function POST(request: NextRequest) {
       // No-op: communities are already in Firestore
     }
 
-    // Migrate partners
+    // Partners are fully managed in Firestore now, exactly like communities
+    // above, so this is a no-op.
+    //
+    // It used to seed Firestore from data/partners.ts. That file is gone, and
+    // even while it existed this had become actively harmful: it wrote any
+    // static partner missing from Firestore, so running a migration would have
+    // resurrected a partner an admin had deliberately deleted.
     if (!migrateType || migrateType === 'partners' || migrateType === 'all') {
-      for (const partner of partners) {
-        try {
-          const docRef = db.collection(COLLECTIONS.PARTNERS).doc(partner.id);
-          const existing = await docRef.get();
-
-          if (existing.exists) {
-            results.partners.skipped++;
-            continue;
-          }
-
-          const partnerData: Partner = {
-            id: partner.id,
-            name: partner.name,
-            logo: partner.logo,
-            description: partner.description,
-            ...(partner.website && { website: partner.website }),
-            ...(partner.video && { video: partner.video }),
-            ...(partner.isEasterEgg && { isEasterEgg: partner.isEasterEgg }),
-            createdAt: new Date(),
-          };
-
-          await docRef.set(partnerData);
-          results.partners.migrated++;
-        } catch (error) {
-          console.error(`Failed to migrate partner ${partner.id}:`, error);
-          results.partners.errors++;
-        }
-      }
+      results.partners.skipped = (await db.collection(COLLECTIONS.PARTNERS).get()).size;
     }
 
     // DevSA subscribers - already migrated to Firestore

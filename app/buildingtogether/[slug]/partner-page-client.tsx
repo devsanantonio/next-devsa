@@ -2,38 +2,29 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { partners } from "@/data/partners"
+import type { Partner } from "@/lib/partners"
 import { ArrowLeft, ExternalLink, Globe } from "lucide-react"
 import { motion } from "motion/react"
 
 interface PartnerPageClientProps {
-  slug: string
+  /**
+   * Resolved on the server and handed down, rather than looked up here.
+   *
+   * This used to find the partner in a module-scope array, which is why the
+   * page kept rendering one that had been deleted in the admin. The server
+   * already reads Firestore to build the metadata, so passing the record costs
+   * nothing and removes the second source entirely.
+   */
+  partner: Partner
 }
 
-export function PartnerPageClient({ slug }: PartnerPageClientProps) {
+export function PartnerPageClient({ partner }: PartnerPageClientProps) {
   const router = useRouter()
-  
-  const partner = partners.find((p) => p.id === slug)
 
-  if (!partner) {
-    return (
-      <main className="min-h-screen bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-4">Partner Not Found</h1>
-          <p className="text-lg text-slate-600 leading-relaxed mb-8">
-            The partner you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] cursor-pointer"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Go Back
-          </button>
-        </div>
-      </main>
-    )
-  }
+  // No not-found branch. The server resolves the partner before rendering
+  // this and calls notFound() when there isn't one, so a missing partner
+  // never reaches the client — and a 404 shell rendered inside a 200 page
+  // was the wrong answer anyway.
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -55,8 +46,15 @@ export function PartnerPageClient({ slug }: PartnerPageClientProps) {
             transition={{ duration: 0.5 }}
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm"
           >
-            {/* Partner banner with logo */}
-            <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border-b border-slate-100 bg-[#ef426f]/5">
+            {/* Partner banner with logo.
+                No tinted ground. This carried `bg-[#ef426f]/5`, a pink wash the
+                community and event pages have no equivalent of — so the three
+                detail pages, which are otherwise the same card on the same
+                grey, opened differently depending on which kind of record you
+                had landed on. The rose still marks the "Partner" eyebrow and
+                the link below, which is enough for it to read as the accent
+                without colouring a whole panel. */}
+            <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border-b border-slate-100">
               <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-2xl bg-black p-4 shadow-md">
                 <Image
                   src={partner.logo}
