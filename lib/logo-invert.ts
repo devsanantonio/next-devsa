@@ -24,7 +24,7 @@
  */
 
 /** Partner ids whose artwork is light. */
-const LIGHT_PARTNER_IDS = ["youth-code-jam"]
+const LIGHT_PARTNER_IDS = ["youth-code-jam", "the-creative-futures"]
 
 /**
  * Community names whose artwork is light, matched as a lowercase substring —

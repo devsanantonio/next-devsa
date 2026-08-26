@@ -18,19 +18,35 @@ interface LogoItem {
 
 
 
-// Horizontal wordmark logos that read small in a square box — give them room.
-const LARGE_PARTNER_IDS = [
+/**
+ * Wide wordmark logos, which need horizontal room rather than a bigger square.
+ * Kept in step with the same list in components/partners/logo-showcase.tsx.
+ *
+ * UTSA is the clearest case: its artwork is 290x50, so 5.8:1. Fitted into a
+ * square box it is limited by width and draws about 11px tall. Widening the
+ * slot is what makes it legible; a bigger square does almost nothing.
+ *
+ * No type check: partners and communities share the /buildingtogether/<id>
+ * namespace, so their ids cannot collide and one list covers both. AITX and
+ * .NET qualify on the community side — every community logo was measured by
+ * ink bounds and the rest are marks, not wordmarks.
+ */
+const WIDE_LOGO_IDS = [
+  // partners
   "tech-bloc",
   "geekdom",
   "youth-code-jam",
-  "digital-canvas",
   "utsa",
   "learn2ai",
   "project-quest",
+  "the-creative-futures",
+  // communities
+  "aitx",
+  "dotnet-user-group",
 ]
 
-function isLargeLogo(logo: LogoItem) {
-  return logo.type === "partner" && LARGE_PARTNER_IDS.includes(logo.id)
+function isWideLogo(logo: LogoItem) {
+  return WIDE_LOGO_IDS.includes(logo.id)
 }
 
 interface ApiLogo {
@@ -57,21 +73,28 @@ function splitIntoRows<T>(items: T[], rows: number): T[][] {
 /* Desktop — a logo-forward tile, on the canvas (no card). Hover draws a
    brand-pink underline under the name and darkens it. */
 function LogoTile({ logo }: { logo: LogoItem }) {
-    const large = isLargeLogo(logo)
+  const wide = isWideLogo(logo)
   return (
     <Link href={`/buildingtogether/${logo.id}`} className="group/logo block h-full">
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center">
-        <div className={`relative shrink-0 ${large ? "h-16 w-16" : "h-12 w-12"}`}>
+      {/* Fixed-height logo slot and `justify-start`, so names share a baseline
+          across the grid — see the matching note in logo-showcase.tsx. Only the
+          slot's width varies, which is the axis a wide wordmark needs. */}
+      <div className="flex h-full flex-col items-center justify-start gap-3 p-4 text-center">
+        <div
+          className={`relative flex h-14 shrink-0 items-center justify-center ${
+            wide ? "w-32" : "w-14"
+          }`}
+        >
           <Image
             src={logo.logo}
             alt={logo.name}
             fill
             unoptimized
-            sizes={large ? "64px" : "48px"}
+            sizes={wide ? "128px" : "56px"}
             className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>
-        <span className="text-sm font-medium leading-tight text-gray-600 transition-colors duration-200 group-hover/logo:text-gray-900">
+        <span className="flex min-h-[2.5rem] items-start justify-center text-sm font-medium leading-tight text-gray-600 transition-colors duration-200 group-hover/logo:text-gray-900">
           {logo.name}
         </span>
       </div>
