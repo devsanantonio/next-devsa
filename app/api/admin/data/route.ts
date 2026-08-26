@@ -175,10 +175,14 @@ export async function GET(request: NextRequest) {
       submittedAt: doc.data().submittedAt?.toDate?.()?.toISOString() || doc.data().submittedAt,
     }));
 
+    // `lastLoginAt` is written by /api/admin/auth on each successful check —
+    // see the note there. Only this branch runs for admins and superadmins;
+    // organizers return `admins: []` above and never see anyone's activity.
     const admins = adminsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       approvedAt: doc.data().approvedAt?.toDate?.()?.toISOString() || doc.data().approvedAt,
+      lastLoginAt: doc.data().lastLoginAt?.toDate?.()?.toISOString() || doc.data().lastLoginAt || null,
     }));
 
     return NextResponse.json({

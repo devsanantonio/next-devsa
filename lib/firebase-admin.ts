@@ -200,6 +200,16 @@ export interface VolunteerSignup {
 export interface ApprovedAdmin {
   email: string;
   approvedAt: Date;
+  /**
+   * Last successful admin-auth check — see /api/admin/auth, which writes it.
+   *
+   * Recorded by us rather than read from Firebase Auth, because admin sign-in
+   * does not go through Firebase Auth: it is an email checked against this
+   * collection, so there is no `lastSignInTime` anywhere to read.
+   *
+   * Absent for anyone approved but never seen since this started recording.
+   */
+  lastLoginAt?: Date;
   approvedBy?: string;
   role: 'superadmin' | 'admin' | 'organizer';
   communityId?: string;

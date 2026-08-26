@@ -32,6 +32,29 @@ export async function GET(request: NextRequest) {
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
 
+    /**
+     * Stamp the login.
+     *
+     * This check IS the login for this app — signing in is an email matched
+     * against this collection, with the session then restored from
+     * localStorage, so there is no other moment that means "they are here".
+     *
+     * Throttled to fifteen minutes so a page refresh does not cost a write on
+     * every load. That makes the value accurate to the quarter hour, which is
+     * the right resolution for a column answering "is this person still using
+     * the admin".
+     *
+     * Fire-and-forget, and deliberately not awaited: a failed write must never
+     * stop someone signing in. The worst case is a stale timestamp.
+     */
+    const lastLogin = adminData.lastLoginAt as unknown as { toDate?: () => Date } | undefined;
+    const lastLoginMs = lastLogin?.toDate?.()?.getTime() ?? 0;
+    if (Date.now() - lastLoginMs > 15 * 60 * 1000) {
+      adminQuery.docs[0].ref
+        .update({ lastLoginAt: new Date() })
+        .catch((err) => console.error('Failed to stamp admin login:', err));
+    }
+
     return NextResponse.json({
       isAdmin: true,
       role: adminData.role,

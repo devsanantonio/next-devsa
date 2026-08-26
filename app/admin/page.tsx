@@ -112,6 +112,14 @@ interface Admin {
   role: string
   communityId?: string
   approvedAt: string
+  /**
+   * Written by /api/admin/auth on each successful check. `null` means we have
+   * not seen them since this started recording — not that they never signed
+   * in, which is a distinction worth remembering for the first weeks.
+   *
+   * Only reaches admins and superadmins: organizers get `admins: []`.
+   */
+  lastLoginAt?: string | null
   firstName?: string
   lastName?: string
   profileImage?: string
@@ -2604,6 +2612,7 @@ export default function AdminPage() {
                         <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Role</th>
                         <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Community</th>
                         <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Approved At</th>
+                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Last Login</th>
                         <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
@@ -2630,6 +2639,26 @@ export default function AdminPage() {
                           <td className="py-4 px-4 text-sm text-neutral-400">{getCommunityName(admin.communityId)}</td>
                           <td className="py-4 px-4 text-sm text-neutral-400">
                             {new Date(admin.approvedAt).toLocaleDateString()}
+                          </td>
+                          {/* Date and time, not just the date: "did they log in
+                              today" is the question this column answers, and a
+                              bare date cannot tell you that. Never-signed-in is
+                              called out rather than left blank — an approved
+                              admin who has never arrived is worth noticing. */}
+                          <td className="py-4 px-4 text-sm text-neutral-400">
+                            {admin.lastLoginAt ? (
+                              <span title={new Date(admin.lastLoginAt).toLocaleString()}>
+                                {new Date(admin.lastLoginAt).toLocaleDateString()}
+                                <span className="ml-1.5 text-xs text-neutral-500">
+                                  {new Date(admin.lastLoginAt).toLocaleTimeString([], {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-neutral-600">—</span>
+                            )}
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">
