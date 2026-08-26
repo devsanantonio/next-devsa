@@ -19,8 +19,13 @@ interface LogoItem {
 
 
 /**
- * The logo slot is a fixed 56px tall and as wide as its tile allows, so a mark
- * is bounded by height and a wordmark by width — each gets the axis it needs.
+ * The logo slot is 48x96px, so a mark is bounded by height and a wordmark by
+ * width — each gets the axis it needs.
+ *
+ * Those two numbers are a taste call, arrived at by rendering the real wall at
+ * 100/90/82/75% of the tile's content box. Full-bleed read heavy once the logo
+ * files were cropped; below about 80% UTSA's tagline stops resolving, since it
+ * is 5.8:1 and bounded by width. 96x48 is a shade over 80% on both axes.
  *
  * This replaced a hand-kept WIDE_LOGO_IDS list that handed nine ids a 128px
  * slot and everything else a 56px square. Two things were wrong with it. 128px
@@ -68,13 +73,13 @@ function LogoTile({ logo }: { logo: LogoItem }) {
           across the grid — see the matching note in logo-showcase.tsx. Width is
           whatever the tile has, so each mark is bounded on the axis it needs. */}
       <div className="flex h-full flex-col items-center justify-start gap-3 p-4 text-center">
-        <div className="relative flex h-14 w-full shrink-0 items-center justify-center">
+        <div className="relative flex h-12 w-full max-w-24 shrink-0 items-center justify-center">
           <Image
             src={logo.logo}
             alt={logo.name}
             fill
             unoptimized
-            sizes="160px"
+            sizes="96px"
             className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>
