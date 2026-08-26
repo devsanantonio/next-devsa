@@ -19,44 +19,24 @@ interface LogoItem {
 
 
 /**
- * Wide wordmark logos, which need horizontal room rather than a bigger square.
+ * The logo slot is a fixed 56px tall and as wide as its tile allows, so a mark
+ * is bounded by height and a wordmark by width — each gets the axis it needs.
  *
- * UTSA is the clearest case: its artwork is 290x50, so 5.8:1. Fitted into a
- * square box it is limited by width and draws about 11px tall — technically
- * present, practically unreadable. Widening the slot is what makes it legible;
- * enlarging a square box does almost nothing for a mark this shape.
+ * This replaced a hand-kept WIDE_LOGO_IDS list that handed nine ids a 128px
+ * slot and everything else a 56px square. Two things were wrong with it. 128px
+ * is wider than a tile's content box at the lg two-column breakpoint (~115px),
+ * so the widest wordmarks overflowed their own padding. And the list was drawn
+ * up by measuring the ink bounds of the logo *files*, so a wordmark that
+ * shipped inside a square canvas of transparent padding measured as a square
+ * and got the square slot: 434 MEDIA, Geeks && {...}, DEF CON, AWS, SAHA and
+ * Greater Gaming Society were all sorted wrong that way, and only showed it
+ * once those files were re-cropped to their ink.
  *
- * Partners and communities share one list and there is no type check, because
- * the two share the /buildingtogether/<id> namespace and so cannot collide.
- * A wide community logo works the moment its id is added here.
- *
- * The community entries are few on purpose. Every community logo was measured
- * by its ink bounds, ignoring the transparent padding in the file: AITX
- * (3.69:1) and .NET (2.68:1) are wordmarks, and the rest run 0.80 to 1.90,
- * which is a mark rather than a wordmark and reads correctly in the square
- * slot.
- *
- * Still an id list, and still a guess — but a guess about aspect ratio, which
- * does not change when someone swaps a white mark for a black one. A stale
- * entry here makes a logo the wrong size, not invisible.
+ * Going full-width costs the widest marks about 10% of their former width at
+ * lg and nothing at any other breakpoint. What it buys is that there is no
+ * longer a list to keep in step with the artwork — re-crop a logo, or add one,
+ * and it sizes itself.
  */
-const WIDE_LOGO_IDS = [
-  // partners
-  "tech-bloc",
-  "geekdom",
-  "youth-code-jam",
-  "utsa",
-  "learn2ai",
-  "project-quest",
-  "the-creative-futures",
-  // communities
-  "aitx",
-  "dotnet-user-group",
-]
-
-function isWideLogo(logo: LogoItem) {
-  return WIDE_LOGO_IDS.includes(logo.id)
-}
 
 function splitIntoRows<T>(items: T[], rows: number): T[][] {
   const out: T[][] = Array.from({ length: rows }, () => [])
@@ -66,7 +46,6 @@ function splitIntoRows<T>(items: T[], rows: number): T[][] {
 
 /* Desktop — a logo-forward tile, on the canvas (no card). */
 function LogoTile({ logo }: { logo: LogoItem }) {
-  const wide = isWideLogo(logo)
   return (
     <Link href={`/buildingtogether/${logo.id}`} className="group/logo block h-full">
       {/* `justify-start`, not `justify-center`.
@@ -77,20 +56,16 @@ function LogoTile({ logo }: { logo: LogoItem }) {
           that wrapped to two lines pulled its logo up, so no two columns lined
           up unless their contents happened to match.
           
-          The slot is a fixed height for everyone and only its WIDTH varies —
-          which is the axis a wide wordmark actually needs. */}
+          The slot is a fixed height for everyone and takes whatever WIDTH the
+          tile has, so each mark is bounded on the axis it needs. */}
       <div className="flex h-full flex-col items-center justify-start gap-3 p-4 text-center">
-        <div
-          className={`relative flex h-14 shrink-0 items-center justify-center ${
-            wide ? "w-32" : "w-14"
-          }`}
-        >
+        <div className="relative flex h-14 w-full shrink-0 items-center justify-center">
           <Image
             src={logo.logo}
             alt={logo.name}
             fill
             unoptimized
-            sizes={wide ? "128px" : "56px"}
+            sizes="160px"
             className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>

@@ -19,35 +19,24 @@ interface LogoItem {
 
 
 /**
- * Wide wordmark logos, which need horizontal room rather than a bigger square.
- * Kept in step with the same list in components/partners/logo-showcase.tsx.
+ * The logo slot is a fixed 56px tall and as wide as its tile allows, so a mark
+ * is bounded by height and a wordmark by width — each gets the axis it needs.
  *
- * UTSA is the clearest case: its artwork is 290x50, so 5.8:1. Fitted into a
- * square box it is limited by width and draws about 11px tall. Widening the
- * slot is what makes it legible; a bigger square does almost nothing.
+ * This replaced a hand-kept WIDE_LOGO_IDS list that handed nine ids a 128px
+ * slot and everything else a 56px square. Two things were wrong with it. 128px
+ * is wider than a tile's content box at the lg two-column breakpoint (~115px),
+ * so the widest wordmarks overflowed their own padding. And the list was drawn
+ * up by measuring the ink bounds of the logo *files*, so a wordmark that
+ * shipped inside a square canvas of transparent padding measured as a square
+ * and got the square slot: 434 MEDIA, Geeks && {...}, DEF CON, AWS, SAHA and
+ * Greater Gaming Society were all sorted wrong that way, and only showed it
+ * once those files were re-cropped to their ink.
  *
- * No type check: partners and communities share the /buildingtogether/<id>
- * namespace, so their ids cannot collide and one list covers both. AITX and
- * .NET qualify on the community side — every community logo was measured by
- * ink bounds and the rest are marks, not wordmarks.
+ * Going full-width costs the widest marks about 10% of their former width at
+ * lg and nothing at any other breakpoint. What it buys is that there is no
+ * longer a list to keep in step with the artwork — re-crop a logo, or add one,
+ * and it sizes itself.
  */
-const WIDE_LOGO_IDS = [
-  // partners
-  "tech-bloc",
-  "geekdom",
-  "youth-code-jam",
-  "utsa",
-  "learn2ai",
-  "project-quest",
-  "the-creative-futures",
-  // communities
-  "aitx",
-  "dotnet-user-group",
-]
-
-function isWideLogo(logo: LogoItem) {
-  return WIDE_LOGO_IDS.includes(logo.id)
-}
 
 interface ApiLogo {
   id: string
@@ -73,24 +62,19 @@ function splitIntoRows<T>(items: T[], rows: number): T[][] {
 /* Desktop — a logo-forward tile, on the canvas (no card). Hover draws a
    brand-pink underline under the name and darkens it. */
 function LogoTile({ logo }: { logo: LogoItem }) {
-  const wide = isWideLogo(logo)
   return (
     <Link href={`/buildingtogether/${logo.id}`} className="group/logo block h-full">
       {/* Fixed-height logo slot and `justify-start`, so names share a baseline
-          across the grid — see the matching note in logo-showcase.tsx. Only the
-          slot's width varies, which is the axis a wide wordmark needs. */}
+          across the grid — see the matching note in logo-showcase.tsx. Width is
+          whatever the tile has, so each mark is bounded on the axis it needs. */}
       <div className="flex h-full flex-col items-center justify-start gap-3 p-4 text-center">
-        <div
-          className={`relative flex h-14 shrink-0 items-center justify-center ${
-            wide ? "w-32" : "w-14"
-          }`}
-        >
+        <div className="relative flex h-14 w-full shrink-0 items-center justify-center">
           <Image
             src={logo.logo}
             alt={logo.name}
             fill
             unoptimized
-            sizes={wide ? "128px" : "56px"}
+            sizes="160px"
             className={`object-contain ${logoOnLight(logo)}`}
           />
         </div>
