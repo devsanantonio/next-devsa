@@ -39,7 +39,7 @@ export const upcomingDevsaEvent: DevsaEvent | null = {
   title: "PySanAntonio II — San Antonio's Python Conference",
   date: "2026-10-02T18:00:00.000Z", // 1:00 PM CDT
   location: "Geekdom, 3rd Floor — San Antonio, TX",
-  description: "San Antonio's Python conference returns for a second year — an afternoon of learning, networking, and community building with the people already doing the work here. Led by Alamo Python, backed by the PyTexas Foundation, hosted by DEVSA inside SA Startup + Tech Week. The call for speakers is open through August 22.",
+  description: "San Antonio's Python conference returns for a second year — an afternoon of learning, networking, and community building with the people already doing the work here. Led by Alamo Python, backed by the PyTexas Foundation, hosted by DEVSA inside SA Startup + Tech Week. The call for speakers is open through September 11.",
   url: "/events/pysanantonio",
   video: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mp4",
 };

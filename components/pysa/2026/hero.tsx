@@ -230,7 +230,7 @@ export function PysaHero({
                       <span className="font-semibold" style={{ color: PYSA_COLORS.yellow }}>
                         {daysLeft} {daysLeft === 1 ? "day" : "days"}
                       </span>{" "}
-                      — August 22, 2026.
+                      — September 11, 2026.
                     </>
                   )}
                 </p>

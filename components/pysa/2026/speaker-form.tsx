@@ -172,7 +172,7 @@ export function PysaSpeakerForm({
         <CalendarClock className="h-10 w-10" style={{ color: BLUE }} />
         <h3 className="text-xl font-bold text-white">The call for speakers has closed</h3>
         <p className="max-w-sm text-sm leading-relaxed text-white/60">
-          Submissions closed August 22, and we&apos;re reading every one of them
+          Submissions closed September 11, and we&apos;re reading every one of them
           before we announce the lineup ahead of October 2. Talks that don&apos;t
           land a conference slot get first look for Alamo Python&apos;s regular
           meetups — the work still finds a room.
@@ -223,7 +223,7 @@ export function PysaSpeakerForm({
           <h3 className="text-xl font-bold text-white">Talk submitted</h3>
           <p className="max-w-sm text-sm leading-relaxed text-white/60">
             Thanks, {form.name.split(" ")[0] || "friend"} — your proposal is in.
-            The call closes August 22, and you&apos;ll hear from us by email either
+            The call closes September 11, and you&apos;ll hear from us by email either
             way. Sharing what you know is how this community gets built.
           </p>
         </motion.div>
@@ -453,7 +453,7 @@ export function PysaSpeakerForm({
         </button>
 
         <p className="text-center text-xs text-white/35">
-          Submissions close August 22, 2026.
+          Submissions close September 11, 2026.
         </p>
       </div>
     </form>
