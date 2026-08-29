@@ -13,13 +13,17 @@ import { Footer } from "@/components/footer"
  * /admin owns its own chrome: it renders a full-screen sidebar shell, so the
  * marketing Navbar + Footer are skipped there.
  *
+ * /summit is a full-bleed event backdrop meant to run fullscreen on the TVs
+ * at the venue. It owns its chrome for the opposite reason to /admin: there
+ * is none, and a navbar over the artwork would defeat the point.
+ *
  * /bounties used to be the other entry — JobsLayoutShell swapped between
  * marketing chrome and a workspace sidebar depending on the session. It went
  * with the bounty board. The list stays an array rather than collapsing to a
  * single string comparison, because "sections that own their chrome" is a
  * category this site has had more than one of and will again.
  */
-const APP_OWNED_CHROME_PREFIXES = ["/admin"]
+const APP_OWNED_CHROME_PREFIXES = ["/admin", "/summit"]
 
 function isAppOwnedChrome(pathname: string | null) {
   if (!pathname) return false
