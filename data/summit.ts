@@ -1,74 +1,17 @@
 /**
- * San Antonio Tech Summit — content for the `/summit` TV backdrop.
+ * San Antonio Tech Summit — config for the `/summit` TV backdrop.
  *
- * Everything the page says lives here so the run-of-show can be edited during
- * the event without touching layout code. The page reads it on the client and
- * re-evaluates every second, so a change is live on the next deploy with no
- * other state to clear.
+ * The key art carries every piece of copy: title, presenter, date, venue and
+ * the sponsor row. So the page displays the artwork and nothing else. There is
+ * deliberately no text layer and no clock — anything laid over the top would
+ * only compete with a design that is already finished.
  *
- * This is a one-off for a single day. Keep it self-contained — `/summit`,
- * this file, and one entry in components/layout-chrome.tsx are the whole
- * footprint, so it can be deleted in one pass afterwards.
+ * A one-off for a single day. `/summit`, this file, public/summit/hero.png and
+ * one entry in components/layout-chrome.tsx are the whole footprint.
  */
 
-export interface SummitSegment {
-  /** ISO with an explicit offset — see the note on `start` below. */
-  start: string
-  end: string
-  label: string
-  /** Optional speaker/host line, shown smaller under the label. */
-  detail?: string
-}
+/** 1080x1080, so it lands pixel-for-pixel on a 1080p panel. */
+export const SUMMIT_ART = "/summit/hero.png"
 
-export interface SummitSponsor {
-  name: string
-  /**
-   * Path under /public, e.g. "/summit/team1.svg". When absent the name is set
-   * as a wordmark instead, which is a placeholder rather than a design choice
-   * — a real logo file always looks better on a 55" screen.
-   */
-  logo?: string
-  /** Render the logo larger; wordmark logos need more width than marks. */
-  wide?: boolean
-}
-
-/**
- * Timestamps carry an explicit -05:00 (CDT on this date) rather than relying
- * on the viewer's clock being set to Central. A TV at the venue almost
- * certainly is, but a laptop driving it over HDMI from another timezone is
- * exactly the kind of thing that goes wrong an hour before doors — this way
- * the countdown is correct regardless of what machine renders it.
- */
-export const SUMMIT = {
-  eyebrow: "San Antonio",
-  title: "Tech Summit",
-  presenter: "Presented by Gentry Media",
-
-  dateLabel: "29 Aug, 2026",
-  timeLabel: "10:30 AM – 1 PM",
-  venueLine: "Geekdom, 110 E. Houston St, San Antonio, Texas",
-
-  timeZone: "America/Chicago",
-  start: "2026-08-29T10:30:00-05:00",
-  end: "2026-08-29T13:00:00-05:00",
-
-  /**
-   * Run of show. Leave empty and the NOW/NEXT strip simply does not render —
-   * the page still works as a static-looking backdrop with a live clock.
-   * Fill it in and the strip highlights whatever is happening at that moment,
-   * which is the thing that makes this worth being a web page instead of a
-   * JPEG on a USB stick.
-   *
-   * Example:
-   *   { start: "2026-08-29T10:30:00-05:00", end: "2026-08-29T10:45:00-05:00",
-   *     label: "Doors & coffee" },
-   */
-  segments: [] as SummitSegment[],
-
-  sponsors: [
-    { name: "SA" },
-    { name: "team1" },
-    { name: "aitx" },
-    { name: "Stand With Crypto", wide: true },
-  ] as SummitSponsor[],
-} as const
+export const SUMMIT_ALT =
+  "San Antonio Tech Summit, presented by Gentry Media — 29 August 2026, 10:30 AM to 1 PM, Geekdom, 110 E. Houston St, San Antonio, Texas"
