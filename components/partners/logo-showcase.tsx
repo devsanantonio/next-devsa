@@ -41,7 +41,28 @@ interface LogoItem {
  * lg and nothing at any other breakpoint. What it buys is that there is no
  * longer a list to keep in step with the artwork — re-crop a logo, or add one,
  * and it sizes itself.
+ *
+ * The 96px cap binds only on marks wider than 2:1; everything squarer is
+ * bounded by the 48px height and does not notice it. Past about 6:1 it stops
+ * being a cap and starts being a starvation: the mark is already limited by
+ * width, and holding it 72px short of the room its own tile has buys nothing.
+ * Those ids are listed below and get the whole tile.
+ *
+ * This is a list again, which the paragraph above was pleased to be rid of —
+ * but not the same kind. The old one guessed which marks were wordmarks by
+ * measuring files that turned out to be mostly padding, so it was wrong from
+ * the day it was written. An entry here records an intrinsic ratio taken from
+ * the artwork itself, which only changes if the partner redraws their logo.
  */
+const EXTREME_WORDMARK_IDS = [
+  // viewBox 178.83 x 17.75 — 10.1:1, nearly twice as wide as UTSA, the next
+  // widest thing on either wall.
+  "learnopentech",
+]
+
+function isExtremeWordmark(logo: LogoItem) {
+  return EXTREME_WORDMARK_IDS.includes(logo.id)
+}
 
 function splitIntoRows<T>(items: T[], rows: number): T[][] {
   const out: T[][] = Array.from({ length: rows }, () => [])
@@ -64,7 +85,11 @@ function LogoTile({ logo }: { logo: LogoItem }) {
           The slot is a fixed height for everyone and takes whatever WIDTH the
           tile has, so each mark is bounded on the axis it needs. */}
       <div className="flex h-full flex-col items-center justify-start gap-3 p-4 text-center">
-        <div className="relative flex h-12 w-full max-w-24 shrink-0 items-center justify-center">
+        <div
+          className={`relative flex h-12 w-full shrink-0 items-center justify-center ${
+            isExtremeWordmark(logo) ? "" : "max-w-24"
+          }`}
+        >
           <Image
             src={logo.logo}
             alt={logo.name}
