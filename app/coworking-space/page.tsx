@@ -1,5 +1,12 @@
 import type { Metadata } from "next"
 import { CoworkingSpaceClient } from "./coworking-space-client"
+import { ClosingNotice, getClosingPhase } from "@/components/coworking-space/closing-notice"
+
+/**
+ * Hourly, purely so the closing banner can switch from "closes" to "has
+ * closed" on its own. Nothing else on this page expires.
+ */
+export const revalidate = 3600
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -75,6 +82,8 @@ export const metadata: Metadata = {
 }
 
 export default function CoworkingSpacePage() {
+  const phase = getClosingPhase()
+
   return (
     <>
       <script
@@ -144,6 +153,7 @@ export default function CoworkingSpacePage() {
           }),
         }}
       />
+      <ClosingNotice phase={phase} />
       <CoworkingSpaceClient />
     </>
   )
