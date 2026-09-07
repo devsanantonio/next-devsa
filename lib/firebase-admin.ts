@@ -292,6 +292,16 @@ export interface Event {
    */
   isOfficial?: boolean;
   /**
+   * An activation with a design system of its own — see lib/event-brands.ts.
+   *
+   * Keyed by name rather than carrying colours, because these are identities
+   * and not palettes. An earlier pass offered a colour picker on every official
+   * event, which was the wrong question twice over: it asked for a hex where
+   * the answer is a brand, and being tied to `isOfficial` it dressed an AWS
+   * pentesting session in The Model's wordmark.
+   */
+  brand?: string;
+  /**
    * Where "View Details" goes, when it should not go to this site.
    *
    * Its own field rather than reusing `url`, which 20 published events already

@@ -7,6 +7,8 @@ import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
 import { logoOnLight } from "@/lib/logo-invert"
+import { getEventBrand } from "@/lib/event-brands"
+import { EventBrandLockup } from "@/components/events/event-brand-lockup"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
 import {
   buildCalendarLinks,
@@ -40,6 +42,7 @@ interface FirestoreEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
+  brand?: string
   detailsUrl?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
@@ -217,6 +220,7 @@ interface MergedEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
+  brand?: string
   detailsUrl?: string
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
@@ -645,6 +649,7 @@ export function CommunityEventsSection({
       partnerLogos: event.partnerLogos,
       partners: event.partners,
       isOfficial: event.isOfficial,
+      brand: event.brand,
       detailsUrl: event.detailsUrl,
       slug: event.slug,
       eventType: event.eventType,
@@ -1063,10 +1068,30 @@ export function CommunityEventsSection({
                           /* DEVSA convened it, so DEVSA belongs in the row —
                              and cannot come from the data, because it is not a
                              partner record. */
+                          /* All three branded activations belong to Startup
+                             Week, so the week's mark takes the plate and
+                             everyone else — communities included, which the
+                             plain card has no room for — is billed underneath.
+                             That is what puts DEF CON under Access Granted
+                             rather than in front of it. */
+                          const brand = getEventBrand(event.brand)
+                          const brandCoHosts = brand
+                            ? [...eventCommunities.filter((c) => c.logo), ...allPartners].filter(
+                                (o) => o.id !== "sastw",
+                              )
+                            : []
                           const rowPartners = event.isOfficial
-                            ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...coPartners]
-                            : coPartners
-                          const primaryLogo = eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
+                            ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...(brand ? brandCoHosts : coPartners)]
+                            : brand
+                              ? brandCoHosts
+                              : coPartners
+                          /* The bolt rather than the horizontal lockup: the
+                             plate is a 56px square, and the lockup is about
+                             5:1, so it drew eight pixels tall in it. The bolt
+                             is the week's mark at a shape the slot can hold. */
+                          const primaryLogo = brand
+                            ? "/sastw/bolt.svg"
+                            : eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
                           const primaryName = eventCommunities[0]?.name || event.communityId
                           /* Who is hosting, as a list rather than a string.
                           
@@ -1088,7 +1113,11 @@ export function CommunityEventsSection({
                             : allPartners.length
                               ? allPartners.map((p) => p.name)
                               : [primaryName]
-                          const hostLabel = hosts.join(" + ")
+                          /* On a branded card the week is the host, and every
+                             group is already named under "with" — repeating
+                             them here put the same five names on the card
+                             twice. */
+                          const hostLabel = brand ? "SA Startup + Tech Week" : hosts.join(" + ")
                           /* How many organisations are actually behind this,
                              which is not the same as how many are in the label.
                           
@@ -1136,13 +1165,40 @@ export function CommunityEventsSection({
                                and it degrades to nothing. */
                             <article
                               key={event.id}
-                              className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
-                                eventStatus === "happening"
-                                  ? "border-green-300 bg-green-50/30 hover:border-green-400"
-                                  : "border-gray-200 bg-white hover:border-gray-300"
+                              className={`group relative overflow-hidden rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
+                                brand
+                                  ? "border-transparent"
+                                  : eventStatus === "happening"
+                                    ? "border-green-300 bg-green-50/30 hover:border-green-400"
+                                    : "border-gray-200 bg-white hover:border-gray-300"
                               }`}
+                              style={brand ? { backgroundColor: brand.surface } : undefined}
                             >
-                              <div className="flex gap-4">
+                              {/* The schematic field, for the one brand whose
+                                  artwork expects to sit in a space rather than
+                                  on one. Masked to an ellipse — tiled to the
+                                  edges a grid stops being a hint and becomes
+                                  wallpaper. */}
+                              {brand?.grid && (
+                                <div
+                                  aria-hidden
+                                  className="pointer-events-none absolute inset-0"
+                                  style={{
+                                    backgroundImage: `linear-gradient(${brand.grid.line} 1px, transparent 1px), linear-gradient(90deg, ${brand.grid.line} 1px, transparent 1px)`,
+                                    backgroundSize: "22px 22px",
+                                    WebkitMaskImage: brand.grid.fade,
+                                    maskImage: brand.grid.fade,
+                                  }}
+                                />
+                              )}
+                              {brand && (
+                                <span
+                                  aria-hidden
+                                  className="pointer-events-none absolute inset-y-0 left-0 w-1"
+                                  style={{ backgroundColor: brand.accent }}
+                                />
+                              )}
+                              <div className="relative flex gap-4">
                                 {/* The host mark, on every viewport.
 
                                     Two changes. It was `hidden sm:block`, so it
@@ -1175,7 +1231,11 @@ export function CommunityEventsSection({
                                     gray-950 it disappears entirely. */}
                                 <div
                                   className={`relative h-14 w-14 shrink-0 rounded-lg p-2 ${
-                                    hostPartner ? "border border-gray-200 bg-white" : "bg-gray-950"
+                                    brand
+                                      ? "border border-white/15 bg-white/5"
+                                      : hostPartner
+                                        ? "border border-gray-200 bg-white"
+                                        : "bg-gray-950"
                                   }`}
                                 >
                                   <Image
@@ -1184,9 +1244,11 @@ export function CommunityEventsSection({
                                     fill
                                     unoptimized
                                     className={`object-contain p-2 ${
-                                      hostPartner
-                                        ? logoOnLight({ id: hostPartner.id, name: hostPartner.name, type: "partner" })
-                                        : ""
+                                      brand
+                                        ? ""
+                                        : hostPartner
+                                          ? logoOnLight({ id: hostPartner.id, name: hostPartner.name, type: "partner" })
+                                          : ""
                                     }`}
                                     sizes="56px"
                                   />
@@ -1207,11 +1269,12 @@ export function CommunityEventsSection({
                                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
                                     <time
                                       dateTime={event.date}
-                                      className="text-[15px] font-bold tabular-nums text-gray-900"
+                                      className={`text-[15px] font-bold tabular-nums ${brand ? "text-white" : "text-gray-900"}`}
+                                      style={brand ? { color: brand.accent } : undefined}
                                     >
                                       {formatTime(event.date)}
                                     </time>
-                                    <span aria-hidden className="text-gray-300">·</span>
+                                    <span aria-hidden className={brand ? "text-white/30" : "text-gray-300"}>·</span>
                                     {/* min-w-0 is what makes `truncate` work here.
                                     
                                         A flex item's default min-width is auto,
@@ -1224,12 +1287,12 @@ export function CommunityEventsSection({
                                         page: at 390px the band, the day rules
                                         and every other card ran off the right
                                         edge because of this one span. */}
-                                    <span className="min-w-0 truncate text-[13px] font-medium text-gray-600">
+                                    <span className={`min-w-0 truncate text-[13px] font-medium ${brand ? "text-white/70" : "text-gray-600"}`}>
                                       {hostLabel}
                                     </span>
 
                                     {collabCount > 1 && (
-                                      <span className="inline-flex shrink-0 items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
+                                      <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest ${brand ? "border-white/20 bg-white/5 text-white/60" : "border-gray-200 bg-gray-100 text-gray-500"}`}>
                                         Collab
                                       </span>
                                     )}
@@ -1251,17 +1314,21 @@ export function CommunityEventsSection({
                                     )}
                                   </div>
 
+                                  {brand ? (
+                                    <EventBrandLockup brand={brand} />
+                                  ) : (
                                     <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
                                       {event.title}
                                     </h3>
+                                  )}
 
                                   {/* MapPin, not 📍. The emoji was the only one
                                       in an otherwise all-Lucide system: it drew
                                       differently on every platform, ignored
                                       `currentColor`, and sat at its own optical
                                       weight beside the icons around it. */}
-                                  <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-normal leading-normal text-gray-500">
-                                    <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden />
+                                  <p className={`mt-1.5 flex items-center gap-1.5 text-[13px] font-normal leading-normal ${brand ? "text-white/60" : "text-gray-500"}`}>
+                                    <MapPin className={`h-3.5 w-3.5 shrink-0 ${brand ? "text-white/40" : "text-gray-400"}`} aria-hidden />
                                     <span className="truncate">{event.venue || event.location}</span>
                                   </p>
 
@@ -1269,7 +1336,7 @@ export function CommunityEventsSection({
                                       to ~900px on a wide display, which is a
                                       long run for two clamped lines of 14px
                                       text. */}
-                                  <p className="mt-2.5 max-w-2xl text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
+                                  <p className={`mt-2.5 max-w-2xl text-sm font-light leading-[1.6] line-clamp-2 ${brand ? "text-white/65" : "text-gray-500"}`}>
                                     {stripMarkdown(event.description)}
                                   </p>
 
@@ -1298,7 +1365,7 @@ export function CommunityEventsSection({
                                           about 230px wide at 390, which is what
                                           broke three logos onto two lines and
                                           left the row looking scattered. */}
-                                      <span className="w-full text-[11px] font-medium uppercase tracking-widest text-gray-400 sm:w-auto">
+                                      <span className={`w-full text-[11px] font-medium uppercase tracking-widest sm:w-auto ${brand ? "text-white/45" : "text-gray-400"}`}>
                                         With
                                       </span>
                                       {rowPartners.map((p) => (
@@ -1331,7 +1398,9 @@ export function CommunityEventsSection({
                                              flex-1 with min-w-0 so three share
                                              the line evenly instead of one
                                              falling off it. */
-                                          className="relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none"
+                                          className={`relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none ${
+                                            brand ? "rounded-md bg-white/95 px-1" : ""
+                                          }`}
                                         >
                                           <Image
                                             src={p.logo}
@@ -1339,7 +1408,13 @@ export function CommunityEventsSection({
                                             fill
                                             unoptimized
                                             sizes="96px"
-                                            className={`object-contain p-1 sm:p-1.5 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
+                                            /* DEVSA's mark is a filled black block where the
+                                               others are open lettering, so at equal
+                                               box size it read as twice their weight.
+                                               Inset further to bring it into line. */
+                                            className={`object-contain ${
+                                              p.id === "devsa" ? "p-2.5 sm:p-3" : "p-1 sm:p-1.5"
+                                            } ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
                                           />
                                         </span>
                                       ))}
@@ -1349,7 +1424,7 @@ export function CommunityEventsSection({
                               </div>
 
                               {/* Footer */}
-                              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                              <div className={`relative mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 ${brand ? "border-white/15" : "border-gray-100"}`}>
                                 {/* Labelled, and visibly secondary.
 
                                     These were two unlabelled 36px icon squares
@@ -1362,12 +1437,12 @@ export function CommunityEventsSection({
                                     "View Details" left as the only filled
                                     control on the card. */}
                                 <div className="flex items-center gap-1.5">
-                                  <span className="mr-0.5 text-[12px] font-normal text-gray-400">Add to</span>
+                                  <span className={`mr-0.5 text-[12px] font-normal ${brand ? "text-white/45" : "text-gray-400"}`}>Add to</span>
                                   <a
                                     href={buildCalendarLinks(event).googleUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors ${brand ? "border-white/20 bg-white/5 text-white/75 hover:bg-white/10" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"}`}
                                   >
                                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" aria-hidden>
                                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1379,7 +1454,7 @@ export function CommunityEventsSection({
                                   </a>
                                   <button
                                     onClick={() => downloadIcs(event)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors ${brand ? "border-white/20 bg-white/5 text-white/75 hover:bg-white/10" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"}`}
                                     title="Download .ics for Apple Calendar or Outlook"
                                   >
                                     <CalendarPlus className="h-3.5 w-3.5" aria-hidden />
@@ -1390,7 +1465,10 @@ export function CommunityEventsSection({
                                   <Link
                                     href={eventLink}
                                     {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+                                    className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity ${
+                                      brand ? "hover:opacity-90" : "bg-gray-900 text-white hover:bg-gray-800"
+                                    }`}
+                                    style={brand ? { backgroundColor: brand.accent, color: brand.onAccent } : undefined}
                                   >
                                     View Details
                                     {leavesSite ? (

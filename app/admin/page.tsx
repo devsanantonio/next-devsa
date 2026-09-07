@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { EVENT_BRANDS, EVENT_BRAND_KEYS } from "@/lib/event-brands"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { 
@@ -148,6 +149,7 @@ interface CalendarEvent {
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
   isOfficial?: boolean
+  brand?: string
   detailsUrl?: string
 }
 
@@ -821,6 +823,7 @@ export default function AdminPage() {
       rsvpEnabled: false,
       externalRsvpUrl: "",
       isOfficial: false,
+      brand: "",
       detailsUrl: "",
     })
     setEditEventUseCustomCommunity(false)
@@ -859,6 +862,7 @@ export default function AdminPage() {
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
+          brand: editingEvent.brand || "",
           detailsUrl: editingEvent.detailsUrl || "",
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
@@ -3251,6 +3255,29 @@ export default function AdminPage() {
                           </div>
                         </label>
 
+
+                        <div className="mt-3">
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            Activation branding
+                          </label>
+                          <select
+                            value={editingEvent.brand || ""}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, brand: e.target.value })}
+                            className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-[#ef426f]"
+                          >
+                            <option value="">None &mdash; standard card</option>
+                            {EVENT_BRAND_KEYS.map((k) => (
+                              <option key={k} value={k}>
+                                {EVENT_BRANDS[k].label}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="mt-2 text-xs text-neutral-500">
+                            Only for the Startup + Tech Week activations that have a design
+                            system of their own. Gives the card that activation&rsquo;s lockup,
+                            colour and ground.
+                          </p>
+                        </div>
 
                         <div className="mt-3">
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">
