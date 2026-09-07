@@ -416,23 +416,3 @@ body {
   mask: url("/sastw/bolt.svg") center / contain no-repeat;
 }
 
-/*
- * The pop a mascot makes when it launches off The Model's wordmark on the
- * community calendar. See components/events/model-mascots.tsx, ported from
- * next-sasw.
- *
- * Animates the standalone `scale` property rather than `transform`, because
- * the element it sits on is already positioned by `transform` — and CSS
- * applies `scale` before `transform`, so folding the two together would scale
- * the translation as well as the glyph.
- */
-@keyframes modelPop {
-  from {
-    opacity: 0;
-    scale: 0.4;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-  }
-}

@@ -8,7 +8,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { logoOnLight } from "@/lib/logo-invert"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
-import { MascotBoundary, ModelWordmark } from "@/components/events/model-mascots"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -1085,8 +1084,8 @@ export function CommunityEventsSection({
                                blank, so it is gone rather than repaired. The
                                hover lift stays — that one is a real affordance
                                and it degrades to nothing. */
-                            <MascotBoundary key={event.id} accent={accent}>
                             <article
+                              key={event.id}
                               /* Three states, in precedence order. "Happening"
                                  outranks the DEVSA spotlight deliberately: one
                                  is a fact about right now that a reader can act
@@ -1211,7 +1210,29 @@ export function CommunityEventsSection({
                                   </div>
 
                                   {accent ? (
-                                    <ModelWordmark head={titleHead} tail={titleTail} accent={accent} />
+                                    /* Geist Mono by name, not Tailwind's
+                                       `font-mono`. next-sasw maps --font-mono to
+                                       --font-geist-mono in its globals; this repo
+                                       never defines --font-mono at all, so the
+                                       utility here resolves to Tailwind's default
+                                       system stack and the wordmark came out in a
+                                       different face to the one on sasw.co. */
+                                    <h3
+                                      className="mt-2.5 text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl"
+                                      style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
+                                    >
+                                      {titleHead && <>{titleHead} </>}
+                                      {/* box-decoration-clone so a title that
+                                          wraps gets a block per line, the way a
+                                          real selection does, rather than one box
+                                          stretched around the turn. */}
+                                      <span
+                                        className="box-decoration-clone px-1.5"
+                                        style={{ backgroundColor: accent, color: "#09090B" }}
+                                      >
+                                        {titleTail}
+                                      </span>
+                                    </h3>
                                   ) : (
                                     <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
                                       {event.title}
@@ -1331,7 +1352,6 @@ export function CommunityEventsSection({
                                 )}
                               </div>
                             </article>
-                            </MascotBoundary>
                           )
                         })}
                       </div>
