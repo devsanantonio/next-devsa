@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { logoOnLight } from "@/lib/logo-invert"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
+import { ModelMascots, ModelWordmark } from "@/components/events/model-mascots"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -962,7 +963,11 @@ export function CommunityEventsSection({
                 </div>
               </div>
             ) : (
-              <div className="space-y-10">
+              /* `relative` is load-bearing: the mascot layer is absolute
+                 inset-0 and needs this as its positioned ancestor, which is
+                 what lets them roam the whole list rather than one card. */
+              <ModelMascots color="#C0B4FC">
+                <div className="relative space-y-10">
                 {eventsByDay.map((day) => {
                   const relative = relativeDayLabel(day.key, currentTime)
                   /* Introduces the week once, above the first of its days that
@@ -1211,21 +1216,7 @@ export function CommunityEventsSection({
                                   </div>
 
                                   {accent ? (
-                                    <h3 className="mt-2.5 font-mono text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl">
-                                      {titleHead && <>{titleHead} </>}
-                                      {/* box-decoration-clone so a title that
-                                          wraps gets a block per line, the way a
-                                          real selection does, rather than one
-                                          box stretched around the turn. pr past
-                                          the last glyph, then pulled back, so
-                                          the block does not read as a crop. */}
-                                      <span
-                                        className="box-decoration-clone px-1.5 pr-1.5"
-                                        style={{ backgroundColor: accent, color: "#09090B" }}
-                                      >
-                                        {titleTail}
-                                      </span>
-                                    </h3>
+                                    <ModelWordmark head={titleHead} tail={titleTail} accent={accent} />
                                   ) : (
                                     <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
                                       {event.title}
@@ -1345,7 +1336,8 @@ export function CommunityEventsSection({
                     </section>
                   )
                 })}
-              </div>
+                </div>
+              </ModelMascots>
             )}
           </div>
 
