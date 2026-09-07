@@ -1048,9 +1048,39 @@ export function CommunityEventsSection({
                           const titleHead = titleWords.slice(0, -1).join(" ")
                           const primaryLogo = eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
                           const primaryName = eventCommunities[0]?.name || event.communityId
-                          const hostLabel = eventCommunities.length
-                            ? eventCommunities.map((ec) => ec.name).join(" + ")
-                            : primaryName
+                          /* Who is hosting, as a list rather than a string.
+                          
+                             Not `eventCommunities`: with no community on the
+                             record, the block above pushes one synthetic entry
+                             whose name is the API's already-joined
+                             "A, B, C" — three hosts arriving as a single item.
+                             That is why a three-way activation rendered commas
+                             where every other collaboration renders " + ", and
+                             why it never earned the Collab pill: by that count
+                             it had exactly one host.
+                          
+                             Falling through to the partners when there is no
+                             community is the same rule the host mark follows,
+                             so the label and the plate always name the same
+                             people. */
+                          const hosts = communityIds.length
+                            ? eventCommunities.map((ec) => ec.name)
+                            : allPartners.length
+                              ? allPartners.map((p) => p.name)
+                              : [primaryName]
+                          const hostLabel = hosts.join(" + ")
+                          /* How many organisations are actually behind this,
+                             which is not the same as how many are in the label.
+                          
+                             With a community present the partners are billed
+                             under "with" rather than in the headline, so
+                             counting the label alone would call a community
+                             plus two partners a solo event. Without one the
+                             partners *are* the label, and adding the row to the
+                             count would tally them twice. Hence counting
+                             communities only when there are communities. */
+                          const collabCount =
+                            (communityIds.length ? eventCommunities.length : 0) + allPartners.length
                           /* detailsUrl wins outright when set, which is safe
                              precisely because it is never set by accident —
                              unlike `url`, which 20 events carry alongside a
@@ -1186,7 +1216,7 @@ export function CommunityEventsSection({
                                       {hostLabel}
                                     </span>
 
-                                    {eventCommunities.length > 1 && (
+                                    {collabCount > 1 && (
                                       <span className="inline-flex shrink-0 items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                                         Collab
                                       </span>
