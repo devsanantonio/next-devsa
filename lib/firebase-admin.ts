@@ -276,6 +276,21 @@ export interface Event {
   communityId: string;
   communityName?: string; // Display name for custom/one-off communities
   partnerId?: string; // Comma-separated partner IDs co-hosting the event
+  /**
+   * DEVSA is the host, not merely the listing platform — an activation it
+   * convened rather than one of the 24 groups' own meetups.
+   *
+   * A flag rather than a convention, because the obvious alternatives are both
+   * wrong. DEVSA is not one of the communities it indexes, so a `devsa`
+   * community record would put it on the wall alongside the groups it exists
+   * to serve. And it is not a partner of itself, so it cannot be inferred from
+   * `partnerId`. Neither of those is a thing an organiser could get right by
+   * accident, which is what makes it worth its own field.
+   *
+   * Drives the spotlight treatment on the calendar. Absent on every event that
+   * predates it, which reads as false.
+   */
+  isOfficial?: boolean;
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';

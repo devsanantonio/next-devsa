@@ -65,6 +65,17 @@ export async function GET(request: NextRequest) {
       const partnerIds = (data.partnerId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
       const partnerNames = partnerIds.map((id: string) => partnerLookup.get(id)?.name || id).join(', ');
       const partnerLogos = partnerIds.map((id: string) => partnerLookup.get(id)?.logo || '').filter(Boolean);
+      // Aligned {id, name, logo}, because the two arrays above cannot be zipped:
+      // partnerLogos is filtered and partnerNames is not, so one partner without
+      // a logo shifts every later name onto the wrong mark. Anything that needs
+      // a name and a logo together — or the id, which is what decides whether a
+      // mark has to be inverted on a light background — should read this.
+      const partners = partnerIds
+        .map((id: string) => {
+          const p = partnerLookup.get(id);
+          return { id, name: p?.name || id, logo: p?.logo || '' };
+        })
+        .filter((p: { logo: string }) => p.logo);
       return {
         id: doc.id,
         ...data,
@@ -74,12 +85,13 @@ export async function GET(request: NextRequest) {
         communityLogos: communityLogos,
         partnerNames,
         partnerLogos,
+        partners,
         isStatic: false, // Firestore events can be edited/deleted
         // Firestore Timestamps have toDate(), regular Dates don't
         createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || data.updatedAt,
       };
-    }) as (Event & { id: string; communityName: string; communityLogo: string; communityLogos: string[]; partnerNames: string; partnerLogos: string[]; isStatic: boolean })[];
+    }) as (Event & { id: string; communityName: string; communityLogo: string; communityLogos: string[]; partnerNames: string; partnerLogos: string[]; partners: { id: string; name: string; logo: string }[]; isStatic: boolean })[];
 
     // Sort by date
     firestoreEvents.sort((a, b) => {
@@ -102,7 +114,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     // An event needs at least one host — a community, a partner, or both
     if (!title || !date || !description || (!communityId && !partnerId) || !organizerEmail) {
@@ -163,6 +175,7 @@ export async function POST(request: NextRequest) {
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
+      isOfficial: isOfficial || false,
       externalRsvpUrl: body.externalRsvpUrl || null,
       sharedToDiscord: false,
       sharedToLinkedIn: false,
@@ -190,7 +203,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId, isOfficial } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -259,6 +272,7 @@ export async function PUT(request: NextRequest) {
     if (description) updateData.description = description;
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
+    if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
     if (typeof communityId === 'string') updateData.communityId = communityId;

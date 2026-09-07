@@ -6,6 +6,7 @@ import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, Cal
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
+import { logoOnLight } from "@/lib/logo-invert"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -34,6 +35,10 @@ interface FirestoreEvent {
   communityName?: string
   communityLogo?: string
   communityLogos?: string[]
+  partnerNames?: string
+  partnerLogos?: string[]
+  partners?: { id: string; name: string; logo: string }[]
+  isOfficial?: boolean
   eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
 
@@ -206,6 +211,10 @@ interface MergedEvent {
   communityName?: string
   communityLogo?: string
   communityLogos?: string[]
+  partnerNames?: string
+  partnerLogos?: string[]
+  partners?: { id: string; name: string; logo: string }[]
+  isOfficial?: boolean
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   source: "firestore" | "static"
@@ -629,6 +638,10 @@ export function CommunityEventsSection({
       communityName: event.communityName,
       communityLogo: event.communityLogo,
       communityLogos: event.communityLogos,
+      partnerNames: event.partnerNames,
+      partnerLogos: event.partnerLogos,
+      partners: event.partners,
+      isOfficial: event.isOfficial,
       slug: event.slug,
       eventType: event.eventType,
       source: "firestore" as const,
@@ -1032,10 +1045,20 @@ export function CommunityEventsSection({
                                and it degrades to nothing. */
                             <article
                               key={event.id}
+                              /* Three states, in precedence order. "Happening"
+                                 outranks the DEVSA spotlight deliberately: one
+                                 is a fact about right now that a reader can act
+                                 on, the other is editorial, and stacking a pink
+                                 border on a green card serves neither. An
+                                 official event that is currently live keeps its
+                                 badge and its partner row — only the frame
+                                 changes hands for those few hours. */
                               className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                                 eventStatus === "happening"
                                   ? "border-green-300 bg-green-50/30 hover:border-green-400"
-                                  : "border-gray-200 bg-white hover:border-gray-300"
+                                  : event.isOfficial
+                                    ? "border-[#ef426f] bg-[#ef426f]/[0.035] ring-1 ring-[#ef426f]/15 hover:border-[#d93a62]"
+                                    : "border-gray-200 bg-white hover:border-gray-300"
                               }`}
                             >
                               <div className="flex gap-4">
@@ -1096,6 +1119,11 @@ export function CommunityEventsSection({
                                     <span className="truncate text-[13px] font-medium text-gray-600">
                                       {hostLabel}
                                     </span>
+                                    {event.isOfficial && (
+                                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#ef426f] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                                        DEVSA Event
+                                      </span>
+                                    )}
                                     {eventCommunities.length > 1 && (
                                       <span className="inline-flex shrink-0 items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                                         Collab
@@ -1140,6 +1168,45 @@ export function CommunityEventsSection({
                                   <p className="mt-2.5 max-w-2xl text-sm font-light leading-[1.6] text-gray-500 line-clamp-2">
                                     {stripMarkdown(event.description)}
                                   </p>
+
+                                  {/* Co-hosting partners.
+                                      
+                                      The API has resolved `partnerLogos` for
+                                      every event since co-hosting was added;
+                                      nothing on the public site had ever read
+                                      it, so a four-way activation looked
+                                      identical to a single group's meetup.
+
+                                      Each mark sits on its own white plate
+                                      rather than straight on the card. Partner
+                                      artwork is drawn for light backgrounds
+                                      but the tints here vary by card state —
+                                      white, green, pink — and a logo with a
+                                      pale mark reads differently against each.
+                                      A fixed plate makes the row look the same
+                                      on all three. */}
+                                  {event.partners && event.partners.length > 0 && (
+                                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                                      <span className="text-[11px] font-medium uppercase tracking-widest text-gray-400">
+                                        With
+                                      </span>
+                                      {event.partners.map((p) => (
+                                        <span
+                                          key={p.id}
+                                          className="relative inline-flex h-10 w-24 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white"
+                                        >
+                                          <Image
+                                            src={p.logo}
+                                            alt={p.name}
+                                            fill
+                                            unoptimized
+                                            sizes="96px"
+                                            className={`object-contain p-2 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
+                                          />
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 

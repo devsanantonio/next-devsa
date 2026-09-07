@@ -147,6 +147,7 @@ interface CalendarEvent {
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
+  isOfficial?: boolean
 }
 
 interface Partner {
@@ -818,6 +819,7 @@ export default function AdminPage() {
       eventType: "in-person",
       rsvpEnabled: false,
       externalRsvpUrl: "",
+      isOfficial: false,
     })
     setEditEventUseCustomCommunity(false)
     setEditEventCustomCommunityName("")
@@ -854,6 +856,7 @@ export default function AdminPage() {
           externalRsvpUrl: editingEvent.externalRsvpUrl || null,
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
+          isOfficial: editingEvent.isOfficial || false,
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
@@ -3219,6 +3222,31 @@ export default function AdminPage() {
                         <p className="mt-2 text-xs text-neutral-500">
                           Partners like Tech Bloc or Youth Code Jam co-hosting this event.
                         </p>
+
+                        {/* Sits with the partner picker because it answers the
+                            same question — who is this event's? — and because
+                            the two are easy to confuse. DEVSA is never one of
+                            the partners in the list above: it is not a partner
+                            of itself. */}
+                        <label className={`mt-4 flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                          editingEvent.isOfficial
+                            ? "border-[#ef426f]/50 bg-[#ef426f]/5"
+                            : "border-neutral-700 hover:border-neutral-600"
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={editingEvent.isOfficial || false}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, isOfficial: e.target.checked })}
+                            className="mt-0.5 accent-[#ef426f]"
+                          />
+                          <div>
+                            <span className="text-sm font-medium text-white">Official DEVSA event</span>
+                            <p className="text-xs text-neutral-500 mt-1">
+                              DEVSA convened this one, rather than listing somebody else&rsquo;s.
+                              Gives it the spotlight treatment on the community calendar.
+                            </p>
+                          </div>
+                        </label>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
