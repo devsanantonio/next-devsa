@@ -755,7 +755,10 @@ export function CommunityEventsSection({
             <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
               One calendar for every community. Stop hunting for links — DEVSA brings San Antonio&apos;s tech groups together in{" "}
               <strong className="font-semibold text-gray-900">one place</strong>.{" "}
-              <span className="text-gray-500">
+              {/* Desktop only. On a phone this is a third sentence of preamble
+                  above a list somebody opened to find out what is on tonight,
+                  and it is the least load-bearing of the three. */}
+              <span className="hidden text-gray-500 sm:inline">
                 Part of Building Together, DEVSA&apos;s 501(c)(3) platform.
               </span>
             </p>
@@ -1005,9 +1008,27 @@ export function CommunityEventsSection({
                             now, and they sit directly under this section's h1
                             — jumping a level would leave the outline reading
                             h1 → h3 with nothing between. */}
+                        {/* Not shrink-0.
+                        
+                            Every item in this row was shrink-0 except the
+                            hairline, so the row had a hard floor: the heading
+                            (~273px for "Wednesday, September 30" at this
+                            weight) plus the gaps, the rule's min-w-4 and the
+                            event count came to roughly 368px. A 390px phone
+                            offers 342 after the page gutter and the row simply
+                            refused to fit in it — so it widened the grid
+                            column, the column widened the page, and every card
+                            in the list rendered past the viewport with its
+                            right-hand side cut off. The day headings were
+                            sizing the whole calendar.
+                        
+                            Letting the heading shrink lets it wrap to a second
+                            line on the narrowest phones, which is the correct
+                            thing for a heading to do and the reason nothing
+                            else here needs to change. */}
                         <h2
                           id={`day-${day.key}`}
-                          className="shrink-0 text-xl font-black tracking-[-0.01em] text-gray-900 sm:text-2xl"
+                          className="min-w-0 text-xl font-black tracking-[-0.01em] text-gray-900 sm:text-2xl"
                         >
                           {formatDayHeading(day.key)}
                         </h2>
@@ -1329,13 +1350,31 @@ export function CommunityEventsSection({
                                       on all three. */}
                                   {rowPartners.length > 0 && (
                                     <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                                      <span className="text-[11px] font-medium uppercase tracking-widest text-gray-400">
+                                      {/* w-full on a phone so the row wraps
+                                          right here and the marks get a line to
+                                          themselves. Inline, the label eats
+                                          ~48px of a content column that is only
+                                          about 230px wide at 390, which is what
+                                          broke three logos onto two lines and
+                                          left the row looking scattered. */}
+                                      <span className="w-full text-[11px] font-medium uppercase tracking-widest text-gray-400 sm:w-auto">
                                         With
                                       </span>
                                       {rowPartners.map((p) => (
                                         <span
                                           key={p.id}
-                                          className="relative inline-flex h-10 w-24 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white"
+                                          /* No plate on a phone: a white box on
+                                             an almost-white card adds an outline
+                                             and some width without separating
+                                             anything. The marks still read —
+                                             the light ones are inverted by
+                                             logoOnLight rather than rescued by
+                                             the ground they sit on.
+                                          
+                                             flex-1 with min-w-0 so three share
+                                             the line evenly instead of one
+                                             falling off it. */
+                                          className="relative inline-flex h-9 min-w-0 flex-1 items-center justify-center sm:h-10 sm:w-24 sm:flex-none sm:rounded-md sm:border sm:border-gray-200 sm:bg-white"
                                         >
                                           <Image
                                             src={p.logo}
@@ -1343,7 +1382,7 @@ export function CommunityEventsSection({
                                             fill
                                             unoptimized
                                             sizes="96px"
-                                            className={`object-contain p-2 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
+                                            className={`object-contain p-1 sm:p-2 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
                                           />
                                         </span>
                                       ))}
