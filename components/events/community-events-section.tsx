@@ -7,6 +7,7 @@ import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
 import { logoOnLight } from "@/lib/logo-invert"
+import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -964,9 +965,16 @@ export function CommunityEventsSection({
               <div className="space-y-10">
                 {eventsByDay.map((day) => {
                   const relative = relativeDayLabel(day.key, currentTime)
+                  /* Introduces the week once, above the first of its days that
+                     is actually in the filtered list. See startup-week-band. */
+                  const opensStartupWeek = isFirstStartupWeekDay(
+                    day.key,
+                    eventsByDay.map((d) => d.key),
+                  )
 
                   return (
                     <section key={day.key} aria-labelledby={`day-${day.key}`}>
+                      {opensStartupWeek && <StartupWeekBand />}
                       {/* The date, promoted.
 
                           It was a 13px uppercase gray-500 label repeated on
