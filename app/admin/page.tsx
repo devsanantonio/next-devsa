@@ -148,6 +148,7 @@ interface CalendarEvent {
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
   isOfficial?: boolean
+  accentColor?: string
 }
 
 interface Partner {
@@ -820,6 +821,7 @@ export default function AdminPage() {
       rsvpEnabled: false,
       externalRsvpUrl: "",
       isOfficial: false,
+      accentColor: "",
     })
     setEditEventUseCustomCommunity(false)
     setEditEventCustomCommunityName("")
@@ -857,6 +859,7 @@ export default function AdminPage() {
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
+          accentColor: editingEvent.accentColor || "",
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
@@ -3247,6 +3250,34 @@ export default function AdminPage() {
                             </p>
                           </div>
                         </label>
+
+                        {/* Only meaningful on an official event, so it only
+                            appears on one. Empty means DEVSA pink. */}
+                        {editingEvent.isOfficial && (
+                          <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-700 p-4">
+                            <input
+                              type="color"
+                              value={editingEvent.accentColor || "#ef426f"}
+                              onChange={(e) => setEditingEvent({ ...editingEvent, accentColor: e.target.value })}
+                              className="h-9 w-12 shrink-0 cursor-pointer rounded border border-neutral-600 bg-transparent"
+                            />
+                            <div className="min-w-0">
+                              <span className="text-sm font-medium text-white">Accent colour</span>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                Takes its cue from the activation&rsquo;s own art. Leave unset for DEVSA pink.
+                              </p>
+                            </div>
+                            {editingEvent.accentColor && (
+                              <button
+                                type="button"
+                                onClick={() => setEditingEvent({ ...editingEvent, accentColor: "" })}
+                                className="ml-auto shrink-0 text-xs text-neutral-400 hover:text-white"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">

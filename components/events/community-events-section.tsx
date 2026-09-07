@@ -39,6 +39,7 @@ interface FirestoreEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
+  accentColor?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
 
@@ -215,6 +216,7 @@ interface MergedEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
+  accentColor?: string
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   source: "firestore" | "static"
@@ -642,6 +644,7 @@ export function CommunityEventsSection({
       partnerLogos: event.partnerLogos,
       partners: event.partners,
       isOfficial: event.isOfficial,
+      accentColor: event.accentColor,
       slug: event.slug,
       eventType: event.eventType,
       source: "firestore" as const,
@@ -1008,7 +1011,31 @@ export function CommunityEventsSection({
                           if (eventCommunities.length === 0 && event.communityName) {
                             eventCommunities.push({ id: event.communityId, name: event.communityName, logo: event.communityLogo || '' })
                           }
-                          const primaryLogo = eventCommunities[0]?.logo || event.communityLogo
+                          /* With no community on the record, the lead partner
+                             is the host — which is what a Startup Week
+                             activation is. Its mark moves to the plate and it
+                             drops out of the "with" row, so nothing appears
+                             twice. */
+                          const allPartners = event.partners || []
+                          const hostPartner = eventCommunities[0]?.logo || event.communityLogo ? undefined : allPartners[0]
+                          const coPartners = hostPartner ? allPartners.slice(1) : allPartners
+                          /* DEVSA convened it, so DEVSA belongs in the row —
+                             and cannot come from the data, because it is not a
+                             partner record. */
+                          const rowPartners = event.isOfficial
+                            ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...coPartners]
+                            : coPartners
+                          const accent = event.isOfficial ? event.accentColor || "#ef426f" : undefined
+                          /* The Model's wordmark is a half-finished selection —
+                             "The" plain, "Model" caught in a block with its ink
+                             knocked out. Reproduced by selecting the last word,
+                             which generalises: "Access Granted" gets the same
+                             gesture on "Granted". Ported from
+                             next-sasw/components/site/model-band.tsx. */
+                          const titleWords = event.title.trim().split(/\s+/)
+                          const titleTail = titleWords[titleWords.length - 1]
+                          const titleHead = titleWords.slice(0, -1).join(" ")
+                          const primaryLogo = eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
                           const primaryName = eventCommunities[0]?.name || event.communityId
                           const hostLabel = eventCommunities.length
                             ? eventCommunities.map((ec) => ec.name).join(" + ")
@@ -1056,10 +1083,20 @@ export function CommunityEventsSection({
                               className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                                 eventStatus === "happening"
                                   ? "border-green-300 bg-green-50/30 hover:border-green-400"
-                                  : event.isOfficial
-                                    ? "border-[#ef426f] bg-[#ef426f]/[0.035] ring-1 ring-[#ef426f]/15 hover:border-[#d93a62]"
+                                  : accent
+                                    ? "ring-1"
                                     : "border-gray-200 bg-white hover:border-gray-300"
                               }`}
+                              style={
+                                accent && eventStatus !== "happening"
+                                  ? {
+                                      borderColor: accent,
+                                      backgroundColor: `color-mix(in srgb, ${accent} 7%, white)`,
+                                      // @ts-expect-error -- --tw-ring-color is a Tailwind variable, not a typed CSS property
+                                      "--tw-ring-color": `color-mix(in srgb, ${accent} 30%, transparent)`,
+                                    }
+                                  : undefined
+                              }
                             >
                               <div className="flex gap-4">
                                 {/* The host mark, on every viewport.
@@ -1086,12 +1123,27 @@ export function CommunityEventsSection({
                                     this; the list does the same, so the rail
                                     holds and the card still reads as belonging
                                     to somebody. */}
-                                <div className="relative h-14 w-14 shrink-0 rounded-lg bg-gray-950 p-2">
+                                {/* The plate is dark by default and community
+                                    marks are chosen against that. A partner
+                                    hosting takes a light plate instead: partner
+                                    artwork is drawn for white grounds, and SA
+                                    Startup Week's lockup is near-black — on
+                                    gray-950 it disappears entirely. */}
+                                <div
+                                  className={`relative h-14 w-14 shrink-0 rounded-lg p-2 ${
+                                    hostPartner ? "border border-gray-200 bg-white" : "bg-gray-950"
+                                  }`}
+                                >
                                   <Image
                                     src={primaryLogo || "/devsa-gradient.svg"}
                                     alt=""
                                     fill
-                                    className="object-contain p-2"
+                                    unoptimized
+                                    className={`object-contain p-2 ${
+                                      hostPartner
+                                        ? logoOnLight({ id: hostPartner.id, name: hostPartner.name, type: "partner" })
+                                        : ""
+                                    }`}
                                     sizes="56px"
                                   />
                                 </div>
@@ -1120,7 +1172,10 @@ export function CommunityEventsSection({
                                       {hostLabel}
                                     </span>
                                     {event.isOfficial && (
-                                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#ef426f] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                                      <span
+                                        className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+                                        style={{ backgroundColor: accent, color: "#09090B" }}
+                                      >
                                         DEVSA Event
                                       </span>
                                     )}
@@ -1147,9 +1202,27 @@ export function CommunityEventsSection({
                                     )}
                                   </div>
 
-                                  <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
-                                    {event.title}
-                                  </h3>
+                                  {accent ? (
+                                    <h3 className="mt-2.5 font-mono text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl">
+                                      {titleHead && <>{titleHead} </>}
+                                      {/* box-decoration-clone so a title that
+                                          wraps gets a block per line, the way a
+                                          real selection does, rather than one
+                                          box stretched around the turn. pr past
+                                          the last glyph, then pulled back, so
+                                          the block does not read as a crop. */}
+                                      <span
+                                        className="box-decoration-clone px-1.5 pr-1.5"
+                                        style={{ backgroundColor: accent, color: "#09090B" }}
+                                      >
+                                        {titleTail}
+                                      </span>
+                                    </h3>
+                                  ) : (
+                                    <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
+                                      {event.title}
+                                    </h3>
+                                  )}
 
                                   {/* MapPin, not 📍. The emoji was the only one
                                       in an otherwise all-Lucide system: it drew
@@ -1185,12 +1258,12 @@ export function CommunityEventsSection({
                                       pale mark reads differently against each.
                                       A fixed plate makes the row look the same
                                       on all three. */}
-                                  {event.partners && event.partners.length > 0 && (
+                                  {rowPartners.length > 0 && (
                                     <div className="mt-3.5 flex flex-wrap items-center gap-2">
                                       <span className="text-[11px] font-medium uppercase tracking-widest text-gray-400">
                                         With
                                       </span>
-                                      {event.partners.map((p) => (
+                                      {rowPartners.map((p) => (
                                         <span
                                           key={p.id}
                                           className="relative inline-flex h-10 w-24 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white"

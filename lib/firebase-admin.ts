@@ -291,6 +291,17 @@ export interface Event {
    * predates it, which reads as false.
    */
   isOfficial?: boolean;
+  /**
+   * Hex accent for this event's card on the calendar — border, tint, and the
+   * selection block behind the last word of the title.
+   *
+   * Per event rather than one colour for every official event, because the
+   * colour belongs to the activation and not to DEVSA. The Model is lavender
+   * because its key art is; Access Granted is not, and would look borrowed in
+   * it. Unset falls back to DEVSA pink, so an official event with no art
+   * direction still reads as spotlit.
+   */
+  accentColor?: string;
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';
