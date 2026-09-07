@@ -149,6 +149,7 @@ interface CalendarEvent {
   externalRsvpUrl?: string
   isOfficial?: boolean
   accentColor?: string
+  detailsUrl?: string
 }
 
 interface Partner {
@@ -822,6 +823,7 @@ export default function AdminPage() {
       externalRsvpUrl: "",
       isOfficial: false,
       accentColor: "",
+      detailsUrl: "",
     })
     setEditEventUseCustomCommunity(false)
     setEditEventCustomCommunityName("")
@@ -860,6 +862,7 @@ export default function AdminPage() {
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
           accentColor: editingEvent.accentColor || "",
+          detailsUrl: editingEvent.detailsUrl || "",
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
@@ -3278,6 +3281,23 @@ export default function AdminPage() {
                             )}
                           </div>
                         )}
+
+                        <div className="mt-3">
+                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                            External details link
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="https://www.sasw.co/schedule/the-model"
+                            value={editingEvent.detailsUrl || ""}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, detailsUrl: e.target.value })}
+                            className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-[#ef426f]"
+                          />
+                          <p className="mt-2 text-xs text-neutral-500">
+                            Sends &ldquo;View Details&rdquo; here instead of to this event&rsquo;s page on
+                            devsa.community, in a new tab. Leave empty for the normal behaviour.
+                          </p>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">

@@ -302,6 +302,17 @@ export interface Event {
    * direction still reads as spotlit.
    */
   accentColor?: string;
+  /**
+   * Where "View Details" goes, when it should not go to this site.
+   *
+   * Its own field rather than reusing `url`, which 20 published events already
+   * carry alongside a slug — their Meetup and Luma pages. Letting `url` win
+   * would quietly redirect all of them off the site. This one is only ever set
+   * deliberately, so it can take precedence without collateral.
+   *
+   * Opens in a new tab: it is leaving devsa.community.
+   */
+  detailsUrl?: string;
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';

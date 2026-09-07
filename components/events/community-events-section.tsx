@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin, ArrowUpRight } from "lucide-react"
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
@@ -42,6 +42,7 @@ interface FirestoreEvent {
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
   accentColor?: string
+  detailsUrl?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
 
@@ -219,6 +220,7 @@ interface MergedEvent {
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
   accentColor?: string
+  detailsUrl?: string
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   source: "firestore" | "static"
@@ -647,6 +649,7 @@ export function CommunityEventsSection({
       partners: event.partners,
       isOfficial: event.isOfficial,
       accentColor: event.accentColor,
+      detailsUrl: event.detailsUrl,
       slug: event.slug,
       eventType: event.eventType,
       source: "firestore" as const,
@@ -1053,9 +1056,12 @@ export function CommunityEventsSection({
                           const hostLabel = eventCommunities.length
                             ? eventCommunities.map((ec) => ec.name).join(" + ")
                             : primaryName
-                          const eventLink = event.slug
-                            ? `/events/${event.slug}`
-                            : event.url
+                          /* detailsUrl wins outright when set, which is safe
+                             precisely because it is never set by accident —
+                             unlike `url`, which 20 events carry alongside a
+                             slug for their Meetup and Luma listings. */
+                          const eventLink = event.detailsUrl || (event.slug ? `/events/${event.slug}` : event.url)
+                          const leavesSite = Boolean(event.detailsUrl) || (!event.slug && Boolean(event.url))
                           const eventStatus = getEventStatus(event, currentTime)
                           const isNextUp = day.key === eventsByDay[0]?.key && index === 0
 
@@ -1184,14 +1190,7 @@ export function CommunityEventsSection({
                                     <span className="truncate text-[13px] font-medium text-gray-600">
                                       {hostLabel}
                                     </span>
-                                    {event.isOfficial && (
-                                      <span
-                                        className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-                                        style={{ backgroundColor: accent, color: "#09090B" }}
-                                      >
-                                        DEVSA Event
-                                      </span>
-                                    )}
+
                                     {eventCommunities.length > 1 && (
                                       <span className="inline-flex shrink-0 items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                                         Collab
@@ -1323,9 +1322,15 @@ export function CommunityEventsSection({
                                 {eventLink && (
                                   <Link
                                     href={eventLink}
-                                    className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+                                    {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
                                   >
-                                    View Details →
+                                    View Details
+                                    {leavesSite ? (
+                                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                                    ) : (
+                                      <span aria-hidden>&rarr;</span>
+                                    )}
                                   </Link>
                                 )}
                               </div>

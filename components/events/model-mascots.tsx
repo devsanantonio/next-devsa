@@ -234,13 +234,22 @@ export function ModelMascots({
               eyebrow rather than from the wordmark. Nested, the scale has
               nothing but itself to act on.
             */}
+            {/* The mark rides a dark chip rather than sitting bare on the page.
+              
+                In next-sasw these wander a near-black hero, where a pale
+                lavender glyph has all the contrast it needs. The community
+                calendar is white: the same glyph against it is a faint smudge,
+                and darkening the glyph to compensate would throw away the one
+                colour that identifies the activation.
+              
+                The chip solves both at once, and is not a workaround — it is
+                what the mark already looks like in The Model's own hero graph,
+                where it sits as a node. So it reads as brought across intact
+                rather than adapted. It also carries its own ground, which means
+                these stay legible over a white card, a lavender one, and the
+                near-black Startup Week band without knowing which it is over. */}
             <div
-              className="h-full w-full drop-shadow-[0_1px_5px_rgba(0,0,0,0.35)] motion-safe:animate-[modelPop_320ms_ease-out]"
-              /* The accent belongs to the activation, so it arrives as a
-                 prop rather than the --model-lavender variable this repo
-                 does not define. The shadow is lighter than the original
-                 too: that one was tuned to hold a pale glyph against a
-                 near-black hero, and reads as grime on a white list. */
+              className="flex h-full w-full items-center justify-center rounded-[7px] bg-[#09090B] p-1 shadow-[0_2px_6px_rgba(9,9,11,0.28)] ring-1 ring-black/5 motion-safe:animate-[modelPop_320ms_ease-out]"
               style={{ color }}
             >
               <svg
@@ -278,14 +287,66 @@ export function ModelWordmark({
   accent: string
 }) {
   const spawn = useMascots()
+  const ref = useRef<HTMLSpanElement | null>(null)
+
+  /**
+   * They deploy when the calendar reaches the reader, rather than waiting to be
+   * found. The click still works and still adds more.
+   *
+   * Once only — the observer disconnects on the first intersection, so scrolling
+   * back past the card does not keep topping them up.
+   *
+   * Not under reduced motion. The original spawned regardless and simply let
+   * them stand still, which works when a click asked for them; arriving
+   * unbidden it would just leave glyphs parked on the list.
+   *
+   * If the observer never fires the page loses its mascots and nothing else —
+   * unlike the whileInView cards this list used to have, where the same failure
+   * left the events themselves invisible in print.
+   */
+  useEffect(() => {
+    const el = ref.current
+    if (!spawn || !el) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return
+        io.disconnect()
+        // Staggered, so they file out rather than arriving as one clump.
+        for (let i = 0; i < 5; i++) {
+          window.setTimeout(() => {
+            const box = ref.current?.getBoundingClientRect()
+            if (box) spawn(box)
+          }, i * 150)
+        }
+      },
+      { threshold: 0.6 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [spawn])
 
   return (
-    <h3 className="mt-2.5 font-mono text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl">
+    /* Geist Mono by name, not Tailwind's `font-mono`.
+       
+       next-sasw maps --font-mono to --font-geist-mono in its globals; this repo
+       never defines --font-mono at all, so `font-mono` here resolves to
+       Tailwind's default system stack — SFMono/Menlo/Consolas — and the
+       wordmark came out in a different face to the one on sasw.co. Naming the
+       variable fixes this element without changing what `font-mono` means
+       everywhere else in the app, which may well be relying on the system
+       stack deliberately. */
+    <h3
+      className="mt-2.5 text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl"
+      style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
+    >
       {head && <>{head} </>}
       {/* box-decoration-clone so a title that wraps gets a block per line, the
           way a real selection does, rather than one box stretched around the
           turn. */}
       <span
+        ref={ref}
         className={`box-decoration-clone px-1.5 ${spawn ? "cursor-pointer select-none" : ""}`}
         style={{ backgroundColor: accent, color: "#09090B" }}
         onClick={

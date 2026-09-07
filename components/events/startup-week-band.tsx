@@ -67,8 +67,7 @@ export function StartupWeekBand() {
             Sept 28 &ndash; Oct 2, 2026 &middot; Downtown San Antonio
           </p>
           <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-white/70">
-            Five days across downtown. The activations below marked{" "}
-            <span className="font-semibold text-white">DEVSA Event</span> are ours &mdash;
+            Five days across downtown. Three of the activations below are ours &mdash;
             the rest of the week belongs to the city.
           </p>
         </div>
