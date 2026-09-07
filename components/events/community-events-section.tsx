@@ -1304,18 +1304,34 @@ export function CommunityEventsSection({
                                       {rowPartners.map((p) => (
                                         <span
                                           key={p.id}
-                                          /* No plate on a phone: a white box on
-                                             an almost-white card adds an outline
-                                             and some width without separating
-                                             anything. The marks still read —
-                                             the light ones are inverted by
-                                             logoOnLight rather than rescued by
-                                             the ground they sit on.
+                                          /* Taller than it looks like it needs to
+                                             be, because height is the binding
+                                             constraint here and width is not.
+                                             The box is 96 wide, so a wordmark
+                                             like Tech Bloc is comfortable — but
+                                             a squarish mark is limited by the
+                                             short side, and SA Startup Week's
+                                             lockup is a bordered box with type
+                                             inside it. At 24px of drawing height
+                                             that type was about six pixels tall.
+                                             Widening the plate would not have
+                                             moved it at all.
+                                          
+                                             No plate, at any width. A white box
+                                             on an almost-white card was drawing
+                                             an outline and spending width
+                                             without separating anything, and
+                                             three of them in a row read as a
+                                             toolbar rather than a credit. The
+                                             marks do not need the ground: the
+                                             light ones are inverted by
+                                             logoOnLight, not rescued by what is
+                                             behind them.
                                           
                                              flex-1 with min-w-0 so three share
                                              the line evenly instead of one
                                              falling off it. */
-                                          className="relative inline-flex h-9 min-w-0 flex-1 items-center justify-center sm:h-10 sm:w-24 sm:flex-none sm:rounded-md sm:border sm:border-gray-200 sm:bg-white"
+                                          className="relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none"
                                         >
                                           <Image
                                             src={p.logo}
@@ -1323,7 +1339,7 @@ export function CommunityEventsSection({
                                             fill
                                             unoptimized
                                             sizes="96px"
-                                            className={`object-contain p-1 sm:p-2 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
+                                            className={`object-contain p-1 sm:p-1.5 ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
                                           />
                                         </span>
                                       ))}
