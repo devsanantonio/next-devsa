@@ -834,8 +834,20 @@ export function CommunityEventsSection({
             content's min-content width, so one long unbroken string in a title
             could push the column wider than the grid and shove the rail off. */}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          {/* Left column: Search and Events */}
-          <div className="space-y-6">
+          {/* Left column: Search and Events.
+          
+              `min-w-0` is what stops this column stretching the page on a
+              phone. A grid item defaults to `min-width: auto`, meaning it
+              refuses to shrink below its content's min-content width — so a
+              single wide row anywhere in the list widens the column, the column
+              widens the grid, and every card on the page renders wider than the
+              viewport with its right-hand side cut off.
+          
+              The grid already guards against this above lg, where the track is
+              declared `minmax(0,1fr)` rather than `1fr` for exactly this
+              reason. Below lg there is no explicit track, so the guard has to
+              sit on the item. */}
+          <div className="min-w-0 space-y-6">
             {/* Search bar */}
             <div>
               <div className="relative">
@@ -1212,7 +1224,19 @@ export function CommunityEventsSection({
                                       {formatTime(event.date)}
                                     </time>
                                     <span aria-hidden className="text-gray-300">·</span>
-                                    <span className="truncate text-[13px] font-medium text-gray-600">
+                                    {/* min-w-0 is what makes `truncate` work here.
+                                    
+                                        A flex item's default min-width is auto,
+                                        which for a `whitespace-nowrap` span is
+                                        the width of the whole string. So the
+                                        item refuses to shrink, the row grows to
+                                        fit it, and the card grows with it —
+                                        `truncate` never gets to clip anything.
+                                        One long label was widening the entire
+                                        page: at 390px the band, the day rules
+                                        and every other card ran off the right
+                                        edge because of this one span. */}
+                                    <span className="min-w-0 truncate text-[13px] font-medium text-gray-600">
                                       {hostLabel}
                                     </span>
 
