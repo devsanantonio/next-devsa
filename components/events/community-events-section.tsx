@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { logoOnLight } from "@/lib/logo-invert"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
-import { ModelMascots, ModelWordmark } from "@/components/events/model-mascots"
+import { MascotBoundary, ModelWordmark } from "@/components/events/model-mascots"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -966,11 +966,7 @@ export function CommunityEventsSection({
                 </div>
               </div>
             ) : (
-              /* `relative` is load-bearing: the mascot layer is absolute
-                 inset-0 and needs this as its positioned ancestor, which is
-                 what lets them roam the whole list rather than one card. */
-              <ModelMascots color="#C0B4FC">
-                <div className="relative space-y-10">
+              <div className="space-y-10">
                 {eventsByDay.map((day) => {
                   const relative = relativeDayLabel(day.key, currentTime)
                   /* Introduces the week once, above the first of its days that
@@ -1089,8 +1085,8 @@ export function CommunityEventsSection({
                                blank, so it is gone rather than repaired. The
                                hover lift stays — that one is a real affordance
                                and it degrades to nothing. */
+                            <MascotBoundary key={event.id} accent={accent}>
                             <article
-                              key={event.id}
                               /* Three states, in precedence order. "Happening"
                                  outranks the DEVSA spotlight deliberately: one
                                  is a fact about right now that a reader can act
@@ -1335,14 +1331,14 @@ export function CommunityEventsSection({
                                 )}
                               </div>
                             </article>
+                            </MascotBoundary>
                           )
                         })}
                       </div>
                     </section>
                   )
                 })}
-                </div>
-              </ModelMascots>
+              </div>
             )}
           </div>
 

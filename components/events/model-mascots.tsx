@@ -71,7 +71,7 @@ export function useMascots() {
 
 export function ModelMascots({
   children,
-  color = "#C0B4FC",
+  color = "#09090B",
 }: {
   children: React.ReactNode
   color?: string
@@ -234,22 +234,17 @@ export function ModelMascots({
               eyebrow rather than from the wordmark. Nested, the scale has
               nothing but itself to act on.
             */}
-            {/* The mark rides a dark chip rather than sitting bare on the page.
+            {/* Bare mark, no plate behind it.
               
-                In next-sasw these wander a near-black hero, where a pale
-                lavender glyph has all the contrast it needs. The community
-                calendar is white: the same glyph against it is a faint smudge,
-                and darkening the glyph to compensate would throw away the one
-                colour that identifies the activation.
-              
-                The chip solves both at once, and is not a workaround — it is
-                what the mark already looks like in The Model's own hero graph,
-                where it sits as a node. So it reads as brought across intact
-                rather than adapted. It also carries its own ground, which means
-                these stay legible over a white card, a lavender one, and the
-                near-black Startup Week band without knowing which it is over. */}
+                In next-sasw these wander a near-black hero and are lavender,
+                which has all the contrast it needs there and none on a light
+                card. The fix is the colour rather than a ground: they default
+                to The Model's ink, the same value the wordmark's selection
+                block knocks its own letters out in, so the two read as one
+                system. `color` is still a prop — over a dark surface, pass the
+                lavender back. */}
             <div
-              className="flex h-full w-full items-center justify-center rounded-[7px] bg-[#09090B] p-1 shadow-[0_2px_6px_rgba(9,9,11,0.28)] ring-1 ring-black/5 motion-safe:animate-[modelPop_320ms_ease-out]"
+              className="h-full w-full drop-shadow-[0_1px_3px_rgba(9,9,11,0.22)] motion-safe:animate-[modelPop_320ms_ease-out]"
               style={{ color }}
             >
               <svg
@@ -358,5 +353,33 @@ export function ModelWordmark({
         {tail}
       </span>
     </h3>
+  )
+}
+
+/**
+ * Confines the mascots to a single event card.
+ *
+ * The layer they live on is `absolute inset-0`, so what it measures — and what
+ * the simulation bounces them off — is the nearest positioned ancestor. Around
+ * the day list that was the whole calendar, and they wandered across other
+ * groups' events. A `relative` wrapper around one card makes that card the
+ * whole world.
+ *
+ * Renders nothing extra for an event with no accent, so the fifteen ordinary
+ * cards on a busy day do not each carry a mascot layer waiting for a spawn
+ * that never comes.
+ */
+export function MascotBoundary({
+  accent,
+  children,
+}: {
+  accent?: string
+  children: React.ReactNode
+}) {
+  if (!accent) return <>{children}</>
+  return (
+    <div className="relative">
+      <ModelMascots>{children}</ModelMascots>
+    </div>
   )
 }
