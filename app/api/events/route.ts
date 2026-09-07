@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, accentColor, detailsUrl, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, detailsUrl, status, eventType, rsvpEnabled, organizerEmail } = body;
 
     // An event needs at least one host — a community, a partner, or both
     if (!title || !date || !description || (!communityId && !partnerId) || !organizerEmail) {
@@ -176,7 +176,6 @@ export async function POST(request: NextRequest) {
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
       isOfficial: isOfficial || false,
-      accentColor: accentColor || null,
       detailsUrl: detailsUrl || null,
       externalRsvpUrl: body.externalRsvpUrl || null,
       sharedToDiscord: false,
@@ -205,7 +204,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId, isOfficial, accentColor, detailsUrl } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId, isOfficial, detailsUrl } = body;
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -275,7 +274,6 @@ export async function PUT(request: NextRequest) {
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
-    if (accentColor !== undefined) updateData.accentColor = accentColor || null;
     if (detailsUrl !== undefined) updateData.detailsUrl = detailsUrl || null;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;

@@ -40,7 +40,6 @@ interface FirestoreEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
-  accentColor?: string
   detailsUrl?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
 }
@@ -218,7 +217,6 @@ interface MergedEvent {
   partnerLogos?: string[]
   partners?: { id: string; name: string; logo: string }[]
   isOfficial?: boolean
-  accentColor?: string
   detailsUrl?: string
   slug?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
@@ -647,7 +645,6 @@ export function CommunityEventsSection({
       partnerLogos: event.partnerLogos,
       partners: event.partners,
       isOfficial: event.isOfficial,
-      accentColor: event.accentColor,
       detailsUrl: event.detailsUrl,
       slug: event.slug,
       eventType: event.eventType,
@@ -1069,16 +1066,6 @@ export function CommunityEventsSection({
                           const rowPartners = event.isOfficial
                             ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...coPartners]
                             : coPartners
-                          const accent = event.isOfficial ? event.accentColor || "#ef426f" : undefined
-                          /* The Model's wordmark is a half-finished selection —
-                             "The" plain, "Model" caught in a block with its ink
-                             knocked out. Reproduced by selecting the last word,
-                             which generalises: "Access Granted" gets the same
-                             gesture on "Granted". Ported from
-                             next-sasw/components/site/model-band.tsx. */
-                          const titleWords = event.title.trim().split(/\s+/)
-                          const titleTail = titleWords[titleWords.length - 1]
-                          const titleHead = titleWords.slice(0, -1).join(" ")
                           const primaryLogo = eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
                           const primaryName = eventCommunities[0]?.name || event.communityId
                           /* Who is hosting, as a list rather than a string.
@@ -1149,31 +1136,11 @@ export function CommunityEventsSection({
                                and it degrades to nothing. */
                             <article
                               key={event.id}
-                              /* Three states, in precedence order. "Happening"
-                                 outranks the DEVSA spotlight deliberately: one
-                                 is a fact about right now that a reader can act
-                                 on, the other is editorial, and stacking a pink
-                                 border on a green card serves neither. An
-                                 official event that is currently live keeps its
-                                 badge and its partner row — only the frame
-                                 changes hands for those few hours. */
                               className={`group rounded-xl border p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                                 eventStatus === "happening"
                                   ? "border-green-300 bg-green-50/30 hover:border-green-400"
-                                  : accent
-                                    ? "ring-1"
-                                    : "border-gray-200 bg-white hover:border-gray-300"
+                                  : "border-gray-200 bg-white hover:border-gray-300"
                               }`}
-                              style={
-                                accent && eventStatus !== "happening"
-                                  ? {
-                                      borderColor: accent,
-                                      backgroundColor: `color-mix(in srgb, ${accent} 7%, white)`,
-                                      // @ts-expect-error -- --tw-ring-color is a Tailwind variable, not a typed CSS property
-                                      "--tw-ring-color": `color-mix(in srgb, ${accent} 30%, transparent)`,
-                                    }
-                                  : undefined
-                              }
                             >
                               <div className="flex gap-4">
                                 {/* The host mark, on every viewport.
@@ -1284,35 +1251,9 @@ export function CommunityEventsSection({
                                     )}
                                   </div>
 
-                                  {accent ? (
-                                    /* Geist Mono by name, not Tailwind's
-                                       `font-mono`. next-sasw maps --font-mono to
-                                       --font-geist-mono in its globals; this repo
-                                       never defines --font-mono at all, so the
-                                       utility here resolves to Tailwind's default
-                                       system stack and the wordmark came out in a
-                                       different face to the one on sasw.co. */
-                                    <h3
-                                      className="mt-2.5 text-xl font-medium uppercase leading-[1.15] tracking-tight text-gray-900 sm:text-2xl"
-                                      style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
-                                    >
-                                      {titleHead && <>{titleHead} </>}
-                                      {/* box-decoration-clone so a title that
-                                          wraps gets a block per line, the way a
-                                          real selection does, rather than one box
-                                          stretched around the turn. */}
-                                      <span
-                                        className="box-decoration-clone px-1.5"
-                                        style={{ backgroundColor: accent, color: "#09090B" }}
-                                      >
-                                        {titleTail}
-                                      </span>
-                                    </h3>
-                                  ) : (
                                     <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
                                       {event.title}
                                     </h3>
-                                  )}
 
                                   {/* MapPin, not 📍. The emoji was the only one
                                       in an otherwise all-Lucide system: it drew
