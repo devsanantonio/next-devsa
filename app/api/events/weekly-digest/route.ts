@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
-import { shareWeeklyDigestToDiscord, type DigestEvent } from '@/lib/discord';
+import {
+  buildWeeklyDigestPayload,
+  shareWeeklyDigestToDiscord,
+  type DigestEvent,
+} from '@/lib/discord';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -105,6 +109,21 @@ export async function GET(request: NextRequest) {
         return weekKeys.has(dayKeyFmt.format(at));
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    /* `?dry=1` returns the message instead of sending it.
+    
+       Still behind CRON_SECRET, so it is no more reachable than the cron
+       itself. It exists because the alternative way to check a change to this
+       layout is to post it to a channel real people read, and then post the
+       correction underneath. */
+    if (request.nextUrl.searchParams.get('dry') === '1') {
+      return NextResponse.json({
+        dryRun: true,
+        count: events.length,
+        week: [...weekKeys][0],
+        payload: buildWeeklyDigestPayload(events),
+      });
+    }
 
     // Posts even when the week is empty — a quiet week is worth saying out
     // loud, and silence is indistinguishable from the cron having failed.
