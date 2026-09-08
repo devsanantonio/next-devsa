@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import {
   buildWeeklyDigestPayload,
+  isEventsDiscordConfigured,
   shareWeeklyDigestToDiscord,
   type DigestEvent,
 } from '@/lib/discord';
@@ -139,6 +140,11 @@ export async function GET(request: NextRequest) {
       message: `Weekly digest: ${events.length} event${events.length !== 1 ? 's' : ''} this week`,
       count: events.length,
       week: [...weekKeys][0],
+      /* Reported separately from `discord`, because on its own that flag
+         cannot tell "posted" from "skipped, no webhook set" — the sender fails
+         soft and returns without throwing either way. Which is precisely the
+         state this endpoint gets checked for after a deploy. */
+      configured: isEventsDiscordConfigured(),
       discord: posted,
     });
   } catch (error) {
