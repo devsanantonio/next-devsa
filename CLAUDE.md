@@ -53,7 +53,11 @@ A route that calls `checkBotId()` without a matching entry in `instrumentation-c
 
 `/bounties` and everything under it is gone — pages, API routes, `components/jobs/`, `components/bounties/`, the account layer (`/api/auth/verify`, `/api/messages`, `/api/notifications`, `lib/auth-middleware.ts`), Stripe Connect payouts, and the job/bounty types in `lib/firebase-admin.ts`. `/jobs` and `/bounties` now 404; the old redirects went with them.
 
-The three Discord digest crons went too — `/api/events/weekly-digest`, `/api/news-digest`, `/api/youtube-digest` — and with them all of `lib/discord.ts` and the `rss-parser` dependency. `vercel.json` is down to one cron, `/api/shop/reconcile`.
+The three Discord digest crons went too, and with them all of `lib/discord.ts` and the `rss-parser` dependency.
+
+**`/api/events/weekly-digest` has since been restored** — it posts the week's calendar to the DEVSA Discord's #community-calendar every Monday at 15:00 UTC. `lib/discord.ts` came back with only the events sender in it; the jobs, news and YouTube webhooks did not, and `/api/news-digest` and `/api/youtube-digest` remain gone along with `rss-parser`. `vercel.json` carries two crons: that one and `/api/shop/reconcile`.
+
+It needs `DISCORD_EVENTS_WEBHOOK_URL`, which was deleted from Vercel when the crons were removed and has to be set again. Missing, the digest fails soft: the cron returns `success: true` having posted nothing.
 
 **Their thirteen Firestore collections still hold 2,444 documents.** Nothing reads them, but the data is there — including 12 `job_board_users`, real accounts whose owners can no longer sign in. See the `COLLECTIONS` comment in `lib/firebase-admin.ts` for the counts and what is safe to clear.
 

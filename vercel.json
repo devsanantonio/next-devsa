@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/events/weekly-digest",
+      "schedule": "0 15 * * 1"
+    },
+    {
       "path": "/api/shop/reconcile?fix=1",
       "schedule": "0 9 * * *"
     }
