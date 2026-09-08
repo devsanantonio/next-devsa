@@ -122,6 +122,9 @@ export async function GET(request: NextRequest) {
         dryRun: true,
         count: events.length,
         week: [...weekKeys][0],
+        // On the dry path too, so "is the webhook set in this environment?"
+        // can be answered without posting to a live channel to find out.
+        configured: isEventsDiscordConfigured(),
         payload: buildWeeklyDigestPayload(events),
       });
     }
