@@ -6,7 +6,7 @@ import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, Cal
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
-import { logoOnLight } from "@/lib/logo-invert"
+import { logoOnLight, logoOnDark } from "@/lib/logo-invert"
 import { getEventBrand } from "@/lib/event-brands"
 import { EventBrandLockup } from "@/components/events/event-brand-lockup"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
@@ -1398,9 +1398,7 @@ export function CommunityEventsSection({
                                              flex-1 with min-w-0 so three share
                                              the line evenly instead of one
                                              falling off it. */
-                                          className={`relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none ${
-                                            brand ? "rounded-md bg-white/95 px-1" : ""
-                                          }`}
+                                          className="relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none"
                                         >
                                           <Image
                                             src={p.logo}
@@ -1412,9 +1410,30 @@ export function CommunityEventsSection({
                                                others are open lettering, so at equal
                                                box size it read as twice their weight.
                                                Inset further to bring it into line. */
+                                            /* Which way a mark has to be flipped
+                                               depends on what is behind it, and on a
+                                               branded card that is near-black. Same
+                                               list either way — logoOnDark is the
+                                               mirror of logoOnLight, so a mark cannot
+                                               be classified light for one surface and
+                                               dark for the other.
+                                            
+                                               DEVSA is exempt from both. Its lockup is
+                                               a dark plate with light content inside
+                                               it, so it carries its own ground and
+                                               reads on white and on black untouched.
+                                               Flattened for a dark card it came out as
+                                               a solid white rectangle — the plate
+                                               inverted along with everything on it. */
                                             className={`object-contain ${
                                               p.id === "devsa" ? "p-2.5 sm:p-3" : "p-1 sm:p-1.5"
-                                            } ${logoOnLight({ id: p.id, name: p.name, type: "partner" })}`}
+                                            } ${
+                                              p.id === "devsa"
+                                                ? ""
+                                                : brand
+                                                  ? logoOnDark({ id: p.id, name: p.name })
+                                                  : logoOnLight({ id: p.id, name: p.name, type: "partner" })
+                                            }`}
                                           />
                                         </span>
                                       ))}

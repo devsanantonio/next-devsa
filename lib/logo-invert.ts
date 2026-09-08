@@ -43,12 +43,16 @@ const LIGHT_COMMUNITY_NAMES = [
   "women in data",
 ]
 
-/** `"invert"` when the mark is light artwork, otherwise `""`. */
-export function logoOnLight(logo: {
+/**
+ * Whether this mark's own artwork is light. The two exported helpers are just
+ * the two answers to that question, so a logo can never be classified one way
+ * for a white surface and the other way for a black one.
+ */
+function isLightArtwork(logo: {
   id?: string
   name?: string
   type?: "community" | "partner"
-}): string {
+}): boolean {
   const isLightPartner = !!logo.id && LIGHT_PARTNER_IDS.includes(logo.id)
   const name = (logo.name || "").toLowerCase()
   const isLightCommunity = LIGHT_COMMUNITY_NAMES.some((n) => name.includes(n))
@@ -56,7 +60,35 @@ export function logoOnLight(logo: {
   // `type` narrows the check where the caller knows it (the mixed logo walls).
   // Where it does not — a detail page rendering one known record — matching on
   // either is correct, because ids and names do not collide across the two.
-  if (logo.type === "partner") return isLightPartner ? "invert" : ""
-  if (logo.type === "community") return isLightCommunity ? "invert" : ""
-  return isLightPartner || isLightCommunity ? "invert" : ""
+  if (logo.type === "partner") return isLightPartner
+  if (logo.type === "community") return isLightCommunity
+  return isLightPartner || isLightCommunity
+}
+
+/**
+ * The mirror of logoOnLight, for the branded activation cards, which are the
+ * only near-black surface a co-host mark now lands on.
+ *
+ * `brightness-0 invert` rather than plain `invert`: inverting a colour is a
+ * hue rotation, so Tech Bloc's red would arrive as cyan and DEVSA's bars as
+ * their complements. Flattening to a white silhouette first gives a row of
+ * marks that all read the same way, which is what a credit row on black wants
+ * anyway — and the marks that are already light need nothing done to them, so
+ * the whole row lands white either way.
+ */
+export function logoOnDark(logo: {
+  id?: string
+  name?: string
+  type?: "community" | "partner"
+}): string {
+  return isLightArtwork(logo) ? "" : "brightness-0 invert"
+}
+
+/** `"invert"` when the mark is light artwork, otherwise `""`. */
+export function logoOnLight(logo: {
+  id?: string
+  name?: string
+  type?: "community" | "partner"
+}): string {
+  return isLightArtwork(logo) ? "invert" : ""
 }
