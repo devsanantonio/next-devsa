@@ -66,22 +66,36 @@ function isLightArtwork(logo: {
 }
 
 /**
- * The mirror of logoOnLight, for the branded activation cards, which are the
- * only near-black surface a co-host mark now lands on.
+ * Partner ids whose artwork is dark — black or near-black on transparent, and
+ * so lost on a near-black card.
  *
- * `brightness-0 invert` rather than plain `invert`: inverting a colour is a
- * hue rotation, so Tech Bloc's red would arrive as cyan and DEVSA's bars as
- * their complements. Flattening to a white silhouette first gives a row of
- * marks that all read the same way, which is what a credit row on black wants
- * anyway — and the marks that are already light need nothing done to them, so
- * the whole row lands white either way.
+ * Its own list rather than "everything not in the light list", which is the
+ * mistake this replaces. That treated "not white" as "needs inverting" and so
+ * flattened Tech Bloc, DEF CON, SAHA, BSides and PyTexas — all of which are
+ * *colour*, and colour reads on either ground. Marks come in three kinds, not
+ * two, and only the third needs help here.
+ *
+ * One entry, and that is not an oversight. Every co-host mark on the site was
+ * rendered uninverted on #0a0a0a to build this: 434 MEDIA was the only one
+ * that disappeared. SA Startup Week was expected to be here too and is not —
+ * its lockup is magenta and white and holds up fine, which contradicts a note
+ * left on the host plate in c020d7f.
+ */
+const DARK_PARTNER_IDS = ["434media"]
+
+/**
+ * `"brightness-0 invert"` when the mark would be lost on a dark ground.
+ *
+ * Flattened to a white silhouette rather than inverted, because inverting a
+ * colour is a hue rotation — a red wordmark would arrive cyan. A mark dark
+ * enough to need this has no colour worth keeping anyway.
  */
 export function logoOnDark(logo: {
   id?: string
   name?: string
   type?: "community" | "partner"
 }): string {
-  return isLightArtwork(logo) ? "" : "brightness-0 invert"
+  return !!logo.id && DARK_PARTNER_IDS.includes(logo.id) ? "brightness-0 invert" : ""
 }
 
 /** `"invert"` when the mark is light artwork, otherwise `""`. */
