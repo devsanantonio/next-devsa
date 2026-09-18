@@ -49,20 +49,24 @@ export const PYSA_2026 = {
 } as const
 
 /**
- * Call for speakers closes end of day Sept 11, 2026. Everything that switches
+ * Call for speakers closes end of day Sept 25, 2026. Everything that switches
  * the page between "submit a talk" and "call closed" derives from this — the
  * status pill, the countdown, the form, and the hero's primary CTA.
  *
- * Aug 15 originally, then Aug 22, and now Sept 11 — reopened after the call
- * had already lapsed, which this date arithmetic handles on its own: the phase
- * is computed from `now`, so moving the constant forward past today flips the
- * page back to "open" with no other state to reset.
+ * Aug 15 originally, then Aug 22, Sept 11, and now Sept 25 — extended twice
+ * after the call had already lapsed, which this date arithmetic handles on its
+ * own: the phase is computed from `now`, so moving the constant forward past
+ * today flips the page back to "open" with no other state to reset.
  *
- * Sept 11 leaves 17 days before the conference opens on Sept 28. The prose
- * copies that name the date are not derived from this constant — see
+ * Sept 25 leaves three days before the conference opens on Sept 28, against
+ * seventeen at the previous date. That is the organisers' call, but it is worth
+ * knowing that a talk accepted on the 25th gives its speaker a long weekend to
+ * prepare, and leaves no room at all for the schedule to be rebuilt around it.
+ *
+ * The prose copies that name the date are not derived from this constant — see
  * CFS_CLOSES_LABEL for why, and grep for that label before moving this again.
  */
-export const CFS_CLOSES = "2026-09-11T23:59:59-05:00"
+export const CFS_CLOSES = "2026-09-25T23:59:59-05:00"
 
 /**
  * The same date, written out for display, on the pattern
@@ -86,7 +90,7 @@ export const CFS_CLOSES = "2026-09-11T23:59:59-05:00"
  * (data/stay-connected.ts was on this list until the BSides booth page it
  * belonged to was removed.)
  */
-export const CFS_CLOSES_LABEL = "September 11, 2026"
+export const CFS_CLOSES_LABEL = "September 25, 2026"
 
 export type CfsPhase = "open" | "closed"
 
