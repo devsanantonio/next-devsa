@@ -416,18 +416,3 @@ body {
   mask: url("/sastw/bolt.svg") center / contain no-repeat;
 }
 
-
-/*
- * Print typefaces for the t-shirt artwork (/branding/tees).
- *
- * Aliased rather than reusing the next/font families: next/font generates hashed
- * family names, and the tee SVGs have to name a font that survives being exported to
- * a standalone file. These point at the same Geist cuts, copied into public/tees/fonts
- * so the exporter can fetch and inline them as base64.
- */
-@font-face { font-family: "TeeSans"; src: url("/tees/fonts/Geist-Medium.ttf") format("truetype"); font-weight: 500; font-display: block; }
-@font-face { font-family: "TeeSans"; src: url("/tees/fonts/Geist-Bold.ttf") format("truetype"); font-weight: 700; font-display: block; }
-@font-face { font-family: "TeeSans"; src: url("/tees/fonts/Geist-Black.ttf") format("truetype"); font-weight: 900; font-display: block; }
-@font-face { font-family: "TeeMono"; src: url("/tees/fonts/GeistMono-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
-@font-face { font-family: "TeeMono"; src: url("/tees/fonts/GeistMono-Medium.ttf") format("truetype"); font-weight: 500; font-display: block; }
-@font-face { font-family: "TeePixel"; src: url("/tees/fonts/GeistPixel-Square.woff2") format("woff2"); font-weight: 400; font-display: block; }
