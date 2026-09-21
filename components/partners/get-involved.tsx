@@ -34,8 +34,8 @@ export function GetInvolved() {
               Subscribe to the community calendar for every meetup, workshop, and
               conference — embed it on your site or pull the{" "}
               <strong className="font-semibold text-gray-900">RSS feed</strong>.
-              Or connect in person at the coworking space in the heart of downtown
-              San&nbsp;Antonio.
+              Or back the work directly — DEVSA is a 501(c)(3), and every dollar
+              goes into the events on that calendar.
             </p>
           </motion.div>
 

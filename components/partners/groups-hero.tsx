@@ -66,7 +66,8 @@ export function GroupsHero() {
               </p>
             </div>
 
-            {/* CTAs — Community Calendar leads, Coworking second (per site ranking) */}
+            {/* CTAs — Community Calendar leads, and is now the only one here;
+                the Coworking link beside it went when the room closed. */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
               <Link
                 href="/events"

@@ -80,12 +80,11 @@ export function DonationCta() {
             <div className="space-y-6 max-w-5xl mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
                 Every dollar goes directly toward PySanAntonio, the More Human
-                Than Human conference,{" "}
+                Than Human conference, and{" "}
                 <strong className="font-semibold text-white">
                   monthly community workshops
-                </strong>
-                , and the coworking space behind San&nbsp;Antonio&apos;s tech
-                meetups.
+                </strong>{" "}
+                built right here in San&nbsp;Antonio.
               </p>
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
                 As a 501(c)(3), your donation may be tax-deductible.

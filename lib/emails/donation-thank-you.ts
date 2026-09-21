@@ -76,7 +76,7 @@ export function DonationThankYouEmail({
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-size: 14px; color: #d1d5db; line-height: 1.6;">
-                      <span style="color: #ef426f; font-weight: 600;">→</span> Community coworking space in downtown SA
+                      <span style="color: #ef426f; font-weight: 600;">→</span> The shared community calendar for 20+ local groups
                     </td>
                   </tr>
                   <tr>

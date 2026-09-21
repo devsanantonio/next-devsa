@@ -125,13 +125,13 @@ export function AboutDevsa() {
             <span className="font-medium text-gray-700">host them</span>,{" "}
             <span className="font-medium text-gray-700">connect them</span>, and{" "}
             <span className="font-medium text-gray-700">help them grow</span>{" "}
-            through a downtown coworking space, a shared community calendar,
-            monthly workshops, and conferences built right here in
-            San&nbsp;Antonio.
+            through a shared community calendar, monthly workshops, and
+            conferences built right here in San&nbsp;Antonio.
           </p>
 
-          {/* CTAs — Community Calendar leads (subscribe / embed / RSS); the
-              coworking space is the secondary action */}
+          {/* CTAs — Community Calendar leads (subscribe / embed / RSS);
+              Support DEVSA is the secondary action. It took the slot the
+              coworking space held until the room closed. */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 pt-2">
             <Link
               href="/events"

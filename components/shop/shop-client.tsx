@@ -75,9 +75,9 @@ export function ShopClient({ products }: ShopClientProps) {
                 supports DEVSA&apos;s{" "}
                 <span className="font-medium text-gray-700">workshops</span>,{" "}
                 <span className="font-medium text-gray-700">conferences</span>,
-                and{" "}
+                and the{" "}
                 <span className="font-medium text-gray-700">
-                  the coworking space
+                  community calendar
                 </span>
                 .
               </p>
