@@ -26,12 +26,22 @@ const spaceGrotesk = Space_Grotesk({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
+/**
+ * One description, used by <meta>, Open Graph, Twitter and the Organization
+ * JSON-LD. It was four separate string literals until the coworking space
+ * closed and every one of them went on advertising it, along with a job board
+ * that had been deleted months earlier. A single const is the only thing that
+ * makes the next correction a one-line change.
+ */
+const SITE_DESCRIPTION =
+  "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Find meetups, workshops, and conferences from 20+ local developer groups."
+
 export const metadata: Metadata = {
   title: {
     default: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
     template: "%s | DEVSA",
   },
-  description: "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "San Antonio tech community",
     "DEVSA",
@@ -68,8 +78,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
-    description:
-      "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
+    description: SITE_DESCRIPTION,
     url: siteUrl,
     siteName: "DEVSA",
     images: [
@@ -87,8 +96,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
-    description:
-      "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
+    description: SITE_DESCRIPTION,
     images: [`${siteUrl}/api/og/home`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -127,8 +135,7 @@ export default function RootLayout({
               "@type": "Organization",
               name: "DEVSA",
               alternateName: "DEV San Antonio",
-              description:
-                "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Discover meetups, workshops, coworking spaces, and career opportunities.",
+              description: SITE_DESCRIPTION,
               url: "https://www.devsa.community",
               logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
               foundingDate: "2020",
@@ -177,7 +184,7 @@ export default function RootLayout({
               alternateName: "DEV San Antonio",
               url: "https://www.devsa.community",
               description:
-                "San Antonio's tech community hub — events, coworking space, job board, and 20+ developer groups.",
+                "San Antonio's tech community hub — events, workshops, and 20+ developer groups.",
               potentialAction: {
                 "@type": "SearchAction",
                 target: "https://www.devsa.community/events?q={search_term_string}",

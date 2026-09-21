@@ -209,7 +209,7 @@ export function BrandingKitPage() {
             Our tagline: <span className="text-white font-medium">&quot;Find Your People. Build Your Future.&quot;</span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Tech Community", "Nonprofit", "San Antonio", "Education", "Events", "Coworking"].map((tag) => (
+            {["Tech Community", "Nonprofit", "San Antonio", "Education", "Events", "Conferences"].map((tag) => (
               <span key={tag} className="px-3 py-1 text-xs text-neutral-400 bg-white/5 border border-neutral-800/50 rounded-full">
                 {tag}
               </span>
@@ -438,7 +438,7 @@ export function BrandingKitPage() {
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Value Proposition</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  Your direct connection to the tech community in San Antonio — meetups, workshops, coworking spaces, and career opportunities.
+                  Your direct connection to the tech community in San Antonio — meetups, workshops, and conferences from 20+ local developer groups.
                 </p>
               </div>
             </div>

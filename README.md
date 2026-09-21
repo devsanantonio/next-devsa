@@ -66,7 +66,9 @@ Standard Next.js App Router layout — routes in [app/](app/), UI in [components
 
 One thing worth knowing before you start:
 
-**Firestore is the source of truth; [data/](data/) is a fallback.** Communities, partners, and events are read from Firestore and fall back to the checked-in TypeScript files when Firestore is unavailable or a document is missing. If you add a community or partner, it needs to exist in both places to render reliably.
+**Firestore is the source of truth for communities, partners and events, and nothing shadows it.** Add or delete one in the admin and every surface follows. [data/](data/) holds types and a couple of small seed arrays — no records.
+
+This used to say `data/` was a fallback you had to write to as well. It was not a fallback: every surface imported it at module scope and none of them called the API, so the static list was the primary and Firestore was the copy nobody read. The two drifted, and a partner deleted in the admin kept rendering for weeks. Read partners through [lib/partners.ts](lib/partners.ts) on the server or `/api/partners` on the client.
 
 ---
 
@@ -76,7 +78,7 @@ One thing worth knowing before you start:
 Event listings aggregated across member communities, with RSVP capture, calendar feeds (`/api/events/feed`), and per-event Open Graph images. The primary front door for the community.
 
 ### Coworking (`/coworking-space`)
-The Geekdom coworking partnership page, including a "ping an admin" inquiry form that reaches a real person.
+A record, not an offer. The room Geekdom hosted closed on 19 September 2026; the page was rewritten in past tense and unlinked from the nav, and its "ping an admin" form and live Discord presence check were removed with it. What is left is the volunteer wall and the thanks to Geekdom, which is why the URL still exists.
 
 ### Partners + Communities (`/buildingtogether`)
 Discover 20+ local tech communities and partner organizations.
