@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react"
 import Link from "next/link"
-import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
+import { ArrowUpRight, CalendarDays, Heart } from "lucide-react"
 
 export function GetInvolved() {
   return (
@@ -66,18 +66,18 @@ export function GetInvolved() {
             </Link>
 
             <Link
-              href="/coworking-space"
+              href="/buildingtogether#donate"
               className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300"
             >
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-900">
-                <MapPin className="h-5 w-5" />
+                <Heart className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-base font-semibold text-gray-900">
-                  Coworking Space
+                  Support DEVSA
                 </span>
                 <span className="block text-sm text-gray-500">
-                  A place to connect in downtown SA
+                  Fund the work as a 501(c)(3)
                 </span>
               </span>
               <ArrowUpRight className="h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

@@ -106,14 +106,6 @@ export function TerminalDrawer({
                   Building Together
                 </Link>
                 <Link
-                  href="/coworking-space"
-                  onClick={onClose}
-                  className={linkClass(pathname === "/coworking-space")}
-                >
-                  <span className="text-[#ef426f] mr-2">{">"}</span>
-                  Coworking Space
-                </Link>
-                <Link
                   href="/events"
                   onClick={onClose}
                   className={linkClass(pathname === "/events")}

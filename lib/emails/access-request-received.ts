@@ -170,7 +170,7 @@ export function AccessRequestReceivedEmail({ name, communityOrg }: AccessRequest
                   </td>
                   <td style="color: #404040;">&middot;</td>
                   <td style="padding: 0 8px;">
-                    <a href="https://www.devsa.community/coworking-space" style="color: #ef426f; text-decoration: none; font-size: 14px;">Coworking</a>
+                    <a href="https://www.devsa.community/events" style="color: #ef426f; text-decoration: none; font-size: 14px;">Events</a>
                   </td>
                 </tr>
               </table>

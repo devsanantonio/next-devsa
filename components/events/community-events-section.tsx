@@ -774,13 +774,6 @@ export function CommunityEventsSection({
                 Subscribe
               </button>
               <Link
-                href="/coworking-space"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                Coworking Space
-              </Link>
-              <Link
                 href="/signin"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
               >

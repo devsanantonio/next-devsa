@@ -70,9 +70,21 @@ Any script written against this data must pass `'devsa'` explicitly. `getFiresto
 Two things that survived and look like they shouldn't:
 
 - **Stripe** — the shop uses it. Only Connect went.
-- **`STATUS_API_TOKEN` and `DISCORD_BOT_BASE_URL`** — these drive the Discord *bot* behind the coworking page's live status and "ping an admin", not the digest webhooks. `CRON_SECRET` likewise still guards `/api/shop/reconcile` and `/api/shop/orders`.
+- **`CRON_SECRET`** — still guards `/api/shop/reconcile`, `/api/shop/orders` and `/api/events/weekly-digest`.
+
+`STATUS_API_TOKEN` and `DISCORD_BOT_BASE_URL` are now dead. They drove the Discord bot behind the coworking page's live status and its "ping an admin" button; both routes went when the space closed on 19 September 2026. Nothing in the app reads either variable — they can be deleted from Vercel.
 
 The dead Vercel env vars (`DISCORD_JOBS_WEBHOOK_URL`, `DISCORD_EVENTS_WEBHOOK_URL`, `DISCORD_NEWS_WEBHOOK_URL`, `DISCORD_YOUTUBE_WEBHOOK_URL`, `LINKEDIN_ACCESS_TOKEN`, `LINKEDIN_ORG_ID`) have been deleted from the project.
+
+## The coworking space closed
+
+`/coworking-space` still exists, but as a record rather than an offer. The room at Geekdom closed on 19 September 2026 and the page was rewritten in past tense: the hero (which polled Discord for whether an admin was present) and the features section (parking directions, how to get the door opened) were removed, and the volunteer wall and the thanks to Geekdom kept — that credit is the reason the URL still earns its place.
+
+Removed with it: `/api/discord-status`, `/api/coworking-space/ping-admin`, `lib/emails/coworking-inquiry-ops.ts`, and the `CoworkingSpace` JSON-LD, which advertised amenities, opening hours and `isAccessibleForFree` and would have gone on telling crawlers the room could be walked into.
+
+Nothing links to it any more — nav, mobile drawer, footer, and the four in-body links are gone. The homepage's secondary CTA is Donate now. Its sitemap priority dropped from 0.85 to 0.2.
+
+Still open: whether it stays at all, or 301s to `/events`. That was deliberately left until there is traffic data to decide on.
 
 ## Naming leftovers
 

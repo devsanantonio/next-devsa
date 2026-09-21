@@ -57,7 +57,7 @@ export async function GET() {
                 letterSpacing: "0.01em",
               }}
             >
-              Coworking Space
+              Closed September 2026
             </span>
           </div>
         </div>
@@ -83,7 +83,7 @@ export async function GET() {
               letterSpacing: "-0.02em",
             }}
           >
-            Coworking Space in
+            Community Space,
           </h1>
           <h2
             style={{

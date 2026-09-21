@@ -40,13 +40,13 @@ export function AdminsSection({ admins }: AdminsSectionProps) {
 
           <div className="space-y-6 max-w-3xl mt-8">
             <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-              The DEVSA coworking space is run entirely by{" "}
+              The DEVSA coworking space was run entirely by{" "}
               <strong className="font-semibold text-white">volunteers</strong>{" "}
               from across San Antonio&apos;s tech communities.
             </p>
             <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              These are the organizers who keep the space open, stocked, and
-              welcoming for anyone who shows up to build.
+              These are the organizers who kept it open Monday to Friday for two
+              years, stocked and welcoming to anyone who showed up to build.
             </p>
           </div>
         </motion.div>

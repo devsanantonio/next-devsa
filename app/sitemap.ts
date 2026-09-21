@@ -26,7 +26,10 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${baseUrl}/events`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
     { url: `${baseUrl}/buildingtogether`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/coworking-space`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    // Kept, but demoted: the room is closed and the page is a record of it,
+    // not something to rank. See the closure notes before deciding whether it
+    // stays at all.
+    { url: `${baseUrl}/coworking-space`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${baseUrl}/events/pysanantonio`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/events/access-granted`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/events/morehumanthanhuman`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },

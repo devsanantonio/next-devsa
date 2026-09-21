@@ -30,9 +30,9 @@ export function ClosingCta() {
           </div>
 
           <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light max-w-[96rem]">
-            Now that you know the space — tech talks, workshops, meetups, and
-            conferences happen every week across San&nbsp;Antonio&apos;s tech
-            community, all on{" "}
+            The room is closed, but the week is not — tech talks, workshops,
+            meetups, and conferences happen every week across
+            San&nbsp;Antonio&apos;s tech community, all on{" "}
             <strong className="font-semibold text-gray-900">
               the community calendar
             </strong>

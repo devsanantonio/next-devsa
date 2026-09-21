@@ -66,16 +66,6 @@ export function Navbar() {
                   Building Together
                 </Link>
                 <Link
-                  href="/coworking-space"
-                  className={`px-3 py-1.5 rounded-lg text-[13px] leading-tight font-normal tracking-wide transition-colors ${
-                    pathname === "/coworking-space"
-                      ? "text-white bg-white/10"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  Coworking Space
-                </Link>
-                <Link
                   href="/events"
                   className={`px-3 py-1.5 rounded-lg text-[13px] leading-tight font-normal tracking-wide transition-colors ${
                     pathname === "/events"

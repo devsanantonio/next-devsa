@@ -131,7 +131,7 @@ export async function GET() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Coworking Space
+              Building Together
             </span>
             <span
               style={{

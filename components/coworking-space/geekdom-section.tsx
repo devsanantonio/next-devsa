@@ -49,7 +49,7 @@ export function GeekdomSection() {
           
           <div className="space-y-6 mb-12 max-w-3xl">
             <p className="text-lg md:text-2xl lg:text-3xl text-gray-200 leading-[1.4] md:leading-[1.3] font-light">
-              When we first started <strong className="font-semibold">DEVSA</strong>, we never planned to have a physical community space. Thanks to <strong className="text-white font-semibold">Geekdom</strong> we have one right in the heart of downtown San Antonio that&apos;s available to our growing tech community. 
+              When we first started <strong className="font-semibold">DEVSA</strong>, we never planned to have a physical community space. <strong className="text-white font-semibold">Geekdom</strong> gave us one in the heart of downtown San Antonio, and for two years it was ours. Real estate models evolve; our commitment to our partners and this community doesn&apos;t. 
             </p>
           </div>
           

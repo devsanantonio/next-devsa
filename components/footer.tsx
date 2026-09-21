@@ -273,7 +273,6 @@ export function Footer() {
               <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mb-5">Site Navigation</h3>
               <ul className="space-y-3.5">
                 <li><Link href="/buildingtogether" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Building Together</Link></li>
-                <li><Link href="/coworking-space" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Coworking Space</Link></li>
                 <li><Link href="/events" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Community Calendar</Link></li>
                 <li><Link href="/shop" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Shop</Link></li>
               </ul>

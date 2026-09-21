@@ -1,35 +1,22 @@
 "use client"
 
-import { HeroSection } from "@/components/coworking-space/hero-section"
-import { SpaceFeaturesSection } from "@/components/coworking-space/space-features-section"
 import { AdminsSection } from "@/components/coworking-space/admins-section"
 import { GeekdomSection } from "@/components/coworking-space/geekdom-section"
 import { ClosingCta } from "@/components/coworking-space/closing-cta"
 
+/**
+ * What is left of the coworking page now the room has closed.
+ *
+ * The hero went because it polled Discord for whether an admin was in the
+ * space, and that answer is permanently no. The features section went because
+ * it gave parking directions and told people how to get the door opened — copy
+ * that was not merely stale but would actively send someone downtown.
+ *
+ * What stays is the part worth keeping a URL for: the volunteers who ran it,
+ * and the thanks to Geekdom.
+ */
 export function CoworkingSpaceClient() {
 
-  const spaceFeatures = [
-    {
-      id: "parking",
-      category: "Parking",
-      title: "Parking Downtown Has Never Been Easier (or More Affordable)",
-      description:
-        "The City of San Antonio offers convenient and affordable parking—including easy access to city parking garages and ample street parking—all within walking distance of the DEVSA space on historic Houston Street.",
-      link: "https://sapark.sanantonio.gov/Parking-Locations/Affordable-Parking",
-      linkText: "View COSA Parking Options",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/FAQsResources.png",
-    },
-    {
-      id: "discord",
-      category: "Access",
-      title: "Daily Access to Community Space Managed via Discord Server",
-      description:
-        "To meet safety and compliance guidelines, the DEVSA space is only available when an approved admin is present. Join our Discord Server and follow the #community-space channel for daily availability, updates, and access instructions.",
-      link: "https://discord.gg/cvHHzThrEw",
-      linkText: "Join our Discord Server",
-      image: "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/discord-invite.svg",
-    },
-  ]
 
   const admins = [
     {
@@ -71,9 +58,7 @@ export function CoworkingSpaceClient() {
 
   return (
     <div className="w-full min-h-screen bg-white">
-      <HeroSection />
       <AdminsSection admins={admins} />
-      <SpaceFeaturesSection features={spaceFeatures} />
       <GeekdomSection />
       <ClosingCta />
     </div>

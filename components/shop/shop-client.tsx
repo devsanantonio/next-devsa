@@ -243,12 +243,6 @@ export function ShopClient({ products }: ShopClientProps) {
                 Building Together
               </Link>
               <Link
-                href="/coworking-space"
-                className="font-medium text-white/60 hover:text-white transition-colors"
-              >
-                Coworking Space
-              </Link>
-              <Link
                 href="/events"
                 className="font-medium text-white/60 hover:text-white transition-colors"
               >

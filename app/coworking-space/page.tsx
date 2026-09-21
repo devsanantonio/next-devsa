@@ -1,41 +1,16 @@
 import type { Metadata } from "next"
 import { CoworkingSpaceClient } from "./coworking-space-client"
-import { ClosingNotice, getClosingPhase } from "@/components/coworking-space/closing-notice"
-
-/**
- * Hourly, purely so the closing banner can switch from "closes" to "has
- * closed" on its own. Nothing else on this page expires.
- */
-export const revalidate = 3600
+import { ClosingNotice } from "@/components/coworking-space/closing-notice"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
-  title: "DEVSA Community Space in Downtown San Antonio",
+  title: "The DEVSA Community Space, 2024–2026",
   description:
-    "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
-  keywords: [
-    "San Antonio",
-    "DEVSA community space",
-    "downtown San Antonio coworking",
-    "free office space SA",
-    "tech coworking space",
-    "Geekdom Houston Street",
-    "community workspace",
-    "volunteer-managed space",
-    "free parking downtown SA",
-    "tech community workspace",
-    "collaborative workspace San Antonio",
-    "startup workspace",
-    "developer workspace",
-    "community-driven coworking",
-    "downtown workspace",
-    "San Antonio tech hub",
-    "free meeting space",
-    "community access Discord",
-    "Houston Street workspace",
-    "Alamo City coworking",
-  ],
+    "DEVSA's community space at Geekdom on Houston Street closed on 19 September 2026. Our programming and community meetups at Geekdom continue, and every one of them is on the Community Calendar.",
+  /* No keyword list. It read "free office space SA", "community workspace",
+     "free meeting space" — terms for a service that no longer exists, and the
+     last thing this page should do is win a search for one. */
   authors: [{ name: "DEVSA Community" }],
   creator: "DEVSA",
   publisher: "DEVSA",
@@ -43,9 +18,9 @@ export const metadata: Metadata = {
     canonical: "/coworking-space",
   },
   openGraph: {
-    title: "DEVSA Community Space Downtown San Antonio",
+    title: "The DEVSA Community Space, 2024–2026",
     description:
-      "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
+      "DEVSA's community space at Geekdom on Houston Street closed on 19 September 2026. Our programming and community meetups at Geekdom continue, and every one of them is on the Community Calendar.",
     url: `${siteUrl}/coworking-space`,
     siteName: "DEVSA",
     images: [
@@ -61,9 +36,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DEVSA Community Space Downtown San Antonio",
+    title: "The DEVSA Community Space, 2024–2026",
     description:
-      "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
+      "DEVSA's community space at Geekdom on Houston Street closed on 19 September 2026. Our programming and community meetups at Geekdom continue, and every one of them is on the Community Calendar.",
     images: [`${siteUrl}/api/og/coworking-space`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -82,78 +57,14 @@ export const metadata: Metadata = {
 }
 
 export default function CoworkingSpacePage() {
-  const phase = getClosingPhase()
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CoworkingSpace",
-            name: "DEVSA Community Coworking Space",
-            description: "When we first started DEVSA, we never planned to have a physical community space. Thanks to Geekdom we have one right in the heart of downtown San Antonio that's available to our growing tech community.",
-            url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"}/coworking-space`,
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: "131 Houston Street",
-              addressLocality: "San Antonio",
-              addressRegion: "TX",
-              postalCode: "78205",
-              addressCountry: "US",
-            },
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: "29.4241",
-              longitude: "-98.4936",
-            },
-            telephone: "",
-            email: "",
-            priceRange: "Free",
-            amenityFeature: [
-              {
-                "@type": "LocationFeatureSpecification",
-                name: "Free WiFi",
-                value: true,
-              },
-              {
-                "@type": "LocationFeatureSpecification", 
-                name: "Meeting Rooms",
-                value: true,
-              },
-              {
-                "@type": "LocationFeatureSpecification",
-                name: "Community Access",
-                value: true,
-              },
-              {
-                "@type": "LocationFeatureSpecification",
-                name: "Downtown Parking",
-                value: true,
-              },
-            ],
-            openingHours: "By appointment via Discord community",
-            isAccessibleForFree: true,
-            managedBy: {
-              "@type": "Organization",
-              name: "DEVSA",
-              url: "https://www.devsa.community",
-            },
-            parentOrganization: {
-              "@type": "Organization", 
-              name: "Geekdom",
-              url: "https://geekdom.com",
-            },
-            photos: [
-              "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_6350.jpg",
-              "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_7186.jpg",
-              "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/IMG_5061.jpg",
-            ],
-          }),
-        }}
-      />
-      <ClosingNotice phase={phase} />
+      {/* The CoworkingSpace schema that sat here is gone. It described an
+          open venue — amenities, opening hours, priceRange "Free",
+          isAccessibleForFree — and structured data is a machine-readable
+          claim. Left in place it would have kept telling search engines the
+          room was available to walk into. */}
+      <ClosingNotice />
       <CoworkingSpaceClient />
     </>
   )
