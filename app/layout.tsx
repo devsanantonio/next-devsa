@@ -11,7 +11,7 @@ import {
   GeistPixelLine,
 } from "geist/font/pixel"
 import "./globals.css"
-import { Analytics } from "@vercel/analytics/next"
+import { SiteAnalytics } from "@/components/site-analytics"
 import { Suspense } from "react"
 import { LayoutChrome } from "@/components/layout-chrome"
 import { CartProvider } from "@/components/shop/cart-context"
@@ -193,7 +193,7 @@ export default function RootLayout({
             <LayoutChrome>{children}</LayoutChrome>
             <CartSlideOut />
           </CartProvider>
-          <Analytics />
+          <SiteAnalytics />
         </Suspense>
       </body>
     </html>
