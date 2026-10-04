@@ -60,6 +60,26 @@ export const featuredOnDemandEvent: OnDemandEvent | null = {
   url: "/events/pysanantonio/2025",
 };
 
+/**
+ * The More Human Than Human recap, re-encoded for the web.
+ *
+ * The S3 original is 84 MB: 1920x1080 at 23.5 Mbps for 30 seconds, which is
+ * master quality rather than delivery quality and roughly 5x the bitrate 1080p
+ * needs. This is the same 1920x1080 at CRF 23 with faststart, so it starts
+ * playing before it has finished downloading — 17.1 MB, and at the ~1280px it
+ * ever renders the two are indistinguishable. The S3 file is untouched and
+ * remains the master.
+ *
+ * One constant because two surfaces play it: the About section on the homepage
+ * and the on-demand band on /events. They held separate literals of the 84 MB
+ * URL, so fixing one would have left the other heavy.
+ *
+ * A 720p cut at 7.0 MB exists alongside it and is the one to reach for if this
+ * ever becomes an autoplaying hero, where 17 MB is still far too heavy.
+ */
+export const MORE_HUMAN_RECAP_VIDEO =
+  "https://cd7xknlpdcor35of.public.blob.vercel-storage.com/video/morehuman-recap-1080.mp4";
+
 export const moreHumanThanHumanEvent: OnDemandEvent | null = {
   id: "more-human-than-human-2026",
   type: "on-demand",

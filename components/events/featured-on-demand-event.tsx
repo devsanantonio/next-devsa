@@ -2,11 +2,9 @@
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Play, ArrowRight, X } from "lucide-react"
-import { featuredOnDemandEvent, moreHumanThanHumanEvent } from "@/data/events"
+import { featuredOnDemandEvent, moreHumanThanHumanEvent, MORE_HUMAN_RECAP_VIDEO } from "@/data/events"
 import Image from "next/image"
 import Link from "next/link"
-
-const MORE_HUMAN_RECAP_VIDEO_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
 
 function formatPastDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -228,7 +226,7 @@ export function FeaturedOnDemandEvent() {
                 playsInline
                 className="w-full h-full rounded-xl"
               >
-                <source src={MORE_HUMAN_RECAP_VIDEO_URL} type="video/mp4" />
+                <source src={MORE_HUMAN_RECAP_VIDEO} type="video/mp4" />
               </video>
             </motion.div>
           </motion.div>
