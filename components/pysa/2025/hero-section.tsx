@@ -53,7 +53,7 @@ export default function HeroSection() {
       <div className="page-shell grid items-center gap-10 pb-14 pt-28 md:pb-20 md:pt-32 lg:grid-cols-2 lg:gap-16 lg:pb-24">
         {/* Left: the copy */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="flex flex-col items-start gap-8"
@@ -136,7 +136,7 @@ export default function HeroSection() {
             ones. Replaces the full-bleed marquee, which auto-played three
             .mov files (a container Chrome will not decode) purely for motion. */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15 }}
           className="flex flex-col gap-3 sm:gap-4"

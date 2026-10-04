@@ -29,7 +29,7 @@ export function FeaturedOnDemandEvent() {
       >
         <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
@@ -71,7 +71,7 @@ export function FeaturedOnDemandEvent() {
             {/* More Human Than Human */}
             {moreHumanThanHumanEvent && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
@@ -136,7 +136,7 @@ export function FeaturedOnDemandEvent() {
             {/* PySanAntonio */}
             {featuredOnDemandEvent && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}

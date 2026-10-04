@@ -35,7 +35,7 @@ export function FeaturedZeroToAgent() {
 
       <div className="relative z-10 page-shell pt-16 pb-6 lg:pt-0 lg:py-10 flex-1 flex flex-col justify-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}

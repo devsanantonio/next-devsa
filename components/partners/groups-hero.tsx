@@ -33,7 +33,7 @@ export function GroupsHero() {
       {/* Main content */}
       <div className="relative z-20 page-shell py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 flex flex-col">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="max-w-4xl"

@@ -42,7 +42,7 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
 
           {/* Partner header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm"

@@ -307,7 +307,7 @@ export function MoreHumanThanHuman() {
         {/* Content overlay */}
         <div className="absolute inset-0 flex items-end justify-center pb-20 sm:pb-28">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-center px-4"
@@ -570,14 +570,14 @@ export function MoreHumanThanHuman() {
             
             {/* Left Column - Hero Content */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               className="text-center lg:text-left"
             >
               {/* DEVSA TV Badge */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-6 px-3 sm:px-4 py-1.5 sm:py-2 border border-[#333] bg-[#111]/80 backdrop-blur-sm"
@@ -589,7 +589,7 @@ export function MoreHumanThanHuman() {
 
               {/* Main Title */}
               <motion.h1
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-3 sm:mb-4 leading-[0.9] text-glitch"
@@ -599,23 +599,18 @@ export function MoreHumanThanHuman() {
               </motion.h1>
 
               {/* Subtitle & Tagline Combined */}
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                transition={{ delay: 0.5 }}
-                className="mb-4 sm:mb-6"
-              >
+              <div className="mb-4 sm:mb-6">
                 <h2 className="font-mono text-lg md:text-xl text-[#00f2ff] tracking-[0.15em] sm:tracking-[0.2em] uppercase font-medium mb-2 sm:mb-3">
                   DEVSA AI Conference
                 </h2>
                 <p className="font-mono text-sm text-[#737373] tracking-wide leading-relaxed max-w-3xl mx-auto lg:mx-0">
                   Join San Antonio's builders, dreamers, and technologists as we explore how AI is transforming the way we write code, test, automate, and ship. Submit your talk and share your expertise with the San Antonio tech community.
                 </p>
-              </motion.div>
+              </div>
 
               {/* Event Details */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
                 className="flex flex-col md:flex-wrap items-center lg:items-start justify-center lg:justify-start gap-3 sm:gap-6 mb-4 sm:mb-6"
@@ -632,12 +627,7 @@ export function MoreHumanThanHuman() {
               </motion.div>
 
               {/* Deadline Notice */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.9 }}
-                className="inline-flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-[#ff9900]/30 bg-[#ff9900]/5"
-              >
+              <div className="inline-flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-[#ff9900]/30 bg-[#ff9900]/5">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-[#ff9900]/50 text-[#ff9900]">
                   <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
@@ -645,12 +635,12 @@ export function MoreHumanThanHuman() {
                   <p className="font-mono text-[9px] sm:text-[10px] text-[#737373] uppercase tracking-wider">Deadline</p>
                   <p className="text-xs sm:text-sm font-semibold text-[#e5e5e5]">February 2, 2026</p>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
 
             {/* Right Column - Form or Success Message */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="w-full"

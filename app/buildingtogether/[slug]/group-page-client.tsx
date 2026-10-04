@@ -188,7 +188,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
         <div className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
           {/* Back button using router.back() */}
           <motion.button
-            initial={{ opacity: 0, x: -10 }}
+            initial={{ x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
             onClick={() => router.back()}
@@ -200,7 +200,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
 
           {/* Hero section with logo and name */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm"
@@ -380,7 +380,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
 
           {/* Events Section */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-8"
@@ -440,7 +440,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
 
           {/* DEVSA CTA */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-8 rounded-2xl border border-slate-200 bg-linear-to-br from-slate-900 to-slate-800 p-6 sm:p-8 text-center shadow-sm"
@@ -491,7 +491,7 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
       className={`group rounded-xl border p-4 sm:p-5 transition-all duration-300 ${

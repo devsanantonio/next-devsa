@@ -74,7 +74,7 @@ export default function SessionsSection() {
       <div className="page-shell flex flex-col gap-10 py-6 md:py-16 lg:py-20">
         {/* Section Title */}
         <motion.header
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -88,7 +88,7 @@ export default function SessionsSection() {
 
         {/* Schedule Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -97,7 +97,7 @@ export default function SessionsSection() {
           <div className="flex flex-col">
             {/* Joel Grus - Main Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -168,7 +168,7 @@ export default function SessionsSection() {
 
             {/* Mauricio Lightning Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -228,7 +228,7 @@ export default function SessionsSection() {
 
             {/* Mayank Lightning Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -288,7 +288,7 @@ export default function SessionsSection() {
 
             {/* Paul Bailey - Main Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -359,7 +359,7 @@ export default function SessionsSection() {
 
             {/* Cody Fincher - Main Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.6 }}
@@ -430,7 +430,7 @@ export default function SessionsSection() {
        
             {/* Corrina Lightning Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -490,7 +490,7 @@ export default function SessionsSection() {
 
             {/* Gennaro Lightning Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -550,7 +550,7 @@ export default function SessionsSection() {
 
             {/* Sean Lightning Talk */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}

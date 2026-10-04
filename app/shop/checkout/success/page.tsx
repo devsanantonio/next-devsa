@@ -52,7 +52,7 @@ export default function CheckoutSuccessPage() {
       <div className="pt-28 pb-16 md:pt-32 md:pb-20">
         <div className="container-responsive max-w-[96rem] mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >

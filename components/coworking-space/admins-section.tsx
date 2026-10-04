@@ -21,7 +21,7 @@ export function AdminsSection({ admins }: AdminsSectionProps) {
     <section className="bg-black border-b border-gray-800" data-bg-type="dark">
       <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -55,7 +55,7 @@ export function AdminsSection({ admins }: AdminsSectionProps) {
           {admins.map((admin, index) => (
             <motion.div
               key={admin.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.08 }}

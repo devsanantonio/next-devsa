@@ -117,7 +117,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Image Gallery */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
@@ -167,7 +167,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Product Info */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >

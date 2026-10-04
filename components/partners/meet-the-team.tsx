@@ -33,7 +33,7 @@ export function MeetTheTeam() {
       <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
         {/* Intro text */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -74,7 +74,7 @@ export function MeetTheTeam() {
           {boardMembers.map((member, index) => (
             <motion.div
               key={member.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}

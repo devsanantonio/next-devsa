@@ -240,7 +240,7 @@ export function ZeroToAgentResources() {
       {/* Hero */}
       <section className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-20 pb-16">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="relative z-10 space-y-6"
@@ -310,7 +310,7 @@ export function ZeroToAgentResources() {
       {/* The Stack */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-14">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
@@ -353,7 +353,7 @@ export function ZeroToAgentResources() {
       {/* Choose Your Track */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
@@ -377,7 +377,7 @@ export function ZeroToAgentResources() {
         <section key={track.title}>
           <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -488,7 +488,7 @@ export function ZeroToAgentResources() {
       {/* Pro Tips */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
@@ -513,7 +513,7 @@ export function ZeroToAgentResources() {
       {/* Why You Should Be There */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
@@ -589,7 +589,7 @@ export function ZeroToAgentResources() {
       {/* Start Here + Full Reference */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}

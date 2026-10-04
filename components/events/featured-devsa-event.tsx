@@ -91,7 +91,7 @@ export function FeaturedDevsaEvent() {
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
         <div className="mb-10">
           <motion.h2 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-3xl font-extrabold tracking-tight text-[#e5e5e5] sm:text-4xl lg:text-5xl leading-[1.1]"
@@ -99,7 +99,7 @@ export function FeaturedDevsaEvent() {
             Featured <span className="text-[#306998]">Event</span>
           </motion.h2>
           <motion.p 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
@@ -110,7 +110,7 @@ export function FeaturedDevsaEvent() {
         </div>
         
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}

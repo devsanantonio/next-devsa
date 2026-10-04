@@ -43,7 +43,7 @@ export default function SponsorsSection() {
       <div className="page-shell flex flex-col gap-10 py-6 md:py-16 lg:py-20">
         {/* Section Header */}
         <motion.header
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -59,7 +59,7 @@ export default function SponsorsSection() {
 
         {/* Unified Sponsors and Partners Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -68,7 +68,7 @@ export default function SponsorsSection() {
           {allSponsorsAndPartners.map((item, index) => (
             <motion.div
               key={item.name}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               whileHover={{ scale: 1.02 }}

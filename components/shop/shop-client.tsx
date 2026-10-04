@@ -53,7 +53,7 @@ export function ShopClient({ products }: ShopClientProps) {
       <section className="relative bg-white pt-28 pb-16 md:pt-32 md:pb-20 border-b border-gray-200">
         <div className="page-shell relative">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="max-w-4xl"
@@ -114,7 +114,7 @@ export function ShopClient({ products }: ShopClientProps) {
       <section className="bg-white border-b border-gray-100 py-6 md:py-7">
         <div className="page-shell">
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
@@ -178,7 +178,7 @@ export function ShopClient({ products }: ShopClientProps) {
       <section className="bg-black border-t border-gray-800 pt-16 pb-20 md:pt-20 md:pb-24" data-bg-type="dark">
         <div className="page-shell">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
@@ -226,7 +226,7 @@ export function ShopClient({ products }: ShopClientProps) {
 
           {/* Cross-links footer */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15 }}
@@ -288,7 +288,7 @@ function ProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
     >
