@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import { FeaturedSastw } from "@/components/events/featured-sastw"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 
@@ -106,11 +105,21 @@ export default function EventsPage() {
           that put a permanent promo above twenty other groups' events.
 
           Passed as a slot so the calendar never has to know what is currently
-          featured — that rotates, and the page is what decides. */}
+          featured — that rotates, and the page is what decides.
+
+          Nothing is featured right now. SA Startup + Tech Week held the slot
+          through 2 October 2026 and the week has concluded; PySanAntonio II
+          was the last day of it. The slot is optional and the section guards
+          on it, so an empty rotation renders the calendar on its own — which
+          is the right default for a page whose value is being the city's
+          neutral index.
+
+          FeaturedSastw is left in components/events/ rather than deleted, as
+          FeaturedDevsaEvent and FeaturedZeroToAgent were before it. SASTW is
+          annual, and startup-week-band.tsx already carries a note on what to
+          move when 2027 is dated. To feature something, pass it here. */}
       <main className="min-h-screen bg-white text-gray-900">
-        <CommunityEventsSection
-          featured={<FeaturedSastw />}
-        />
+        <CommunityEventsSection />
         <FeaturedOnDemandEvent />
       </main>
     </>
