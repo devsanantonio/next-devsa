@@ -1,4 +1,6 @@
 import { Metadata } from "next"
+import { ConferencePortfolio } from "@/components/events/conference-portfolio"
+import { FeaturedTxlf } from "@/components/events/featured-txlf"
 import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 
@@ -107,19 +109,22 @@ export default function EventsPage() {
           Passed as a slot so the calendar never has to know what is currently
           featured — that rotates, and the page is what decides.
 
-          Nothing is featured right now. SA Startup + Tech Week held the slot
-          through 2 October 2026 and the week has concluded; PySanAntonio II
-          was the last day of it. The slot is optional and the section guards
-          on it, so an empty rotation renders the calendar on its own — which
-          is the right default for a page whose value is being the city's
-          neutral index.
+          Texas Linux Fest holds it now — the first thing in this slot that
+          DEVSA does not run. It is a community partnership, and the card says
+          so rather than letting a prominent band imply we host it.
 
-          FeaturedSastw is left in components/events/ rather than deleted, as
+          FeaturedSastw is still in components/events/, unwired, as
           FeaturedDevsaEvent and FeaturedZeroToAgent were before it. SASTW is
-          annual, and startup-week-band.tsx already carries a note on what to
-          move when 2027 is dated. To feature something, pass it here. */}
+          annual and startup-week-band.tsx notes what to move when 2027 is
+          dated. To change what is featured, change what is passed here. */}
       <main className="min-h-screen bg-white text-gray-900">
-        <CommunityEventsSection />
+        <CommunityEventsSection featured={<FeaturedTxlf />} />
+        {/* What DEVSA runs, then what you can watch. The portfolio answers
+            "does this organisation put on conferences"; the archive below
+            answers "can I see one". A brand with no footage yet — which is
+            both Startup + Tech Week activations — has a home in the first and
+            not the second. */}
+        <ConferencePortfolio />
         <FeaturedOnDemandEvent />
       </main>
     </>

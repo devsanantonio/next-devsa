@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { AccessCipherField } from "@/components/access-granted/2026/cipher-field"
 import Link from "next/link"
 import { CalendarDays, Clock, MapPin } from "lucide-react"
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/data/access-granted/2026"
 import { SastwLockup } from "@/components/access-granted/2026/sastw-lockup"
 import { disabledSlot, primaryButton, secondaryButton } from "@/components/access-granted/2026/button-styles"
+import { hasHappened } from "@/lib/event-phase"
 
 /**
  * Access Granted's masthead, ported from next-sasw's AccessGrantedBand.
@@ -59,18 +61,22 @@ const META = [
   },
 ]
 
-export function AccessGrantedHero({
-  phase,
-  daysLeft,
-}: {
-  phase: AgCfsPhase
-  /**
-   * Computed on the server. The page revalidates hourly, so a whole-day count
-   * is never meaningfully stale.
-   */
-  daysLeft: number
-}) {
-  const isOpen = phase === "open"
+/**
+ * Takes no props. It used to accept the call-for-speakers `phase` and a
+ * `daysLeft` countdown and drive a CTA that swapped between "Submit a talk"
+ * and the attendee path.
+ *
+ * The call came off this page once the activation had run, which left both
+ * buttons pointing at #call — an anchor no longer in the document. A button
+ * aimed at a removed section is worse than no button.
+ *
+ * Only the composition changed: AG_CFS_CLOSES, getAgCfsPhase and the form
+ * section all remain in the repo, so restoring next year's call is a re-add.
+ */
+export function AccessGrantedHero() {
+  /* From ACCESS_GRANTED.end, already in the data file. Without it this hero
+     offered a lineup that the section below it now prints in full. */
+  const isPast = hasHappened(ACCESS_GRANTED.end)
 
   return (
     <section
@@ -198,36 +204,14 @@ export function AccessGrantedHero({
                 someone who would never submit a talk. */}
             <div className="order-9 mt-9 flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {isOpen ? (
-                  <Link href="#call" className={primaryButton}>
-                    Submit a talk
+                {isPast ? (
+                  <Link href="#lineup" className={primaryButton}>
+                    See the 2026 lineup
                   </Link>
                 ) : (
                   <span className={disabledSlot}>Speaker lineup coming soon</span>
                 )}
-                <Link href="#call" className={secondaryButton}>
-                  Help run it
-                </Link>
               </div>
-
-              {isOpen && (
-                <p className="text-sm text-white/50">
-                  {daysLeft === 0 ? (
-                    <>
-                      The call closes{" "}
-                      <span className="font-semibold text-white">today</span>.
-                    </>
-                  ) : (
-                    <>
-                      The call closes in{" "}
-                      <span className="font-semibold" style={{ color: ACCESS_AMBER }}>
-                        {daysLeft} {daysLeft === 1 ? "day" : "days"}
-                      </span>{" "}
-                      — {AG_CFS_CLOSES_LABEL}.
-                    </>
-                  )}
-                </p>
-              )}
             </div>
           </div>
 
@@ -256,7 +240,7 @@ export function AccessGrantedHero({
             taller than the text beside it and read as the subject with the copy
             as a caption. 22rem brings it roughly level.
           */}
-          <div className="relative order-4 mx-auto my-10 w-40 sm:w-48 lg:order-none lg:my-0 lg:ml-auto lg:mr-0 lg:w-72 xl:w-[22rem]">
+          <div className="group/art relative order-4 mx-auto my-10 w-40 sm:w-48 lg:order-none lg:my-0 lg:ml-auto lg:mr-0 lg:w-72 xl:w-[22rem]">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -inset-y-[45%] -left-[150%] -right-[45%]"
@@ -269,7 +253,7 @@ export function AccessGrantedHero({
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-y-[28%] -left-[110%] -right-[28%] blur-[70px]"
+              className="pointer-events-none absolute -inset-y-[28%] -left-[110%] -right-[28%] blur-[70px] transition-opacity duration-500 group-hover/art:opacity-60"
               style={{
                 background: `radial-gradient(ellipse 52% 62% at 70% 58%, ${ACCESS_GREEN}4d 0%, transparent 68%)`,
               }}
@@ -279,6 +263,7 @@ export function AccessGrantedHero({
               className="pointer-events-none absolute inset-x-[12%] bottom-[3%] h-8 rounded-[50%] blur-[26px]"
               style={{ background: `${ACCESS_GREEN}33` }}
             />
+            <AccessCipherField />
             <Image
               src={AG_LOCK.src}
               alt=""

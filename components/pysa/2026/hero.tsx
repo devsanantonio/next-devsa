@@ -6,6 +6,7 @@ import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
 import { MascotClip } from "@/components/pysa/2026/mascot-clip"
 import { disabledSlot, primaryButton } from "@/components/pysa/2026/button-styles"
+import { hasHappened } from "@/lib/event-phase"
 import {
   PYSA_2026,
   PYSA_COLORS,
@@ -45,25 +46,24 @@ const MOBILE_MASK =
 /**
  * PySanAntonio II hero.
  *
- * The primary CTA is a slot rather than a fixed button: while the call for
- * speakers is open it drives submissions, and once it closes the same slot
- * becomes the attendee path. That swap is driven by `phase`, which the page
- * derives from CFS_CLOSES — nobody has to remember to edit this in August.
+ * Takes no props and derives its one piece of state. It used to accept the
+ * call-for-speakers `phase` and a `daysLeft` countdown, and drive a CTA that
+ * swapped between "Submit a talk" and the attendee path.
+ *
+ * The call came off this page once the conference had run, which left that
+ * branch linking to an anchor — #call-for-speakers — that no longer exists in
+ * the document. A button pointing at a removed section is worse than no
+ * button, so both the branch and the props went with it.
+ *
+ * Only the composition changed. CFS_CLOSES, getCfsPhase and the form section
+ * are all still in the repo, so restoring next year's call means re-adding
+ * this branch and the section, not rebuilding either.
  */
-export function PysaHero({
-  phase,
-  daysLeft,
-}: {
-  phase: CfsPhase
-  /**
-   * Computed on the server. The page revalidates hourly, so a whole-day count
-   * is never meaningfully stale — and passing it in beats a mount effect,
-   * which would both trip react-hooks/set-state-in-effect and flash an empty
-   * line on first paint.
-   */
-  daysLeft: number
-}) {
-  const isOpen = phase === "open"
+export function PysaHero() {
+  /* Derived from PYSA_2026.end, which has been sitting in the data file all
+     along. The h1 read "returns October 2026" for two days after the
+     conference ran because nothing here ever asked. */
+  const isPast = hasHappened(PYSA_2026.end)
 
   return (
     <section
@@ -153,7 +153,7 @@ export function PysaHero({
                     className="h-auto w-full max-w-[26rem] lg:max-w-[32rem] xl:max-w-[38rem]"
                   />
                   <span className="font-light italic" style={{ color: PYSA_COLORS.blue }}>
-                    returns October 2026
+                    {isPast ? "the 2026 edition" : "returns October 2026"}
                   </span>
                 </h1>
 
@@ -176,8 +176,9 @@ export function PysaHero({
               />
 
               <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
-                San Antonio&apos;s Python conference is back for a second year —
-                an afternoon of{" "}
+                San Antonio&apos;s Python conference{" "}
+                {isPast ? "returned" : "is back"} for a second year — an
+                afternoon of{" "}
                 <strong className="font-semibold text-white">
                   learning, networking, and community building
                 </strong>{" "}
@@ -206,41 +207,24 @@ export function PysaHero({
               </div>
             </dl>
 
-            {/* CTA slot — swaps with the call's phase. Single action on
-                purpose: last year's recap is reachable from the archive card
-                further down, and it was competing here. */}
+            {/* Single action on purpose: last year's recap is reachable from
+                the archive card further down, and it was competing here. */}
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {isOpen ? (
-                  <Link href="#call-for-speakers" className={primaryButton}>
-                    Submit a talk
+                {isPast ? (
+                  <Link href="#lineup" className={primaryButton}>
+                    See the 2026 lineup
                   </Link>
                 ) : (
                   <span className={disabledSlot}>Speaker lineup coming soon</span>
                 )}
               </div>
-
-              {isOpen && (
-                <p className="text-sm text-white/50">
-                  {daysLeft === 0 ? (
-                    <>Submissions close <span className="font-semibold text-white">today</span>.</>
-                  ) : (
-                    <>
-                      Submissions close in{" "}
-                      <span className="font-semibold" style={{ color: PYSA_COLORS.yellow }}>
-                        {daysLeft} {daysLeft === 1 ? "day" : "days"}
-                      </span>{" "}
-                      — September 25, 2026.
-                    </>
-                  )}
-                </p>
-              )}
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom fade into the call for speakers, matching the hero treatment
+      {/* Bottom fade into the section below, matching the hero treatment
           on /buildingtogether. */}
       <div
         aria-hidden

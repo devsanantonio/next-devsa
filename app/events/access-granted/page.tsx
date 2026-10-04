@@ -1,12 +1,6 @@
 import { AccessGrantedHero } from "@/components/access-granted/2026/hero"
-import { CallSection } from "@/components/access-granted/2026/call-section"
-import { agDaysUntilClose, getAgCfsPhase } from "@/data/access-granted/2026"
-
-/**
- * Revalidate hourly so the call-for-speakers phase flips on its own after
- * AG_CFS_CLOSES without anyone shipping a deploy.
- */
-export const revalidate = 3600
+import { ConferenceLineup } from "@/components/events/conference-sections"
+import { getConference } from "@/data/conferences"
 
 /**
  * Access Granted on the DEVSA site.
@@ -27,12 +21,17 @@ export const revalidate = 3600
  * by" row itself, as next-sasw's band does.
  */
 export default function AccessGrantedPage() {
-  const phase = getAgCfsPhase()
+  const conference = getConference("access-granted")
 
   return (
     <main className="overflow-x-hidden bg-[#0a0a0a]" data-bg-type="dark">
-      <AccessGrantedHero phase={phase} daysLeft={agDaysUntilClose()} />
-      <CallSection phase={phase} />
+      <AccessGrantedHero />
+      {/* The afternoon it ran. This page used to defer to next-sasw for "the
+          official event page"; Access Granted is DEVSA's now, so the lineup
+          lives here. */}
+      {conference && (
+        <ConferenceLineup conference={conference} />
+      )}
     </main>
   )
 }

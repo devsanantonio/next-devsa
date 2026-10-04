@@ -32,10 +32,19 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/coworking-space`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${baseUrl}/events/pysanantonio`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/events/access-granted`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/events/morehumanthanhuman`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/events/the-model`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    // Two entries came out of this list because neither resolves.
+    //
+    // /events/morehumanthanhuman answers 200 with a noindex not-found page —
+    // the route came down with the conference and only the sitemap, an OG
+    // route and a speaker email still point at it. The conference itself is
+    // not being erased: it is in data/conferences.ts as history, its recap
+    // still plays on the homepage and in the archive on /events. What is gone
+    // is a URL we were asking Google to crawl into a dead end.
+    //
+    // /devsatv was a hard 404 and had been advertised at priority 0.8.
     { url: `${baseUrl}/events/pysanantonio/2025`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/events/zero-to-agent`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/devsatv`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/branding`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: `${baseUrl}/signin`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
