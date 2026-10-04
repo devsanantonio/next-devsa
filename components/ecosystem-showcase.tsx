@@ -179,6 +179,23 @@ function MarqueeRow({
   )
 }
 
+/**
+ * How many marks this wall shows, out of roughly forty.
+ *
+ * It used to render every community and every partner — the same complete set
+ * /buildingtogether renders. Two full directories meant somebody could scroll
+ * the whole wall here, press the button beneath it, and arrive at the same
+ * forty logos under a different headline, which made the second page feel like
+ * one that had failed to load anything new.
+ *
+ * So this one is a sample and /buildingtogether is the index. The numbers are
+ * chosen to fill the grid at every breakpoint — three, four and five columns
+ * all divide cleanly enough to avoid a ragged last row — while leaving the
+ * visit to the full list still worth making.
+ */
+const TEASER_COMMUNITIES = 12
+const TEASER_PARTNERS = 6
+
 export function EcosystemShowcase() {
   const [communities, setCommunities] = useState<LogoItem[]>([])
   const [partnerLogos, setPartnerLogos] = useState<LogoItem[]>([])
@@ -208,9 +225,19 @@ export function EcosystemShowcase() {
     fetchData()
   }, [])
 
+  const shownCommunities = useMemo(
+    () => communities.slice(0, TEASER_COMMUNITIES),
+    [communities]
+  )
+  const shownPartners = useMemo(
+    () => partnerLogos.slice(0, TEASER_PARTNERS),
+    [partnerLogos]
+  )
+  // The mobile marquee draws from the same sample, so the page does not show
+  // eighteen marks on a laptop and forty on a phone.
   const allLogos = useMemo(
-    () => [...communities, ...partnerLogos],
-    [communities, partnerLogos]
+    () => [...shownCommunities, ...shownPartners],
+    [shownCommunities, shownPartners]
   )
   const marqueeRows = useMemo(() => splitIntoRows(allLogos, 3), [allLogos])
 
@@ -243,7 +270,7 @@ export function EcosystemShowcase() {
           >
             <div className="space-y-4">
               <p className="text-sm md:text-base font-semibold text-gray-400 uppercase tracking-[0.2em]">
-                Partners &amp; Communities
+                Who&apos;s Building Here
               </p>
               <h2 className="text-balance font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.03em]">
                 The Orgs{" "}
@@ -259,13 +286,14 @@ export function EcosystemShowcase() {
                 From grassroots meetups to enterprise partners — these are the
                 groups shaping San Antonio&apos;s{" "}
                 <strong className="font-semibold text-gray-900">
-                  tech ecosystem
+                  tech scene
                 </strong>
                 .
               </p>
               <p className="text-base text-gray-500 leading-relaxed">
-                Tap any logo to learn more about their mission and upcoming
-                events.
+                A sample of them below. Tap any logo for that group&apos;s
+                mission and upcoming events, or see every one of them on
+                Building Together.
               </p>
             </div>
 
@@ -298,8 +326,8 @@ export function EcosystemShowcase() {
               <>
                 {/* Tablet & desktop: uniform grids (communities, then partners) */}
                 <div className="hidden md:block space-y-8">
-                  <LogoGroup logos={communities} />
-                  <LogoGroup logos={partnerLogos} />
+                  <LogoGroup logos={shownCommunities} />
+                  <LogoGroup logos={shownPartners} />
                 </div>
 
                 {/* Mobile: full-bleed auto-scrolling marquee (pause on touch so links stay tappable) */}
