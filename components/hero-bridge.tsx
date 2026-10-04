@@ -156,7 +156,7 @@ export function HeroBridge() {
       {/* Headline — below the images on mobile; leads the left column on desktop */}
       <div className="order-2 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 md:pt-0">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
@@ -212,7 +212,7 @@ export function HeroBridge() {
       {/* Body copy + CTAs — after the images on mobile; continues the left column on desktop */}
       <div className="order-3 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 pb-20 md:pt-8 md:pb-0">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="space-y-7 md:space-y-8"
@@ -233,20 +233,29 @@ export function HeroBridge() {
             </p>
           </div>
 
-          {/* CTA Buttons — full-width on mobile, inline on desktop */}
+          {/* CTA Buttons — full-width on mobile, inline on desktop.
+
+              The calendar is the filled button. It used to be second, behind
+              "Explore Our Platform", which inverted the site's own ranking:
+              the calendar is what every other entry point leads with, it is
+              the concrete thing a first-time visitor came for, and it is the
+              page this site is most used for. A label naming the destination
+              also beats one naming the abstraction — "Explore Our Platform"
+              described no page, and was not even what /buildingtogether is
+              called anywhere else in the nav. */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
             <Link
-              href="/buildingtogether"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:py-3 rounded-lg bg-white text-gray-900 font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
+              href="/events"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-lg bg-white text-gray-900 font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-gray-100"
             >
-              Explore Our Platform
+              Community Calendar
+              <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
             <Link
-              href="/events"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/30"
+              href="/buildingtogether"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-semibold sm:font-medium text-sm transition-colors duration-200 hover:bg-white/10 hover:border-white/30"
             >
-              Events Calendar
-              <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              Partners &amp; Communities
             </Link>
           </div>
         </motion.div>

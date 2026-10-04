@@ -5,9 +5,8 @@ import { Play, ArrowUpRight } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { MORE_HUMAN_RECAP_VIDEO } from "@/data/events"
 
-const VIDEO_URL =
-  "https://devsa-assets.s3.us-east-2.amazonaws.com/morehuman/DevSA_MoreHuman2026_0313B.mp4"
 // Resized 16:9 poster in public/photos/ — the S3 original is a 2180x1454 camera
 // frame, ~40x the bytes for a poster that never renders above ~1100px.
 const VIDEO_POSTER = "/photos/about-poster.webp"
@@ -26,7 +25,7 @@ export function AboutDevsa() {
             About and introduces "who we are" before any framing copy. Founder
             quote overlays on desktop; sits below on mobile. */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.1 }}
@@ -41,7 +40,7 @@ export function AboutDevsa() {
               poster={VIDEO_POSTER}
               className="absolute inset-0 w-full h-full"
             >
-              <source src={VIDEO_URL} type="video/mp4" />
+              <source src={MORE_HUMAN_RECAP_VIDEO} type="video/mp4" />
             </video>
           ) : (
             <button
@@ -97,7 +96,7 @@ export function AboutDevsa() {
         {/* Mission — the video earned the emotion; now the framing copy lands.
             The 501(c)(3) credential lives in the lead paragraph. */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -111,11 +110,12 @@ export function AboutDevsa() {
             </h2>
             <p className="max-w-3xl text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
               DEVSA is the 501(c)(3) bridge across San Antonio&apos;s tech
-              ecosystem. Through our platform we connect{" "}
+              ecosystem. We connect{" "}
               <strong className="font-semibold text-gray-900">
                 20+ grassroots groups
               </strong>
-              , local builders, and industry partners into one shared ecosystem.
+              , local builders, and industry partners through one shared
+              calendar and one public directory.
             </p>
           </div>
 

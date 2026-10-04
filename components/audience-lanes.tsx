@@ -26,7 +26,7 @@ const lanes: Lane[] = [
     headlineLead: "Find Your ",
     headlineItalic: "Community",
     headlineTail: ".",
-    body: "One platform, one source of truth — connecting you to 20+ specialty community groups and the partners behind them. It's the single channel to find your people, build your future, and grow your network.",
+    body: "Every meetup, workshop and conference in one calendar — 20+ specialty groups and the partners behind them. The one place to find your people, build your future, and grow your network.",
     cta: "Build Your Network",
     href: "/events",
     accent: "text-[#00b2a9]",
@@ -38,7 +38,7 @@ const lanes: Lane[] = [
     headlineLead: "Grow Your ",
     headlineItalic: "Group",
     headlineTail: ".",
-    body: "Get organizer access to our admin portal: publish to the community calendar, manage event registration, and own your attendee data — all on the platform built for San Antonio's builders, organizers, and partners.",
+    body: "Get organizer access to the admin portal: publish to the community calendar, manage event registration, and export your RSVPs. Your group keeps its own name, its own people and its own data.",
     cta: "Start your group",
     href: "/signin",
     accent: "text-[#ff8200]",
@@ -106,7 +106,7 @@ function LaneCard({ lane, index }: { lane: Lane; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
@@ -133,7 +133,7 @@ export function AudienceLanes() {
     >
       <div className="relative z-10 page-shell">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
