@@ -27,6 +27,19 @@ function PyTexasBackground() {
 }
 
 export function FeaturedDevsaEvent() {
+  /* The empty state.
+     
+     The subhead used to read "Join us at this upcoming event to connect with
+     the community and DEVSA team." directly above a box saying there was no
+     upcoming event — written for the populated case and never adjusted for
+     this one. It went unnoticed because upcomingDevsaEvent was non-null for
+     as long as the component was mounted anywhere.
+     
+     It also dead-ended on "Check back later for new events!", which is the
+     copy community-events-section's empty state was rewritten away from: the
+     moment a visitor is most likely to leave is the worst moment to offer
+     them nothing. DEVSA having no conference booked says nothing about the
+     twenty other groups, so this points at the calendar. */
   if (!upcomingDevsaEvent) {
     return (
       <section className="relative bg-[#0a0a0a] overflow-hidden" data-bg-type="dark">
@@ -37,15 +50,25 @@ export function FeaturedDevsaEvent() {
               Featured <span className="text-[#306998]">Event</span>
             </h2>
             <p className="mt-4 text-base font-normal leading-7 text-[#737373] sm:text-lg">
-              Join us at this upcoming event to connect with the community and DEVSA team.
+              DEVSA runs conferences and workshops through the year. There is
+              nothing on ours at the moment.
             </p>
           </div>
-          <div className="flex items-center justify-center border border-[#333] bg-[#111]/80 backdrop-blur-sm p-16">
+          <div className="flex items-center justify-center border border-[#333] bg-[#111]/80 backdrop-blur-sm p-12 sm:p-16">
             <div className="text-center">
-              <p className="text-base font-medium text-[#737373]">
-                No upcoming event available at the moment.
+              <p className="text-base font-medium text-[#a3a3a3]">
+                No DEVSA event scheduled right now.
               </p>
-              <p className="mt-1 text-sm text-[#525252]">Check back later for new events!</p>
+              <p className="mx-auto mt-1.5 max-w-sm text-sm leading-[1.6] text-[#737373]">
+                The community calendar has every local group&apos;s events —
+                subscribe there and the next one finds you.
+              </p>
+              <Link
+                href="/events"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#306998] px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#28567d]"
+              >
+                Community Calendar
+              </Link>
             </div>
           </div>
         </div>

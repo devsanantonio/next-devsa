@@ -33,16 +33,22 @@ export interface CommunityEvent extends BaseEvent {
 
 export type AnyEvent = DevsaEvent | OnDemandEvent | CommunityEvent;
 
-export const upcomingDevsaEvent: DevsaEvent | null = {
-  id: "pysanantonio-2026",
-  type: "devsa",
-  title: "PySanAntonio II — San Antonio's Python Conference",
-  date: "2026-10-02T18:00:00.000Z", // 1:00 PM CDT
-  location: "Geekdom, 3rd Floor — San Antonio, TX",
-  description: "San Antonio's Python conference returns for a second year — an afternoon of learning, networking, and community building with the people already doing the work here. Led by Alamo Python, backed by the PyTexas Foundation, hosted by DEVSA inside SA Startup + Tech Week. The call for speakers is open through September 25.",
-  url: "/events/pysanantonio",
-  video: "https://devsa-assets.s3.us-east-2.amazonaws.com/pysa/pysa2.mp4",
-};
+/**
+ * The one DEVSA event FeaturedDevsaEvent promotes, or null when there is none.
+ *
+ * Null right now. It held PySanAntonio II, which ran on 2 October 2026 as the
+ * closing day of SA Startup + Tech Week, and its description still advertised
+ * a call for speakers that had closed on 25 September. Nothing renders
+ * FeaturedDevsaEvent at the moment, so none of that was visible — which is
+ * exactly why it rotted. A stale record behind an unmounted component is worse
+ * than an empty one, because it comes back the moment someone remounts it and
+ * looks like current information.
+ *
+ * Null is a supported state and the component has a branch for it, so leaving
+ * this empty is correct until there is a real next event. Set it, and the
+ * component promotes it; there is nothing else to wire up.
+ */
+export const upcomingDevsaEvent: DevsaEvent | null = null;
 
 export const featuredOnDemandEvent: OnDemandEvent | null = {
   id: "pysanantonio-2025",
