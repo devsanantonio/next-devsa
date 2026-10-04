@@ -18,8 +18,14 @@ type Lane = {
   imageAlt: string
 }
 
-// Placeholder imagery — real DevSA event photos standing in until purpose-shot
-// portraits are available.
+// Each lane's photo is matched to the audience it addresses rather than being
+// generic event imagery:
+//
+// - Organizers: the people who run a group, stood together at their own event.
+// - Partners: a panel — the institutional, on-the-record face of the ecosystem.
+//
+// Builders is still a stand-in. It wants people mid-build — laptops open,
+// heads down — rather than another audience looking forward.
 const lanes: Lane[] = [
   {
     eyebrow: "For Builders",
@@ -42,8 +48,8 @@ const lanes: Lane[] = [
     cta: "Start your group",
     href: "/signin",
     accent: "text-[#ff8200]",
-    image: "/photos/lane-gdg.webp",
-    imageAlt: "An organizer leading a DevSA workshop",
+    image: "/photos/lane-aws.webp",
+    imageAlt: "Organizers from the AWS User Group San Antonio at their meetup",
   },
   {
     eyebrow: "For Partners",
@@ -54,8 +60,8 @@ const lanes: Lane[] = [
     cta: "Become a partner",
     href: "/buildingtogether",
     accent: "text-[#ef426f]",
-    image: "/photos/lane-morehuman.webp",
-    imageAlt: "Partners and community members at a DevSA conference",
+    image: "/photos/lane-techbloc.webp",
+    imageAlt: "Panelists speaking at a Tech Bloc event in San Antonio",
   },
 ]
 
