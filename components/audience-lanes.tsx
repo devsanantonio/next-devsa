@@ -23,9 +23,14 @@ type Lane = {
 //
 // - Organizers: the people who run a group, stood together at their own event.
 // - Partners: a panel — the institutional, on-the-record face of the ecosystem.
+// - Builders: two people talking over open laptops. Chosen over the wider
+//   frames in the same set because the pair fills it; the alternates put their
+//   subjects at opposite edges with a stranger's back between them, which
+//   reads as a room rather than a conversation.
 //
-// Builders is still a stand-in. It wants people mid-build — laptops open,
-// heads down — rather than another audience looking forward.
+// All three are 1000x625 to match the aspect-16/10 slot, cropped so faces sit
+// in the upper two thirds — the card's bottom scrim darkens whatever is low in
+// the frame.
 const lanes: Lane[] = [
   {
     eyebrow: "For Builders",
@@ -36,8 +41,8 @@ const lanes: Lane[] = [
     cta: "Build Your Network",
     href: "/events",
     accent: "text-[#00b2a9]",
-    image: "/photos/lane-pysa.webp",
-    imageAlt: "Builders connecting at a DevSA community event",
+    image: "/photos/lane-morehuman.webp",
+    imageAlt: "Two builders talking over open laptops at More Human Than Human",
   },
   {
     eyebrow: "For Organizers",
