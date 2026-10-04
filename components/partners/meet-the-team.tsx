@@ -2,34 +2,16 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
+import { boardMembers } from "@/data/board"
 
-const boardMembers = [
-  {
-    name: "Jesse Hernandez",
-    role: "Founder & Executive Director",
-    image:
-      "https://devsa-assets.s3.us-east-2.amazonaws.com/coworking-space/admin-jesse.jpeg",
-    linkedin: "https://www.linkedin.com/in/jessebubble/",
-  },
-  {
-    name: "Zaquariah Holland",
-    role: "Community Director ",
-    image:
-      "https://devsa-assets.s3.us-east-2.amazonaws.com/admin-holland.png",
-    linkedin: "https://www.linkedin.com/in/zaquariah-holland/",
-  },
-  {
-    name: "Ileana Gonzalez",
-    role: "Board Member",
-    image:
-      "https://devsa-assets.s3.us-east-2.amazonaws.com/ileana.webp",
-    linkedin: "https://www.linkedin.com/in/ileanagonzxlez/",
-  },
-]
 
 export function MeetTheTeam() {
   return (
-    <section className="bg-black border-b border-gray-800" data-bg-type="dark">
+    <section
+      id="team"
+      className="scroll-mt-20 bg-black border-b border-gray-800"
+      data-bg-type="dark"
+    >
       <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
         {/* Intro text */}
         <motion.div

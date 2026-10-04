@@ -6,6 +6,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { MORE_HUMAN_RECAP_VIDEO } from "@/data/events"
+import { boardMembers } from "@/data/board"
 
 // Resized 16:9 poster in public/photos/ — the S3 original is a 2180x1454 camera
 // frame, ~40x the bytes for a poster that never renders above ~1100px.
@@ -147,6 +148,47 @@ export function AboutDevsa() {
               Support DEVSA
               <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
+          </div>
+
+          {/* Who is accountable, directly under the ask.
+
+              This page asks a stranger for money one button up and, until
+              this, named nobody. The founder quote above is one voice; a
+              donation is a question about governance. /buildingtogether has
+              carried the board all along, which is the wrong way round — the
+              people who need the credential most are the ones who have not
+              clicked through yet.
+
+              A strip, not a second copy of that section: three faces and a
+              way through, so the homepage borrows the credibility without
+              duplicating the page that holds it. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pt-6">
+            <div className="flex -space-x-2.5">
+              {boardMembers.map((member) => (
+                <span
+                  key={member.name}
+                  className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-white"
+                >
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </span>
+              ))}
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              A volunteer board governs DEVSA and every program it funds.{" "}
+              <Link
+                href="/buildingtogether#team"
+                className="font-medium text-gray-900 underline underline-offset-2 transition-colors hover:text-gray-700"
+              >
+                Meet them
+              </Link>
+              .
+            </p>
           </div>
         </motion.div>
       </div>
