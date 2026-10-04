@@ -23,10 +23,11 @@ type Lane = {
 //
 // - Organizers: the people who run a group, stood together at their own event.
 // - Partners: a panel — the institutional, on-the-record face of the ecosystem.
-// - Builders: two people talking over open laptops. Chosen over the wider
-//   frames in the same set because the pair fills it; the alternates put their
-//   subjects at opposite edges with a stranger's back between them, which
-//   reads as a room rather than a conversation.
+// - Builders: someone laughing mid-conversation with a laptop open beside
+//   them. It replaced a wider, cooler frame of two people at a distance. At
+//   the ~380px this renders, warmth and a face carry further than a correct
+//   but static tableau, and the laptop keeps the slot saying "build" rather
+//   than only "meet".
 //
 // All three are 1000x625 to match the aspect-16/10 slot, cropped so faces sit
 // in the upper two thirds — the card's bottom scrim darkens whatever is low in
@@ -41,8 +42,8 @@ const lanes: Lane[] = [
     cta: "Build Your Network",
     href: "/events",
     accent: "text-[#00b2a9]",
-    image: "/photos/lane-morehuman.webp",
-    imageAlt: "Two builders talking over open laptops at More Human Than Human",
+    image: "/photos/lane-shebuilds.webp",
+    imageAlt: "A builder laughing mid-conversation beside an open laptop at SheBuilds",
   },
   {
     eyebrow: "For Organizers",
