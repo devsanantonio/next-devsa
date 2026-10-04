@@ -21,7 +21,7 @@ export function HeroCommunities() {
           {/* Full-bleed community photo with the origin question overlaid —
               the emotional close, given real visual weight */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
@@ -50,7 +50,7 @@ export function HeroCommunities() {
           <div className="mt-12 md:mt-16 grid gap-10 md:gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
             {/* The answer */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -71,7 +71,7 @@ export function HeroCommunities() {
 
             {/* Stay close — inward CTA + social */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.15 }}

@@ -235,7 +235,7 @@ export function EcosystemShowcase() {
         <div className="lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-12 xl:gap-16">
           {/* Text rail — leads on mobile/tablet; sticky left column on desktop */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
@@ -284,7 +284,7 @@ export function EcosystemShowcase() {
 
           {/* Logos — bottom on mobile/tablet; right column on desktop */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15 }}
