@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import type { Partner } from "@/lib/partners"
-import { logoOnLight } from "@/lib/logo-invert"
+import { logoOnLight, logoPlateOnLight } from "@/lib/logo-invert"
 import { ArrowLeft, ExternalLink, Globe } from "lucide-react"
 import { motion } from "motion/react"
 
@@ -70,7 +70,7 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
                   src={partner.logo}
                   alt={partner.name}
                   fill
-                  className={`object-contain ${logoOnLight(partner)}`}
+                  className={`object-contain ${logoOnLight(partner)} ${logoPlateOnLight(partner)}`}
                   sizes="112px"
                 />
               </div>

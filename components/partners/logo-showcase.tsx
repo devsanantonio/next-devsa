@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "motion/react"
-import { logoOnLight } from "@/lib/logo-invert"
+import { logoOnLight, logoPlateOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
@@ -96,7 +96,7 @@ function LogoTile({ logo }: { logo: LogoItem }) {
             fill
             unoptimized
             sizes="96px"
-            className={`object-contain ${logoOnLight(logo)}`}
+            className={`object-contain ${logoOnLight(logo)} ${logoPlateOnLight(logo)}`}
           />
         </div>
         {/* min-h reserves two lines. Without it a one-line name leaves the row
@@ -122,7 +122,7 @@ function MarqueeChip({ logo }: { logo: LogoItem }) {
             fill
             unoptimized
             sizes="24px"
-            className={`object-contain ${logoOnLight(logo)}`}
+            className={`object-contain ${logoOnLight(logo)} ${logoPlateOnLight(logo)}`}
           />
         </div>
         <span className="whitespace-nowrap text-xs font-medium text-gray-700">

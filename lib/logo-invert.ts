@@ -106,3 +106,66 @@ export function logoOnLight(logo: {
 }): string {
   return isLightArtwork(logo) ? "invert" : ""
 }
+
+/**
+ * Marks that are multi-tonal and only legible on a dark ground.
+ *
+ * The third case, and the one neither helper above can serve. `invert` works
+ * on a mark that is uniformly light; `brightness-0 invert` works on one that
+ * is uniformly dark. Both are wrong for a mark carrying two or three tones at
+ * once, because a filter cannot tell the part that needs help from the part
+ * that is already fine.
+ *
+ * Measured against the surfaces they actually render on — white, and #0a0a0a:
+ *
+ * - **Linux San Antonio** is three marks in one lockup. "LINUX" is #f0f0f0,
+ *   which is 1.14:1 on white — invisible, which is how this was noticed.
+ *   "SAN ANTONIO" is gold at 1.71:1, also failing. The penguin is black and
+ *   white and reads on anything. Inverting would fix the wordmark and ruin the
+ *   penguin and the gold.
+ * - **Alamo Agents** is gold #c09048 line art at 2.87:1 on white, under the
+ *   3:1 floor WCAG 1.4.11 sets for graphical objects, and 6.91:1 on #0a0a0a.
+ *   One colour, but no filter raises contrast without changing the hue the
+ *   group chose.
+ *
+ * A ground, then, rather than a filter: the artwork is left exactly as its
+ * owner drew it and is given the background it was drawn for.
+ *
+ * Dark plates used to sit under every mark on the detail pages and were
+ * removed, which is what the note at the top of this file refers to. This is
+ * not that returning. That plate was unconditional and so was decoration;
+ * this one is on the two records that measurably need it.
+ */
+const DARK_GROUND_PARTNER_IDS: string[] = []
+
+/** Matched as a lowercase substring, same as LIGHT_COMMUNITY_NAMES. */
+const DARK_GROUND_COMMUNITY_NAMES = ["alamo agents", "linux san antonio"]
+
+/**
+ * Plate classes for a light surface, or `""`.
+ *
+ * Applied to the `<img>` itself rather than a wrapper, so every caller stays a
+ * className swap. `object-fit` resolves inside the content box and a
+ * background paints out to the padding box, so padding insets the artwork and
+ * the colour fills the slot behind it — a plate, without restructuring six
+ * call sites around an extra element.
+ *
+ * Nothing here needs a counterpart for dark surfaces: these marks were drawn
+ * for a dark ground and already have one there.
+ */
+export function logoPlateOnLight(logo: {
+  id?: string
+  name?: string
+  type?: "community" | "partner"
+}): string {
+  const byId = !!logo.id && DARK_GROUND_PARTNER_IDS.includes(logo.id)
+  const name = (logo.name || "").toLowerCase()
+  const byName = DARK_GROUND_COMMUNITY_NAMES.some((n) => name.includes(n))
+
+  const needsGround =
+    logo.type === "partner" ? byId : logo.type === "community" ? byName : byId || byName
+
+  // A mark cannot be both uniformly light and multi-tonal. If one ever appears
+  // in both lists the plate wins, because inverting it was already wrong.
+  return needsGround ? "rounded-md bg-[#0a0a0a] p-1" : ""
+}

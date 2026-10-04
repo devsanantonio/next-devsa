@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "motion/react"
-import { logoOnLight } from "@/lib/logo-invert"
+import { logoOnLight, logoPlateOnLight } from "@/lib/logo-invert"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -215,7 +215,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                   src={community.logo}
                   alt={community.name}
                   fill
-                  className={`object-contain ${logoOnLight(community)}`}
+                  className={`object-contain ${logoOnLight(community)} ${logoPlateOnLight(community)}`}
                   sizes="128px"
                 />
               </div>
