@@ -862,8 +862,13 @@ export default function AdminPage() {
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
-          brand: editingEvent.brand || "",
-          detailsUrl: editingEvent.detailsUrl || "",
+          /* Both are meaningless on an event DEVSA did not convene, and their
+             inputs only exist while the box is ticked. Deriving them from the
+             flag here rather than trusting the field state means the record
+             cannot end up branded-but-unofficial by some path the form grows
+             later — the checkbox is the single answer to the question. */
+          brand: editingEvent.isOfficial ? editingEvent.brand || "" : "",
+          detailsUrl: editingEvent.isOfficial ? editingEvent.detailsUrl || "" : "",
           ...(editEventUseCustomCommunity && editEventCustomCommunityName ? { communityName: editEventCustomCommunityName } : {}),
           organizerEmail: adminEmail,
         }),
@@ -3243,7 +3248,20 @@ export default function AdminPage() {
                           <input
                             type="checkbox"
                             checked={editingEvent.isOfficial || false}
-                            onChange={(e) => setEditingEvent({ ...editingEvent, isOfficial: e.target.checked })}
+                            onChange={(e) => {
+                              const isOfficial = e.target.checked
+                              /* Clearing both dependent fields on the way out.
+                                 They unmount with the checkbox, so a brand or
+                                 an external link set first and unchecked after
+                                 would keep saving — branding the card and
+                                 redirecting View Details with nothing on screen
+                                 to show it, and no way to undo it. */
+                              setEditingEvent(
+                                isOfficial
+                                  ? { ...editingEvent, isOfficial }
+                                  : { ...editingEvent, isOfficial, brand: "", detailsUrl: "" }
+                              )
+                            }}
                             className="mt-0.5 accent-[#ef426f]"
                           />
                           <div>
@@ -3256,45 +3274,60 @@ export default function AdminPage() {
                         </label>
 
 
-                        <div className="mt-3">
-                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                            Activation branding
-                          </label>
-                          <select
-                            value={editingEvent.brand || ""}
-                            onChange={(e) => setEditingEvent({ ...editingEvent, brand: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-[#ef426f]"
-                          >
-                            <option value="">None &mdash; standard card</option>
-                            {EVENT_BRAND_KEYS.map((k) => (
-                              <option key={k} value={k}>
-                                {EVENT_BRANDS[k].label}
-                              </option>
-                            ))}
-                          </select>
-                          <p className="mt-2 text-xs text-neutral-500">
-                            Only for the Startup + Tech Week activations that have a design
-                            system of their own. Gives the card that activation&rsquo;s lockup,
-                            colour and ground.
-                          </p>
-                        </div>
+                        {/* Both of these only mean anything on an event DEVSA
+                            convened, so they stay hidden until the box above is
+                            ticked rather than sitting on every form. Listing
+                            somebody else's meetup is the common case by a wide
+                            margin, and an Activation branding select offering
+                            The Model on a Byte Night entry invites a wrong
+                            answer to a question that was never asked.
 
-                        <div className="mt-3">
-                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                            External details link
-                          </label>
-                          <input
-                            type="url"
-                            placeholder="https://www.sasw.co/schedule/the-model"
-                            value={editingEvent.detailsUrl || ""}
-                            onChange={(e) => setEditingEvent({ ...editingEvent, detailsUrl: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-[#ef426f]"
-                          />
-                          <p className="mt-2 text-xs text-neutral-500">
-                            Sends &ldquo;View Details&rdquo; here instead of to this event&rsquo;s page on
-                            devsa.community, in a new tab. Leave empty for the normal behaviour.
-                          </p>
-                        </div>
+                            Indented against the checkbox's own magenta so the
+                            reveal reads as belonging to it. */}
+                        {editingEvent.isOfficial && (
+                          <div className="mt-3 space-y-3 border-l-2 border-[#ef426f]/30 pl-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                                Activation branding
+                              </label>
+                              <select
+                                value={editingEvent.brand || ""}
+                                onChange={(e) => setEditingEvent({ ...editingEvent, brand: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-[#ef426f]"
+                              >
+                                <option value="">None &mdash; standard card</option>
+                                {EVENT_BRAND_KEYS.map((k) => (
+                                  <option key={k} value={k}>
+                                    {EVENT_BRANDS[k].label}
+                                  </option>
+                                ))}
+                              </select>
+                              <p className="mt-2 text-xs text-neutral-500">
+                                Only for the activations that have a design system of their
+                                own. Gives the card that activation&rsquo;s lockup, colour
+                                and ground.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                                External details link
+                              </label>
+                              <input
+                                type="url"
+                                placeholder="https://example.com/schedule/the-model"
+                                value={editingEvent.detailsUrl || ""}
+                                onChange={(e) => setEditingEvent({ ...editingEvent, detailsUrl: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-[#ef426f]"
+                              />
+                              <p className="mt-2 text-xs text-neutral-500">
+                                Sends &ldquo;View Details&rdquo; here instead of to this event&rsquo;s
+                                page on devsa.community, in a new tab. Leave empty for the
+                                normal behaviour.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
