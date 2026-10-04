@@ -1,6 +1,6 @@
 /**
  * The three Startup + Tech Week activations DEVSA convenes, each of which
- * arrives with a design system rather than a colour.
+ * arrives with a design system rather than a color.
  *
  * Values are taken from next-sasw — lib/the-model.ts, lib/access-granted.ts
  * and lib/pysa.ts — so the same activation cannot read one way on sasw.co and
@@ -8,12 +8,12 @@
  * calendar the note says so; nothing is changed silently.
  *
  * Keyed by name and set per event. An earlier pass drove this off `isOfficial`
- * plus a colour picker, which meant marking any event official dressed it in
+ * plus a color picker, which meant marking any event official dressed it in
  * The Model's wordmark — an AWS pentesting session included. "DEVSA convened
  * this" and "this is The Model" are different claims and need different fields.
  *
  * A brand is deliberately not a Firestore record. These are three fixed
- * identities with bespoke lockups, not content an organiser edits, and the
+ * identities with bespoke lockups, not content an organizer edits, and the
  * lockups are markup rather than data.
  */
 
@@ -23,7 +23,7 @@ export interface EventBrand {
   key: EventBrandKey
   /** Shown in the admin's brand picker. */
   label: string
-  /** The one colour the brand carries. */
+  /** The one color the brand carries. */
   accent: string
   /** Type set *on* the accent — knocked out, so it has to be the dark value. */
   onAccent: string

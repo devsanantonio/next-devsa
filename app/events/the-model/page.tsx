@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { TheModelHero } from "@/components/the-model/2026/hero"
+import { ConferenceBackLink } from "@/components/events/conference-back-link"
 import {
   ConferenceLineup,
   ConferenceRoom,
@@ -12,9 +13,9 @@ import { MODEL_INK, MODEL_LAVENDER, THE_MODEL } from "@/data/the-model/2026"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
-  title: "The Model — Creatives, Founders and Builders | DEVSA",
+  title: "The Model — Creators, Creatives, Founders and Builders | DEVSA",
   description:
-    "The Model is DEVSA's creative-and-code afternoon: San Antonio's creative economy and its builders in one room, showing each other what comes next. Held at Geekdom.",
+    "The Model is the DEVSA conference that puts creators, creatives, founders and builders in one room for an afternoon of showing each other what comes next. Held at Geekdom in San Antonio.",
   alternates: { canonical: "/events/the-model" },
   openGraph: {
     title: "The Model — A DEVSA Conference",
@@ -28,10 +29,9 @@ export const metadata: Metadata = {
 /**
  * The Model on the DEVSA site.
  *
- * It had no page here at all until now, which was the wrong way round: of the
- * three Startup + Tech Week activations, the two with the least standing had
- * routes, components and data files, and the one taking the flagship slot had
- * a colour in a registry and nothing else.
+ * It had no page here at all until now, which was the wrong way round: two of
+ * the three Startup + Tech Week activations had routes, components and data
+ * files, and this one had a color in a registry and nothing else.
  *
  * Deliberately a standing page rather than a call-for-speakers page. The
  * Access Granted route exists to run its open calls and says so; this one
@@ -48,6 +48,7 @@ export default function TheModelPage() {
       style={{ backgroundColor: MODEL_INK }}
       data-bg-type="dark"
     >
+      <ConferenceBackLink accent={MODEL_LAVENDER} />
       <TheModelHero />
       {conference && (
         <>
@@ -56,7 +57,7 @@ export default function TheModelPage() {
         </>
       )}
 
-      {/* The "It's coming back" block that sat here is gone at the organisers'
+      {/* The "It's coming back" block that sat here is gone at the organizers'
           request. The two links stay: the reel section above ends on a
           "Powered by" row, and a page with no way onward is a dead end. */}
       <section className="page-shell pb-20 md:pb-28">

@@ -3,8 +3,12 @@
  *
  * Ported from the sasw-geekdom/next-sasw repo, which carried the brand while
  * the activation ran inside Startup + Tech Week. It is an official DEVSA event
- * now and takes the flagship slot More Human Than Human held, so the facts
- * live here rather than being read across repo boundaries.
+ * now, so the facts live here rather than being read across repo boundaries.
+ *
+ * It does not replace More Human Than Human, which an earlier version of this
+ * note said it did. The two run as DEVSA's pair of AI conferences, pointed at
+ * different industries, verticals and workflows — this one at the creative
+ * side, More Human at engineering, security and the people leading the change.
  *
  * Only what this site needs. next-sasw's file also drives a hero graph, a
  * code-selection animation and a tool/model comparison table — all of which
@@ -72,14 +76,14 @@ export interface ModelOrganizer {
  * Marks, not names. The first version here rendered three text links on the
  * reasoning that two of the three had no logo checked in — which was simply
  * wrong: both are live partner records with artwork, and Access Granted's
- * hero has been rendering all six of its organisers as marks the whole time.
+ * hero has been rendering all six of its organizers as marks the whole time.
  * A row of real lockups is what says "coalition"; a row of names says
  * "footnote".
  *
  * Copied local rather than hotlinked from the Blob store, matching
  * public/access-granted/orgs/. Neither needs inverting on this near-black
  * ground: Creative Futures is light artwork and Tech Bloc is red and white,
- * and colour reads on either ground — see lib/logo-invert.ts for why that
+ * and color reads on either ground — see lib/logo-invert.ts for why that
  * distinction is the one that matters.
  *
  * Linked to the partner pages on this site rather than out to their own. The

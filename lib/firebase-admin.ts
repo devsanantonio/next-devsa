@@ -186,7 +186,7 @@ export interface VolunteerSignup {
   org?: string | null;
   /**
    * What they put their hand up for, when the event asks. Optional: Access
-   * Granted has no role picker — a signup there means "I'm in" and organisers
+   * Granted has no role picker — a signup there means "I'm in" and organizers
    * assign work by reaching out — so this is null for those records.
    */
   role?: string | null;
@@ -284,7 +284,7 @@ export interface Event {
    * wrong. DEVSA is not one of the communities it indexes, so a `devsa`
    * community record would put it on the wall alongside the groups it exists
    * to serve. And it is not a partner of itself, so it cannot be inferred from
-   * `partnerId`. Neither of those is a thing an organiser could get right by
+   * `partnerId`. Neither of those is a thing an organizer could get right by
    * accident, which is what makes it worth its own field.
    *
    * Drives the spotlight treatment on the calendar. Absent on every event that
@@ -294,8 +294,8 @@ export interface Event {
   /**
    * An activation with a design system of its own — see lib/event-brands.ts.
    *
-   * Keyed by name rather than carrying colours, because these are identities
-   * and not palettes. An earlier pass offered a colour picker on every official
+   * Keyed by name rather than carrying colors, because these are identities
+   * and not palettes. An earlier pass offered a color picker on every official
    * event, which was the wrong question twice over: it asked for a hex where
    * the answer is a brand, and being tied to `isOfficial` it dressed an AWS
    * pentesting session in The Model's wordmark.

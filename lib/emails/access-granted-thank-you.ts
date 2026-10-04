@@ -42,7 +42,7 @@ export function AccessGrantedThankYouEmail({
     .join('');
 
   const volunteerLine = alsoVolunteering
-    ? `<p style="margin: 14px 0 0 0; font-size: 13px; color: #a3a3a3; line-height: 1.6;">You also put your hand up to help run the room &mdash; noted, and thank you. One of the organisers will be in touch about that separately, whatever happens with the talk.</p>`
+    ? `<p style="margin: 14px 0 0 0; font-size: 13px; color: #a3a3a3; line-height: 1.6;">You also put your hand up to help run the room &mdash; noted, and thank you. One of the organizers will be in touch about that separately, whatever happens with the talk.</p>`
     : '';
 
   const firstTimerLine = firstTimeSpeaker

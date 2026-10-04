@@ -120,7 +120,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Fallback metadata if event not found. noindex for the same reason
   // /buildingtogether/[slug] carries it: the page below calls notFound(), but
   // `notFound()` after streaming has begun cannot take back a 200, so the
-  // defence against a soft 404 being indexed is the robots directive.
+  // defense against a soft 404 being indexed is the robots directive.
   const fallbackTitle = "Community Event | DEVSA"
   const fallbackDescription = "Join the San Antonio tech community. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem."
   

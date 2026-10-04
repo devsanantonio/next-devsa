@@ -51,10 +51,10 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
                 No tinted ground. This carried `bg-[#ef426f]/5`, a pink wash the
                 community and event pages have no equivalent of — so the three
                 detail pages, which are otherwise the same card on the same
-                grey, opened differently depending on which kind of record you
+                gray, opened differently depending on which kind of record you
                 had landed on. The rose still marks the "Partner" eyebrow and
                 the link below, which is enough for it to read as the accent
-                without colouring a whole panel. */}
+                without coloring a whole panel. */}
             <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border-b border-slate-100">
               {/* No plate. This sat on a fixed black tile, which assumed every
                   logo was light artwork — so a black wordmark uploaded from the

@@ -42,10 +42,10 @@ import { BoltShader } from "@/components/sastw/bolt-shader"
 
 /**
  * Buttons, in SASTW magenta rather than PySanAntonio's yellow or Access
- * Granted's green — this band is the week's, so it wears the week's colour.
+ * Granted's green — this band is the week's, so it wears the week's color.
  *
  * Same shape as those two sets (rounded-lg, px-6 py-3.5 sm:py-3, text-sm),
- * because the shape is the site's and only the colour is the event's. The
+ * because the shape is the site's and only the color is the event's. The
  * magenta is written as a literal because Tailwind scans this file as text at
  * build time and cannot see through the imported constant — keep it in step
  * with SASTW_MAGENTA in data/sastw/2026.ts by hand.
@@ -53,7 +53,7 @@ import { BoltShader } from "@/components/sastw/bolt-shader"
  * Black label on the fill, not white. #ff32a0 carries white at only 3.4:1;
  * against #0a0a0a it is 6.2:1. next-sasw ships the white-label version as a
  * known, documented exception — there is no reason to inherit the exception
- * along with the colour.
+ * along with the color.
  */
 const base =
   "group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 sm:py-3 text-sm font-semibold sm:font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
@@ -74,12 +74,12 @@ const META = [
  * Each activation as its own brand, at one optical size.
  *
  * Not a house treatment with three titles in it. Two of these three brands are
- * a font and a colour rather than a file — Access Granted splits its first word
+ * a font and a color rather than a file — Access Granted splits its first word
  * into the green, The Model catches its second in a selection block — so
  * setting them as plain white text would be as wrong as swapping PySanAntonio's
  * wordmark for the words "Py San Antonio". These are the same lockups the three
  * pages use, held to the cap height of the line beside them: a wordmark three
- * times the height of its neighbours reads as a ranking nobody intended.
+ * times the height of its neighbors reads as a ranking nobody intended.
  */
 function ActivationLockup({ lockup }: { lockup: SastwActivation["lockup"] }) {
   if (lockup === "pysanantonio") {

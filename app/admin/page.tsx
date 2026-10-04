@@ -64,7 +64,7 @@ interface NewsletterSubscription {
 
 /**
  * A volunteer signup. Access Granted is the only event using these so far, and
- * it asks no `role` — a signup there means "I'm in" and organisers assign work
+ * it asks no `role` — a signup there means "I'm in" and organizers assign work
  * by reaching out — so most of these fields are absent in practice.
  */
 interface VolunteerSignup {
@@ -577,7 +577,7 @@ export default function AdminPage() {
    * server-side CSV endpoint like RSVPs use. The list arrives from
    * /api/admin/data already scoped to what the caller may see — every event for
    * an admin, only PySanAntonio for a host community's organizer — so exporting
-   * the loaded rows needs no second permission surface and honours whichever
+   * the loaded rows needs no second permission surface and honors whichever
    * event filter is active.
    */
   const handleExportSpeakers = (rows: SpeakerSubmission[], scope: string) => {
@@ -3304,7 +3304,7 @@ export default function AdminPage() {
                               </select>
                               <p className="mt-2 text-xs text-neutral-500">
                                 Only for the activations that have a design system of their
-                                own. Gives the card that activation&rsquo;s lockup, colour
+                                own. Gives the card that activation&rsquo;s lockup, color
                                 and ground.
                               </p>
                             </div>
@@ -3323,7 +3323,7 @@ export default function AdminPage() {
                               <p className="mt-2 text-xs text-neutral-500">
                                 Sends &ldquo;View Details&rdquo; here instead of to this event&rsquo;s
                                 page on devsa.community, in a new tab. Leave empty for the
-                                normal behaviour.
+                                normal behavior.
                               </p>
                             </div>
                           </div>

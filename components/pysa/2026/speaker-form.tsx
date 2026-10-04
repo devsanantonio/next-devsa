@@ -204,7 +204,7 @@ export function PysaSpeakerForm({
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: reduceMotion ? 0 : 0.18, duration: 0.35 }}
-          // pr is wider than the rest of the padding so the centred copy is
+          // pr is wider than the rest of the padding so the centered copy is
           // pushed clear of the mascot's corner instead of running under it.
           className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/3 p-10 pr-28 text-center sm:pr-32"
         >

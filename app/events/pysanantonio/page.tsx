@@ -1,4 +1,7 @@
 import { PysaHero } from "@/components/pysa/2026/hero"
+import { ConferenceBackLink } from "@/components/events/conference-back-link"
+import { PysaFacts } from "@/components/pysa/2026/event-facts"
+import { PYSA_COLORS } from "@/data/pysa/2026"
 import { ArchiveCta2025 } from "@/components/pysa/2026/archive-cta"
 import {
   ConferenceLineup,
@@ -33,7 +36,12 @@ export default function PySanAntonioPage() {
 
   return (
     <main className="overflow-x-hidden bg-[#0a0a0a]" data-bg-type="dark">
+      <ConferenceBackLink accent={PYSA_COLORS.blue} />
       <PysaHero />
+      {/* The week lockup and the date/time/room rail, moved down out of the
+          masthead — they are facts, and the schedule is where somebody looking
+          one up is already headed. */}
+      <PysaFacts />
       {conference && (
         <>
           <ConferenceRoom conference={conference} />

@@ -7,7 +7,7 @@ import { useState } from "react"
 
 /**
  * The original mark — the terminal window with the teal/pink/orange title bar.
- * The navbar wears the monochrome alternate; this is the colour one, so the two
+ * The navbar wears the monochrome alternate; this is the color one, so the two
  * ends of the page are the same logo in its two registers rather than the same
  * file twice.
  *
@@ -227,7 +227,7 @@ export function Footer() {
                 The terminal chrome went with the ASCII, not as extra scope. The
                 dots and the prompt existed to frame type as a shell session,
                 and the logo is itself a terminal window with those same three
-                colours across its title bar. Kept, they would have been a
+                colors across its title bar. Kept, they would have been a
                 second window drawn around the first, and the blinking cursor
                 would have been a prompt with nothing left to prompt. */}
             <Link

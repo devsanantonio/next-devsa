@@ -60,6 +60,8 @@
      silently wearing something else. */
   --font-mono: "Geist Mono", monospace;
   --font-sans: "Geist Sans", sans-serif;
+  /* The activations' display face. Opt-in — see the note in app/layout.tsx. */
+  --font-display: "Oswald", sans-serif;
   --font-geist-pixel-square: "Geist Pixel Square", monospace;
   --font-geist-pixel-grid: "Geist Pixel Grid", monospace;
   --font-geist-pixel-circle: "Geist Pixel Circle", monospace;
@@ -69,6 +71,14 @@
 
 body {
   font-family: var(--font-geist-sans);
+}
+
+/* Opt-in display face for the Startup + Tech Week brands. Scoped to a class on
+   purpose: next-sasw puts Oswald on bare h1/h2/h3, which is right there and
+   wrong here — this site's headings are Geist Sans black on every page, and a
+   bare-element rule would silently restyle all of them. */
+.font-display {
+  font-family: var(--font-oswald), var(--font-geist-sans), sans-serif;
 }
 
 /* Admin slide-over drawer animations */
@@ -93,7 +103,7 @@ body {
  *
  * A single element does both jobs — the gutter is the padding, and the
  * max-width includes it. So the left edge sits at exactly `--page-gutter`
- * until the viewport outgrows measure + 2 gutters, and centres after that.
+ * until the viewport outgrows measure + 2 gutters, and centers after that.
  *
  * Deliberately NOT Tailwind's `container`, whose max-width steps to each
  * breakpoint — that makes the content edge jump around as you resize instead
@@ -115,7 +125,7 @@ body {
 
 /*
  * Left-edge-only variant, for full-bleed split layouts where the right half is
- * artwork that must stay flush to the viewport (the homepage hero). Centring a
+ * artwork that must stay flush to the viewport (the homepage hero). Centering a
  * shell there would pull the artwork in and break the composition.
  *
  * Resolves to exactly the same left edge .page-shell produces: the gutter until
@@ -432,3 +442,19 @@ body {
   mask: url("/sastw/bolt.svg") center / contain no-repeat;
 }
 
+
+/* The pop a Claude Code mascot makes as it leaves The Model's wordmark on the
+   conferences cards. Animates the standalone `scale` property rather than a
+   `transform`, so it composes with the positioning transform the simulation
+   writes each frame instead of overwriting it — see ConferenceMascots, which
+   keeps the two on separate elements for the same reason. */
+@keyframes confPop {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}

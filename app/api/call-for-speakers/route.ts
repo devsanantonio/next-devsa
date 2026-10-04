@@ -34,7 +34,7 @@ interface SpeakerSubmissionRequest {
   /**
    * Set by the Access Granted form when one person picked "Both". It is not
    * persisted — the volunteer signup is its own record — it only tells the
-   * confirmation and the organiser notification to say so.
+   * confirmation and the organizer notification to say so.
    */
   alsoVolunteering?: boolean;
 }
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       console.log('Resend not configured - skipping thank you email');
     }
 
-    // Organiser notification. Access Granted only for now — other events have
+    // Organizer notification. Access Granted only for now — other events have
     // no recipient list — and swallowed like the confirmation above, because a
     // mail failure must never cost someone their submission.
     if (resolvedEventId === AG_EVENT_ID && isResendConfigured() && resend) {
@@ -177,9 +177,9 @@ export async function POST(request: NextRequest) {
             alsoVolunteering: alsoVolunteering === true,
           }),
         });
-        console.log('Organiser notification sent for %s submission:', 'talk', AG_NOTIFY_EMAILS.join(', '));
+        console.log('Organizer notification sent for %s submission:', 'talk', AG_NOTIFY_EMAILS.join(', '));
       } catch (notifyError) {
-        console.error('Failed to send organiser notification:', notifyError);
+        console.error('Failed to send organizer notification:', notifyError);
       }
     }
 

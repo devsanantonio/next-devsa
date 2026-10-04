@@ -60,7 +60,7 @@ export default function HeroSection() {
         >
           {/* Forward pointer to the live event. This is an archive, so the most
               useful thing on it is the way out to the current edition — a
-              badged callout above the headline rather than the grey one-line
+              badged callout above the headline rather than the gray one-line
               text link it used to be, and an ArrowRight, since 2026 is ahead
               of this page rather than behind it. */}
           <Link
@@ -115,7 +115,7 @@ export default function HeroSection() {
           </div>
 
           {/* Both actions share the site's button shape (rounded-lg, one size)
-              so they line up instead of being two differently coloured pills. */}
+              so they line up instead of being two differently colored pills. */}
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
             <button
               type="button"

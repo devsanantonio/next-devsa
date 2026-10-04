@@ -6,7 +6,7 @@ import { useCallback, useState } from "react"
  * Reorderable lists via the native HTML5 drag-and-drop API — no library.
  *
  * Shared by the admin's communities list and its partners grid, which have
- * different markup but identical behaviour. The hook owns the drag state and
+ * different markup but identical behavior. The hook owns the drag state and
  * hands back prop bundles; the lists decide what a row looks like.
  *
  * ## Keyboard

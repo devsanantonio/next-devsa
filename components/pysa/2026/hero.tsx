@@ -2,17 +2,10 @@
 
 import Link from "next/link"
 import { motion } from "motion/react"
-import { CalendarDays, Clock, MapPin } from "lucide-react"
-import { SastwLockup } from "@/components/pysa/2026/cobrand-row"
 import { MascotClip } from "@/components/pysa/2026/mascot-clip"
 import { disabledSlot, primaryButton } from "@/components/pysa/2026/button-styles"
 import { hasHappened } from "@/lib/event-phase"
-import {
-  PYSA_2026,
-  PYSA_COLORS,
-  PYSA_WORDMARK,
-  type CfsPhase,
-} from "@/data/pysa/2026"
+import { PYSA_2026, PYSA_COLORS, PYSA_WORDMARK } from "@/data/pysa/2026"
 
 /**
  * Feathers the clip's left edge — the one facing the copy — so its box never
@@ -69,10 +62,33 @@ export function PysaHero() {
     <section
       id="top"
       data-bg-type="dark"
-      /* min-h-dvh from sm up only: filling the viewport is a desktop goal, and
-         on a phone the column is already tall enough that forcing a full
-         viewport only adds dead space above and below the copy. */
-      className="relative flex flex-col justify-center overflow-hidden bg-[#0a0a0a] text-white sm:min-h-dvh"
+      /* The floor is the mascot's, not the copy's.
+
+         The clip is absolutely positioned, so it adds nothing to the section's
+         intrinsic height and `overflow-hidden` would crop it to whatever the
+         copy happens to measure. Each value is the clip's own height at that
+         breakpoint — its width percentage times its 1114:720 ratio — so the box
+         is exactly tall enough to hold the figure and not a pixel taller. The
+         numbers fall as the breakpoints rise because the clip itself narrows:
+         78% of the width at sm, 64% at lg, 58% at xl.
+
+         `dvh` is what this replaced, and it was wrong twice over. It was
+         written when the section was the first thing on the page; the back
+         link's strip went in above it later, so a full viewport here put the
+         total past the fold. And a viewport is far more height than the artwork
+         needs at 1440, which left the copy stranded above a third of a screen
+         of empty ground.
+
+         On a phone the clip sits in the copy flow instead, so there is nothing
+         to make room for and a floor would only add dead space — hence sm up.
+
+         No `justify-center` either. Centering the copy in a box sized by the
+         artwork left 231px between the back link and the wordmark at 1440x900,
+         and moving the week lockup and the date rail out to PysaFacts took
+         another 90px of copy with them, which widened it further. The copy
+         starts under the back link now, as it does on the Access Granted and
+         The Model mastheads. */
+      className="relative flex flex-col overflow-hidden bg-[#0a0a0a] text-white sm:min-h-[50.4vw] lg:min-h-[41.4vw] xl:min-h-[37.5vw]"
     >
       {/* Blue wash behind the mascot, echoing the guitar. Desktop only: it is
           sized and placed for the figure bled off the right edge, and on a
@@ -92,7 +108,7 @@ export function PysaHero() {
           flow. Both pull the same 900 KB file, so neither placement is the
           expensive one any more.
 
-          The box carries the clip's own 1114:720 ratio and is centred
+          The box carries the clip's own 1114:720 ratio and is centered
           vertically rather than stretched to the section height. That way
           object-cover fills it exactly — no letterboxing, so VIDEO_MASK's edge
           lands on the picture's edge instead of leaving a hard line. */}
@@ -122,7 +138,7 @@ export function PysaHero() {
         className="pointer-events-none absolute inset-0 z-10 bg-linear-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"
       />
 
-      <div className="page-shell relative z-20 pb-20 pt-24 md:pb-24 md:pt-32">
+      <div className="page-shell relative z-20 pb-20 pt-2 md:pb-24 md:pt-3">
         <div className="max-w-xl xl:max-w-2xl">
           {/* Only the transform animates in. Fading from opacity:0 would ship
               the headline and the primary CTA invisible in the server HTML,
@@ -156,8 +172,6 @@ export function PysaHero() {
                     {isPast ? "the 2026 edition" : "returns October 2026"}
                   </span>
                 </h1>
-
-                <SastwLockup />
               </div>
 
               {/* Phones get the clip here, in the copy flow between the week
@@ -186,26 +200,6 @@ export function PysaHero() {
               </p>
             </div>
 
-            {/* Date / time / place rail */}
-            <dl className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-white/60">
-              <div className="inline-flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
-                <dt className="sr-only">Date</dt>
-                <dd>{PYSA_2026.dateLabel}</dd>
-              </div>
-              <div className="inline-flex items-center gap-2">
-                <Clock className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
-                <dt className="sr-only">Time</dt>
-                <dd>{PYSA_2026.timeLabel}</dd>
-              </div>
-              <div className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4" style={{ color: PYSA_COLORS.blue }} />
-                <dt className="sr-only">Location</dt>
-                <dd>
-                  {PYSA_2026.venue}, {PYSA_2026.venueDetail}
-                </dd>
-              </div>
-            </dl>
 
             {/* Single action on purpose: last year's recap is reachable from
                 the archive card further down, and it was competing here. */}

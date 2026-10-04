@@ -1,44 +1,53 @@
-import Image from "next/image"
-import { AccessCipherField } from "@/components/access-granted/2026/cipher-field"
 import Link from "next/link"
-import { CalendarDays, Clock, MapPin } from "lucide-react"
 import {
-  ACCESS_AMBER,
   ACCESS_GRANTED,
   ACCESS_GREEN,
-  AG_CFS_CLOSES_LABEL,
   AG_LOCK,
   AG_ONE_LINER,
   AG_ORGANIZERS,
-  GRID_FADE,
-  GRID_LINE,
-  type AgCfsPhase,
 } from "@/data/access-granted/2026"
-import { SastwLockup } from "@/components/access-granted/2026/sastw-lockup"
-import { disabledSlot, primaryButton, secondaryButton } from "@/components/access-granted/2026/button-styles"
+import { disabledSlot, primaryButton } from "@/components/access-granted/2026/button-styles"
+import { OrganizerLogo } from "@/components/brand/probe-chip"
 import { hasHappened } from "@/lib/event-phase"
 
 /**
- * Access Granted's masthead, ported from next-sasw's AccessGrantedBand.
+ * Access Granted's masthead.
  *
- * The layout, the three art layers, the terminal grammar and the proportions
- * are that component's, not a new design — the activation already had a hero
- * and the two sites should not diverge. What changed is only what had to:
+ * Carries four things and nothing else: the name, the hook, who powers it, and
+ * one action. Everything factual — the week lockup, the date, the time, the
+ * room — moved down to sit with the schedule, where a reader looking up when
+ * something started is already headed. A masthead that opens with logistics
+ * spends its best position on the least interesting thing on the page.
  *
- *  · The heading is an h1, not an h2. There it is a band among sections; here
- *    it is the page's subject.
- *  · `font-display` does not exist in this repo, so the name is set in Geist
- *    Sans black — the closest thing to a display face among the loaded
- *    weights, and what the OG cards use too.
- *  · The buttons are this page's two open calls rather than "Full event
- *    details" / "See the full week", because running those calls is the only
- *    reason this page exists on the DEVSA site.
+ * ## The ground is pure black
  *
- * The brand is carried by the green and by terminal grammar: `>_` before the
- * machine-ish labels, mono for anything that reads as data. Restrained on
- * purpose — the brief's own warning was that this must not look like a 1990s
- * movie poster, so the green marks the prompt, the one-liner's rule and the
- * meta rail's icons, and nothing else.
+ * #000000, not the site's #0a0a0a. The lock loop's own ground is pure black,
+ * and at 0a the video sat in a visible rectangle — a four-point step is
+ * invisible on most surfaces and obvious where a video meets a page. Matching
+ * it exactly is what makes the render look like it is happening on the page
+ * rather than inside a box on it.
+ *
+ * ## The art column
+ *
+ * Three layers, so the render sits *in* something rather than on it. A video
+ * with a hard silhouette cannot be dissolved into the black — masking would
+ * cut the object. What it can have is an environment, and the artwork supplies
+ * the logic: it is already emitting green light, so the honest move is to let
+ * that light land on something.
+ *
+ *   · a schematic grid, faint and radially masked, giving the glow a surface
+ *     to fall on — HUD rather than poster.
+ *   · the lock's own spill, centered on the body rather than parked beside it.
+ *   · a contact shadow under the body, the one cue that says an object has
+ *     weight and is resting on something.
+ *
+ * Both wash layers reach left, past the art and under the copy, rather than
+ * being a halo around the object.
+ *
+ * Sized to fill its column now rather than capped at 22rem. The cap existed so
+ * a tall portrait render would not tower over the copy beside it; the loop is
+ * near-square, so the same width reads shorter and the two columns balance at
+ * full width on a laptop and on an external display alike.
  */
 function Prompt({ children }: { children: React.ReactNode }) {
   return (
@@ -51,227 +60,128 @@ function Prompt({ children }: { children: React.ReactNode }) {
   )
 }
 
-const META = [
-  { Icon: CalendarDays, label: "Date", value: ACCESS_GRANTED.dateLabel },
-  { Icon: Clock, label: "Time", value: ACCESS_GRANTED.timeLabel },
-  {
-    Icon: MapPin,
-    label: "Where",
-    value: `${ACCESS_GRANTED.venue}, ${ACCESS_GRANTED.venueDetail}`,
-  },
-]
-
-/**
- * Takes no props. It used to accept the call-for-speakers `phase` and a
- * `daysLeft` countdown and drive a CTA that swapped between "Submit a talk"
- * and the attendee path.
- *
- * The call came off this page once the activation had run, which left both
- * buttons pointing at #call — an anchor no longer in the document. A button
- * aimed at a removed section is worse than no button.
- *
- * Only the composition changed: AG_CFS_CLOSES, getAgCfsPhase and the form
- * section all remain in the repo, so restoring next year's call is a re-add.
- */
 export function AccessGrantedHero() {
-  /* From ACCESS_GRANTED.end, already in the data file. Without it this hero
-     offered a lineup that the section below it now prints in full. */
   const isPast = hasHappened(ACCESS_GRANTED.end)
 
   return (
-    <section
-      id="top"
-      data-bg-type="dark"
-      className="relative flex min-h-[calc(100vh-4rem)] flex-col justify-center overflow-hidden bg-[#0a0a0a]"
-    >
-      <div className="page-shell relative z-20 pb-20 pt-24 lg:pb-28 lg:pt-28">
-        {/*
-          `auto` for the copy column, not `1fr`.
-
-          With `1fr` the column takes the whole row while the copy inside it
-          caps at its own max width, so the leftover sits between the text and
-          the art on top of the gap — an effective trench. Sized to its content,
-          the gap is only the gap.
-
-          The lock is a column rather than an absolute overlay: positioned
-          absolutely it bleeds down over everything beneath it. It has its own
-          glow and a hard silhouette, so it cannot be scrimmed into the black
-          the way a photograph could.
-        */}
-        <div className="flex flex-col lg:grid lg:grid-cols-[auto_1fr] lg:items-center lg:gap-12 xl:gap-16">
-          <div className="contents lg:block lg:max-w-xl xl:max-w-2xl">
-            {/* No track eyebrow above the name. It briefly read "Tech &
-                Builders" — the week's official category — but placing this
-                room inside the week's programme is the SASTW site's job, and
-                here it only pushed the name down the column. The SastwLockup
-                below already says which week this belongs to.
-
-                Orders start at 2 rather than 1 as a result; the values only
-                have to be in sequence, not contiguous, and renumbering every
-                sibling to close the gap would be churn. */}
-
-            {/* Geist Sans at its heaviest, standing in for next-sasw's
-                `font-display` — this repo has no display face, and of what is
-                loaded Geist Sans black is the closest thing to one. It takes
-                that heading's own `leading-[0.9] tracking-tight` rather than
-                mono's letterspacing, which only existed to keep a monospace
-                face from reading as code.
-
-                The name is the one thing NOT set in mono here. Everything that
-                reads as data — the `>_` prompts, the meta rail, the badges —
-                stays Geist Mono, so the terminal grammar still marks the
-                machine-ish parts instead of swallowing the title too. */}
-            <h1 className="order-2 font-sans text-4xl font-black uppercase leading-[0.9] tracking-tight text-white sm:text-6xl">
+    <section className="relative overflow-x-clip bg-black" data-bg-type="dark">
+      <div className="page-shell pt-2 pb-14 md:pt-3 md:pb-20 lg:pb-24">
+        {/* items-start, not items-center. Centered, the shorter copy column was
+              being pushed down the height of the video beside it — 145px of
+              empty space under the back link, against 53px on a page with no
+              video. The columns now share a top edge and the gap is the
+              section's padding, which is the only thing that should set it. */}
+          <div className="flex flex-col gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14 xl:gap-20">
+          {/* Copy */}
+          <div className="order-2 lg:order-none">
+            <h1 className="font-display text-5xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
               <span style={{ color: ACCESS_GREEN }}>Access</span> Granted
             </h1>
 
             {/* A rule rather than a filled green panel — a solid block of
-                #00ff66 at this size shouts, and the green is meant to stay
-                sparing. */}
+                #00ff66 at this size shouts, and the green stays sparing. */}
             <p
-              className="order-3 mt-5 border-l-2 pl-5 text-pretty text-lg text-white/80"
+              className="mt-6 border-l-2 pl-5 text-pretty text-lg text-white/80 md:text-xl"
               style={{ borderColor: ACCESS_GREEN }}
             >
-              {AG_ONE_LINER.setup}{" "}
-              {/* Desktop-only. `hidden` below lg leaves the space above it
-                  intact, so the two halves read as one sentence on a narrow
-                  column; from lg the space collapses against the break. */}
-              <br className="hidden lg:inline" />
-              {AG_ONE_LINER.turn}
+              {AG_ONE_LINER.setup} {AG_ONE_LINER.turn}
             </p>
 
-            <div className="order-5 mt-6">
-              <SastwLockup />
-            </div>
-
-            <dl className="order-6 mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-widest text-white/55">
-              {META.map(({ Icon, label, value }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <dt className="sr-only">{label}</dt>
-                  <Icon
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: ACCESS_GREEN }}
-                    aria-hidden="true"
-                  />
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            {/* The three badge pills — free · drop-in, all skill levels, no
-                sales pitches — used to sit here. next-sasw shows them because
-                that page is the front door for attendees, and they answer what
-                someone asks before committing an afternoon. This page's job is
-                the open calls, and its readers are people deciding whether to
-                submit, not whether to turn up. */}
-
-            {/* In the column, not below the grid. Below it they were stranded
-                under a much taller art column. */}
-            <div className="order-8 mt-9">
+            <div className="mt-10">
               <Prompt>Powered by</Prompt>
               {/* Three across on phones. As a flex-wrap this ran 4 + 1 from
                   414px up — every Pro-sized handset — widowing the last mark.
-                  A fixed three keeps the rows even; sm and up it flows on one
-                  line. */}
-              <ul className="mt-4 grid grid-cols-3 items-center justify-items-start gap-x-6 gap-y-7 sm:flex sm:flex-wrap sm:gap-x-9 sm:gap-y-6">
+                  A fixed three keeps the rows even; sm and up it flows. */}
+              {/* Three across at every width, so six marks always read as two
+                  even rows. The flex-wrap this replaced ran 5 + 1 once the copy
+                  column narrowed for the larger art, widowing DEVSA on its own
+                  line — the same failure the phone layout was already fixed
+                  for, reappearing at desktop. */}
+              <ul className="mt-5 grid w-fit grid-cols-[repeat(3,auto)] items-center justify-items-start gap-x-8 gap-y-7 sm:gap-x-10 sm:gap-y-8">
                 {AG_ORGANIZERS.map((org) => (
                   <li key={org.name}>
-                    <a
-                      href={org.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={org.name}
-                      className="block opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60"
-                    >
-                      <Image
-                        src={org.logo}
-                        alt={org.name}
-                        width={240}
-                        height={120}
-                        sizes="160px"
-                        className={`w-auto object-contain ${org.heightClass}`}
-                      />
-                    </a>
+                    <OrganizerLogo org={org} accent={ACCESS_GREEN} />
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Both CTAs land on the same section now that one form handles
-                both calls — the form's own intent picker is what splits them.
-                Two buttons rather than one because the two asks reach
-                different people, and "help run it" has to be visible to
-                someone who would never submit a talk. */}
-            <div className="order-9 mt-9 flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {isPast ? (
-                  <Link href="#lineup" className={primaryButton}>
-                    See the 2026 lineup
-                  </Link>
-                ) : (
-                  <span className={disabledSlot}>Speaker lineup coming soon</span>
-                )}
-              </div>
+            <div className="mt-10">
+              {isPast ? (
+                <Link href="#lineup" className={primaryButton}>
+                  See the 2026 lineup
+                </Link>
+              ) : (
+                <span className={disabledSlot}>Speaker lineup coming soon</span>
+              )}
             </div>
           </div>
 
-          {/*
-            Three layers, so the render sits *in* something rather than on it.
+          {/* The lock, on nothing.
 
-            A transparent PNG with a hard silhouette cannot be dissolved into
-            the black — masking it would cut the object. What it can have is an
-            environment, and the artwork supplies the logic: it is already
-            emitting green light, so the honest move is to let that light land
-            on something.
+              Three layers used to sit behind it — a schematic grid, a green
+              wash and a contact shadow. They were there because the art was a
+              transparent PNG with a hard silhouette: an object like that has
+              to be given an environment or it reads as pasted on.
 
-              · a schematic grid, faint and radially masked, giving the glow a
-                surface to fall on — HUD rather than poster.
-              · the lock's own spill, centred on the body rather than parked
-                beside it.
-              · a contact shadow under the body — the one cue that says an
-                object has weight and is resting on something.
+              The loop brings its own. It is a rendered scene with its own
+              circuit backdrop and its own emitted light, so every one of those
+              layers was a second grid over a grid and a second glow over a
+              glow — two green fields at slightly different angles, which is
+              what was clashing.
 
-            Both wash layers reach left, past the art and under the copy, rather
-            than being a halo around the object. An ellipse centred at 68% of a
-            box that extends 150% to the left — centred on the box it would sit
-            in empty space instead of on the lock.
+              The contact shadow went with them, which is the one call here
+              that was not asked for: the lock in the loop is already lit and
+              grounded in its own scene, and with the video masked to fade at
+              its edges a green ellipse underneath sits in the faded zone and
+              reads as a smear rather than as weight. */}
+          {/* A fixed 44px lift, and fixed is the point.
 
-            Sized against the copy, not the row: at 26rem the render stood far
-            taller than the text beside it and read as the subject with the copy
-            as a caption. 22rem brings it roughly level.
-          */}
-          <div className="group/art relative order-4 mx-auto my-10 w-40 sm:w-48 lg:order-none lg:my-0 lg:ml-auto lg:mr-0 lg:w-72 xl:w-[22rem]">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-y-[45%] -left-[150%] -right-[45%]"
-              style={{
-                backgroundImage: `linear-gradient(${GRID_LINE} 1px, transparent 1px), linear-gradient(90deg, ${GRID_LINE} 1px, transparent 1px)`,
-                backgroundSize: "34px 34px",
-                maskImage: GRID_FADE,
-                WebkitMaskImage: GRID_FADE,
-              }}
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-y-[28%] -left-[110%] -right-[28%] blur-[70px] transition-opacity duration-500 group-hover/art:opacity-60"
-              style={{
-                background: `radial-gradient(ellipse 52% 62% at 70% 58%, ${ACCESS_GREEN}4d 0%, transparent 68%)`,
-              }}
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-[12%] bottom-[3%] h-8 rounded-[50%] blur-[26px]"
-              style={{ background: `${ACCESS_GREEN}33` }}
-            />
-            <AccessCipherField />
-            <Image
+              Cropping the dead space out of the asset got the lock's opaque
+              top to the frame's top, but its first *visible* pixel is still
+              lower: the radial mask fades the frame's edges, and the lock sits
+              inside that fade. What is left is a constant — measured at 43px
+              at 1440, 1920 and 2560 alike — so a constant corrects it.
+
+              A percentage was tried while the asset still had dead space in it
+              and could not work: it scales with the column while the heading's
+              position does not, landing within a pixel at 1440 and overshooting
+              by 43px at 1920. Fixing the asset is what made a fixed offset
+              correct. */}
+          <div className="relative order-1 mx-auto w-full max-w-md lg:order-none lg:-mt-11 lg:max-w-none">
+            {/* Muted and autoplaying, so it is decoration by every definition
+                the platforms use: no sound, no controls, nothing announced.
+                `poster` is the loop's own lit frame, so the first paint is the
+                artwork rather than a gap. */}
+            <video
               src={AG_LOCK.src}
-              alt=""
+              poster={AG_LOCK.poster}
               width={AG_LOCK.width}
               height={AG_LOCK.height}
-              priority
-              sizes="(min-width: 1280px) 352px, (min-width: 1024px) 288px, 192px"
-              className="relative h-auto w-full"
+              autoPlay
+              loop
+              muted
+              playsInline
+              aria-hidden="true"
+              /* It reaches above the section's padding once pulled up, and the
+                 top of the frame is empty and masked to nothing. Nothing to
+                 click on it anyway — no controls — so it must not sit over the
+                 back link and swallow the pointer. */
+              className="pointer-events-none relative h-auto w-full"
+              /* The loop's extreme edges are pure black, but its interior
+                 carries a circuit-board backdrop that is not — so without a
+                 mask the texture simply stops, and the eye reads the stopping
+                 line as a box around the video.
+
+                 Opaque through the middle 58%, where the lock sits, then out
+                 to nothing. The lock keeps its full density and the backdrop
+                 dissolves into the page instead of ending. */
+              style={{
+                maskImage:
+                  "radial-gradient(ellipse 72% 72% at 50% 50%, black 58%, transparent 100%)",
+                WebkitMaskImage:
+                  "radial-gradient(ellipse 72% 72% at 50% 50%, black 58%, transparent 100%)",
+              }}
             />
           </div>
         </div>

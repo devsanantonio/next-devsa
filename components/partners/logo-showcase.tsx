@@ -77,7 +77,7 @@ function LogoTile({ logo }: { logo: LogoItem }) {
       {/* `justify-start`, not `justify-center`.
       
           Every tile now opens with a logo slot of the same height, so the names
-          underneath share a baseline across the whole grid. Centring the column
+          underneath share a baseline across the whole grid. Centering the column
           was what broke that: a taller logo box pushed its name down, and a name
           that wrapped to two lines pulled its logo up, so no two columns lined
           up unless their contents happened to match.

@@ -37,7 +37,7 @@ const dayKeyFmt = new Intl.DateTimeFormat('en-CA', {
  *
  * Comparing day keys sidesteps offsets entirely, and matches how the calendar
  * itself groups events. The arithmetic runs from noon UTC because a civil day
- * is never shorter than 23 hours, so ±12h never lands on a neighbouring date
+ * is never shorter than 23 hours, so ±12h never lands on a neighboring date
  * however the clocks move.
  */
 function centralWeekDayKeys(now: Date): string[] {

@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
  * Vercel Web Analytics, with the staff-only routes filtered out.
  *
  * `/admin` was 35 visitors in the month to 20 September — about 3% of the
- * site's traffic, and every one of them a DEVSA organiser looking at the
+ * site's traffic, and every one of them a DEVSA organizer looking at the
  * dashboard. Counted, it inflates the public figures and ranks the admin above
  * the shop in the top-pages report, which makes that report harder to read for
  * the one question it is actually asked: what are people coming here for.

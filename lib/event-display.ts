@@ -24,7 +24,7 @@
  *
  * A 7pm Thursday meetup is Friday to a visitor in London. Grouping, labelling
  * or comparing against "today" in the reader's zone files events under days
- * nobody local would recognise, so every date operation here names this zone
+ * nobody local would recognize, so every date operation here names this zone
  * explicitly.
  */
 export const TZ = "America/Chicago"

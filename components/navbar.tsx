@@ -30,8 +30,8 @@ export function Navbar() {
                   aria-label="Go to home page"
                 >
                   {/* The monochrome alternate, and only that. The two marks
-                      used to cross-fade here — alt at rest, the colour original
-                      on hover — which spent the colour logo on a state most
+                      used to cross-fade here — alt at rest, the color original
+                      on hover — which spent the color logo on a state most
                       visitors never see. The two now split by position instead
                       of by hover: alt at the top of the page, original in the
                       footer.

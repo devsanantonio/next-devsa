@@ -72,7 +72,7 @@ function isLightArtwork(logo: {
  * Its own list rather than "everything not in the light list", which is the
  * mistake this replaces. That treated "not white" as "needs inverting" and so
  * flattened Tech Bloc, DEF CON, SAHA, BSides and PyTexas — all of which are
- * *colour*, and colour reads on either ground. Marks come in three kinds, not
+ * *color*, and color reads on either ground. Marks come in three kinds, not
  * two, and only the third needs help here.
  *
  * One entry, and that is not an oversight. Every co-host mark on the site was
@@ -87,8 +87,8 @@ const DARK_PARTNER_IDS = ["434media"]
  * `"brightness-0 invert"` when the mark would be lost on a dark ground.
  *
  * Flattened to a white silhouette rather than inverted, because inverting a
- * colour is a hue rotation — a red wordmark would arrive cyan. A mark dark
- * enough to need this has no colour worth keeping anyway.
+ * color is a hue rotation — a red wordmark would arrive cyan. A mark dark
+ * enough to need this has no color worth keeping anyway.
  */
 export function logoOnDark(logo: {
   id?: string
@@ -124,7 +124,7 @@ export function logoOnLight(logo: {
  *   ruin the other two.
  * - **Alamo Agents** is gold #c09048 line art at 2.87:1 on white, under the
  *   3:1 floor WCAG 1.4.11 sets for graphical objects, and 6.91:1 on #0a0a0a.
- *   One colour, but no filter raises its contrast without rotating the hue.
+ *   One color, but no filter raises its contrast without rotating the hue.
  *
  * So a light-ground variant of each file, which is what a brand guide would
  * call it. In `public/community-logos/`, generated from the records' own

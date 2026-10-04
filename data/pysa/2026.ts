@@ -59,7 +59,7 @@ export const PYSA_2026 = {
  * today flips the page back to "open" with no other state to reset.
  *
  * Sept 25 leaves three days before the conference opens on Sept 28, against
- * seventeen at the previous date. That is the organisers' call, but it is worth
+ * seventeen at the previous date. That is the organizers' call, but it is worth
  * knowing that a talk accepted on the 25th gives its speaker a long weekend to
  * prepare, and leaves no room at all for the schedule to be rebuilt around it.
  *
@@ -203,7 +203,7 @@ export const PYSA_ASSETS = {
    * and SVG but NOT WebP — a WebP fails the whole render with "u2 is not
    * iterable" — and the frame is a hard-edged rectangle whose near-black
    * ground is close to, but not exactly, the card's #0a0a0a, so dropped in
-   * unmodified it reads as a slightly-wrong grey box. The alpha ramp (10% of
+   * unmodified it reads as a slightly-wrong gray box. The alpha ramp (10% of
    * each edge) dissolves it into whatever it is placed on.
    *
    * Generated from the .webp, so reshooting the poster means regenerating

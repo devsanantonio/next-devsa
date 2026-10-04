@@ -25,7 +25,7 @@ The lesson worth keeping: a "fallback" that is consulted unconditionally is not 
 
 ## Real time is the contract for admin changes
 
-Adds, edits and deletes in the admin must show on the public site immediately. Every client-facing surface honours this by reading its data at request time:
+Adds, edits and deletes in the admin must show on the public site immediately. Every client-facing surface honors this by reading its data at request time:
 
 - the homepage wall, `/buildingtogether`, the calendar list and the event pages all fetch `/api/communities`, `/api/partners` or `/api/events` client-side — always live
 - `/buildingtogether/[slug]` and `/events/[slug]` render per request, with **no** `generateStaticParams` and no `revalidate`

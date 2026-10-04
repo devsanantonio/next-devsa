@@ -5,13 +5,13 @@ import type { EventBrand } from "@/lib/event-brands"
  * Each activation's title, set the way its own site sets it.
  *
  * Three lockups rather than one themed heading, because what distinguishes
- * these brands is a gesture and not a colour — recolouring a shared heading
+ * these brands is a gesture and not a color — recoloring a shared heading
  * three ways would produce three cards that look like the same card. Ported
  * from next-sasw's ModelBand, AccessGrantedBand and PysaBand.
  *
  * The event's own title is ignored for the two lettering marks. These are
  * fixed identities and the title in Firestore is editable prose; if an
- * organiser renames the record, the lockup should not follow it into
+ * organizer renames the record, the lockup should not follow it into
  * something that is no longer the brand.
  */
 export function EventBrandLockup({ brand }: { brand: EventBrand }) {

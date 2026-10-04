@@ -1111,7 +1111,7 @@ export function CommunityEventsSection({
                              them here put the same five names on the card
                              twice. */
                           const hostLabel = brand ? "SA Startup + Tech Week" : hosts.join(" + ")
-                          /* How many organisations are actually behind this,
+                          /* How many organizations are actually behind this,
                              which is not the same as how many are in the label.
                           
                              With a community present the partners are billed

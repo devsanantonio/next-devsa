@@ -24,9 +24,9 @@ import { ACCESS_GREEN } from "@/data/access-granted/2026"
  *
  * @param width  box width in px
  * @param height box height in px
- * @param focusX horizontal centre of the fade and the glow, as a CSS
+ * @param focusX horizontal center of the fade and the glow, as a CSS
  *   percentage. Defaults to 70%, matching GRID_FADE, which puts the field on
- *   the lock and lets it reach left under the copy. The portrait card centres
+ *   the lock and lets it reach left under the copy. The portrait card centers
  *   its art, so it passes 50%.
  */
 export function accessGrantedGridSvg(

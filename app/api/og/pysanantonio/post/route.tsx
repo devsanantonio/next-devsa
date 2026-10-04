@@ -24,7 +24,7 @@ export const runtime = "nodejs"
  *
  * The art is the poster frame from the mascot clip: the beat where he holds up
  * two fingers, which is the whole point of a second edition. Used full-frame
- * rather than cropped to portrait — his raised hand is left of centre and the
+ * rather than cropped to portrait — his raised hand is left of center and the
  * guitar runs off to the right, so any portrait crop loses one or the other.
  * Its edges are feathered to transparent in the asset itself (see
  * PYSA_ASSETS.mascotOgPoster), so a landscape block sits in the column without
@@ -157,7 +157,7 @@ export async function GET() {
             returns October 2026
           </span>
 
-          {/* The art, centred, taking every pixel between the copy and the
+          {/* The art, centered, taking every pixel between the copy and the
               footer. It is the subject of the card, so it gets the slack. */}
           <div
             style={{

@@ -20,7 +20,7 @@ export const runtime = "nodejs"
  *
  * A recomposition of the 1200x630 share card, not a rescale. The landscape
  * card sets the copy beside the art; at 4:5 there is no room for two columns,
- * so everything stacks and the padlock becomes the centre of the frame rather
+ * so everything stacks and the padlock becomes the center of the frame rather
  * than a note at the edge. The wordmark stacks with it — ACCESS over GRANTED —
  * which at this width reads stronger than one long line and sidesteps the
  * shrink-to-fit problem that eats the gap on the landscape card.
@@ -33,7 +33,7 @@ export const runtime = "nodejs"
  * Deliberately NOT wired into any page's metadata. Nothing crawls a 4:5 image;
  * this exists to be downloaded and posted by hand. The route is here rather
  * than a one-off script so it can be regenerated whenever the call's phase or
- * the organiser list changes.
+ * the organizer list changes.
  *
  * No BrandGradientBar: that rule is a web-page convention and reads as a
  * browser artifact inside a feed.
@@ -48,7 +48,7 @@ export async function GET() {
     await readFile(path.join(process.cwd(), "public", AG_LOCK.src))
   ).toString("base64")}`
 
-  // Centred rather than pushed right (focusX 50%), because the art is centred
+  // Centered rather than pushed right (focusX 50%), because the art is centered
   // here instead of bled off one edge.
   const GRID_W = 1000
   const GRID_H = 900
@@ -72,7 +72,7 @@ export async function GET() {
           position: "relative",
         }}
       >
-        {/* Behind everything, centred on where the lock lands in the flow. */}
+        {/* Behind everything, centered on where the lock lands in the flow. */}
         <img
           src={grid}
           alt=""
@@ -173,7 +173,7 @@ export async function GET() {
             </span>
           </div>
 
-          {/* The lock, centred, taking every pixel between the copy and the
+          {/* The lock, centered, taking every pixel between the copy and the
               footer via `flex: 1`. It is the subject of this card rather than a
               note at its edge, so it gets the slack rather than the margins
               absorbing it. */}

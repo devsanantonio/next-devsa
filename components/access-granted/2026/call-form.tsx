@@ -90,7 +90,7 @@ function ChipRadio({
  * Ticking the opt-in posts to both, talk first. If the talk write succeeds and
  * the volunteer write fails, the submission is still reported as a success and
  * the failure is logged — losing a conference talk because a secondary signup
- * 500'd would be the worse outcome, and the organisers can see from the speaker
+ * 500'd would be the worse outcome, and the organizers can see from the speaker
  * record that someone offered.
  */
 export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
@@ -177,7 +177,7 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
             bio: form.bio,
             accommodations: form.notes,
             considerFor: firstTimer ? AG_FIRST_TIME_SPEAKER : "",
-            // Tells the confirmation and the organiser notification that the
+            // Tells the confirmation and the organizer notification that the
             // same person is also signing up to help.
             alsoVolunteering: alsoHelp,
             eventId: AG_EVENT_ID,
@@ -199,7 +199,7 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
               eventId: AG_EVENT_ID,
               // Suppressed whenever a talk was submitted in the same breath —
               // that confirmation already says they offered to help, and two
-              // emails for one submit reads as a bug. The organiser
+              // emails for one submit reads as a bug. The organizer
               // notification still fires either way.
               sendConfirmation: !(wantsTalk && !talkClosed),
             }),
@@ -239,7 +239,7 @@ export function AccessGrantedCallForm({ phase }: { phase: AgCfsPhase }) {
           Thanks, {form.name.split(" ")[0] || "friend"}.{" "}
           {spoke
             ? `The call closes ${AG_CFS_CLOSES_LABEL} and you'll hear back by email either way.`
-            : "One of the organisers will be in touch with what we need covered."}
+            : "One of the organizers will be in touch with what we need covered."}
           {spoke && alsoHelp
             ? " Thanks for offering to help on the day too — someone will be in touch about that separately."
             : ""}

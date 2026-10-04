@@ -2,7 +2,7 @@
  * Buttons for the Access Granted pages.
  *
  * Same shape as the PySanAntonio set — rounded-lg, px-6 py-3.5 sm:py-3, text-sm
- * — because that shape is the site's, not the event's. Only the colour changes:
+ * — because that shape is the site's, not the event's. Only the color changes:
  * terminal green where PySanAntonio uses PyTexas yellow.
  *
  * The greens are written as literal hex rather than read from ACCESS_GREEN in

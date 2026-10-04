@@ -11,7 +11,7 @@ interface AccessRequestReceivedEmailProps {
  *   and the S3 bucket's devsa-logo.svg is the only vector copy. Its card body is
  *   black, which is why this template stays on the #0a0a0a substrate the site
  *   uses — the teal/pink/orange bars and off-white mark carry it there.
- * - The three-cell colour bar is a table rather than a CSS gradient: Outlook
+ * - The three-cell color bar is a table rather than a CSS gradient: Outlook
  *   drops `linear-gradient`, and solid table cells render everywhere.
  * - The header tagline is the same line the signin page leads with, so the email
  *   and the page a request came from say the same thing.

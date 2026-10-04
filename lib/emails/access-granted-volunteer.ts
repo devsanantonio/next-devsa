@@ -2,7 +2,7 @@ interface AccessGrantedVolunteerEmailProps {
   name: string;
   /**
    * Optional. Access Granted has no role picker — a signup there means "I'm
-   * in" and organisers assign work by reaching out — so this is usually null,
+   * in" and organizers assign work by reaching out — so this is usually null,
    * and the block that showed it is skipped entirely rather than printing an
    * empty card.
    */
@@ -90,7 +90,7 @@ export function AccessGrantedVolunteerEmail({
               </h1>
 
               <p style="margin: 0 0 24px 0; font-size: 16px; color: #a3a3a3; line-height: 1.6;">
-                Five hours of drop-in tables only works because people turn up early and stay late to run them. One of the organisers will be in touch with times, what to bring, and where to find us on the day.
+                Five hours of drop-in tables only works because people turn up early and stay late to run them. One of the organizers will be in touch with times, what to bring, and where to find us on the day.
               </p>
 
               <!-- What they picked, when the event asked -->

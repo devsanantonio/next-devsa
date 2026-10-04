@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Space_Grotesk } from "next/font/google"
+import { Oswald, Space_Grotesk } from "next/font/google"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import {
@@ -16,6 +16,26 @@ import { Suspense } from "react"
 import { LayoutChrome } from "@/components/layout-chrome"
 import { CartProvider } from "@/components/shop/cart-context"
 import { CartSlideOut } from "@/components/shop/cart-slide-out"
+
+/**
+ * Oswald — the display face the Startup + Tech Week activations are set in.
+ *
+ * Added so the brands ported from sasw-geekdom/next-sasw look like themselves.
+ * Access Granted's wordmark is specified as Oswald bold uppercase; without the
+ * face it fell back to Geist Sans black, which is a different letterform at a
+ * similar weight and reads as "nearly right".
+ *
+ * Deliberately NOT applied to bare h1/h2/h3 the way next-sasw applies it.
+ * There it is the site's display face; here the site's headings are Geist Sans
+ * black by design, on every page. This is an opt-in utility for the two
+ * surfaces whose brand asks for it.
+ */
+const oswald = Oswald({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+})
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -194,7 +214,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} antialiased`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} ${oswald.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <CartProvider>
             <LayoutChrome>{children}</LayoutChrome>

@@ -26,7 +26,7 @@ const row = (label: string, value?: string | null) =>
     : '';
 
 /**
- * The organiser-facing notification, sent when someone answers either half of
+ * The organizer-facing notification, sent when someone answers either half of
  * the Access Granted call.
  *
  * Separate from the two confirmation templates on purpose: those are written

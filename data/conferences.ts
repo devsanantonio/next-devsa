@@ -30,8 +30,8 @@ import type { EventBrandKey } from "@/lib/event-brands";
  * what all three Startup + Tech Week activations are waiting on now.
  *
  * `history` is the opposite and is not a soft delete. More Human Than Human is
- * here deliberately: it was DEVSA's flagship, The Model takes that slot going
- * forward, and the site should still say the first one happened. The recap
+ * here deliberately: The Model replaces it on the calendar going forward, and
+ * the site should still say the first one happened. The recap
  * footage on the homepage is from it, so retiring the name while continuing to
  * run the video would be the worst of both.
  */
@@ -90,6 +90,19 @@ export interface Conference {
       not described as though it were. */
   photoWidth?: number;
   photoHeight?: number;
+  /**
+   * A clip the portfolio card plays *only* while the pointer is over it, behind
+   * a lockup that stays put.
+   *
+   * There used to be a `cardVideo` beside this that played unconditionally and
+   * *was* the card's mark, because More Human Than Human was the one conference
+   * with no lettering to put there. It has one now — see MoreHumanWordmark —
+   * so every card leads with its name and every clip is something you go
+   * looking for. Nothing autoplays in the grid any more, which is also four
+   * fewer videos decoding on a page nobody has scrolled to yet.
+   */
+  hoverVideo?: string;
+  hoverPoster?: string;
 }
 
 /*
@@ -113,7 +126,7 @@ export const conferences: Conference[] = [
     key: "the-model",
     name: "The Model",
     blurb:
-      "Creatives, founders and builders in the same room. An afternoon of showing each other what comes next.",
+      "DEVSA's AI conference for creators, creatives, founders and builders. More Human Than Human is its counterpart on the engineering side.",
     status: "returning",
     lastRun: "September 28, 2026",
     venue: "Geekdom",
@@ -287,29 +300,117 @@ export const conferences: Conference[] = [
     photo: "/conferences/pysanantonio-room.webp",
     photoAlt:
       "The PySanAntonio room at Geekdom — a speaker presenting at the screen with the audience at long tables, laptops open",
+    /* The luchador mariachi from the conference hero, reused rather than
+       re-cut: the same trimmed loop, which is already local and already
+       carries its own poster frame. */
+    hoverVideo: "/pysa/mascot-clip.mp4",
+    hoverPoster: "/pysa/mascot-video-poster.webp",
   },
   {
     key: "more-human-than-human",
     name: "More Human Than Human",
     blurb:
-      "DEVSA's AI conference, on what changes when the tools stop being tools. The Model carries this slot forward.",
-    status: "history",
+      "DEVSA's AI conference for engineering, security and the people leading the change. The Model is its counterpart on the creative side.",
+    status: "returning",
     lastRun: "February 28, 2026",
     venue: "Geekdom",
-    /* No entry in EVENT_BRANDS, and it should not get one. That registry is
-       for brands the calendar still renders cards for; this one has run its
-       last edition. The amber is its own, carried over from the conference
-       site so the card is recognisably it rather than a grey tombstone. */
+    venueDetail: "The Rand, 3rd Floor — 110 E Houston St",
+    timeLabel: "1:00 – 5:00 PM",
+    href: "/events/morehumanthanhuman",
+    poweredBy: ["DEVSA", "Digital Canvas", "Geekdom"],
+    /* No entry in EVENT_BRANDS yet. That registry drives the lockups the
+       community calendar renders on event cards, and there is no scheduled
+       edition for it to render — when a date exists, this gets an entry and
+       the lockup moves there.
+
+       Until then the amber lives here. It is the conference's own, carried
+       over from its site, so the portfolio card is recognizably it. */
     accent: "#ff9900",
+    /* The rotating head from its own title sequence — the thing anyone who
+       attended would recognize. It was playing in the on-demand band until that
+       band came off the page; this keeps it in use rather than retiring the
+       only piece of motion the conference owns.
+
+       It used to be this card's mark, running on a loop with the conference's
+       name laid over it, because this was the one conference here with no
+       lettering of its own. That was always a workaround: the name sat on the
+       footage as a caption rather than as a mark, and the card was the only one
+       of four that could not be read at a glance without motion. The wordmark
+       its own site used is now set properly, so the head does what the mascot
+       does on PySanAntonio's card — it waits behind the lettering until
+       somebody looks.
+
+       Re-encoded for a card: the S3 original is 1920x1080 at 5.1 Mbps and
+       7.7 MB, which is a poor trade for a tile a few hundred pixels wide.
+       1280-wide at CRF 26 is 0.7 MB and indistinguishable at this size. The
+       old markup also offered a .webm source that has been returning 403. */
+    /* The running order as it ran, recovered from next-canvas — the conference
+       was produced on digitalcanvas.community and its schedule component is
+       still there, which is why this is a record rather than a reconstruction.
+
+       Times are ranges here where the other three conferences carry a single
+       start. That is the source's own format and it is the more useful one for
+       an afternoon nobody can attend any more: it says how long a thing ran,
+       which is the question left once "when should I arrive" has stopped
+       mattering.
+
+       The five community slots are in the list rather than filtered out of it.
+       They are five minutes each and they are not talks, but they are what the
+       afternoon actually was — a room that gave its stage to ACM UTSA, Geeks &&,
+       ACM-SA, Chaincraft and Alamo Python between the sessions. Dropping them
+       would tidy the record into something that did not happen. */
+    sessions: [
+      { time: "1:10 – 1:50", title: "Key AI Skills for Leaders", people: "Wes Etheredge" },
+      { time: "1:50 – 1:55", title: "ACM UTSA", people: "Alekzander Brysch" },
+      { time: "1:55 – 2:15", title: "How Do Agents Actually Work?", people: "Samad Ahmed" },
+      { time: "2:15 – 2:35", title: "GitHub Copilot SDK", people: "Daniel Ward" },
+      { time: "2:35 – 2:40", title: "AI-April", people: "Geeks &&" },
+      {
+        time: "2:40 – 2:55",
+        title: "GTM Research in the Age of AI",
+        people: "Serena Hernandez",
+      },
+      { time: "2:55 – 3:15", title: "Godot Audio Stack", people: "Werner Mendizabal" },
+      { time: "3:15 – 3:20", title: "VelociCode II", people: "ACM-SA" },
+      {
+        time: "3:20 – 3:35",
+        title: "What\u2019s Left When the Code Writes Itself?",
+        people: "Angel Escobedo",
+      },
+      { time: "3:35 – 3:40", title: "Chaincraft", people: "Ryan Beltr\u00e1n" },
+      { time: "3:40 – 3:45", title: "PyTexas Conference", people: "Alamo Python" },
+      {
+        time: "3:50 – 4:20",
+        title: "We Can\u2019t Do This Without YOU",
+        people: "Dirce E. Hernandez",
+      },
+      {
+        time: "4:20 – 4:40",
+        title: "Proving Humanity in an Agentic Internet",
+        people: "Jacqueline Suttin",
+      },
+      { time: "4:40 – 4:45", title: "Dream It, Ship It", people: "Jesse Hernandez" },
+    ],
+    hoverVideo:
+      "https://cd7xknlpdcor35of.public.blob.vercel-storage.com/video/more-human-head.mp4",
+    hoverPoster: "/conferences/more-human-poster.webp",
   },
 ];
 
-/** The ones DEVSA intends to run again. */
+/** The ones DEVSA intends to run again — all of them, as it stands. */
 export const returningConferences = conferences.filter(
   (c) => c.status === "returning"
 );
 
-/** The ones that have had their last edition. */
+/**
+ * The ones that have had their last edition. Empty today: More Human Than
+ * Human was the only entry and it is coming back, as the second of DEVSA's two
+ * AI conferences rather than a slot The Model absorbed.
+ *
+ * Kept, with `status: "history"` still in the type, because a conference that
+ * ends is a thing that happens and the portfolio already knows how to render
+ * one — see `isHistory` in ConferencePortfolio.
+ */
 export const pastConferences = conferences.filter((c) => c.status === "history");
 
 /** One conference by key, for the pages that render a single brand. */

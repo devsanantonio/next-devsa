@@ -100,7 +100,7 @@ export function CallSection({ phase }: { phase: AgCfsPhase }) {
           {/* The first-timer callout and the slot count used to sit here. Both
               are out: the callout restated a promise the form's own checkbox
               already makes at the moment it is actionable, and the slot count
-              is an organiser's detail that reads as a discouragement — "three
+              is an organizer's detail that reads as a discouragement — "three
               slots" tells someone deciding whether to write an abstract that
               the odds are long. The reserved slot itself is unchanged. */}
 

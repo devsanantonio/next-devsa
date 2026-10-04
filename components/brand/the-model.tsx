@@ -32,7 +32,7 @@ import { MODEL_INK, MODEL_LAVENDER } from "@/data/the-model/2026"
  * OS monospace, so even a correct port of this would have rendered wrong.
  */
 
-/** Text caught inside a selection — a block of colour, ink knocked out. */
+/** Text caught inside a selection — a block of color, ink knocked out. */
 export function ModelSelection({
   children,
   className = "",
@@ -78,7 +78,7 @@ export function ModelWordmark({ className = "" }: { className?: string }) {
  * A section label, opened by `//`.
  *
  * The comment marker is the cheapest possible carrier of the editor idea — it
- * costs two characters and does more brand work than a coloured rule would.
+ * costs two characters and does more brand work than a colored rule would.
  */
 export function ModelLabel({
   children,

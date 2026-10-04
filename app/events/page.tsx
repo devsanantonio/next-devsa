@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { ConferencePortfolio } from "@/components/events/conference-portfolio"
 import { FeaturedTxlf } from "@/components/events/featured-txlf"
-import { FeaturedOnDemandEvent } from "@/components/events/featured-on-demand-event"
+import { EventsVisitMarker } from "@/components/events/conference-back-link"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -117,15 +117,23 @@ export default function EventsPage() {
           FeaturedDevsaEvent and FeaturedZeroToAgent were before it. SASTW is
           annual and startup-week-band.tsx notes what to move when 2027 is
           dated. To change what is featured, change what is passed here. */}
+      {/* Records that the calendar has been seen this session, so a conference
+          page's back link knows whether history.back() has anywhere to land —
+          and can therefore restore the reader's scroll position instead of
+          dropping them at the top of the list. Renders nothing. */}
+      <EventsVisitMarker />
       <main className="min-h-screen bg-white text-gray-900">
         <CommunityEventsSection featured={<FeaturedTxlf />} />
-        {/* What DEVSA runs, then what you can watch. The portfolio answers
-            "does this organisation put on conferences"; the archive below
-            answers "can I see one". A brand with no footage yet — which is
-            both Startup + Tech Week activations — has a home in the first and
-            not the second. */}
+        {/* What DEVSA runs.
+        
+            The on-demand archive that sat below this is gone. It was a video
+            shelf for two past conferences, and both are reachable from better
+            places — PySanAntonio 2025 from its own route and the archive card
+            on /events/pysanantonio, More Human Than Human from the card in
+            this section, which now carries its title-sequence head. A whole
+            band to hold two tiles was spending the page's best remaining
+            space on its least current content. */}
         <ConferencePortfolio />
-        <FeaturedOnDemandEvent />
       </main>
     </>
   )

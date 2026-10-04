@@ -46,7 +46,7 @@ interface VolunteerRequest {
    * False when this signup rides along with a talk submitted in the same
    * breath — the Access Granted form posts to both routes when someone picks
    * "Both", and two confirmations for one action reads as a bug. The speaker
-   * template says "you also offered to help" instead. The organiser
+   * template says "you also offered to help" instead. The organizer
    * notification is NOT suppressed; the crew list still needs the record.
    */
   sendConfirmation?: boolean;
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // `role` is deliberately NOT required. Access Granted dropped its role
     // picker — most of the jobs on that list belonged to the partner orgs
-    // rather than to us — so a signup is now just "I'm in", and organisers
+    // rather than to us — so a signup is now just "I'm in", and organizers
     // work out who does what by reaching out. An event that does want to ask
     // can still send one, and it will be stored and shown in the email.
     if (!name || !email || !eventId) {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     // One signup per person per event. A second submission updates rather than
     // duplicating — someone who changes their mind about which table to run
-    // should not appear twice on the organiser's list.
+    // should not appear twice on the organizer's list.
     const existing = await db
       .collection(COLLECTIONS.VOLUNTEER_SIGNUPS)
       .where('eventId', '==', eventId)
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       recordId = docRef.id;
     }
 
-    // Each event brings its own confirmation template. An unrecognised eventId
+    // Each event brings its own confirmation template. An unrecognized eventId
     // gets NO email rather than someone else's — the write is what matters, and
     // a volunteer for a future event should not be welcomed to Access Granted.
     // Add a case here when the next event starts using this route.
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
       console.log('Resend not configured - skipping volunteer confirmation');
     }
 
-    // Organiser notification. Sent even when the confirmation is suppressed —
+    // Organizer notification. Sent even when the confirmation is suppressed —
     // a "Both" submission produces two records and the crew list needs its own.
     if (eventId === AG_EVENT_ID && isResendConfigured() && resend) {
       try {
@@ -174,9 +174,9 @@ export async function POST(request: NextRequest) {
             alsoVolunteering: !sendConfirmation,
           }),
         });
-        console.log('Organiser notification sent for %s submission:', 'volunteer', AG_NOTIFY_EMAILS.join(', '));
+        console.log('Organizer notification sent for %s submission:', 'volunteer', AG_NOTIFY_EMAILS.join(', '));
       } catch (notifyError) {
-        console.error('Failed to send organiser notification:', notifyError);
+        console.error('Failed to send organizer notification:', notifyError);
       }
     }
 

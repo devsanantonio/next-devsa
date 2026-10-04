@@ -27,7 +27,7 @@ export function CallForSpeakersSection({ phase }: { phase: CfsPhase }) {
       data-bg-type="dark"
       className="relative scroll-mt-24 overflow-hidden bg-[#0a0a0a] py-20 md:py-24"
     >
-      {/* The stickers anchor to this wrapper, not the section — the organiser
+      {/* The stickers anchor to this wrapper, not the section — the organizer
           row below is part of the section now, so `bottom-0` on the section
           would drop the mascot straight onto the logos. */}
       <div className="relative">

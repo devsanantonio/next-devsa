@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 /**
  * Ported verbatim from next-sasw's `components/site/shader-canvas.tsx`.
  *
- * The shader, the domain-warped fbm, the colour easing and the fallback
- * behaviour are that file's — only the import paths changed. Kept as a copy
+ * The shader, the domain-warped fbm, the color easing and the fallback
+ * behavior are that file's — only the import paths changed. Kept as a copy
  * rather than reimplemented so the current flowing through the bolt on
  * devsa.community is the same current as on sasw.co; if it is retuned there,
  * re-copy rather than re-derive.

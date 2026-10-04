@@ -11,7 +11,7 @@ import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
  * right. DEVSA is a community partner here, not the host, and the card says so
  * rather than letting a prominent band imply otherwise.
  *
- * ## Their colours, not ours
+ * ## Their colors, not ours
  *
  * Every other branded surface on this site carries a DEVSA activation's
  * palette. This one carries Texas Linux Fest's, sampled from their own badge
@@ -48,7 +48,7 @@ import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
  * Navy sets the type on the orange, not white. Their own ticket block is white
  * on orange, which measures 2.94:1 — below the 4.5:1 floor for body text.
  * Their navy on the same orange is 4.97:1 and uses nothing outside their own
- * two colours, so the card stays theirs and stays legible. Copying a partner's
+ * two colors, so the card stays theirs and stays legible. Copying a partner's
  * contrast failure onto our site is not fidelity.
  */
 const TXLF_NAVY = "#002070"

@@ -22,7 +22,7 @@
  *
  * The brand constants below are deliberately copied rather than invented, so
  * the two sites read as the same event. If the green, the padlock or the
- * organiser wall changes there, it has to change here too — there is no shared
+ * organizer wall changes there, it has to change here too — there is no shared
  * package between the repos.
  */
 
@@ -48,7 +48,7 @@ export const AG_HOST_COMMUNITY_ID = "defcongroup-sa"
 /**
  * Who gets told when someone answers either half of the call.
  *
- * An array so more organisers can be added without touching either route —
+ * An array so more organizers can be added without touching either route —
  * every address here receives the same internal notification. Keep it to
  * people who will actually action a submission; this fires on every send.
  */
@@ -66,7 +66,7 @@ export const ACCESS_GRANTED = {
   // No `track` field. Access Granted is programmed under Startup + Tech
   // Week's "Tech & Builders" track, but naming it is the SASTW site's job —
   // this page's header is not where someone places the room inside the week's
-  // programme. Re-add here if that changes.
+  // program. Re-add here if that changes.
   address: {
     street: "131 Soledad St",
     city: "San Antonio",
@@ -96,7 +96,10 @@ export const ACCESS_GRANTED = {
  * without the other.
  */
 export const AG_ONE_LINER = {
-  setup: "Every other room this week is people talking about technology.",
+  /* "this week" came out. It tied the hook to Startup + Tech Week, which has
+     now run — and the line is a better line without it: the claim is about
+     what this room does, not when it happened. */
+  setup: "Every other room is people talking about technology.",
   turn: "This one is people taking it apart.",
 } as const
 
@@ -122,7 +125,7 @@ export const GRID_LINE = "rgba(255,255,255,0.055)"
 
 /**
  * And the mask that stops it. Tiled to the section edges the grid stops being a
- * hint and becomes wallpaper, so it is an ellipse centred on the artwork rather
+ * hint and becomes wallpaper, so it is an ellipse centered on the artwork rather
  * than on its (much wider) box.
  */
 export const GRID_FADE =
@@ -137,10 +140,37 @@ export const GRID_FADE =
  * art means a NEW filename, not just a new file, or every cache keeps serving
  * the old render.
  */
+/**
+ * The lock, as a loop rather than a render.
+ *
+ * It was a still PNG with a ciphertext field revealed on hover. Both are gone:
+ * the activation already has a motion asset for this — the loop cut for the
+ * week's TV channel — and a hover effect is a poor substitute for the thing it
+ * was approximating. It also only ever existed for people with a pointer.
+ *
+ * Cropped from the 1082x1122 original to 1082x922, taking 80px off the top and
+ * 120px off the bottom. The source frame carried the lock with 7.8% of empty
+ * space above it, which meant top-aligning the art column against the heading
+ * aligned their boxes and not the objects in them — the lock started well below
+ * the h1.
+ *
+ * A negative margin was tried first and cannot work: expressed as a percentage
+ * it scales with the column while the heading's position does not, so it landed
+ * within a pixel at 1440 and overshot by 43px at 1920. Taking the dead space out
+ * of the asset fixes it at every width at once, and makes the lock fill more of
+ * its own frame into the bargain.
+ *
+ * Poster cut at 3.5s, not from the opening. The loop runs dark lock -> circuit
+ * energising -> shackle open and fully lit, and the first second is the dark
+ * state. A poster taken there is the dullest frame in the file, which is what
+ * anyone with autoplay blocked or reduced data would be left looking at. 3.5s
+ * is the brightest frame and the one the loop is about.
+ */
 export const AG_LOCK = {
-  src: "/access-granted/padlock.png",
-  width: 907,
-  height: 1400,
+  src: "/access-granted/padlock-loop.mp4",
+  poster: "/access-granted/padlock-loop-poster.webp",
+  width: 1082,
+  height: 922,
 } as const
 
 /**
@@ -282,7 +312,7 @@ export type AgIntent = (typeof AG_INTENTS)[number]["value"]
  */
 export const AG_CFP = {
   /**
-   * Split so the section can set the last phrase in the accent colour. Stored
+   * Split so the section can set the last phrase in the accent color. Stored
    * as two fields rather than sliced from one string at render time — a
    * regex over display copy breaks silently the first time the copy is
    * reworded.
@@ -348,7 +378,7 @@ export const AG_VOLUNTEER = {
  * white, and Cyber Jedis was a JPEG whose near-black field was keyed out — so
  * these files are the corrected versions, not the originals from the orgs.
  *
- * `heightClass` normalises them optically rather than mechanically: a square
+ * `heightClass` normalizes them optically rather than mechanically: a square
  * mark needs more height than a wide wordmark to carry the same weight, which
  * is why these are not all the same number. Values carried over from next-sasw,
  * where they were tuned against this exact set of six.

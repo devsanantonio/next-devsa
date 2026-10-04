@@ -51,7 +51,7 @@ export const SASTW_LOGO = {
 export const SASTW_MAGENTA = "#ff32a0"
 
 /**
- * The five circuits' accent colours, swept left→right through the bolt as the
+ * The five circuits' accent colors, swept left→right through the bolt as the
  * cursor crosses it — "five circuits, one current."
  *
  * Copied from `CIRCUIT_COLORS` in next-sasw's `lib/tracks.ts`, in TRACK_NAMES
@@ -102,7 +102,7 @@ export const SASTW_2026 = {
  *
  * Each wears its own brand where it is listed rather than a house treatment —
  * `lockup` is what the band switches on. PySanAntonio has an actual wordmark;
- * the other two are typeset, so their "logo" is a font and a colour and the
+ * the other two are typeset, so their "logo" is a font and a color and the
  * only way to keep them right is to set them the same way their own pages do.
  *
  * Every `href` is that activation's page on sasw.co, including the two that
