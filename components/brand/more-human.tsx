@@ -37,6 +37,9 @@
  */
 const SIZES = {
   card: "text-xl sm:text-2xl",
+  /** Matches LOCKUP_SIZES.panel in event-brand-lockup — the homepage tiles,
+      where a mark is alone in its box rather than labelling a stack. */
+  panel: "text-3xl sm:text-4xl lg:text-5xl",
   hero: "text-4xl sm:text-5xl lg:text-6xl",
 } as const
 

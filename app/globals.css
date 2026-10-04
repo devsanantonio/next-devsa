@@ -45,23 +45,27 @@
   --font-geist-sans: "Geist Sans", sans-serif;
   --font-geist-mono: "Geist Mono", monospace;
 
-  /* Tailwind's own keys, so `font-sans` and `font-mono` resolve to the fonts
-     this site actually loads.
+  /* Tailwind's own keys, so the 41 `font-sans` and 94 `font-mono` classes in
+     this repo resolve to the fonts the site actually loads.
 
-     These were missing. Tailwind v4 builds `font-mono` from `--font-mono`, and
-     only `--font-geist-mono` was defined — so every one of the 85 `font-mono`
-     classes in this repo fell through to Tailwind's default stack and rendered
-     in the OS monospace. It looked deliberate, because a system mono next to
-     Geist Sans is a perfectly reasonable-looking pairing, which is exactly why
-     it survived.
+     They point at the variables rather than at family names, and that is the
+     whole fix. These keys were added carrying the literal strings "Geist Sans"
+     and "Geist Mono", which looked right and was not: next/font registers each
+     face under a generated, hashed family name, so a literal only matches for
+     a reader who happens to have Geist installed as a system font. On this
+     machine it is installed — which is exactly why the literals rendered
+     correctly here and would have fallen through to the OS default sans and
+     mono for everyone else.
 
-     It mattered most where mono IS the brand: Access Granted's terminal
-     grammar and The Model's labels are specified in Geist Mono, and both were
-     silently wearing something else. */
-  --font-mono: "Geist Mono", monospace;
-  --font-sans: "Geist Sans", sans-serif;
-  /* The activations' display face. Opt-in — see the note in app/layout.tsx. */
-  --font-display: "Oswald", sans-serif;
+     `--font-geist-sans` and `--font-geist-mono` below are the names next/font
+     writes on <body> (see GeistSans.variable in app/layout.tsx), so pointing
+     these at them inherits the real, hashed families. */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  /* The activations' display face, and the only thing that should ever be set
+     in it: Access Granted's wordmark. One `font-display` class in the repo,
+     on that h1. Everything else on every page is Geist. */
+  --font-display: var(--font-oswald);
   --font-geist-pixel-square: "Geist Pixel Square", monospace;
   --font-geist-pixel-grid: "Geist Pixel Grid", monospace;
   --font-geist-pixel-circle: "Geist Pixel Circle", monospace;
@@ -73,13 +77,13 @@ body {
   font-family: var(--font-geist-sans);
 }
 
-/* Opt-in display face for the Startup + Tech Week brands. Scoped to a class on
-   purpose: next-sasw puts Oswald on bare h1/h2/h3, which is right there and
-   wrong here — this site's headings are Geist Sans black on every page, and a
-   bare-element rule would silently restyle all of them. */
-.font-display {
-  font-family: var(--font-oswald), var(--font-geist-sans), sans-serif;
-}
+/* The hand-written `.font-display` that sat here is gone. It did the same job
+   as the `--font-display` theme key above and shadowed it — two rules for one
+   class name, the unlayered one quietly winning. One definition now.
+
+   It stays opt-in either way: next-sasw puts Oswald on bare h1/h2/h3, which is
+   right there and wrong here. This site's headings are Geist Sans black on
+   every page, and a bare-element rule would silently restyle all of them. */
 
 /* Admin slide-over drawer animations */
 @keyframes admin-drawer-in {

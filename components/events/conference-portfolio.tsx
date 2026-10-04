@@ -4,14 +4,10 @@ import { motion } from "motion/react"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { conferences, type Conference } from "@/data/conferences"
-import { getEventBrand } from "@/lib/event-brands"
-import { EventBrandLockup } from "@/components/events/event-brand-lockup"
-import { MoreHumanWordmark } from "@/components/brand/more-human"
 import {
-  ConferenceCipherField,
-  ConferenceHoverClip,
-  ConferenceMascots,
-} from "@/components/events/conference-card-fx"
+  ConferenceBand,
+  accentOf,
+} from "@/components/events/conference-band"
 
 /**
  * The conferences DEVSA owns, as a portfolio.
@@ -55,15 +51,6 @@ import {
  * the other side of it — and partly that a card which needs motion to be
  * legible is a card that cannot be skimmed.
  */
-function accentOf(conference: Conference): string {
-  const brand = getEventBrand(conference.brand)
-  return brand?.accent ?? conference.accent ?? "#ffffff"
-}
-
-function surfaceOf(conference: Conference): string {
-  return getEventBrand(conference.brand)?.surface ?? "#0a0a0a"
-}
-
 function ConferenceCard({
   conference,
   index,
@@ -71,75 +58,21 @@ function ConferenceCard({
   conference: Conference
   index: number
 }) {
-  const brand = getEventBrand(conference.brand)
   const accent = accentOf(conference)
   const isHistory = conference.status === "history"
 
   const inner = (
     <>
       {/* The mark, on the brand's own ground. A fixed height so four cards
-          line up whatever shape their lettering is. */}
-      <div
-        className="relative flex h-44 items-center justify-center overflow-hidden px-5 sm:h-52 lg:px-4"
-        style={{ backgroundColor: surfaceOf(conference) }}
-      >
-        {/* The play each brand brought with it from next-sasw's /schedule,
-            where each ran across a full-width band. Keyed off the brand rather
-            than offered to every card: the cipher field is Access Granted's
-            subject, the mascots are The Model's, the luchador is
-            PySanAntonio's, and the rotating head is More Human's. A card
-            wearing one of the others' would be an effect for its own sake.
-
-            They go *here*, before the lockup, and that placement is
-            load-bearing rather than tidy. Each is absolutely positioned while
-            the lockup is a static block, and within one stacking context a
-            positioned element paints above a static one whatever the DOM order
-            — so the lockup carries an explicit `z-2` to climb back over them.
-            Without it the ciphertext lies across Access Granted's lettering and
-            the clips bury the wordmarks, which is the one thing on any of these
-            cards that may not be covered. */}
-        {conference.brand === "access-granted" && (
-          <ConferenceCipherField accent={accent} />
-        )}
-        {conference.hoverVideo && conference.hoverPoster && (
-          <ConferenceHoverClip
-            src={conference.hoverVideo}
-            poster={conference.hoverPoster}
-          />
-        )}
-
-        {brand ? (
-          <>
-            {/* Scaled down a notch at lg, where four across leaves each card
-                about 305px and roughly 265px inside its padding.
-                PySanAntonio's drawn wordmark is 240px of that on its own and
-                Access Granted's lettering is not far behind, so at full size
-                they sit flush to the edges with nothing to breathe. The marks
-                are shared with the calendar cards, so the scale lives here
-                rather than in the lockup — it is this grid that is tight, not
-                the lockup that is wrong. */}
-            <div className="relative z-2 w-full origin-center lg:scale-[0.88]">
-              <EventBrandLockup brand={brand} />
-            </div>
-
-            {/* And the mascots after it, because they are the one effect meant
-                to pass in front of the lettering — they walk over the wordmark
-                on next-sasw's band too. */}
-            {conference.brand === "the-model" && (
-              <ConferenceMascots color={accent} />
-            )}
-          </>
-        ) : conference.key === "more-human-than-human" ? (
-          /* Its own lettering rather than the registry's: that registry drives
-             the calendar's event cards and this conference has no scheduled
-             edition for it to render yet — see the note on its record. */
-          <MoreHumanWordmark className="relative z-2 w-full origin-center lg:scale-[0.88]" />
-        ) : (
-          <h3 className="text-xl font-black tracking-[-0.02em] text-white">
-            {conference.name}
-          </h3>
-        )}
-      </div>
+          line up whatever shape their lettering is, and the scale a notch down
+          at lg: four across leaves each card about 305px and roughly 265px
+          inside its padding, while PySanAntonio's drawn wordmark is 240px of
+          that on its own. The squeeze belongs to this grid, not to the mark. */}
+      <ConferenceBand
+        conference={conference}
+        className="h-44 px-5 sm:h-52 lg:px-4"
+        markClassName="lg:scale-[0.88]"
+      />
 
       <div className="flex flex-1 flex-col p-5 sm:p-6 lg:p-5">
         <div className="flex items-start justify-between gap-3">
@@ -226,9 +159,13 @@ export function ConferencePortfolio() {
             The Ones{" "}
             <span className="text-white/50 font-light italic">We</span> Run.
           </h2>
+          {/* "DEVSA-led", not "DEVSA's own", which is what this said. The
+              cards below each open onto a page carrying a "Powered by" row of
+              partner marks, so the old line was contradicted two clicks away —
+              and it took credit from the groups in those rows. */}
           <p className="text-lg md:text-xl font-light leading-[1.45] text-white/65">
-            Not the community calendar — these are DEVSA&apos;s own, built here
-            and coming back.
+            Not the community calendar — these are DEVSA-led, activated with the
+            community groups and partners who build them with us.
           </p>
         </motion.div>
 

@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
 import { ArrowRight, X, Loader2 } from "lucide-react"
+import { conferences } from "@/data/conferences"
+import type { CommunityLink } from "@/lib/communities"
 import { useState } from "react"
 
 /**
@@ -19,17 +21,22 @@ const DEVSA_LOGO = "/branding/devsa-logo.svg"
 
 const PRESET_AMOUNTS = [50, 100, 250, 500]
 
-const communityGroups = [
-  { id: "alamo-python", name: "Alamo Python" },
-  { id: "acm-sa", name: "ACM SA" },
-  { id: "defcongroup-sa", name: "DEFCON Group" },
-  { id: "greater-gaming-society", name: "Greater Gaming Society" },
-  { id: "atc", name: "Alamo Tech Collective" },
-  { id: "gdg", name: "Google Developer Groups" },
-  { id: "geeks-and-drinks", name: "Geeks && {...}" },
-  { id: "dotnet-user-group", name: ".NET User Group" },
-  { id: "datanauts", name: "Datanauts" },
-]
+/**
+ * How many community groups the footer shows before deferring to "See All".
+ *
+ * There are twenty-three. All of them in a two-column span is twelve rows,
+ * which makes this column the heaviest thing in the footer and outweighs both
+ * the DEVSA mark and the donation module beside it. /buildingtogether is the
+ * index and does that job properly; the footer only has to prove the ecosystem
+ * exists and point at it.
+ *
+ * Ten was nine until a moment ago, and the nine were hardcoded — see
+ * lib/communities.ts. The number is a layout decision now rather than whatever
+ * somebody last pasted in, and the ten are the first ten in the order the admin
+ * arranged, so which groups appear here is editable from the admin like
+ * everything else.
+ */
+const FOOTER_COMMUNITY_LIMIT = 10
 
 // Donate modal (mirrors DonationCta from building together page)
 function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -200,7 +207,7 @@ function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   )
 }
 
-export function Footer() {
+export function Footer({ communities }: { communities: CommunityLink[] }) {
   const currentYear = new Date().getFullYear()
   const [showDonate, setShowDonate] = useState(false)
 
@@ -276,6 +283,48 @@ export function Footer() {
                 <li><Link href="/events" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Community Calendar</Link></li>
                 <li><Link href="/shop" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Shop</Link></li>
               </ul>
+
+              {/* Stacked under Site Navigation rather than given a column of
+                  its own, and not merged into the list above it.
+
+                  The list above is the navbar: three top-level destinations.
+                  These four are children of /events, so dropping them in with
+                  Building Together and the Community Calendar would flatten a
+                  hierarchy that is currently exact. A second heading in the
+                  same column keeps them subordinate and visibly separate, and
+                  leaves the grid — grid-cols-2 md:grid-cols-4, with Find Your
+                  Community spanning two — untouched. A fifth group would have
+                  needed five columns, which narrows the community sub-grid
+                  enough to start wrapping group names.
+
+                  They are here at all because the four pages had almost no way
+                  in. Every inbound link came from data/conferences.ts, feeding
+                  exactly two surfaces — the /events band and the homepage strip
+                  — both well down a scroll, while app/sitemap.ts advertises all
+                  four at priority 0.9. Asking search engines to rank a page the
+                  site barely links to is a mismatch, and a reader on one
+                  conference page had no route to the other three.
+
+                  Names only, from data/conferences.ts so the list cannot drift.
+                  No dates and no status: three of the four have no next date,
+                  and a footer that implies a schedule goes stale. No lockups
+                  either — at 13px the marks would be illegible, and four of
+                  them would compete with the DEVSA mark above. */}
+              <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mt-8 mb-5">Conferences</h3>
+              <ul className="space-y-3.5">
+                {conferences
+                  .filter((conference) => conference.href)
+                  .map((conference) => (
+                    <li key={conference.key}>
+                      <Link
+                        href={conference.href!}
+                        className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors"
+                      >
+                        {conference.name}
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
             </div>
 
             {/* Socials */}
@@ -290,11 +339,30 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Community Groups - spans 2 columns */}
+            {/* Community Groups — spans 2 columns, and last on purpose.
+
+                The column order is the arc the homepage makes: what DEVSA is
+                (Site Navigation), what DEVSA runs (Conferences), how to reach
+                DEVSA (Stay Connected), then who else is in it. Social links
+                used to sit between the site's own pages and the ecosystem,
+                which interrupted that.
+
+                Live from Firestore now, capped at FOOTER_COMMUNITY_LIMIT, with
+                "See All" carrying the remaining thirteen to /buildingtogether —
+                which is the real index. The list this replaced was nine
+                hardcoded names and slugs; see lib/communities.ts.
+
+                No partner column beside it, and that is a decision rather than
+                an omission. There are fifteen partners, so a footer listing
+                both would carry thirty-eight organization names and read as one
+                undifferentiated block — and partner and community are
+                different relationships. Partners are credited where they are
+                earned: the "Powered by" rows on the conference pages, Building
+                Together, and the homepage wall. */}
             <div className="col-span-2">
               <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mb-5">Find Your Community</h3>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                {communityGroups.map((group) => (
+                {communities.slice(0, FOOTER_COMMUNITY_LIMIT).map((group) => (
                   <li key={group.id}>
                     <Link
                       href={`/buildingtogether/${group.id}`}

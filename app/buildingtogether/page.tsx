@@ -3,6 +3,7 @@ import { GroupsHero } from "@/components/partners/groups-hero"
 import { LogoShowcase } from "@/components/partners/logo-showcase"
 import { WhyDevsa } from "@/components/partners/why-devsa"
 import { GetInvolved } from "@/components/partners/get-involved"
+import { HowWeHelp } from "@/components/partners/how-we-help"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { PartnerCta } from "@/components/partners/partner-cta"
 import { DonationCta } from "@/components/partners/donation-cta"
@@ -96,6 +97,10 @@ export default function GroupsPage() {
           dark between two light sections, so the argument reads as a statement
           rather than another band of the directory. */}
       <WhyDevsa />
+      {/* Between the gap and the ask. WhyDevsa states the problem and the
+          limit; GetInvolved asks the reader to act. The mechanism — and one
+          instance of it having worked — belongs between them. */}
+      <HowWeHelp />
       <GetInvolved />
       <PartnerCta />
       <MeetTheTeam />

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import type { CommunityLink } from "@/lib/communities"
 
 /**
  * Routes where the root layout's marketing chrome (Navbar + Footer) is
@@ -31,7 +32,24 @@ function isAppOwnedChrome(pathname: string | null) {
  * for sections that manage their own. Keeps `children` in place either way so
  * the layout tree doesn't change shape.
  */
-export function LayoutChrome({ children }: { children: React.ReactNode }) {
+export function LayoutChrome({
+  children,
+  communities,
+}: {
+  children: React.ReactNode
+  /**
+   * Read in the root layout, which is a server component, and forwarded
+   * through here untouched.
+   *
+   * This chain exists because the footer's community list has to be in the
+   * server-rendered HTML. Fetching it in the footer on mount would work and
+   * would match how the homepage wall and /buildingtogether do it — but those
+   * are page content, and this is the site's internal link graph. Links that
+   * only appear after hydration are a weaker crawl path, and giving those
+   * pages a crawl path is most of why the footer lists them at all.
+   */
+  communities: CommunityLink[]
+}) {
   const pathname = usePathname()
   const skipChrome = isAppOwnedChrome(pathname)
 
@@ -39,7 +57,7 @@ export function LayoutChrome({ children }: { children: React.ReactNode }) {
     <>
       {!skipChrome && <Navbar />}
       {children}
-      {!skipChrome && <Footer />}
+      {!skipChrome && <Footer communities={communities} />}
     </>
   )
 }

@@ -14,6 +14,7 @@ import "./globals.css"
 import { SiteAnalytics } from "@/components/site-analytics"
 import { Suspense } from "react"
 import { LayoutChrome } from "@/components/layout-chrome"
+import { listCommunities } from "@/lib/communities"
 import { CartProvider } from "@/components/shop/cart-context"
 import { CartSlideOut } from "@/components/shop/cart-slide-out"
 
@@ -138,11 +139,18 @@ export const metadata: Metadata = {
   category: "technology",
 }
 
-export default function RootLayout({
+/**
+ * `async`, so the footer's community list can be read on the server and land in
+ * the HTML rather than appearing after hydration — see LayoutChrome for why
+ * that matters for this particular list.
+ */
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const communities = await listCommunities()
+
   return (
     <html lang="en">
       <head>
@@ -217,7 +225,7 @@ export default function RootLayout({
       <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} ${oswald.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <CartProvider>
-            <LayoutChrome>{children}</LayoutChrome>
+            <LayoutChrome communities={communities}>{children}</LayoutChrome>
             <CartSlideOut />
           </CartProvider>
           <SiteAnalytics />

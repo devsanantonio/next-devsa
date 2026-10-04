@@ -4,7 +4,22 @@ import { motion } from "motion/react"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
-const HERO_IMAGE_URL = "https://devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg"
+/**
+ * Local, and cropped for this slot.
+ *
+ * This used to hotlink the camera original from S3 —
+ * devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg, 5.4 MB — as the
+ * background of a `min-h-dvh` hero, so it was in the critical path of a
+ * top-level page. The same photograph already existed in this repo at
+ * /hero/techday5.webp, 73 KB, which is the version the homepage marquee had
+ * been using all along: a 74x difference for an image that renders as a
+ * grayscaled, heavily scrimmed backdrop.
+ *
+ * The frame changed too. A full session room from Startup + Tech Week says what
+ * this page is about — a room with the ecosystem in it — better than a tight
+ * shot of a few people at a meetup did.
+ */
+const HERO_IMAGE_URL = "/photos/buildingtogether-hero.webp"
 
 export function GroupsHero() {
   return (
@@ -13,9 +28,12 @@ export function GroupsHero() {
       data-bg-type="dark"
     >
       {/* Background image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={HERO_IMAGE_URL}
         alt=""
+        width={1600}
+        height={900}
         className="absolute inset-0 w-full h-full object-cover grayscale"
       />
 

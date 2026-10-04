@@ -6,23 +6,44 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
-// Event photos from DEVSA conferences. These are pre-cropped to 3:4 and resized
-// to 800x1067 in public/hero/ — the cards render at ~260 CSS px, so the camera
-// originals on S3 (up to 6124x4082 / 9 MB each) were ~35 MB of wasted payload.
-// Regenerate with the same crop if you swap one in, or the aspect will shift.
+// Event photos from DEVSA conferences and community events. These are
+// pre-cropped to 3:4 and resized to 800x1067 in public/hero/ — the cards render
+// at ~260 CSS px, so the camera originals (up to 6941x4627 / 22 MB each) were
+// tens of megabytes of wasted payload. Regenerate with the same crop if you
+// swap one in, or the aspect will shift.
+//
+// Deliberately a mix of two eras and two kinds of room.
+//
+// The `sastw-*` frames are the 2026 Startup + Tech Week — stage lighting, a
+// podium, a full house, the week's own signage. They are what DEVSA runs. The
+// older frames are meetups, workshops and group photos from the specialty
+// groups, which is what DEVSA hosts and points people to. Showing only the
+// first would make this look like a conference company; showing only the second
+// would hide the four conferences the page goes on to name. The hero is the one
+// place both have to be true at once.
+//
+// Interleaved rather than grouped, because splitIntoColumns below assigns by
+// `i % cols` — a block of new frames followed by a block of old ones would put
+// one era in each column.
 const mediaItems = [
-  { src: "/hero/pysa.webp", alt: "PySanAntonio After Party" },
-  { src: "/hero/utsa.webp", alt: "DevSA UTSA event" },
-  { src: "/hero/morehuman-9743.webp", alt: "More Human Event" },
-  { src: "/hero/morehuman-9580.webp", alt: "More Human Event" },
-  { src: "/hero/replay13.webp", alt: "DevSA Replay Event" },
-  { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
-  { src: "/hero/techday2.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/sastw-stage-grid.webp", alt: "A speaker on the Startup + Tech Week stage against a neon schematic backdrop" },
   { src: "/hero/shebuilds.webp", alt: "SheBuilds Event" },
-  { src: "/hero/morehuman-9715.webp", alt: "More Human Event" },
-  { src: "/hero/techday5.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/sastw-room-full.webp", alt: "A full room at long tables during a Startup + Tech Week session" },
+  { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
+  { src: "/hero/sastw-shared-stories.webp", alt: "A speaker presenting beside a Shared Stories title card" },
+  { src: "/hero/techday2.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/sastw-the-reading.webp", alt: "A speaker at the podium for The Reading, on AI and quantum" },
+  { src: "/hero/utsa.webp", alt: "DevSA UTSA event" },
+  { src: "/hero/sastw-room-hand.webp", alt: "A raised hand in a packed session room during Startup + Tech Week" },
   { src: "/hero/ltai-talk.webp", alt: "A speaker walking through a workflow at a DEVSA talk" },
+  { src: "/hero/sastw-story-show.webp", alt: "A speaker mid-talk on a darkened stage" },
   { src: "/hero/replay9.webp", alt: "Andrea from Geeks fam" },
+  { src: "/hero/sastw-week-venue.webp", alt: "The Startup + Tech Week banner above a spread of food at the venue" },
+  { src: "/hero/morehuman-9743.webp", alt: "More Human Event" },
+  { src: "/hero/sastw-lounge.webp", alt: "Attendees seated together in a lounge between sessions" },
+  { src: "/hero/replay13.webp", alt: "DevSA Replay Event" },
+  { src: "/hero/sastw-workshop.webp", alt: "A hands-on workshop session with attendees at laptops" },
+  { src: "/hero/sastw-stage-wide.webp", alt: "A speaker on stage with the room's screens behind them" },
 ]
 
 // Columns are full-bleed behind the copy, so their top cards are in-viewport on
