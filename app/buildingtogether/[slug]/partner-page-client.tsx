@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import type { Partner } from "@/lib/partners"
-import { logoOnLight, logoPlateOnLight } from "@/lib/logo-invert"
+import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 import { ArrowLeft, ExternalLink, Globe } from "lucide-react"
 import { motion } from "motion/react"
 
@@ -67,10 +67,10 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
                   means one rule covers every light surface on the site. */}
               <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0">
                 <Image
-                  src={partner.logo}
+                  src={logoSrcOnLight(partner, partner.logo)}
                   alt={partner.name}
                   fill
-                  className={`object-contain ${logoOnLight(partner)} ${logoPlateOnLight(partner)}`}
+                  className={`object-contain ${logoOnLight(partner)}`}
                   sizes="112px"
                 />
               </div>
