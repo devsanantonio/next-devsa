@@ -44,6 +44,22 @@
   @theme {
   --font-geist-sans: "Geist Sans", sans-serif;
   --font-geist-mono: "Geist Mono", monospace;
+
+  /* Tailwind's own keys, so `font-sans` and `font-mono` resolve to the fonts
+     this site actually loads.
+
+     These were missing. Tailwind v4 builds `font-mono` from `--font-mono`, and
+     only `--font-geist-mono` was defined — so every one of the 85 `font-mono`
+     classes in this repo fell through to Tailwind's default stack and rendered
+     in the OS monospace. It looked deliberate, because a system mono next to
+     Geist Sans is a perfectly reasonable-looking pairing, which is exactly why
+     it survived.
+
+     It mattered most where mono IS the brand: Access Granted's terminal
+     grammar and The Model's labels are specified in Geist Mono, and both were
+     silently wearing something else. */
+  --font-mono: "Geist Mono", monospace;
+  --font-sans: "Geist Sans", sans-serif;
   --font-geist-pixel-square: "Geist Pixel Square", monospace;
   --font-geist-pixel-grid: "Geist Pixel Grid", monospace;
   --font-geist-pixel-circle: "Geist Pixel Circle", monospace;
