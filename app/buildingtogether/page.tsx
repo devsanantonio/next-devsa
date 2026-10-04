@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { GroupsHero } from "@/components/partners/groups-hero"
 import { LogoShowcase } from "@/components/partners/logo-showcase"
+import { WhyDevsa } from "@/components/partners/why-devsa"
 import { GetInvolved } from "@/components/partners/get-involved"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { PartnerCta } from "@/components/partners/partner-cta"
@@ -91,6 +92,10 @@ export default function GroupsPage() {
       <main className="min-h-screen bg-black">
       <GroupsHero />
       <LogoShowcase />
+      {/* The wall is the evidence; this is what it means. Placed after it, and
+          dark between two light sections, so the argument reads as a statement
+          rather than another band of the directory. */}
+      <WhyDevsa />
       <GetInvolved />
       <PartnerCta />
       <MeetTheTeam />

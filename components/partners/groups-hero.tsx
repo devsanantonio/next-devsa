@@ -52,9 +52,11 @@ export function GroupsHero() {
           <div className="space-y-8 max-w-3xl mt-8">
             <div className="space-y-6">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Our platform simplifies how local partners and tech communities{" "}
-                <strong className="font-semibold text-white">collaborate</strong>,{" "}
-                exchange resources, and grow the ecosystem together.
+                Twenty-plus community groups, the partners who back them, and{" "}
+                <strong className="font-semibold text-white">
+                  one shared calendar
+                </strong>{" "}
+                between them.
               </p>
 
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
