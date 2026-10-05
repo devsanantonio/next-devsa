@@ -108,7 +108,7 @@ const lanes: Lane[] = [
        is honest as listed — but a reader following "agents" through to Alamo
        Tech Collective will not find it confirmed there. Worth a sentence in
        that record. */
-    body: "Python, Linux and open source, .NET, AI, agents, game design, UX, design, data engineering, security, AWS, Google — 20+ specialty groups, every meetup and workshop in one calendar. Find the ones that match what you're actually into.",
+    body: "Python, Linux and open source, .NET, AI, agents, game design, UX, design, data engineering, security, AWS, Google — every specialty group in the city, every meetup and workshop in one calendar. Find the ones that match what you're actually into.",
     cta: "Build Your Network",
     href: "/events",
     accent: "text-[#00b2a9]",

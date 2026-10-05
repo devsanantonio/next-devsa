@@ -109,7 +109,7 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google — 20+ specialty groups, one calendar.
+            Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google — every specialty group, one calendar.
           </p>
         </div>
 

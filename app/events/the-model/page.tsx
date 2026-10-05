@@ -23,6 +23,23 @@ export const metadata: Metadata = {
     url: `${siteUrl}/events/the-model`,
     siteName: "DEVSA",
     type: "website",
+    images: [
+      {
+        url: `${siteUrl}/api/og/the-model`,
+        width: 1200,
+        height: 630,
+        alt: "The Model — a DEVSA conference in San Antonio",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Model — A DEVSA Conference",
+    description: `${THE_MODEL.tagline.setup} ${THE_MODEL.tagline.turn}`,
+    images: [`${siteUrl}/api/og/the-model`],
+    creator: "@devsatx",
+    site: "@devsatx",
   },
 }
 

@@ -9,7 +9,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 
 export const metadata: Metadata = {
   title: "Tech Events & Meetups in San Antonio | DEVSA Community Calendar",
-  description: "Find upcoming tech events, developer meetups, coding workshops, hackathons, and networking events in San Antonio. DEVSA aggregates 20+ community groups into one calendar so you never miss a local tech event.",
+  description: "Every tech meetup, workshop and conference in San Antonio, in one calendar — Python, Linux, .NET, AI, agents, game dev, UX, data, security, AWS, Google.",
   keywords: [
     "San Antonio tech events",
     "tech meetups San Antonio",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Tech Events & Meetups in San Antonio | DEVSA",
-    description: "Find upcoming tech events, developer meetups, coding workshops, and networking events in San Antonio. 20+ community groups in one calendar.",
+    description: "Every tech meetup, workshop and conference in San Antonio, in one calendar. Subscribe and it stays current.",
     url: `${siteUrl}/events`,
     siteName: "DEVSA",
     images: [
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Tech Events & Meetups in San Antonio | DEVSA",
-    description: "Find upcoming tech events, developer meetups, coding workshops, and networking events in San Antonio. 20+ community groups in one calendar.",
+    description: "Every tech meetup, workshop and conference in San Antonio, in one calendar. Subscribe and it stays current.",
     images: [`${siteUrl}/api/og/events`],
     creator: "@devsatx",
     site: "@devsatx",

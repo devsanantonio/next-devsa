@@ -65,7 +65,7 @@ export default function SignInPage() {
                 one calendar, one directory, one audience
               </strong>
               . Organizer access is how your group takes part in what&apos;s
-              happening now — 20+ San Antonio tech communities, run by the people
+              happening now — every San Antonio tech community, run by the people
               doing the work.
             </p>
           </div>

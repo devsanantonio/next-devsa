@@ -430,15 +430,29 @@ export function BrandingKitPage() {
                 <p className="text-white font-medium">Find Your People. Build Your Future.</p>
               </div>
               <div>
+                {/* This is the copy other people paste into their own
+                    materials, so it is the last place a retired line should
+                    survive — and it held two of them. The mission read "DEVSA
+                    bridges the gap between passionate builders, local
+                    partners, and the growing tech ecosystem", which is the
+                    sentence the site's own metadata dropped for naming no
+                    technology and describing any community organisation. The
+                    value proposition read "Your direct connection to the tech
+                    community", retired from the title for the same reason, and
+                    counted the groups by hand at 20+ against twenty-three.
+
+                    Both now say what the site says. If the positioning moves
+                    again, this is the page that hands the old version to
+                    everybody else. */}
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Mission</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.
+                  DEVSA is the 501(c)(3) that gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.
                 </p>
               </div>
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Value Proposition</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  Your direct connection to the tech community in San Antonio — meetups, workshops, and conferences from 20+ local developer groups.
+                  Every tech meetup, workshop and conference in San Antonio in one calendar — Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google.
                 </p>
               </div>
             </div>

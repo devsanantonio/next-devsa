@@ -192,7 +192,7 @@ export function ChangelogImage() {
           highlight={false}
           items={[
             "Meet the Team — a 501(c)(3) nonprofit built on education",
-            "20+ community groups in one ecosystem",
+            "Every community group in one ecosystem",
           ]}
         />
       </div>

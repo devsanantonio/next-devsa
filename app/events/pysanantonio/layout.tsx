@@ -4,11 +4,30 @@ import { PYSA_2026, SASTW_URL } from "@/data/pysa/2026"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
+/**
+ * Written in the past tense, because the event is in the past.
+ *
+ * The title said "PySanAntonio — San Antonio's Python Conference | DEVSA" in
+ * three places — the page title, the OpenGraph title and the Twitter title —
+ * and went on saying it after the conference ran on 2 October 2026 and after
+ * the call closed on 25 September. Every search result and every share of this
+ * URL was promising a dated event and an open speaker call, both expired.
+ *
+ * The page's own components never had this problem: getCfsPhase() computes
+ * from CFS_CLOSES and the OG card already flips to "Python conference". Only
+ * these strings were hardcoded, which is exactly why they rotted — a constant
+ * cannot notice a date passing.
+ *
+ * The brand is `returning` in data/conferences.ts, so the title names the
+ * conference rather than an occurrence of it. That is the form that does not
+ * need editing the day after the next one runs; when a date for the third is
+ * set it belongs here as an addition, not as the whole title.
+ */
 const description =
-  "PySanAntonio II — Friday, October 2, 2026 at Geekdom, part of SA Startup + Tech Week. An afternoon of learning, networking, and community building for San Antonio's Python community, led by Alamo Python with the PyTexas Foundation and DEVSA. Call for speakers open through September 25."
+  "PySanAntonio is San Antonio's Python conference, led by Alamo Python with the PyTexas Foundation and DEVSA. The second edition ran on October 2, 2026 at Geekdom as part of SA Startup + Tech Week — an afternoon of talks, networking and community building for the city's Python community."
 
 export const metadata: Metadata = {
-  title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+  title: "PySanAntonio — San Antonio's Python Conference | DEVSA",
   description,
   keywords: [
     "PySanAntonio",
@@ -33,7 +52,7 @@ export const metadata: Metadata = {
     canonical: "/events/pysanantonio",
   },
   openGraph: {
-    title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+    title: "PySanAntonio — San Antonio's Python Conference | DEVSA",
     description,
     url: `${siteUrl}/events/pysanantonio`,
     siteName: "DEVSA",
@@ -51,7 +70,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PySanAntonio II — Oct 2, 2026 | Call for Speakers Open",
+    title: "PySanAntonio — San Antonio's Python Conference | DEVSA",
     description,
     images: [`${siteUrl}/api/og/pysanantonio`],
     creator: "@devsatx",

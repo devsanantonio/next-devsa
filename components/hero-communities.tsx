@@ -59,7 +59,7 @@ export function HeroCommunities() {
               <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
                 We found it —{" "}
                 <strong className="font-semibold text-gray-900">
-                  20+ tech-focused groups
+                  two dozen tech-focused groups
                 </strong>{" "}
                 scattered across the city, not collaborating and living in their
                 own bubbles.

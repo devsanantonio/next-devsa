@@ -16,7 +16,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 
 export const metadata: Metadata = {
   title: "San Antonio Tech Communities & Partners | DEVSA",
-  description: "Explore 20+ tech community groups and strategic partners in San Antonio. From Python and JavaScript meetups to AI, cybersecurity, and game dev — find your tribe in the SA tech ecosystem.",
+  description: "San Antonio's tech groups run themselves. DEVSA gives them one shared calendar, one public directory, and one room to meet partners in.",
   keywords: [
     "San Antonio tech communities",
     "tech groups San Antonio",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "San Antonio Tech Communities & Partners | DEVSA",
-    description: "Explore 20+ tech community groups and strategic partners building the San Antonio tech ecosystem together.",
+    description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
     url: `${siteUrl}/buildingtogether`,
     siteName: "DEVSA",
     images: [
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "San Antonio Tech Communities & Partners | DEVSA",
-    description: "Explore 20+ tech community groups and strategic partners building the San Antonio tech ecosystem together.",
+    description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
     images: [`${siteUrl}/api/og/buildingtogether`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -108,7 +108,7 @@ export default async function GroupsPage() {
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: "San Antonio Tech Communities & Partners",
-            description: "Explore 20+ tech community groups and strategic partners in San Antonio building the tech ecosystem together.",
+            description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
             url: `${siteUrlValue}/buildingtogether`,
             isPartOf: {
               "@type": "WebSite",

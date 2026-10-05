@@ -153,7 +153,7 @@ export const metadata: Metadata = {
         url: `${siteUrl}/api/og/home`,
         width: 1200,
         height: 630,
-        alt: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+        alt: "DEVSA — the community calendar for San Antonio tech",
         type: "image/png",
       },
     ],
@@ -162,7 +162,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+    title: "DEVSA — San Antonio Tech Meetups, Workshops and Conferences",
     description: SITE_DESCRIPTION,
     images: [`${siteUrl}/api/og/home`],
     creator: "@devsatx",
@@ -257,8 +257,9 @@ export default async function RootLayout({
               name: "DEVSA",
               alternateName: "DEV San Antonio",
               url: "https://www.devsa.community",
-              description:
-                "San Antonio's tech community hub — events, workshops, and 20+ developer groups.",
+              /* The same sentence the rest of the site uses, rather than a
+                 third description with a hand-counted group total in it. */
+              description: SITE_DESCRIPTION,
               potentialAction: {
                 "@type": "SearchAction",
                 target: "https://www.devsa.community/events?q={search_term_string}",
