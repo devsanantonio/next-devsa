@@ -46,7 +46,42 @@ const GIVE_A_LOT = {
   lockupWidth: 630,
   lockupHeight: 230,
   fullName: "Give-a-LOT Computer Donation Drive",
-  photo: "/hero/sastw-workshop.webp",
+  /* Its own asset, not a borrowed one.
+  
+     This was /hero/sastw-workshop.webp — the same file as frame 14 of the
+     homepage marquee, so the one photograph illustrating DEVSA's worked
+     example was also scrolling past on the front page. Pointing a second
+     surface at /hero/ is what caused it, so this lives beside the lockup it
+     is captioned with instead, where nothing else will reach for it.
+  
+     4W1A7028, after two other frames from the same shoot were tried and
+     rejected for the same reason. The caption's claim is that everyone who
+     sat through the session left with a working machine, so the frame has to
+     show somebody being helped at a machine rather than somebody presenting.
+  
+     4W1A7065 showed exactly that and could not be used: the camera original
+     clips the top of the head of the woman in the pink sweater at the back of
+     the room, and nothing recovers what the sensor never caught. Cropping her
+     out was tried and is worse — it throws away a third of the room to hide a
+     mistake. This frame has the same moment with every head whole and room
+     above them.
+  
+     Cropped only at the top, where the wall is empty. That leaves 1366x1408,
+     which is 0.97:1 — near enough to the card's own shape that object-cover
+     fills it with almost nothing lost on any edge. */
+  /* The filename carries the frame, deliberately.
+  
+     This asset was replaced three times while the right photograph was being
+     found, and each time it kept the name session.webp — so the URL never
+     changed, and Next's image optimiser and the browser both went on serving
+     the first bytes they had cached. The page looked unchanged while the file
+     on disk was correct, which is a confusing failure to debug.
+  
+     Renaming on a content change is the fix: a new URL misses every cache by
+     construction. If this frame is ever swapped again, rename it again. */
+  photo: "/give-a-lot/learnopentech-session.webp",
+  photoWidth: 1400,
+  photoHeight: 1443,
   /* The drive dates, the session time and the venue used to sit here, feeding a
      facts strip under the caption. Every one of them was already on the page:
      the venue in "The room" above, the four days of drop-offs and the afternoon
@@ -104,7 +139,20 @@ export function HowWeHelp() {
           there.
         </p>
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
+        {/* Stretch, not centre.
+
+            The gap this section had was ~245px of nothing above the first
+            role, because the figure column was far taller than the text one.
+            Centring only moved half of it to the top; the column still ended
+            early and still looked like something was missing.
+
+            Introducing the worked example in this column instead of under the
+            photograph fixes it properly: the reader meets the three roles,
+            then meets the activation where all three happened, and the
+            photograph opposite is what that looked like. The text column grows
+            by roughly the amount it was short, and the figure stretches to
+            match it, so there is no slack left to distribute. */}
+        <div className="mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-stretch lg:gap-16">
           <div>
             <ul className="space-y-8">
               {ROLES.map((role) => (
@@ -145,29 +193,31 @@ export function HowWeHelp() {
               Volunteering is still a real gap and worth saying. Putting it back
               needs two things first: somewhere for a reader to land, and the
               partners' own words for what they actually want. */}
-          </div>
 
-          {/* The worked example. The lockup is the partner's own — a
-              hand-lettered wordmark on amber — so it is placed rather than
-              restyled, which is the same call next-sasw made when it carried
-              this activation. */}
-          <figure className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-            <Image
-              src={GIVE_A_LOT.photo}
-              alt="A learnOPENtech session at LaunchSA, attendees at laptops during the Give-a-LOT drive"
-              width={800}
-              height={1067}
-              sizes="(max-width: 1024px) 100vw, 640px"
-              className="h-56 w-full object-cover sm:h-64"
-            />
-            <figcaption className="p-6 sm:p-7">
+            {/* The worked example, introduced rather than captioned.
+
+                The lockup used to sit under the photograph in the opposite
+                column, where it was a credit on a picture. Here it is the
+                thing being introduced: the three roles above are the claim,
+                and this is the afternoon all three happened on. It also gives
+                this column the height it was missing.
+
+                It stays the partner's own hand-lettered wordmark rather than
+                the drive's name set in our type — that name belongs to them,
+                on a page whose argument is that they are the ones who run
+                this. Placed, not restyled, which is the call next-sasw made
+                when it carried the activation. */}
+            <div className="mt-10 border-t border-white/10 pt-8 lg:mt-12 lg:pt-10">
+              <p className="text-[15px] leading-relaxed text-white/50">
+                All three of those, on one afternoon:
+              </p>
               <Image
                 src={GIVE_A_LOT.lockup}
                 alt={GIVE_A_LOT.fullName}
                 width={GIVE_A_LOT.lockupWidth}
                 height={GIVE_A_LOT.lockupHeight}
                 unoptimized
-                className="h-auto w-full max-w-[16rem]"
+                className="mt-4 h-auto w-full max-w-[13rem]"
               />
               <p className="mt-5 text-[15px] leading-relaxed text-white/70">
                 learnOPENtech ran it. LaunchSA housed it. DEVSA put it on the
@@ -175,7 +225,38 @@ export function HowWeHelp() {
                 everyone who sat through the session left with a working
                 machine.
               </p>
-            </figcaption>
+            </div>
+          </div>
+
+          {/* The photograph, and nothing else in this column.
+
+              It was a 2.5:1 letterbox strip at a fixed 224px — a slot for a
+              header image rather than a frame for a photograph — and this one
+              is documentary: a volunteer crouched beside somebody at a donated
+              laptop, a third attendee at the edge. It is the only frame of the
+              eleven from that shoot that shows what the caption claims, which
+              is that everyone who sat through the session left with a machine.
+
+              h-full from lg so the card matches whatever height the text
+              column lands at, which is what removes the gap rather than
+              hiding it. Below lg the columns stack and h-full means nothing,
+              so it keeps an explicit 3:2 there.
+
+              object-cover, and no matting needed: the frame was cut to 0.97:1
+              to match this card, so cover fills it while losing almost nothing
+              on any edge. An earlier frame here was 3:2 against a near-square
+              card, which cover cropped by a fifth on each side and contain
+              answered with a band of black — both symptoms of an asset shaped
+              for a different slot than the one it sits in. */}
+          <figure className="overflow-hidden rounded-2xl border border-white/10 bg-black lg:h-full">
+            <Image
+              src={GIVE_A_LOT.photo}
+              alt="Attendees at laptops during a learnOPENtech session at LaunchSA, one leaning in to help another, at the Give-a-LOT drive"
+              width={GIVE_A_LOT.photoWidth}
+              height={GIVE_A_LOT.photoHeight}
+              sizes="(max-width: 1024px) 100vw, 700px"
+              className="aspect-3/2 w-full object-cover lg:aspect-auto lg:h-full"
+            />
           </figure>
         </div>
       </div>
