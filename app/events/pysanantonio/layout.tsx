@@ -39,7 +39,6 @@ export const metadata: Metadata = {
     "Geekdom",
     "SA Startup Week",
     "SA Tech Week",
-    "call for speakers",
     "Python Meetup",
     "Tech Conference San Antonio",
     "DEVSA",
