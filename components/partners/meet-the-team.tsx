@@ -28,25 +28,55 @@ export function MeetTheTeam() {
             <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               A 501(c)(3) Nonprofit{" "}
               <span className="text-white/50 font-light italic">
-                Built on
+                Built for
               </span>{" "}
-              Education.
+              the Active Builders.
             </h2>
           </div>
 
           <div className="space-y-6 max-w-3xl mt-8">
+            {/* "Built for the Active Builders", not "Built on Education".
+            
+                The headline said education and the paragraph said "through
+                education workshops, events, and resources" — the one claim
+                this page spends three sections disowning. How It Works, two
+                scrolls up, is explicit that the teaching is somebody else's:
+                "The people who can teach — from the people DEVSA knows.
+                learnOPENtech ran two and a half hours on Linux." A headline
+                taking credit for it contradicted the argument underneath it.
+            
+                What replaced it is the thing every other block on this page is
+                also pointed at. Partners want access to the active builders.
+                The groups want to be found by them. The builders are looking
+                for the groups, and for the learners coming up behind them.
+                Three asks, one object — and DEVSA is the channel they meet on.
+                Naming that is more useful than naming a charitable category,
+                and it is the same object PartnerCta and DonationCta name.
+            
+                "resources" went with it — the vague noun already removed from
+                the metadata, the footer and the hero — and so did "every
+                program", which implies DEVSA operates programmes when the
+                claim is that it operates a calendar, a directory, a room and
+                its own conferences, and deliberately not the groups.
+            
+                The paragraph also carried a typo for as long as it existed:
+                "through education workshops" was missing either a comma or the
+                "al" on "educational". */}
             <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
               DEVSA is a registered{" "}
               <strong className="font-semibold text-white">
                 501(c)(3) nonprofit
               </strong>{" "}
-              dedicated to growing San Antonio&apos;s tech community through
-              education workshops, events, and resources.
+              with one constituency: the people actually building here.
+              Partners want to reach them. Community groups want to be found by
+              them. The builders are looking for the groups — and for the
+              learners coming up behind them.
             </p>
             <p className="text-base md:text-lg text-white/50 leading-relaxed">
-              Our board of directors sets the vision and ensures every program
-              serves the developers, learners, and organizers who make this
-              ecosystem thrive.
+              DEVSA is the channel all three meet on, and the board holds that
+              line. The calendar, the public directory and the conferences are
+              judged on one question: do they put those people in the same
+              room?
             </p>
           </div>
         </motion.div>

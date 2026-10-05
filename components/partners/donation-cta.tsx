@@ -3,6 +3,45 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { Loader2 } from "lucide-react"
+import { conferences } from "@/data/conferences"
+
+/**
+ * What a donation pays for, read from the source rather than written down.
+ *
+ * This said "PySanAntonio, the More Human Than Human conference, and monthly
+ * community workshops". By then DEVSA ran four conferences and the homepage
+ * said so in a headline — so a reader who scrolled from "Four Conferences.
+ * Built Here." to the donation ask met a smaller organisation than the one
+ * they had just been shown, with The Model and Access Granted missing even
+ * though both have their own event page billed as DEVSA-led.
+ *
+ * Naming them from data/conferences.ts is the fix that holds: the same list
+ * that builds the portfolio builds this sentence, so adding a fifth cannot
+ * leave this behind. Hardcoding a count is how the footer came to publish nine
+ * of twenty-three groups.
+ *
+ * The calendar and the directory are named because they were missing
+ * altogether, and they are the most defensible thing a dollar sustains — the
+ * rest of the site leads with them as what DEVSA actually provides.
+ *
+ * The closing line names who it is all for, which is what MeetTheTeam and
+ * PartnerCta also now name: the active builders. Partners want access to
+ * them, the groups want to be found by them, and the builders are looking for
+ * the groups. A donation keeps the channel those three meet on open, and that
+ * is a better reason to give than a list of line items.
+ *
+ * "monthly community workshops" is gone rather than rewritten. Nothing in the
+ * repo verifies it still runs, and an unverifiable claim does not belong in a
+ * donation ask. It is still in components/about-devsa.tsx and app/page.tsx if
+ * it turns out to be true and wanted back.
+ */
+const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six", "seven"]
+
+function conferenceList() {
+  const names = conferences.map((c) => c.name)
+  if (names.length < 2) return names.join("")
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+}
 
 const PRESET_AMOUNTS = [50, 100, 250, 500]
 
@@ -79,12 +118,22 @@ export function DonationCta() {
 
             <div className="space-y-6 max-w-5xl mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Every dollar goes directly toward PySanAntonio, the More Human
-                Than Human conference, and{" "}
+                Every dollar goes to what DEVSA actually runs: the{" "}
                 <strong className="font-semibold text-white">
-                  monthly community workshops
+                  community calendar and public directory
                 </strong>{" "}
-                built right here in San&nbsp;Antonio.
+                every group publishes to, and the{" "}
+                {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
+                conferences built right here in San&nbsp;Antonio —{" "}
+                {conferenceList()}.
+              </p>
+              <p className="text-base md:text-lg text-white/70 leading-relaxed">
+                That is the channel the{" "}
+                <strong className="font-semibold text-white">
+                  active builders
+                </strong>
+                , the community groups and the partners all find each other on.
+                Giving keeps it open.
               </p>
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
                 As a 501(c)(3), your donation may be tax-deductible.

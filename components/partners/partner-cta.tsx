@@ -10,7 +10,20 @@ const useCases = [
   "Custom collaborations with local builders",
 ]
 
-export function PartnerCta() {
+/**
+ * The partner ask, pointed at the same people every other block is.
+ *
+ * Partners want access to the active builders. The groups want to be found by
+ * them. The builders want to find the groups, and the learners coming up
+ * behind them. Those are three different asks with one object, and DEVSA is
+ * the channel they meet on — so this block, MeetTheTeam and DonationCta all
+ * name that object rather than each describing a different organisation.
+ *
+ * `communityCount` is passed in rather than written here. This said "20+ tech
+ * communities" while Firestore held twenty-three, which is the same hardcoded
+ * count that let the footer publish nine of them.
+ */
+export function PartnerCta({ communityCount }: { communityCount?: number }) {
   return (
     <section className="bg-black border-b border-gray-800" data-bg-type="dark">
       <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28">
@@ -28,21 +41,21 @@ export function PartnerCta() {
                 Partner with DEVSA
               </p>
               <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-                Build Programs With the{" "}
-                <span className="text-white/50 font-light italic">
-                  Ecosystem
-                </span>
-                .
+                Reach the People{" "}
+                <span className="text-white/50 font-light italic">Doing</span>{" "}
+                the Work.
               </h2>
             </div>
 
             <div className="space-y-6 max-w-5xl mt-8">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Workshops, conferences, and recurring programs —{" "}
+                Workshops, conferences and recurring activations,{" "}
                 <strong className="font-semibold text-white">
                   co-designed with DEVSA
                 </strong>
-                , reaching 20+ tech communities across San&nbsp;Antonio.
+                , putting you in front of the active builders across{" "}
+                {communityCount ? `${communityCount} ` : ""}community groups in
+                San&nbsp;Antonio.
               </p>
               {/* The distinction that makes this worth a partner's time, and
                   it was missing.

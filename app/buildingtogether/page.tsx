@@ -135,7 +135,7 @@ export default async function GroupsPage() {
           instance of it having worked — belongs between them. */}
       <HowWeHelp />
       <GetInvolved />
-      <PartnerCta />
+      <PartnerCta communityCount={communities.length} />
       <MeetTheTeam />
       <DonationCta />
       </main>
