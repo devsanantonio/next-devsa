@@ -1,141 +1,137 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import { ArrowUpRight } from "lucide-react"
-import { conferences } from "@/data/conferences"
-import { ConferenceBand } from "@/components/events/conference-band"
+import { conferences, type Conference } from "@/data/conferences"
+import { AG_LOCK } from "@/data/access-granted/2026"
+import { ConferenceMark } from "@/components/events/conference-mark"
+import { accentOf, surfaceOf } from "@/components/events/conference-band"
+import {
+  ConferenceHoverClip,
+  ConferenceMascots,
+} from "@/components/events/conference-card-fx"
 
 /**
- * The four conferences DEVSA runs, as evidence rather than as a catalogue.
+ * The four conferences DEVSA runs, as a lineup rather than a card grid.
  *
- * ## The copy comes from the four conferences, not from the homepage
+ * ## Why this is not cards
  *
- * Earlier drafts here were written about the conferences from the outside —
- * "Four We Run Ourselves", then "Four We Lead. Built Together." Both described
- * DEVSA's relationship to them and said nothing about what any of them is.
+ * It was, twice. The second attempt matched the site's card shape exactly —
+ * aspect-16/10 visual, padded copy, rounded-2xl on neutral-900 — which fixed
+ * the problem of looking pasted in and created a worse one: AudienceLanes
+ * directly below is built the same way, so the page ran two identical
+ * constructions back to back and the transition between them read as a repeat.
  *
- * Read the four descriptions together and they turn out to define themselves
- * against the same thing, in their own words:
+ * Grepping the homepage, those two were the only sections sharing that
+ * construction. The page's vocabulary is wider than it looks — the hero drifts
+ * tilted photo columns, EcosystemShowcase runs a horizontal logo marquee,
+ * HeroCommunities uses no grid at all. So the fix was not to break the system
+ * but to use a different pattern inside it.
  *
- *   · The Model      — "the work itself, not a description of it"
- *   · Access Granted — "Every other room is people talking about technology.
- *                       This one is people taking it apart."
- *   · PySanAntonio   — "with the people already doing the work here"
- *   · More Human     — "what changes when the tools stop being tools"
+ * ## What a lineup gets that a card could not
  *
- * Four conferences for four different audiences, all of them defined against
- * rooms where people only talk. That is the actual shared claim, it is earned
- * rather than asserted, and it is what this section says now. "Taking it apart"
- * is Access Granted's own phrase, which is the sharpest of the four.
+ * Each of these brands owns a piece of motion — Claude Code mascots, a
+ * decrypting spotlight, a luchador, a rotating head — and in a four-up grid
+ * each one was confined to about 305x190px. Here the hovered brand takes the
+ * whole band: roughly 1200x500, full-bleed behind the lettering. The mascots
+ * have floor to cross, the ciphertext has a field to fill, and the clips are
+ * the size they were shot for.
  *
- * ## "Lead", not "own"
+ * It also reads as a bill rather than a catalogue, which is closer to what
+ * these are. No boxes, no borders, no blurb — the marks and their motion.
  *
- * The first version of this section was headed "Four We Run Ourselves." over
- * the line "The calendar belongs to everyone. These four are DEVSA's own." Both
- * were wrong in the same direction, and wrong against this site's own pages:
- * every one of these conferences carries a "Powered by" row of partner marks on
- * its own page — The Creative Futures and Tech Bloc on The Model, six
- * organizations on Access Granted, Alamo Python and PyTexas on PySanAntonio.
- * The homepage was claiming sole authorship of four things the detail pages
- * correctly credit to a coalition.
+ * ## How the hover works
  *
- * What is actually true is narrower and better: these are intentional,
- * DEVSA-branded, DEVSA-led activations, and DEVSA activates them with the
- * community groups and partners around it. "Lead" carries that. "Own" and
- * "ourselves" do not, and they quietly take credit from the groups whose logos
- * are two clicks away.
+ * One piece of state here, not four inside the effects. The hover target is a
+ * wordmark and the thing that responds is a full-bleed layer behind it: two
+ * different elements, so the state has to live above both. Each effect takes an
+ * optional `active` prop for exactly this; left undefined they self-manage,
+ * which is what the /events cards still do.
  *
- * ## Why the homepage needed this
- *
- * The page already claims them. AboutDevsa, directly above, says DEVSA helps
- * communities grow "through a shared community calendar, monthly workshops, and
- * conferences built right here in San Antonio", and the Builders lane says
- * "every meetup, workshop and conference in one calendar". Before this strip,
- * the rendered homepage contained the words "The Model", "Access Granted" and
- * "PySanAntonio" zero times each, and "More Human Than Human" only as the label
- * on a video button. The page asserted a pillar and produced no evidence for
- * it, which is the weakest kind of claim: a noun with nothing behind it.
- *
- * ## Why it is not the /events band
- *
- * That band is a portfolio — the same tiles, plus a blurb, a date, a venue and
- * an "Event page" link under each. This takes the tiles and leaves the prose:
- * four marks on their own grounds, each carrying its brand's own play, and
- * nothing to read. A homepage reader has not asked for the particulars yet.
- *
- * An earlier version went further and had no effects and no links at all —
- * four bare lockups and one "See all four" text link under the row. The
- * argument was that hover belongs to a browsing grid and the homepage wants
- * one forward motion. The effects earn their place here anyway: they are what
- * makes four static logos into four rooms you can look into, which is the
- * whole claim the section is making.
- *
- * They are linked per conference now, which is what the single text link
- * became. Still not buttons: the CTA ranking puts the Community Calendar first
- * and donation second, and these must stay something a reader discovers by
- * pointing at them rather than a third primary action competing with those
- * two. The other reason they link is simpler — a tile that animates under the
- * cursor and then cannot be clicked is a tease.
- *
- * ## Why it sits where it does, and why it is dark
- *
- * After EcosystemShowcase, so the page reads: here is who we are, here is
- * everyone in the ecosystem, here is what we run with them, here is how you
- * plug in. It was one slot earlier to begin with, in front of the logo wall.
- * That was the wrong order on a page whose argument is that DEVSA is a bridge
- * and not a destination — it showed DEVSA's own four before the reader had met
- * any of the groups they are run with, which is the sequence most likely to
- * make them read as self-promotion.
- *
- * The move is also what lets the hook say "these groups". Before, "our
- * community groups" was a forward reference to a wall the reader had not
- * reached; now it points back at one they just scrolled through.
- *
- * Dark for two reasons. Three of the four marks are drawn for a dark ground —
- * More Human's near-white would be invisible on the white section either side,
- * and PySanAntonio's wordmark asset is the light-ink cut. And the page
- * otherwise alternates dark and light section by section, with AboutDevsa and
- * EcosystemShowcase the one place two light sections meet; this restores that
- * rhythm instead of interrupting it.
+ * Nothing runs at rest. Four videos and a simulation idling behind a section
+ * nobody has pointed at is a cost with nothing on the other side of it.
  */
+function EffectLayer({
+  conference,
+  active,
+}: {
+  conference: Conference
+  active: boolean
+}) {
+  return (
+    <div
+      aria-hidden={!active}
+      className={`pointer-events-none absolute inset-0 transition-opacity duration-500 ${
+        active ? "opacity-100" : "opacity-0"
+      }`}
+      style={{ backgroundColor: surfaceOf(conference) }}
+    >
+      {/* Access Granted shows the padlock, not the ciphertext field.
+      
+          The field is a spotlight — it only reveals where the cursor is, which
+          works on a 305px card and disappears across a band this wide. The
+          padlock is the activation's own artwork and the thing its masthead
+          leads with, and at full width it reads the way the luchador and the
+          rotating head do. The field is untouched on the /events cards, where
+          its scale is right. */}
+      {conference.brand === "access-granted" && (
+        <ConferenceHoverClip
+          src={AG_LOCK.src}
+          poster={AG_LOCK.poster}
+          active={active}
+          /* The loop is a lit object on black rather than a filmed room, so it
+             is placed rather than cropped — `contain` keeps the whole lock in
+             frame, and a lighter tint since it is mostly dark already. */
+          className="h-full w-full object-contain"
+          scrim="bg-black/55"
+        />
+      )}
+      {conference.hoverVideo && conference.hoverPoster && (
+        <ConferenceHoverClip
+          src={conference.hoverVideo}
+          poster={conference.hoverPoster}
+          active={active}
+          /* Heavier than the card's tint. There the type sat on a panel beside
+             the footage; here it sits directly on it. */
+          scrim="bg-black/70"
+        />
+      )}
+      {conference.brand === "the-model" && (
+        <ConferenceMascots
+          color={accentOf(conference)}
+          active={active}
+          /* Bigger than the card's 18px — this band is roughly four times the
+             area, and they were reading as specks in it. */
+          size={30}
+        />
+      )}
+    </div>
+  )
+}
+
 export function DevsaConferences() {
+  const [hovered, setHovered] = useState<string | null>(null)
+
   return (
     <section
       id="devsa-conferences"
-      className="w-full scroll-mt-20 bg-[#0a0a0a]"
+      className="relative w-full scroll-mt-20 overflow-hidden bg-[#0a0a0a]"
       data-bg-type="dark"
     >
-      <div className="page-shell py-16 md:py-24">
-        <div className="max-w-2xl">
-          {/* An eyebrow, because the three sections in this half of the page
-              all carry one — "Who's Building Here", "Who DEVSA Serves", "Come
-              Full Circle" — and they are what gives the lower page its scroll
-              rhythm. Without one this section started cold between two that
-              did not.
+      {conferences.map((conference) => (
+        <EffectLayer
+          key={conference.key}
+          conference={conference}
+          active={hovered === conference.key}
+        />
+      ))}
 
-              It also does the connective work, which frees the h2 to be short.
-              The section used to open by explaining the arrangement; now the
-              label carries that and the heading can just name the thing. */}
-          {/* The homepage's eyebrow, not the events page's.
-          
-              This read `font-mono text-[11px] tracking-widest text-white/45`,
-              which is the /events idiom — mono, 11px, borrowed wholesale when
-              this section was built out of that one. Every eyebrow on this page
-              is sans at `text-sm md:text-base`, `font-medium`, `tracking-[0.2em]`
-              (EcosystemShowcase, AudienceLanes, HeroCommunities all agree), so
-              this section was announcing itself a size smaller and in a
-              different typeface than its neighbours.
-          
-              white/50 rather than /45 for contrast: see the note in
-              docs/design-system.md. */}
+      <div className="page-shell relative z-10 py-16 md:py-24">
+        <div className="max-w-2xl">
           <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">
             What We Run Together
           </p>
-          {/* `xl:text-7xl` was missing. Every other h2 on this page carries
-              the full ramp 4xl/5xl/6xl/7xl, so above 1280px this heading
-              rendered one step smaller than the sections either side of it. */}
           <h2 className="mt-5 text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-            {/* Two short sentences, because at this size the heading wraps to
-                two lines in its column whatever it says — and the only break
-                worth having is the one at the full stop. */}
             Four Conferences. Built{" "}
             <span className="font-light italic text-white/50">Here</span>.
           </h2>
@@ -145,92 +141,46 @@ export function DevsaConferences() {
           </p>
         </div>
 
-        {/* The site's own card, not a bespoke one.
+        {/* The bill. Two columns so each mark has room to be read at `panel`
+            size, generous vertical rhythm, and nothing around them — the
+            lockups are the only thing holding the layout.
 
-            This section spent two passes as something else: four bare marks in
-            a row, then two big transparent tiles per row with nothing in them
-            but lettering. Both were out of step with every other card on this
-            site. AudienceLanes directly below — and the /events portfolio band
-            — are built the same way, and it is a shape with rules: a visual
-            slot at aspect-16/10, then padded content, inside a rounded-2xl
-            neutral-900 card with a neutral-800 border that lifts on hover.
-            A section that invents its own geometry reads as pasted in, however
-            good the pieces are.
-
-            So the brand mark and its hover effect now live in the slot a photo
-            occupies on the other cards, and the copy block underneath carries
-            what a reader actually needs: what the conference is, who runs it
-            with DEVSA, and a way in.
-
-            The "Run with" pills that sat under this grid are gone. Collecting
-            eleven organisations into one list below four cards separated each
-            name from the conference it belongs to and made a second thing to
-            read. Inside the card, the same fact needs no label and no colour
-            coding — it is simply the line under the blurb. */}
-        <div className="mt-12 grid gap-4 grid-cols-1 md:mt-14 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+            Unhovered marks drop to 35% rather than staying lit. With a
+            full-bleed effect behind them the band becomes one brand's world
+            for as long as the pointer is there, and three other logos at full
+            strength would argue with it. */}
+        <ul className="mt-14 grid gap-x-10 gap-y-12 md:mt-20 md:grid-cols-2 md:gap-y-16 lg:gap-x-20">
           {conferences.map((conference) => {
-            const runWith = (conference.poweredBy ?? []).filter(
-              (org) => org !== "DEVSA"
-            )
-
+            const dimmed = hovered !== null && hovered !== conference.key
             const inner = (
-              <div className="flex h-full flex-col">
-                {/* The slot a photograph fills on the other cards. Here it is
-                    the brand's own ground and lettering, and it is where the
-                    hover lives — see ConferenceBand. */}
-                <ConferenceBand
-                  conference={conference}
-                  className="aspect-16/10 w-full px-5"
-                  markClassName="lg:scale-[0.88]"
-                />
-
-                <div className="flex flex-1 flex-col gap-4 p-6">
-                  <p className="flex-1 text-[15px] leading-relaxed text-white/60">
-                    {conference.blurb}
-                  </p>
-
-                  {/* white/55 and /45. At /40 and /30 these measured 3.84:1
-                      and 2.72:1 on neutral-900 — both under the 4.5:1 WCAG AA
-                      floor for text this size. The minimum that clears it on
-                      this ground is 0.46. */}
-                  {runWith.length > 0 && (
-                    <p className="text-[13px] leading-relaxed text-white/55">
-                      <span className="text-white/50">Run with </span>
-                      {runWith.join(", ")}
-                    </p>
-                  )}
-
-                  {conference.href && (
-                    <span className="inline-flex items-center gap-2 pt-1 text-sm font-medium text-white">
-                      Event page
-                      <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </span>
-                  )}
-                </div>
-              </div>
+              <span
+                className={`block origin-left transition-opacity duration-300 ${
+                  dimmed ? "opacity-35" : "opacity-100"
+                }`}
+              >
+                <ConferenceMark conference={conference} size="panel" />
+              </span>
             )
 
-            const shell =
-              "group block h-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 transition-all duration-200"
-
-            return conference.href ? (
-              <Link
+            return (
+              <li
                 key={conference.key}
-                href={conference.href}
-                className={`${shell} hover:border-neutral-700 hover:bg-neutral-900/70`}
+                onPointerEnter={() => setHovered(conference.key)}
+                onPointerLeave={() => setHovered(null)}
               >
-                {inner}
-              </Link>
-            ) : (
-              /* No page, so no link. A card that looks clickable and is not is
-                 worse than one that plainly is not. */
-              <div key={conference.key} className={shell}>
-                {inner}
-              </div>
+                {conference.href ? (
+                  <Link href={conference.href} className="block w-fit">
+                    {inner}
+                  </Link>
+                ) : (
+                  /* No page, so no link — More Human's came down with the
+                     conference. It still lights the band on hover. */
+                  <div className="w-fit">{inner}</div>
+                )}
+              </li>
             )
           })}
-        </div>
-
+        </ul>
       </div>
     </section>
   )

@@ -63,6 +63,11 @@ function scramble(n: number) {
  * is sized to the band rather than reaching far outside it, because here there
  * is no surrounding grid for it to lie on.
  */
+/* Self-managed, and staying that way. The homepage lineup briefly drove this
+   from above, which needed a window-level pointer listener because the hover
+   target was a wordmark elsewhere on the page — but Access Granted shows its
+   padlock there now, so the field is only ever used on the /events cards,
+   where a pointer entering its own box is exactly the right trigger. */
 export function ConferenceCipherField({ accent }: { accent: string }) {
   const layer = React.useRef<HTMLDivElement>(null)
   const text = React.useRef<HTMLParagraphElement>(null)
@@ -108,6 +113,7 @@ export function ConferenceCipherField({ accent }: { accent: string }) {
   }, [])
 
   React.useEffect(() => stop, [stop])
+
 
   const track = React.useCallback(
     (e: React.PointerEvent<HTMLSpanElement>) => {
@@ -195,7 +201,23 @@ interface Mascot {
   el: HTMLDivElement | null
 }
 
-export function ConferenceMascots({ color }: { color: string }) {
+export function ConferenceMascots({
+  color,
+  active,
+  size = 18,
+}: {
+  color: string
+  /** Undefined self-manages the hover; a boolean is driven from above. */
+  active?: boolean
+  /**
+   * Glyph size in px.
+   *
+   * 18 is sized for a /events card, where the band is about 305x190. The
+   * homepage lineup gives them the whole section — roughly 1200x500 — and at
+   * 18px in that much room they read as specks rather than as mascots.
+   */
+  size?: number
+}) {
   const layer = React.useRef<HTMLDivElement>(null)
   /**
    * The simulation lives in a ref, because it is rewritten sixty times a second
@@ -209,7 +231,8 @@ export function ConferenceMascots({ color }: { color: string }) {
   const [seeds, setSeeds] = React.useState<
     { id: number; x: number; y: number }[]
   >([])
-  const [over, setOver] = React.useState(false)
+  const [selfOver, setSelfOver] = React.useState(false)
+  const over = active ?? selfOver
   const raf = React.useRef(0)
 
   const spawn = React.useCallback(() => {
@@ -332,10 +355,14 @@ export function ConferenceMascots({ color }: { color: string }) {
             // after the browser paints, so without this each mascot is visible
             // at the layer's top-left corner for one frame before the loop
             // moves it — a flash that reads as it appearing in the wrong place.
+            className="absolute left-0 top-0"
+            // Inline rather than a class: the size is a prop, and Tailwind
+            // cannot generate an arbitrary value it never sees as a literal.
             style={{
+              width: size,
+              height: size,
               transform: `translate(-50%, -50%) translate(${seed.x.toFixed(1)}px, ${seed.y.toFixed(1)}px)`,
             }}
-            className="absolute left-0 top-0 h-[18px] w-[18px]"
           >
             {/*
               The pop is on its own element, and has to stay there.
@@ -368,8 +395,8 @@ export function ConferenceMascots({ color }: { color: string }) {
           press still navigates. */}
       <span
         aria-hidden="true"
-        onPointerEnter={() => setOver(true)}
-        onPointerLeave={() => setOver(false)}
+        onPointerEnter={() => setSelfOver(true)}
+        onPointerLeave={() => setSelfOver(false)}
         className="absolute inset-0 z-10"
       />
     </>
@@ -406,15 +433,26 @@ export function ConferenceMascots({ color }: { color: string }) {
 export function ConferenceHoverClip({
   src,
   poster,
+  active,
+  className = "h-full w-full object-cover",
+  scrim = "bg-black/55",
 }: {
   src: string
   poster: string
+  /** As above — undefined self-manages, a boolean is driven from above. */
+  active?: boolean
+  className?: string
+  /** The tint between the footage and the lettering. The lineup needs a
+      heavier one than a card, because the type sits directly on the video
+      rather than on a panel beside it. */
+  scrim?: string
 }) {
   const video = React.useRef<HTMLVideoElement>(null)
-  const [over, setOver] = React.useState(false)
+  const [selfOver, setSelfOver] = React.useState(false)
+  const over = active ?? selfOver
 
   const enter = React.useCallback(() => {
-    setOver(true)
+    setSelfOver(true)
     const el = video.current
     if (!el) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
@@ -424,9 +462,24 @@ export function ConferenceHoverClip({
   }, [])
 
   const leave = React.useCallback(() => {
-    setOver(false)
+    setSelfOver(false)
     video.current?.pause()
   }, [])
+
+  // When a parent owns the state, start and stop playback from it — `enter`
+  // and `leave` below are wired to this component's own hit area, which the
+  // lineup does not use.
+  React.useEffect(() => {
+    if (active === undefined) return
+    const el = video.current
+    if (!el) return
+    if (active) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+      void el.play().catch(() => {})
+    } else {
+      el.pause()
+    }
+  }, [active])
 
   return (
     <>
@@ -445,20 +498,22 @@ export function ConferenceHoverClip({
           muted
           playsInline
           aria-hidden="true"
-          className="h-full w-full object-cover"
+          className={className}
         />
         {/* Enough to hold the wordmark off the footage without washing the
             mascot out — he is lit against a near-black set already, so this is
             closer to a tint than a panel. */}
-        <span className="absolute inset-0 bg-black/55" />
+        <span className={`absolute inset-0 ${scrim}`} />
       </div>
 
-      <span
-        aria-hidden="true"
-        onPointerEnter={enter}
-        onPointerLeave={leave}
-        className="absolute inset-0 z-10"
-      />
+      {active === undefined && (
+        <span
+          aria-hidden="true"
+          onPointerEnter={enter}
+          onPointerLeave={leave}
+          className="absolute inset-0 z-10"
+        />
+      )}
     </>
   )
 }
