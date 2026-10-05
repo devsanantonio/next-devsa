@@ -1,7 +1,11 @@
 import { Metadata } from "next"
 import { GroupsHero } from "@/components/partners/groups-hero"
-import { LogoShowcase } from "@/components/partners/logo-showcase"
-import { WhyDevsa } from "@/components/partners/why-devsa"
+import {
+  LogoShowcase,
+  type LogoItem,
+} from "@/components/partners/logo-showcase"
+import { listCommunities } from "@/lib/communities"
+import { listPartners } from "@/lib/partners"
 import { GetInvolved } from "@/components/partners/get-involved"
 import { HowWeHelp } from "@/components/partners/how-we-help"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
@@ -60,7 +64,40 @@ export const metadata: Metadata = {
   },
 }
 
-export default function GroupsPage() {
+/**
+ * Read here rather than in LogoShowcase, which used to fetch both lists in an
+ * effect. That kept the wall live but meant this page — the ecosystem
+ * directory — server-rendered none of the links to the detail pages it exists
+ * to send people to. Reading them in the page keeps the data exactly as live,
+ * since nothing is cached between requests, and puts every href in the HTML.
+ */
+export default async function GroupsPage() {
+  const [communities, partners] = await Promise.all([
+    listCommunities(),
+    listPartners(),
+  ])
+
+  /* Communities first, matching the order the wall rendered in before. A
+     record with no logo is dropped rather than rendered as a gap. */
+  const logos: LogoItem[] = [
+    ...communities
+      .filter((c) => c.logo)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        logo: c.logo!,
+        type: "community" as const,
+      })),
+    ...partners
+      .filter((p) => p.logo)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        logo: p.logo,
+        type: "partner" as const,
+      })),
+  ]
+
   const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   return (
     <>
@@ -92,12 +129,8 @@ export default function GroupsPage() {
       />
       <main className="min-h-screen bg-black">
       <GroupsHero />
-      <LogoShowcase />
-      {/* The wall is the evidence; this is what it means. Placed after it, and
-          dark between two light sections, so the argument reads as a statement
-          rather than another band of the directory. */}
-      <WhyDevsa />
-      {/* Between the gap and the ask. WhyDevsa states the problem and the
+      <LogoShowcase logos={logos} />
+      {/* Between the gap and the ask. The hero states the problem and the
           limit; GetInvolved asks the reader to act. The mechanism — and one
           instance of it having worked — belongs between them. */}
       <HowWeHelp />

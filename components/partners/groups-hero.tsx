@@ -67,30 +67,47 @@ export function GroupsHero() {
             <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
               Building Together
             </p>
-            <h1 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              Where Partners and Communities{" "}
-              <span className="text-white/50 font-light italic">Come Together to</span>{" "}
-              Build.
+            {/* This was "Where Partners and Communities Come Together to
+                Build." — true of almost any community organisation, and
+                nothing a reader could picture. The page's own WhyDevsa section
+                said the same thing far better two scrolls down, so it is the
+                headline now and that section is gone.
+
+                A premise rather than an answer, which is what a hero has to
+                be: it needs no setup, and everything below it — the wall, the
+                mechanism, the ask — reads as the consequence. */}
+            <h1 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              Twenty-Three Groups.{" "}
+              <span className="text-white/50 font-light italic">No Shared</span>{" "}
+              Room.
             </h1>
           </div>
 
           <div className="space-y-8 max-w-3xl mt-8">
             <div className="space-y-6">
               <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Twenty-plus community groups, the partners who back them, and{" "}
-                <strong className="font-semibold text-white">
-                  one shared calendar
-                </strong>{" "}
-                between them.
+                San Antonio never lacked tech communities. What it lacked was
+                anywhere they could see each other — groups meeting across the
+                city on their own calendars, to their own audiences, mostly
+                unaware of one another.
               </p>
 
-              <p className="text-base md:text-lg text-white/50 leading-relaxed">
-                We&apos;re the bridge for a reason — connecting{" "}
-                <span className="font-medium text-white/70">organizers</span>,{" "}
-                <span className="font-medium text-white/70">companies</span>, and{" "}
-                <span className="font-medium text-white/70">builders</span>{" "}
-                across San Antonio&apos;s tech landscape.
-              </p>
+              {/* The reassurance an organizer needs before anything else, and
+                  the page's whole posture in two sentences. It is load-bearing
+                  here: this is the page where somebody decides whether to hand
+                  over their group's events. */}
+              <div className="border-l-4 border-white/20 pl-6 md:pl-8">
+                <p className="text-base md:text-lg text-white/60 leading-relaxed">
+                  DEVSA was built to close that gap, and nothing more than that.
+                  We don&apos;t run the groups — they run themselves, keep their
+                  own names and keep their own people. What we give them is{" "}
+                  <span className="font-medium text-white/85">one calendar</span>,{" "}
+                  <span className="font-medium text-white/85">
+                    one public directory
+                  </span>
+                  , and one room to meet partners in.
+                </p>
+              </div>
             </div>
 
             {/* CTAs — Community Calendar leads, and is now the only one here;

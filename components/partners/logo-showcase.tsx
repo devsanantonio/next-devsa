@@ -1,15 +1,14 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
 
 type LogoType = "community" | "partner"
 
-interface LogoItem {
+export interface LogoItem {
   id: string
   name: string
   logo: string
@@ -161,57 +160,31 @@ function MarqueeRow({
   )
 }
 
-export function LogoShowcase() {
-  const [allLogos, setAllLogos] = useState<LogoItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+/**
+ * The wall takes its logos as a prop now, server-rendered.
+ *
+ * It used to fetch /api/communities and /api/partners in an effect. That kept
+ * the data live, which was the point — a deleted record vanished from the wall
+ * — but it meant this page server-rendered *none* of the links to the detail
+ * pages it exists to send people to. Every `/buildingtogether/<id>` href
+ * appeared only after hydration.
+ *
+ * The footer had been quietly compensating, listing ten community names, and
+ * when that list was cut back to a single link the gap became visible: the one
+ * page whose job is the directory was publishing a directory with no links in
+ * its HTML.
+ *
+ * Reading it in the page (a server component) keeps the data exactly as live —
+ * nothing is cached between requests — and puts every href in the markup. See
+ * lib/communities.ts and lib/partners.ts, which read the same collections the
+ * routes do.
+ *
+ * `paused` stays here because it is interaction, not data.
+ */
+export function LogoShowcase({ logos }: { logos: LogoItem[] }) {
   const [paused, setPaused] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Both walls read Firestore. Partners used to be a module-scope import
-      // from data/partners.ts while communities were fetched, so in this one
-      // component a deleted community vanished and a deleted partner did not.
-      const asLogos = (
-        items: Array<{ id: string; name: string; logo: string }>,
-        type: LogoItem["type"]
-      ): LogoItem[] =>
-        items.map((i) => ({
-          id: i.id,
-          name: i.name,
-          logo: i.logo,
-          type,
-        }))
-
-      let partnerLogos: LogoItem[] = []
-      try {
-        const partnerRes = await fetch("/api/partners")
-        if (partnerRes.ok) {
-          const data = await partnerRes.json()
-          partnerLogos = asLogos(data.partners || [], "partner")
-        }
-      } catch {
-        // Leave partners empty — an empty wall is honest about the outage.
-      }
-
-      try {
-        const res = await fetch("/api/communities")
-        if (res.ok) {
-          const data = await res.json()
-          const communities: LogoItem[] = asLogos(data.communities || [], "community")
-          setAllLogos([...communities, ...partnerLogos])
-        } else {
-          setAllLogos(partnerLogos)
-        }
-      } catch {
-        setAllLogos(partnerLogos)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
-
-  const marqueeRows = useMemo(() => splitIntoRows(allLogos, 3), [allLogos])
+  const marqueeRows = useMemo(() => splitIntoRows(logos, 3), [logos])
 
   return (
     <section className="w-full bg-white" data-bg-type="light">
@@ -247,14 +220,16 @@ export function LogoShowcase() {
 
           <div className="space-y-5 max-w-3xl mt-8">
             <p className="text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
-              Every tech group, meetup, and partner organization powering San
+              {/* Not "every tech group, meetup, and partner organization" —
+                  the wall shows groups and partners. Meetups are events and
+                  live on the calendar. */}
+              Every community group and partner organization powering San
               Antonio&apos;s{" "}
               <strong className="font-semibold text-gray-900">tech network</strong>{" "}
               — in one place.
             </p>
             <p className="text-base md:text-lg text-gray-500 leading-relaxed">
-              Tap any logo to see their mission, upcoming events, and how to get
-              involved.
+              Open any logo for what they do, when they meet, and how to join.
             </p>
           </div>
         </motion.div>
@@ -266,15 +241,9 @@ export function LogoShowcase() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.15 }}
         >
-          {isLoading ? (
-            <div className="flex items-start py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
-            </div>
-          ) : (
-            <>
-              {/* Tablet & desktop: uniform on-canvas grid */}
+          <>
               <div className="hidden md:grid grid-cols-4 gap-x-4 gap-y-8 lg:grid-cols-5 xl:grid-cols-6">
-                {allLogos.map((logo) => (
+                {logos.map((logo) => (
                   <LogoTile key={`${logo.type}-${logo.id}`} logo={logo} />
                 ))}
               </div>
@@ -302,8 +271,7 @@ export function LogoShowcase() {
                 <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-white to-transparent" />
                 <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-white to-transparent" />
               </div>
-            </>
-          )}
+          </>
         </motion.div>
       </div>
     </section>

@@ -28,6 +28,9 @@ import {
 export interface CommunityLink {
   id: string
   name: string
+  /** Absent on records that have not had one uploaded. The footer ignores it;
+      the logo wall on /buildingtogether needs it. */
+  logo?: string
 }
 
 /**
@@ -59,7 +62,11 @@ export const listCommunities = cache(async (): Promise<CommunityLink[]> => {
 
     return rows
       .filter((row): row is Orderable & { name: string } => Boolean(row.name))
-      .map((row) => ({ id: row.id, name: row.name }))
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        logo: (row as { logo?: string }).logo,
+      }))
   } catch (error) {
     console.error("Communities fetch failed:", error)
     return []

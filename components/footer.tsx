@@ -22,21 +22,25 @@ const DEVSA_LOGO = "/branding/devsa-logo.svg"
 const PRESET_AMOUNTS = [50, 100, 250, 500]
 
 /**
- * How many community groups the footer shows before deferring to "See All".
+ * The footer used to list ten community groups by name.
  *
- * There are twenty-three. All of them in a two-column span is twelve rows,
- * which makes this column the heaviest thing in the footer and outweighs both
- * the DEVSA mark and the donation module beside it. /buildingtogether is the
- * index and does that job properly; the footer only has to prove the ecosystem
- * exists and point at it.
+ * It was the heaviest thing here — eleven of the footer's twenty-four links,
+ * spanning half the grid — and it was an arbitrary ten of twenty-three, sliced
+ * off the admin's display order. Too many names to scan at 13px, too few to be
+ * the directory, and no way for a reader to tell why those ten.
  *
- * Ten was nine until a moment ago, and the nine were hardcoded — see
- * lib/communities.ts. The number is a layout decision now rather than whatever
- * somebody last pasted in, and the ten are the first ten in the order the admin
- * arranged, so which groups appear here is editable from the admin like
- * everything else.
+ * /buildingtogether is the directory, with logos, descriptions and live data.
+ * One link to it says more than ten names do.
+ *
+ * Nothing is lost by crawlers: app/sitemap.ts generates an entry for every
+ * community document straight from Firestore, so all twenty-three are
+ * advertised whether or not the footer repeats them.
+ *
+ * Worth knowing, though: LogoShowcase on /buildingtogether fetches in a
+ * useEffect, so that page server-renders none of its own community links. The
+ * footer was quietly half-covering that gap for ten of them. Fixing it belongs
+ * on that page, not here.
  */
-const FOOTER_COMMUNITY_LIMIT = 10
 
 // Donate modal (mirrors DonationCta from building together page)
 function DonateModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -273,7 +277,7 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-8"
+            className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8"
           >
             {/* Pages */}
             <div>
@@ -339,49 +343,25 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
               </ul>
             </div>
 
-            {/* Community Groups — spans 2 columns, and last on purpose.
+            {/* Last on purpose: the column order is the arc the homepage
+                makes — what DEVSA is, what DEVSA runs, how to reach DEVSA,
+                then who else is in it.
 
-                The column order is the arc the homepage makes: what DEVSA is
-                (Site Navigation), what DEVSA runs (Conferences), how to reach
-                DEVSA (Stay Connected), then who else is in it. Social links
-                used to sit between the site's own pages and the ecosystem,
-                which interrupted that.
-
-                Live from Firestore now, capped at FOOTER_COMMUNITY_LIMIT, with
-                "See All" carrying the remaining thirteen to /buildingtogether —
-                which is the real index. The list this replaced was nine
-                hardcoded names and slugs; see lib/communities.ts.
-
-                No partner column beside it, and that is a decision rather than
-                an omission. There are fifteen partners, so a footer listing
-                both would carry thirty-eight organization names and read as one
-                undifferentiated block — and partner and community are
-                different relationships. Partners are credited where they are
-                earned: the "Powered by" rows on the conference pages, Building
-                Together, and the homepage wall. */}
-            <div className="col-span-2">
+                The count is live, from the same list the page already has, so
+                it cannot drift the way the hardcoded names did. */}
+            <div>
               <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mb-5">Find Your Community</h3>
-              <ul className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                {communities.slice(0, FOOTER_COMMUNITY_LIMIT).map((group) => (
-                  <li key={group.id}>
-                    <Link
-                      href={`/buildingtogether/${group.id}`}
-                      className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors"
-                    >
-                      {group.name}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <Link
-                    href="/buildingtogether"
-                    className="inline-flex items-center gap-1.5 text-[#ef426f] hover:text-[#fbbf24] text-[13px] font-medium leading-normal transition-colors"
-                  >
-                    See All
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </li>
-              </ul>
+              <p className="text-neutral-400 text-[13px] font-normal leading-relaxed">
+                {communities.length}+ specialty groups across San Antonio —
+                Python, Linux, AI, security, game dev and more.
+              </p>
+              <Link
+                href="/buildingtogether"
+                className="mt-4 inline-flex items-center gap-1.5 text-[#ef426f] hover:text-[#fbbf24] text-[13px] font-medium leading-normal transition-colors"
+              >
+                Browse the directory
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </motion.div>
         </div>

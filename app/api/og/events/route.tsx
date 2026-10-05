@@ -1,10 +1,28 @@
 import { ImageResponse } from "next/og"
 import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import { listCommunities } from "@/lib/communities"
+import { listPartners } from "@/lib/partners"
 
 export const runtime = "nodejs"
 
+/**
+ * The counts are read, not written in.
+ *
+ * This card said "20+ Communities · 10+ Partners". Communities had grown to 23
+ * and partners to 15, so the partner figure understated by a third — on the
+ * image that represents the events page everywhere it is shared. Both numbers
+ * were typed once and never looked at again, which is the same failure the
+ * footer's hardcoded community list had.
+ *
+ * The route is `runtime = "nodejs"` and two sibling OG routes already read
+ * Firestore, so there is nothing new here but the read.
+ */
 export async function GET() {
+  const [communities, partners] = await Promise.all([
+    listCommunities(),
+    listPartners(),
+  ])
   const fonts = await loadBrandFonts()
 
   return new ImageResponse(
@@ -130,7 +148,7 @@ export async function GET() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
               </svg>
               <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                20+ Communities · 10+ Partners
+                {communities.length} Communities · {partners.length} Partners
               </span>
             </div>
 

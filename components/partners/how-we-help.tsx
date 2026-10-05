@@ -5,9 +5,10 @@ import Image from "next/image"
  *
  * ## The gap this fills
  *
- * WhyDevsa, directly above, states the problem and the limit: twenty groups
- * with no shared room, and "DEVSA was built to close that gap, and nothing more
- * than that." PartnerCta, below, offers to "build programs with the ecosystem".
+ * The hero states the problem and the limit: twenty-three groups with no
+ * shared room, and "DEVSA was built to close that gap, and nothing more than
+ * that." (That copy was its own WhyDevsa section until it was promoted — it is
+ * a premise, which is what a hero needs to be.) PartnerCta, below, offers to "build programs with the ecosystem".
  * Both are true and both are abstract — one is a mission statement, the other a
  * category list. Nowhere did this site say what DEVSA actually *does* for a
  * group that wants to run something, and nowhere did it show a single instance
@@ -83,8 +84,8 @@ export function HowWeHelp() {
   return (
     <section className="w-full bg-neutral-950" data-bg-type="dark">
       <div className="page-shell py-20 md:py-28">
-        {/* Building Together's own eyebrow, matching WhyDevsa directly above
-            and GetInvolved below: sans, text-sm md:text-base, 0.2em. The mono
+        {/* Building Together's own eyebrow, matching the hero above and
+            GetInvolved below: sans, text-sm md:text-base, 0.2em. The mono
             11px form this started as belongs to /events and the conference
             pages. white/50 clears 4.5:1 on this ground; /40 does not. */}
         <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">

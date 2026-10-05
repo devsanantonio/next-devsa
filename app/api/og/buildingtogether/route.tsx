@@ -1,10 +1,18 @@
 import { ImageResponse } from "next/og"
 import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import { listCommunities } from "@/lib/communities"
+import { listPartners } from "@/lib/partners"
 
 export const runtime = "nodejs"
 
+/** The group count is read rather than typed — see the note in
+    app/api/og/events/route.tsx. */
 export async function GET() {
+  const [communities, partners] = await Promise.all([
+    listCommunities(),
+    listPartners(),
+  ])
   const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
@@ -128,7 +136,7 @@ export async function GET() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                20+
+                {communities.length}
               </span>
               <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
                 Tech Groups
@@ -155,7 +163,7 @@ export async function GET() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                10+
+                {partners.length}
               </span>
               <span style={{ color: "#6b7280", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
                 Partners

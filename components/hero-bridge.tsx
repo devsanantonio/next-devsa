@@ -14,6 +14,15 @@ import { ArrowUpRight } from "lucide-react"
 //
 // Deliberately a mix of two eras and two kinds of room.
 //
+// Three of the sastw frames are community organisers rather than attendees —
+// the PyLadies organiser at the sticker-covered laptop, the Unreal Engine SA
+// organiser among the group listening, and the ACM-UTSA and RowdyHacks
+// president on stage, and an AI engineering director who has spoken at More
+// Human Than Human. That is the claim HowWeHelp makes on /buildingtogether,
+// "from student organizations through to working professionals", with faces on
+// it. The alt text stays descriptive rather than naming roles, because a role
+// is not something a screen reader user can see in the frame.
+//
 // The `sastw-*` frames are the 2026 Startup + Tech Week — stage lighting, a
 // podium, a full house, the week's own signage. They are what DEVSA runs. The
 // older frames are meetups, workshops and group photos from the specialty
@@ -29,14 +38,19 @@ const mediaItems = [
   { src: "/hero/shebuilds.webp", alt: "SheBuilds Event" },
   { src: "/hero/sastw-room-full.webp", alt: "A full room at long tables during a Startup + Tech Week session" },
   { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
+  { src: "/hero/sastw-stickers.webp", alt: "An attendee at PySanAntonio working at a laptop covered in Python community stickers" },
   { src: "/hero/sastw-shared-stories.webp", alt: "A speaker presenting beside a Shared Stories title card" },
   { src: "/hero/techday2.webp", alt: "DevSA Tech Day" },
+  { src: "/hero/sastw-talk-stage.webp", alt: "A speaker mid-talk on the Startup + Tech Week stage, slides behind them" },
   { src: "/hero/sastw-the-reading.webp", alt: "A speaker at the podium for The Reading, on AI and quantum" },
   { src: "/hero/utsa.webp", alt: "DevSA UTSA event" },
+  { src: "/hero/sastw-student-stage.webp", alt: "A speaker on the Startup + Tech Week stage, microphone in hand" },
   { src: "/hero/sastw-room-hand.webp", alt: "A raised hand in a packed session room during Startup + Tech Week" },
   { src: "/hero/ltai-talk.webp", alt: "A speaker walking through a workflow at a DEVSA talk" },
+  { src: "/hero/sastw-speaker-point.webp", alt: "A speaker gesturing to the room during a Startup + Tech Week session" },
   { src: "/hero/sastw-story-show.webp", alt: "A speaker mid-talk on a darkened stage" },
   { src: "/hero/replay9.webp", alt: "Andrea from Geeks fam" },
+  { src: "/hero/sastw-listening.webp", alt: "Attendees listening at the back of a PySanAntonio session" },
   { src: "/hero/sastw-room-tables.webp", alt: "Attendees at long tables mid-session, the room full behind them" },
   { src: "/hero/morehuman-9743.webp", alt: "More Human Event" },
   { src: "/hero/sastw-lounge.webp", alt: "Attendees seated together in a lounge between sessions" },
