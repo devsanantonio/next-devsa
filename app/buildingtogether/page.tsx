@@ -8,7 +8,6 @@ import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
 import { GetInvolved } from "@/components/partners/get-involved"
 import { HowWeHelp } from "@/components/partners/how-we-help"
-import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { PartnerCta } from "@/components/partners/partner-cta"
 import { DonationCta } from "@/components/partners/donation-cta"
 
@@ -136,7 +135,14 @@ export default async function GroupsPage() {
       <HowWeHelp />
       <GetInvolved />
       <PartnerCta communityCount={communities.length} />
-      <MeetTheTeam />
+      {/* MeetTheTeam moved to /about.
+
+          It sat between the partner ask and the donation ask on a page arguing
+          what DEVSA does for the groups, which made "who runs this" a
+          digression inside somebody else's pitch. On /about it is the answer to
+          the question the page exists for, and the flow here runs straight from
+          the partner ask to the donation ask, which is the order a reader is
+          already in. */}
       <DonationCta />
       </main>
     </>

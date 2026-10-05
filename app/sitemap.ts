@@ -26,6 +26,7 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${baseUrl}/events`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
     { url: `${baseUrl}/buildingtogether`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     // Kept, but demoted: the room is closed and the page is a record of it,
     // not something to rank. See the closure notes before deciding whether it
     // stays at all.
