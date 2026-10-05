@@ -35,7 +35,7 @@ import { ArrowUpRight } from "lucide-react"
 // `i % cols` — a block of new frames followed by a block of old ones would put
 // one era in each column.
 const mediaItems = [
-  { src: "/hero/shebuilds.webp", alt: "SheBuilds Event" },
+  { src: "/hero/shebuilds.webp", alt: "A hands-on build session at SheBuilds, DEVSA's International Women's Day pop-up with Lovable" },
   { src: "/hero/sastw-room-full.webp", alt: "A full room at long tables during a Startup + Tech Week session" },
   { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
   { src: "/hero/sastw-stickers.webp", alt: "An attendee at PySanAntonio working at a laptop covered in Python community stickers" },

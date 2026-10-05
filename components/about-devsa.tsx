@@ -120,14 +120,71 @@ export function AboutDevsa() {
             </p>
           </div>
 
-          {/* Supporting detail */}
+          {/* Supporting detail.
+
+              This used to end on "a shared community calendar, monthly
+              workshops, and conferences built right here in San Antonio". The
+              workshops are no longer DEVSA's to claim: it stopped running its
+              own and now helps the groups run theirs, through exactly the
+              mechanism /buildingtogether's How It Works lays out — the room,
+              the people who can teach, access to a network. The group runs the
+              session.
+
+              Saying otherwise put DEVSA in front of the groups on the one
+              sentence that exists to say it stands behind them, and it was the
+              sort of claim that quietly stops being true without anybody
+              editing the file.
+
+              The calendar and the directory are not repeated here because the
+              paragraph directly above already names them. What is added is the
+              other half of what DEVSA actually runs: the conferences, and the
+              sponsored pop-ups a partner makes possible.
+
+              Named and linked rather than left abstract, which is the pattern
+              that has been fixing the rest of these pages: "sponsored pop-ups"
+              on its own is the kind of claim a reader has to take on trust,
+              and one click settles it. The Zero to Agent route calls itself
+              "San Antonio's official Zero to Agent pop-up", so the noun here
+              is the site's rather than one invented for this sentence.
+
+              Both are named in the order they ran — SheBuilds on
+              International Women's Day, Zero to Agent on 25 April 2026 —
+              which is what keeps "most recently" true rather than
+              aspirational. If a later pop-up overtakes it, this is the
+              sentence to update.
+
+              SheBuilds pointed at its Luma page for a while, because it had
+              nowhere on this site to go — an activation shown twice and never
+              named, /hero/shebuilds.webp in this page's own marquee and
+              /photos/lane-shebuilds.webp on an AudienceLanes card. It has a
+              home now: the worked example under Partner with DEVSA, which
+              credits Lovable, Anthropic, Stripe, Berry to Bean and the person
+              who taught it, over a photograph whose slide says all of it.
+              Pointing there keeps the reader on the site and lands them on the
+              documented version rather than a closed signup. */}
           <p className="max-w-3xl text-base md:text-lg text-gray-500 leading-relaxed">
             We don&apos;t replace the communities doing the work — we{" "}
             <span className="font-medium text-gray-700">host them</span>,{" "}
             <span className="font-medium text-gray-700">connect them</span>, and{" "}
-            <span className="font-medium text-gray-700">help them grow</span>{" "}
-            through a shared community calendar, monthly workshops, and
-            conferences built right here in San&nbsp;Antonio.
+            <span className="font-medium text-gray-700">help them grow</span>.
+            The workshops belong to the groups: DEVSA brings the room, the
+            people who can teach and the network, and they run the session.
+            What DEVSA runs itself is the conferences, and the sponsored
+            pop-ups a partner makes possible —{" "}
+            <Link
+              href="/buildingtogether#partner"
+              className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
+            >
+              SheBuilds
+            </Link>{" "}
+            with Lovable on International Women&apos;s Day, and most recently{" "}
+            <Link
+              href="/events/zero-to-agent"
+              className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
+            >
+              Zero to Agent
+            </Link>{" "}
+            with Vercel.
           </p>
 
           {/* CTAs — Community Calendar leads (subscribe / embed / RSS);

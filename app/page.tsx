@@ -16,10 +16,9 @@ export default function HomePage() {
         <EcosystemShowcase />
         {/* After the ecosystem wall, not before it.
 
-            AboutDevsa ends on "we host them, connect them, and help them grow
-            through a shared community calendar, monthly workshops, and
-            conferences built right here in San Antonio" — and this section is
-            the page paying off that last clause, which had no evidence anywhere
+            AboutDevsa ends on "what DEVSA runs itself is the conferences, and
+            the sponsored pop-ups a partner makes possible" — and this section
+            is the page paying off that clause, which had no evidence anywhere
             on it.
 
             It sat directly after that sentence for a while, which put DEVSA's
