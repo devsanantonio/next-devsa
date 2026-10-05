@@ -145,13 +145,34 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
       .filter(e => new Date(e.date) >= now)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
+    /* The whole history, not the first five.
+    
+       This was sliced to 5, which on the busiest groups showed a fifth of what
+       they have run — Geeks&&Drinks and ATC have 24 events each on this
+       calendar, ACM 13, Greater Gaming Society 12. Ten of the thirty-eight
+       hosts are over the old cap.
+    
+       That depth is the argument for publishing here: a group's record lives on
+       a page they do not have to maintain. Hiding four fifths of it made the
+       page look like a thin listing instead of an archive. The list is still
+       previewed rather than dumped — see PAST_PREVIEW below — but the count is
+       stated either way. */
     const past = allCommunityEvents
       .filter(e => new Date(e.date) < now)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5) // Limit past events to 5
 
     return { upcomingEvents: upcoming, pastEvents: past }
   }, [firestoreEvents, isLoadingEvents, slug])
+
+  /* Six, which fits the card without scrolling and is above the median host's
+     total, so most groups show everything and only the busiest need the
+     expander. */
+  const PAST_PREVIEW = 6
+  const [showAllPast, setShowAllPast] = useState(false)
+  const visiblePast = showAllPast ? pastEvents : pastEvents.slice(0, PAST_PREVIEW)
+  const firstEverDate = pastEvents.length
+    ? new Date(pastEvents[pastEvents.length - 1].date)
+    : null
 
   // Show loading state while fetching community data
   if (isLoadingCommunity) {
@@ -423,9 +444,30 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
             {/* Past Events */}
             {pastEvents.length > 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-6">Past Events</h2>
+                {/* The count, stated.
+
+                    The heading was "Past Events" over a list of five, which
+                    reads as leftovers. The number and the start date are what
+                    make it a record: twenty-four events going back to a date
+                    two years ago is evidence of a group that shows up, and it
+                    is the strongest argument this site can make for a group
+                    publishing its calendar here rather than only to its own
+                    channel. */}
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                    Past Events
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {pastEvents.length} event{pastEvents.length !== 1 ? "s" : ""} on the
+                    community calendar
+                    {firstEverDate
+                      ? `, going back to ${firstEverDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`
+                      : ""}
+                    .
+                  </p>
+                </div>
                 <div className="space-y-4">
-                  {pastEvents.map((event, index) => (
+                  {visiblePast.map((event, index) => (
                     <EventCard 
                       key={event.id} 
                       event={event} 
@@ -434,6 +476,16 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     />
                   ))}
                 </div>
+                {pastEvents.length > PAST_PREVIEW && (
+                  <button
+                    onClick={() => setShowAllPast((v) => !v)}
+                    className="mt-5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    {showAllPast
+                      ? "Show fewer"
+                      : `Show all ${pastEvents.length} events`}
+                  </button>
+                )}
               </div>
             )}
           </motion.div>

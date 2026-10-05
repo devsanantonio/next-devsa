@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import type { Partner } from "@/lib/partners"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
-import { ArrowLeft, ExternalLink, Globe } from "lucide-react"
+import { ArrowLeft, ExternalLink, Globe, MapPin } from "lucide-react"
 import { motion } from "motion/react"
 
 interface PartnerPageClientProps {
@@ -19,8 +21,81 @@ interface PartnerPageClientProps {
   partner: Partner
 }
 
+interface PartnerEvent {
+  id: string
+  title: string
+  slug?: string
+  date: string
+  location?: string
+  venue?: string
+  url?: string
+  communityId?: string
+  partners?: { id: string; name: string; logo: string }[]
+}
+
 export function PartnerPageClient({ partner }: PartnerPageClientProps) {
   const router = useRouter()
+  const [events, setEvents] = useState<PartnerEvent[]>([])
+  /* Read once on mount rather than during render. Date.now() in a useMemo is
+     an impure call: it makes the split between upcoming and past depend on
+     whenever React happens to re-run the memo, and the lint rule that catches
+     it is the same one guarding the rest of this app. */
+  const [now, setNow] = useState<number | null>(null)
+
+  /* The partner's own record on this calendar.
+  
+     The page was a logo, a description and a link — nothing a partner could
+     point at, on the page this site sends people to when it asks a company to
+     back it. The groups' pages have carried their history all along; the
+     partners' never have.
+  
+     Matched two ways, because a partner reaches an event by two routes: tagged
+     in `partners`, or standing as the host when no community is on the record
+     — which is the same `hostPartner` case the calendar card handles. */
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/events")
+      .then((r) => (r.ok ? r.json() : { events: [] }))
+      .then((d) => {
+        /* Both set from the same async callback. Reading the clock in the
+           effect body is a synchronous setState during an effect, which is
+           the other half of the same lint rule; here it lands with the data
+           it is used to partition, which is also when it is actually
+           needed. */
+        if (cancelled) return
+        setEvents(d.events || [])
+        setNow(Date.now())
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const { upcoming, past } = useMemo(() => {
+    if (now === null) return { upcoming: [], past: [] }
+    const mine = events.filter(
+      (e) =>
+        (e.partners || []).some((pp) => pp.id === partner.id) ||
+        (e.communityId || "")
+          .split(",")
+          .map((i) => i.trim())
+          .includes(partner.id),
+    )
+    return {
+      upcoming: mine
+        .filter((e) => new Date(e.date).getTime() >= now)
+        .sort((a, b) => +new Date(a.date) - +new Date(b.date)),
+      past: mine
+        .filter((e) => new Date(e.date).getTime() < now)
+        .sort((a, b) => +new Date(b.date) - +new Date(a.date)),
+    }
+  }, [events, partner.id, now])
+
+  const PAST_PREVIEW = 6
+  const [showAll, setShowAll] = useState(false)
+  const visiblePast = showAll ? past : past.slice(0, PAST_PREVIEW)
+  const firstEver = past.length ? new Date(past[past.length - 1].date) : null
 
   // No not-found branch. The server resolves the partner before rendering
   // this and calls notFound() when there isn't one, so a missing partner
@@ -88,6 +163,67 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
                 <p className="text-base text-slate-600 whitespace-pre-wrap leading-7">{partner.description}</p>
               </div>
 
+              {/* What they have backed.
+
+                  Rendered only when there is something to render. Partner
+                  attribution on events is thin — eight of fifteen partners
+                  appear on any event at all, and several on exactly one — so
+                  an empty or near-empty section would read as "this partner
+                  does nothing" when what it actually means is that the event
+                  was created without tagging them. Silence is the honest
+                  default until the admin captures it; a count of zero is not.
+
+                  The fix for the thinness is upstream, in the event form, not
+                  here. */}
+              {(upcoming.length > 0 || past.length > 0) && (
+                <div className="mb-8 border-t border-slate-100 pt-8">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                    On the Calendar
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {upcoming.length + past.length} event
+                    {upcoming.length + past.length !== 1 ? "s" : ""} with{" "}
+                    {partner.name}
+                    {firstEver
+                      ? `, going back to ${firstEver.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`
+                      : ""}
+                    .
+                  </p>
+
+                  {upcoming.length > 0 && (
+                    <div className="mt-5 space-y-3">
+                      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-400">
+                        Upcoming
+                      </p>
+                      {upcoming.map((e) => (
+                        <PartnerEventRow key={e.id} event={e} upcoming />
+                      ))}
+                    </div>
+                  )}
+
+                  {past.length > 0 && (
+                    <div className="mt-5 space-y-3">
+                      {upcoming.length > 0 && (
+                        <p className="text-[11px] font-medium uppercase tracking-widest text-slate-400">
+                          Past
+                        </p>
+                      )}
+                      {visiblePast.map((e) => (
+                        <PartnerEventRow key={e.id} event={e} />
+                      ))}
+                      {past.length > PAST_PREVIEW && (
+                        <button
+                          onClick={() => setShowAll((v) => !v)}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50"
+                        >
+                          {showAll ? "Show fewer" : `Show all ${past.length} events`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Partner Link */}
               {partner.website && (
                 <div className="pt-6 border-t border-slate-100">
@@ -108,5 +244,50 @@ export function PartnerPageClient({ partner }: PartnerPageClientProps) {
         </div>
       </section>
     </main>
+  )
+}
+
+/** One line of the partner's record. Deliberately plainer than the calendar's
+ *  cards: this is a list of what happened, not a list of things to do. */
+function PartnerEventRow({
+  event,
+  upcoming = false,
+}: {
+  event: PartnerEvent
+  upcoming?: boolean
+}) {
+  const when = new Date(event.date).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+  const href = event.slug ? `/events/${event.slug}` : event.url
+  const body = (
+    <>
+      <p
+        className={`text-[11px] font-medium uppercase tracking-widest ${
+          upcoming ? "text-[#ef426f]" : "text-slate-400"
+        }`}
+      >
+        {when}
+      </p>
+      <p className="mt-1 font-semibold text-slate-900">{event.title}</p>
+      {(event.venue || event.location) && (
+        <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+          <span className="truncate">{event.venue || event.location}</span>
+        </p>
+      )}
+    </>
+  )
+  const shell =
+    "block rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition-colors hover:border-slate-300 hover:bg-white"
+  return href ? (
+    <Link href={href} className={shell}>
+      {body}
+    </Link>
+  ) : (
+    <div className={shell}>{body}</div>
   )
 }

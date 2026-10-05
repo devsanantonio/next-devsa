@@ -111,6 +111,26 @@ export function formatDayShort(dayKey: string): string {
 }
 
 /**
+ * "Thursday" — the weekday alone, for the secondary half of a date marker.
+ *
+ * The list labels a day as a relative word when it has one and a short date
+ * otherwise ("Tomorrow" / "Oct 15"), with the weekday beside it in a lighter
+ * weight. Two facts, two weights, one line — which is a third of the height
+ * the full "Thursday, October 15" heading needed and leads with the part
+ * somebody actually scans for.
+ *
+ * Same UTC-midday trick as the others: a bare YYYY-MM-DD parses as UTC
+ * midnight, which is the previous evening in every US timezone and names the
+ * wrong weekday for a third of the day.
+ */
+export function formatWeekday(dayKey: string): string {
+  return new Date(`${dayKey}T12:00:00Z`).toLocaleDateString("en-US", {
+    weekday: "long",
+    timeZone: "UTC",
+  })
+}
+
+/**
  * The calendar day a grid cell stands for, as a `localDayKey`.
  *
  * Built from the cell's own year/month/day rather than by converting a Date,

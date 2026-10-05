@@ -16,6 +16,7 @@ import {
   downloadIcs,
   effectiveEndMs,
   formatDayHeading,
+  formatWeekday,
   formatDayShort,
   formatTime,
   getEventStatus,
@@ -810,11 +811,49 @@ export function CommunityEventsSection({
     return upcomingEvents
       .filter((event) => {
         if (!normalizedSearch) return true
-        const haystack = `${event.title} ${event.description} ${event.location}`.toLowerCase()
+        /* Who is hosting, which is the most likely thing anybody types.
+        
+           The haystack was title, description and location only — so on a site
+           whose whole pitch is "find your group", searching "Alamo Python" or
+           "ACM" found nothing unless those words happened to appear in an event
+           title, while the placeholder promised to search by name. Thirty-seven
+           hosts have run events through this calendar and none of them were
+           searchable by name.
+        
+           Community names are resolved from allCommunities rather than read off
+           the event, because event.communityName is only set when the API
+           joined one; the ids are always there. Venue joins location for the
+           same reason — "Geekdom" is a venue on some records and a location on
+           others. */
+        const hostNames = (event.communityId || "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+          .map((id) => allCommunities.find((c) => c.id === id)?.name || "")
+          .join(" ")
+        const partnerNames =
+          event.partnerNames ||
+          (event.partners || []).map((pp) => pp.name).join(" ")
+        const base = [
+          event.title,
+          event.description,
+          event.location,
+          event.venue,
+          event.communityName,
+          event.communityId,
+          hostNames,
+          partnerNames,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+        /* Both forms, so "alamo python" matches the slug "alamo-python" and
+           "defcongroup-sa" still matches itself. */
+        const haystack = `${base} ${base.replace(/-/g, " ")}`
         return haystack.includes(normalizedSearch)
       })
       .filter((event) => !selectedDay || localDayKey(event.date) === selectedDay)
-  }, [upcomingEvents, search, selectedDay])
+  }, [upcomingEvents, search, selectedDay, allCommunities])
 
   /**
    * The same events, bucketed into the days they fall on.
@@ -1074,7 +1113,7 @@ export function CommunityEventsSection({
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search events by name, location, or topic..."
+                  placeholder="Search by event, group, venue or topic..."
                   className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm font-normal text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all leading-normal"
                 />
               </div>
@@ -1196,7 +1235,24 @@ export function CommunityEventsSection({
                 </div>
               </div>
             ) : (
-              <div className="space-y-10">
+              /* The spine.
+
+                 One dashed line down the whole list with a dot at each date,
+                 borrowed from Luma's calendar. A run of days was rendering as
+                 disconnected blocks — heading, cards, gap, heading, cards —
+                 and the line is what makes the same content read as one
+                 continuous calendar instead. It costs two absolutely
+                 positioned elements and no layout.
+
+                 The line lives on this container rather than on each day, so
+                 it runs through the gaps between them; the dots live on the
+                 days. Its left-[7px] is the centre of a 14px dot sitting at
+                 each section's left-0. */
+              <div className="relative space-y-8">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-2 left-[7px] top-2 w-px border-l border-dashed border-gray-200"
+                />
                 {eventsByDay.map((day) => {
                   const relative = relativeDayLabel(day.key, currentTime)
                   /* Introduces the week once, above the first of its days that
@@ -1207,57 +1263,46 @@ export function CommunityEventsSection({
                   )
 
                   return (
-                    <section key={day.key} aria-labelledby={`day-${day.key}`}>
+                    <section
+                      key={day.key}
+                      aria-labelledby={`day-${day.key}`}
+                      className="relative pl-8 sm:pl-10"
+                    >
+                      {/* The dot, on the spine. */}
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-[5px] h-3.5 w-3.5 rounded-full border-2 border-white bg-gray-300 ring-1 ring-gray-200"
+                      />
                       {opensStartupWeek && <StartupWeekBand />}
-                      {/* The date, promoted.
+                      {/* The date, in two weights on one line.
 
-                          It was a 13px uppercase gray-500 label repeated on
-                          every card — label styling for the list's primary
-                          scanning key. People scan a calendar by when, then
-                          decide by what, so the date now heads a group and the
-                          cards under it only carry a time. That also gives the
-                          column the thing it most lacked: rhythm. A run of
-                          fifteen near-identical cards reads as a wall; the same
-                          fifteen under four dated headings read as a week. */}
-                      <div className="mb-4 flex items-baseline gap-3">
-                        {/* h2, not h3. These headings are the list's structure
-                            now, and they sit directly under this section's h1
-                            — jumping a level would leave the outline reading
-                            h1 → h3 with nothing between. */}
-                        {/* Not shrink-0.
-                        
-                            Every item in this row was shrink-0 except the
-                            hairline, so the row had a hard floor: the heading
-                            (~273px for "Wednesday, September 30" at this
-                            weight) plus the gaps, the rule's min-w-4 and the
-                            event count came to roughly 368px. A 390px phone
-                            offers 342 after the page gutter and the row simply
-                            refused to fit in it — so it widened the grid
-                            column, the column widened the page, and every card
-                            in the list rendered past the viewport with its
-                            right-hand side cut off. The day headings were
-                            sizing the whole calendar.
-                        
-                            Letting the heading shrink lets it wrap to a second
-                            line on the narrowest phones, which is the correct
-                            thing for a heading to do and the reason nothing
-                            else here needs to change. */}
-                        <h2
-                          id={`day-${day.key}`}
-                          className="min-w-0 text-xl font-black tracking-[-0.01em] text-gray-900 sm:text-2xl"
-                        >
-                          {formatDayHeading(day.key)}
-                        </h2>
-                        {relative && (
-                          <span className="shrink-0 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
-                            {relative}
-                          </span>
-                        )}
-                        <span aria-hidden className="h-px min-w-4 flex-1 bg-gray-200" />
-                        <span className="shrink-0 text-[13px] font-normal text-gray-400">
-                          {day.events.length} event{day.events.length !== 1 ? "s" : ""}
+                          It was "Tuesday, October 6" at 24px black, a pill, a
+                          hairline rule and an event count — four elements and
+                          roughly 370px of hard floor, which is what used to
+                          size the whole calendar and push every card past the
+                          right edge of a phone.
+
+                          Luma's form instead: the relative word when there is
+                          one and a short date otherwise, bold, with the weekday
+                          beside it in a lighter weight. It leads with what
+                          somebody scans for — "Tomorrow" before "Tuesday" —
+                          and nothing in it can set a minimum width, because
+                          both halves wrap.
+
+                          The count and the rule are gone. The spine does the
+                          separating the rule was doing, and the count per day
+                          was a number nobody asked for; the total is already
+                          above the list. */}
+                      <h2
+                        id={`day-${day.key}`}
+                        className="flex flex-wrap items-baseline gap-x-2.5 text-lg font-bold tracking-[-0.01em] text-gray-900 sm:text-xl"
+                      >
+                        <span>{relative ?? formatDayShort(day.key)}</span>
+                        <span className="text-base font-normal text-gray-400 sm:text-lg">
+                          {formatWeekday(day.key)}
                         </span>
-                      </div>
+                        <span className="sr-only">{formatDayHeading(day.key)}</span>
+                      </h2>
 
                       <div className="space-y-5">
                         {day.events.map((event, index) => {
@@ -1277,73 +1322,96 @@ export function CommunityEventsSection({
                              drops out of the "with" row, so nothing appears
                              twice. */
                           const allPartners = event.partners || []
-                          const hostPartner = eventCommunities[0]?.logo || event.communityLogo ? undefined : allPartners[0]
-                          const coPartners = hostPartner ? allPartners.slice(1) : allPartners
-                          /* DEVSA convened it, so DEVSA belongs in the row —
-                             and cannot come from the data, because it is not a
-                             partner record. */
-                          /* All three branded activations belong to Startup
-                             Week, so the week's mark takes the plate and
-                             everyone else — communities included, which the
-                             plain card has no room for — is billed underneath.
-                             That is what puts DEF CON under Access Granted
-                             rather than in front of it. */
                           const brand = getEventBrand(event.brand)
+
+                          /* Who is hosting, as one list of marks.
+
+                             A collaboration is a collaboration whoever the
+                             parties are, and this card used to model three
+                             different shapes of the same fact. Two community
+                             groups put one logo on the plate and named both in
+                             the label. Two partners put the first on the plate
+                             and the rest down in the "with" row. A group and a
+                             partner put the group on the plate and the partner
+                             in the row. In none of those did it look like two
+                             organisations had done something together, which
+                             is the one thing the card needed to show.
+
+                             One list now, communities first because they are
+                             the hosts when both are present, and the same
+                             overlapping stack /events/[slug] uses for the same
+                             fact. The single-mark case is simply this list with
+                             one thing in it.
+
+                             Branded activations are excluded on purpose. The
+                             three Startup Week events put the week's bolt on
+                             the plate and bill everyone — communities included
+                             — underneath, which is what puts DEF CON under
+                             Access Granted rather than beside it. */
+                          const communityMarks = eventCommunities.filter((c) => c.logo)
+                          const collabMarks = brand
+                            ? []
+                            : [...communityMarks, ...allPartners]
+                          const isCollab = collabMarks.length > 1
+
+                          /* Kept for the single-mark case only: a lone partner
+                             standing in as host still needs a light plate and
+                             logoOnLight, because partner artwork is drawn for
+                             white grounds where community marks are not. */
+                          const hostPartner =
+                            !brand && communityMarks.length === 0
+                              ? allPartners[0]
+                              : undefined
+
                           const brandCoHosts = brand
-                            ? [...eventCommunities.filter((c) => c.logo), ...allPartners].filter(
+                            ? [...communityMarks, ...allPartners].filter(
                                 (o) => o.id !== "sastw",
                               )
                             : []
-                          const rowPartners = event.isOfficial
-                            ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...(brand ? brandCoHosts : coPartners)]
-                            : brand
-                              ? brandCoHosts
-                              : coPartners
+                          /* DEVSA convened it, so DEVSA is credited — but in
+                             the row, not the stack. Convening is not co-hosting,
+                             and this is the page whose whole argument is that
+                             DEVSA does not run the groups. Everyone who *is*
+                             co-hosting is in the stack above, so for a plain
+                             card the row now holds DEVSA or nothing. */
+                          const rowPartners = brand
+                            ? event.isOfficial
+                              ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...brandCoHosts]
+                              : brandCoHosts
+                            : event.isOfficial
+                              ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }]
+                              : []
                           /* The bolt rather than the horizontal lockup: the
                              plate is a 56px square, and the lockup is about
                              5:1, so it drew eight pixels tall in it. The bolt
                              is the week's mark at a shape the slot can hold. */
                           const primaryLogo = brand
                             ? "/sastw/bolt.svg"
-                            : eventCommunities[0]?.logo || event.communityLogo || hostPartner?.logo
+                            : collabMarks[0]?.logo || event.communityLogo
                           const primaryName = eventCommunities[0]?.name || event.communityId
-                          /* Who is hosting, as a list rather than a string.
-                          
-                             Not `eventCommunities`: with no community on the
-                             record, the block above pushes one synthetic entry
-                             whose name is the API's already-joined
-                             "A, B, C" — three hosts arriving as a single item.
-                             That is why a three-way activation rendered commas
-                             where every other collaboration renders " + ", and
-                             why it never earned the Collab pill: by that count
-                             it had exactly one host.
-                          
-                             Falling through to the partners when there is no
-                             community is the same rule the host mark follows,
-                             so the label and the plate always name the same
-                             people. */
-                          const hosts = communityIds.length
-                            ? eventCommunities.map((ec) => ec.name)
-                            : allPartners.length
-                              ? allPartners.map((p) => p.name)
-                              : [primaryName]
-                          /* On a branded card the week is the host, and every
-                             group is already named under "with" — repeating
-                             them here put the same five names on the card
-                             twice. */
-                          const hostLabel = brand ? "SA Startup + Tech Week" : hosts.join(" + ")
-                          /* How many organizations are actually behind this,
-                             which is not the same as how many are in the label.
-                          
-                             With a community present the partners are billed
-                             under "with" rather than in the headline, so
-                             counting the label alone would call a community
-                             plus two partners a solo event. Without one the
-                             partners *are* the label, and adding the row to the
-                             count would tally them twice. Hence counting
-                             communities only when there are communities. */
-                          const collabCount =
-                            (communityIds.length ? eventCommunities.length : 0) + allPartners.length
+                          /* The label names everyone the stack shows, in the
+                             same order, so the two halves of "whose event is
+                             this" agree. It used to name only the communities,
+                             which meant a group-and-partner collaboration read
+                             as the group's event with a logo it never explained
+                             sitting underneath. `truncate` handles the long
+                             ones; three names is the practical ceiling anyway. */
+                          const hostLabel = brand
+                            ? "SA Startup + Tech Week"
+                            : collabMarks.length
+                              ? collabMarks.map((m) => m.name).join(" + ")
+                              : primaryName
+                          /* One number for one question: how many
+                             organisations are behind this. It used to be
+                             assembled from two different branches depending on
+                             whether a community was present, because the hosts
+                             and the partners lived in different places. They
+                             are one list now, so this is its length — and on a
+                             branded card the week's own co-hosts, which is what
+                             the row below bills. */
+                          const collabCount = brand
+                            ? brandCoHosts.length + 1
+                            : collabMarks.length
                           /* detailsUrl wins outright when set, which is safe
                              precisely because it is never set by accident —
                              unlike `url`, which 20 events carry alongside a
@@ -1352,6 +1420,73 @@ export function CommunityEventsSection({
                           const leavesSite = Boolean(event.detailsUrl) || (!event.slug && Boolean(event.url))
                           const eventStatus = getEventStatus(event, currentTime)
                           const isNextUp = day.key === eventsByDay[0]?.key && index === 0
+
+                          /* Defined once, placed twice.
+
+                             Below xl the marks sit beside the text, where they
+                             are the card's right-hand anchor. At xl the actions
+                             rail already anchors that side, so a second column
+                             of marks there takes width from the text for
+                             nothing — the `By` line was truncating on a laptop
+                             to make room for logos the rail could hold for
+                             free. So at xl they move into the rail, above the
+                             primary action.
+
+                             One element, two mount points, each hidden at the
+                             other's breakpoint. They are aria-hidden in both:
+                             the line under the title already names every
+                             organisation in them, so announcing the marks as
+                             well would read the hosts out twice. */
+                          /* The host marks, inline on the `By` line, at every
+                             width.
+
+                             They have been three things on this card: a 64px
+                             plate on the left, a stack on the right where Luma
+                             puts artwork, and a stack at the top of the actions
+                             rail. All three were a column, and a column of two
+                             logo plates runs out — it reached about as far as
+                             the venue line and left white space down the rest
+                             of the card, while costing the `By` line enough
+                             width to truncate the second host's name.
+
+                             Inline, they touch the names they belong to, add no
+                             height, cost no width, and read the same on a phone
+                             and a monitor. It is also what Luma does, and the
+                             reason it works there is the reason it works here:
+                             a host mark is an annotation on a name, not a
+                             picture of an event.
+
+                             Round rather than square: at 24px a rounded
+                             rectangle reads as a clipped logo where a circle
+                             reads as a mark, which is why avatar stacks are
+                             circles everywhere. */
+                          const marksInline = (isCollab
+                            ? collabMarks.slice(0, 3)
+                            : [{ id: primaryName, name: primaryName, logo: primaryLogo }]
+                          ).map((m) => {
+                            const isPartner = allPartners.some((pp) => pp.id === m.id)
+                            return (
+                              <span
+                                key={m.id}
+                                className={`relative inline-flex h-6 w-6 shrink-0 overflow-hidden rounded-full ring-2 ${
+                                  isPartner ? "bg-white" : "bg-gray-950"
+                                } ${brand ? "ring-[#0a0a0a]" : "ring-white"}`}
+                              >
+                                <Image
+                                  src={m.logo || "/devsa-gradient.svg"}
+                                  alt=""
+                                  fill
+                                  unoptimized
+                                  className={`object-contain p-1 ${
+                                    isPartner
+                                      ? logoOnLight({ id: m.id, name: m.name, type: "partner" })
+                                      : ""
+                                  }`}
+                                  sizes="24px"
+                                />
+                              </span>
+                            )
+                          })
 
                           return (
                             /* A plain article. These cards used to be
@@ -1435,7 +1570,20 @@ export function CommunityEventsSection({
                                   cost. Below xl the stacked footer is still the
                                   right shape. */}
                               <div className="relative flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-6">
-                                <div className="flex min-w-0 flex-1 gap-4">
+                                {/* Text first, marks second.
+
+                                    Luma anchors the right of every card with
+                                    the event's own artwork. We will not have
+                                    that — community artwork is inconsistent
+                                    enough that curating it per event is the
+                                    job of a branded card, the way Startup Week
+                                    and Texas Linux Fest are handled — so the
+                                    host marks take that position instead. Same
+                                    composition, built from the asset we
+                                    actually have, and it gives the text the
+                                    full width of the card rather than starting
+                                    it 80px in. */}
+                                <div className="flex min-w-0 flex-1 items-start gap-4 sm:gap-5">
                                 {/* The host mark, on every viewport.
 
                                     Two changes. It was `hidden sm:block`, so it
@@ -1466,31 +1614,28 @@ export function CommunityEventsSection({
                                     artwork is drawn for white grounds, and SA
                                     Startup Week's lockup is near-black — on
                                     gray-950 it disappears entirely. */}
-                                <div
-                                  className={`relative h-14 w-14 shrink-0 rounded-lg p-2 ${
-                                    brand
-                                      ? "border border-white/15 bg-white/5"
-                                      : hostPartner
-                                        ? "border border-gray-200 bg-white"
-                                        : "bg-gray-950"
-                                  }`}
-                                >
-                                  <Image
-                                    src={primaryLogo || "/devsa-gradient.svg"}
-                                    alt=""
-                                    fill
-                                    unoptimized
-                                    className={`object-contain p-2 ${
-                                      brand
-                                        ? ""
-                                        : hostPartner
-                                          ? logoOnLight({ id: hostPartner.id, name: hostPartner.name, type: "partner" })
-                                          : ""
-                                    }`}
-                                    sizes="56px"
-                                  />
-                                </div>
+                                {/* One plate, or a stack when more than one
+                                    community is hosting.
 
+                                    The card showed a single mark however many
+                                    groups were behind an event — the names were
+                                    joined with " + " in the label but only the
+                                    first group's logo ever appeared, so a
+                                    three-way collaboration looked like one
+                                    group's meetup with a long title.
+
+                                    The stack is the treatment /events/[slug]
+                                    already uses for the same fact: overlapping
+                                    plates with a ring, which is also why it
+                                    fits — three marks take about 90px rather
+                                    than the 190 a spread row needs, on a column
+                                    that is only about 240px wide on a phone.
+                                    Same idea in both places, so a collaboration
+                                    looks like one on the card and on its page.
+
+                                    Capped at three. Past that the stack stops
+                                    reading and starts overlapping into mush,
+                                    and the label already names everyone. */}
                                 <div className="min-w-0 flex-1">
                                   {/* Time and host on one line, above the title.
 
@@ -1503,36 +1648,44 @@ export function CommunityEventsSection({
                                       `tabular-nums` so a column of times aligns
                                       on the colon instead of shifting with the
                                       width of each digit. */}
+                                  {/* Time and status, muted, above the title.
+
+                                      It used to be bold and share a line with
+                                      the host, which put two different kinds of
+                                      fact at the same weight and left the title
+                                      third in the reading order. Nobody scans a
+                                      calendar by time — they scan it by what,
+                                      having already chosen the day from the
+                                      heading above. So the time steps back, the
+                                      pills join it, and the title gets the
+                                      line to itself. */}
                                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
                                     <time
                                       dateTime={event.date}
-                                      className={`text-[15px] font-bold tabular-nums ${brand ? "text-white" : "text-gray-900"}`}
+                                      className={`text-[13px] font-medium tabular-nums ${brand ? "text-white/70" : "text-gray-500"}`}
                                       style={brand ? { color: brand.accent } : undefined}
                                     >
                                       {formatTime(event.date)}
                                     </time>
-                                    <span aria-hidden className={brand ? "text-white/30" : "text-gray-300"}>·</span>
-                                    {/* min-w-0 is what makes `truncate` work here.
-                                    
-                                        A flex item's default min-width is auto,
-                                        which for a `whitespace-nowrap` span is
-                                        the width of the whole string. So the
-                                        item refuses to shrink, the row grows to
-                                        fit it, and the card grows with it —
-                                        `truncate` never gets to clip anything.
-                                        One long label was widening the entire
-                                        page: at 390px the band, the day rules
-                                        and every other card ran off the right
-                                        edge because of this one span. */}
-                                    <span className={`min-w-0 truncate text-[13px] font-medium ${brand ? "text-white/70" : "text-gray-600"}`}>
-                                      {hostLabel}
-                                    </span>
+                                    {/* Hidden on a phone, where the host name
+                                        wraps to its own line and leaves the
+                                        separator dangling after the time. The
+                                        gap and the weight difference carry the
+                                        distinction at that width; from sm the
+                                        pair fits on one line and the dot is
+                                        worth having. */}
+                                    {/* The Collab pill is gone.
 
-                                    {collabCount > 1 && (
-                                      <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest ${brand ? "border-white/20 bg-white/5 text-white/60" : "border-gray-200 bg-gray-100 text-gray-500"}`}>
-                                        Collab
-                                      </span>
-                                    )}
+                                        It existed because the card showed one
+                                        mark however many groups were hosting,
+                                        so the collaboration had to be stated.
+                                        The stack on the right shows all of them
+                                        now and the line under the title names
+                                        them — a third assertion of the same
+                                        fact, competing for the one row that
+                                        also carries status, and the first thing
+                                        to wrap on a phone. collabCount still
+                                        drives the stack. */}
                                     {eventStatus === "happening" ? (
                                       <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-600 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
                                         <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
@@ -1554,7 +1707,7 @@ export function CommunityEventsSection({
                                   {brand ? (
                                     <EventBrandLockup brand={brand} />
                                   ) : (
-                                    <h3 className="mt-2 text-lg font-semibold leading-[1.3] text-gray-900 transition-colors group-hover:text-gray-600">
+                                    <h3 className="mt-1.5 text-lg font-bold leading-[1.25] tracking-[-0.01em] text-gray-900 transition-colors group-hover:text-gray-600 sm:text-xl">
                                       {event.title}
                                     </h3>
                                   )}
@@ -1564,6 +1717,18 @@ export function CommunityEventsSection({
                                       differently on every platform, ignored
                                       `currentColor`, and sat at its own optical
                                       weight beside the icons around it. */}
+                                  {/* "By …", under the title, the way Luma
+                                      bills a host. Names only: the marks for
+                                      the same organisations are the anchor on
+                                      the right of this card, and showing both
+                                      would be the same fact twice. */}
+                                  <p className={`mt-2 flex min-w-0 items-center gap-2 text-[13px] font-medium ${brand ? "text-white/70" : "text-gray-600"}`}>
+                                    <span aria-hidden className="flex shrink-0 -space-x-1.5">
+                                      {marksInline}
+                                    </span>
+                                    <span className="truncate">By {hostLabel}</span>
+                                  </p>
+
                                   <p className={`mt-1.5 flex items-center gap-1.5 text-[13px] font-normal leading-normal ${brand ? "text-white/60" : "text-gray-500"}`}>
                                     <MapPin className={`h-3.5 w-3.5 shrink-0 ${brand ? "text-white/40" : "text-gray-400"}`} aria-hidden />
                                     <span className="truncate">{event.venue || event.location}</span>
@@ -1594,48 +1759,51 @@ export function CommunityEventsSection({
                                       A fixed plate makes the row look the same
                                       on all three. */}
                                   {rowPartners.length > 0 && (
-                                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                                      {/* w-full on a phone so the row wraps
-                                          right here and the marks get a line to
-                                          themselves. Inline, the label eats
-                                          ~48px of a content column that is only
-                                          about 230px wide at 390, which is what
-                                          broke three logos onto two lines and
-                                          left the row looking scattered. */}
-                                      <span className={`w-full text-[11px] font-medium uppercase tracking-widest sm:w-auto ${brand ? "text-white/45" : "text-gray-400"}`}>
+                                    /* Fixed boxes, packed left.
+
+                                       These were `flex-1` below sm, which is
+                                       fine for three marks sharing a line and
+                                       wrong for one: a single partner logo
+                                       stretched to the full width of the
+                                       content column and centred itself in it,
+                                       so the same card looked tidy with three
+                                       credits and random with one. That is the
+                                       "logo floating in space" — it was never
+                                       about the logo, it was about the box
+                                       around it being elastic.
+
+                                       Fixed width at every size instead, so a
+                                       row of one, two or three reads the same
+                                       way and wraps predictably when it has
+                                       to. The label is inline again for the
+                                       same reason: it only needed its own line
+                                       when the boxes could not be relied on to
+                                       be a known width. */
+                                    <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                                      <span className={`shrink-0 text-[11px] font-medium uppercase tracking-widest ${brand ? "text-white/45" : "text-gray-400"}`}>
                                         With
                                       </span>
                                       {rowPartners.map((p) => (
                                         <span
                                           key={p.id}
-                                          /* Taller than it looks like it needs to
-                                             be, because height is the binding
-                                             constraint here and width is not.
-                                             The box is 96 wide, so a wordmark
-                                             like Tech Bloc is comfortable — but
-                                             a squarish mark is limited by the
+                                          /* Height is the binding constraint,
+                                             not width: a wordmark like Tech
+                                             Bloc is comfortable in 80px, but a
+                                             squarish mark is limited by the
                                              short side, and SA Startup Week's
                                              lockup is a bordered box with type
-                                             inside it. At 24px of drawing height
-                                             that type was about six pixels tall.
-                                             Widening the plate would not have
-                                             moved it at all.
-                                          
-                                             No plate, at any width. A white box
-                                             on an almost-white card was drawing
-                                             an outline and spending width
-                                             without separating anything, and
-                                             three of them in a row read as a
-                                             toolbar rather than a credit. The
-                                             marks do not need the ground: the
-                                             light ones are inverted by
+                                             inside it — widening would not move
+                                             that type at all.
+
+                                             No plate. A white box on an
+                                             almost-white card drew an outline
+                                             and spent width without separating
+                                             anything, and three in a row read
+                                             as a toolbar rather than a credit.
+                                             The light marks are inverted by
                                              logoOnLight, not rescued by what is
-                                             behind them.
-                                          
-                                             flex-1 with min-w-0 so three share
-                                             the line evenly instead of one
-                                             falling off it. */
-                                          className="relative inline-flex h-12 min-w-0 flex-1 items-center justify-center sm:h-14 sm:w-24 sm:flex-none"
+                                             behind them. */
+                                          className="relative inline-flex h-10 w-20 shrink-0 items-center justify-center sm:h-12 sm:w-24"
                                         >
                                           <Image
                                             src={p.logo}
@@ -1643,18 +1811,20 @@ export function CommunityEventsSection({
                                             fill
                                             unoptimized
                                             sizes="96px"
-                                            /* DEVSA's mark is a filled black block where the
-                                               others are open lettering, so at equal
-                                               box size it read as twice their weight.
-                                               Inset further to bring it into line. */
-                                            /* Which way a mark has to be flipped
+                                            /* DEVSA's mark is a filled black block
+                                               where the others are open lettering, so
+                                               at equal box size it read as twice their
+                                               weight. Inset further to bring it into
+                                               line.
+
+                                               Which way a mark has to be flipped
                                                depends on what is behind it, and on a
                                                branded card that is near-black. Same
                                                list either way — logoOnDark is the
                                                mirror of logoOnLight, so a mark cannot
                                                be classified light for one surface and
                                                dark for the other.
-                                            
+
                                                DEVSA is exempt from both. Its lockup is
                                                a dark plate with light content inside
                                                it, so it carries its own ground and
@@ -1663,7 +1833,7 @@ export function CommunityEventsSection({
                                                a solid white rectangle — the plate
                                                inverted along with everything on it. */
                                             className={`object-contain ${
-                                              p.id === "devsa" ? "p-2.5 sm:p-3" : "p-1 sm:p-1.5"
+                                              p.id === "devsa" ? "p-2 sm:p-2.5" : "p-0.5 sm:p-1"
                                             } ${
                                               p.id === "devsa"
                                                 ? ""
@@ -1677,6 +1847,7 @@ export function CommunityEventsSection({
                                     </div>
                                   )}
                                 </div>
+
                                 </div>
 
                               {/* The actions. A footer below xl, a rail at xl
@@ -1690,7 +1861,7 @@ export function CommunityEventsSection({
                                   last-first, which is exactly the order wanted
                                   on screen and the wrong one to hard-code into
                                   the markup. */}
-                              <div className={`relative mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:items-stretch xl:justify-end xl:gap-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
+                              <div className={`relative flex flex-wrap items-center justify-between gap-x-3 gap-y-4 border-t pt-4 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:items-stretch xl:justify-end xl:gap-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
                                 {/* Labelled, and visibly secondary.
 
                                     These were two unlabelled 36px icon squares
@@ -1731,7 +1902,7 @@ export function CommunityEventsSection({
                                   <Link
                                     href={eventLink}
                                     {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                                    className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity xl:w-full xl:py-2.5 ${
+                                    className={`inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-opacity sm:w-auto sm:py-2 xl:w-full xl:py-2.5 ${
                                       brand ? "hover:opacity-90" : "bg-gray-900 text-white hover:bg-gray-800"
                                     }`}
                                     style={brand ? { backgroundColor: brand.accent, color: brand.onAccent } : undefined}
