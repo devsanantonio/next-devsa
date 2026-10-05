@@ -44,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# One-off Firestore maintenance scripts. They read .env.local, instantiate the
+# service account, and can recursively delete production collections — not
+# something that should sit in the repo where it can be run by accident.
+_*.mjs
