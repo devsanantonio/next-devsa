@@ -1,6 +1,6 @@
 ---
 name: design-system
-description: The site's type scale, spacing, colour-contrast floors and the two eyebrow idioms. Load before adding or restyling a marketing section, or when a section looks out of step with the ones around it.
+description: The site's type scale, spacing, color-contrast floors and the two eyebrow idioms. Load before adding or restyling a marketing section, or when a section looks out of step with the ones around it.
 ---
 
 # Design system
@@ -76,7 +76,7 @@ bg-neutral-900 transition-all duration-200
 Grid: `grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4` (or
 `md:grid-cols-3` for three).
 
-## Colour contrast floors
+## Color contrast floors
 
 WCAG AA: **4.5:1** for body and small text, **3:1** for large text (24px+, or
 19px+ bold) and for graphical objects.
@@ -98,7 +98,7 @@ marks. Never body copy, labels, metadata or captions.
 There are still around 74 uses of `text-white/25` through `/45` across the app
 predating this note. Not all are text; audit before changing one.
 
-## Checking a colour
+## Checking a color
 
 Do not eyeball it. The relative-luminance formula, with white composited over
 the ground at the alpha in question:

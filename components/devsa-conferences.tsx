@@ -37,7 +37,7 @@ import {
  * have floor to cross, the ciphertext has a field to fill, and the clips are
  * the size they were shot for.
  *
- * It also reads as a bill rather than a catalogue, which is closer to what
+ * It also reads as a bill rather than a catalog, which is closer to what
  * these are. No boxes, no borders, no blurb — the marks and their motion.
  *
  * ## How the hover works

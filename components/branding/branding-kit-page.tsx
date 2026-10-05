@@ -436,7 +436,7 @@ export function BrandingKitPage() {
                     bridges the gap between passionate builders, local
                     partners, and the growing tech ecosystem", which is the
                     sentence the site's own metadata dropped for naming no
-                    technology and describing any community organisation. The
+                    technology and describing any community organization. The
                     value proposition read "Your direct connection to the tech
                     community", retired from the title for the same reason, and
                     counted the groups by hand at 20+ against twenty-three.

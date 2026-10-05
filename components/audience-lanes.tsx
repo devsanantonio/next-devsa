@@ -40,7 +40,7 @@ const lanes: Lane[] = [
     headlineTail: ".",
     /* The verticals are named, deliberately.
     
-       This read "20+ specialty groups", which is the organisation's word for
+       This read "20+ specialty groups", which is the organization's word for
        them, not the reader's. Nobody identifies as someone who attends a
        specialty group; they identify as someone who is into Python, or Linux,
        or game design. Naming them is what turns this lane from a description
@@ -91,7 +91,7 @@ const lanes: Lane[] = [
        audience, which is where it is true.
     
        Volunteering is real and valuable — Project Quest (workforce training)
-       and Youth Code Jam (K-12 computer science) are partners whose programmes
+       and Youth Code Jam (K-12 computer science) are partners whose programs
        this audience can give time to. But it answers "how can I contribute",
        not "what am I into", and both are partners rather than specialty groups.
        Dropping it between Python and AI would make the list answer two
@@ -136,7 +136,7 @@ const lanes: Lane[] = [
     
        New filename on purpose: the same name with different bytes is how the
        Give-a-LOT and SheBuilds images went on serving stale versions from the
-       image optimiser while the files on disk were correct. */
+       image optimizer while the files on disk were correct. */
     image: "/photos/lane-aws-usergroup.webp",
     imageAlt: "Organizers from the AWS User Group San Antonio at their meetup",
   },
@@ -192,7 +192,7 @@ function LaneCard({ lane, index }: { lane: Lane; index: number }) {
              All three assets are 1000x625 and the frame is aspect-16/10, so at
              rest object-cover crops nothing — the top of the image is the top
              of the frame. The hover scale was the whole problem: scaling from
-             the centre takes about 2.5% off every edge, and the "aws" wordmark
+             the center takes about 2.5% off every edge, and the "aws" wordmark
              on the For Organizers banner sits roughly five pixels from the top
              of the source, so it was the first thing to go.
           

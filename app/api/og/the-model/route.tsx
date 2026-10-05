@@ -15,7 +15,7 @@ export const runtime = "nodejs"
  * reading "Find your people. Build your future."
  *
  * Set on the lavender rather than on white, which is what the other three do
- * with their own colours: the card should be recognisable as this brand before
+ * with their own colors: the card should be recognizable as this brand before
  * the title is read. MODEL_LAVENDER and MODEL_INK come from data/the-model so
  * the card cannot drift from the page it represents.
  *

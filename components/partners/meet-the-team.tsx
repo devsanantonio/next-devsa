@@ -55,7 +55,7 @@ export function MeetTheTeam() {
             
                 "resources" went with it — the vague noun already removed from
                 the metadata, the footer and the hero — and so did "every
-                program", which implies DEVSA operates programmes when the
+                program", which implies DEVSA operates programs when the
                 claim is that it operates a calendar, a directory, a room and
                 its own conferences, and deliberately not the groups.
             

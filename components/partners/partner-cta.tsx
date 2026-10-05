@@ -60,7 +60,7 @@ const SHE_BUILDS = {
   /* The filename carries the frame, because this asset has now been three
      different pictures: a 16:9 card header, a 0.95:1 crop with the event slide
      in it, and this one. The first two kept the same name, so the URL never
-     changed and Next's image optimiser went on serving the bytes it had
+     changed and Next's image optimizer went on serving the bytes it had
      already cached — the page looked unchanged while the file on disk was
      correct, which is the second time that has happened in this repo.
   
@@ -90,7 +90,7 @@ const SHE_BUILDS = {
  * them. The builders want to find the groups, and the learners coming up
  * behind them. Those are three different asks with one object, and DEVSA is
  * the channel they meet on — so this block, MeetTheTeam and DonationCta all
- * name that object rather than each describing a different organisation.
+ * name that object rather than each describing a different organization.
  *
  * `communityCount` is passed in rather than written here. This said "20+ tech
  * communities" while Firestore held twenty-three, which is the same hardcoded

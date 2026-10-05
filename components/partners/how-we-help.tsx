@@ -73,7 +73,7 @@ const GIVE_A_LOT = {
   
      This asset was replaced three times while the right photograph was being
      found, and each time it kept the name session.webp — so the URL never
-     changed, and Next's image optimiser and the browser both went on serving
+     changed, and Next's image optimizer and the browser both went on serving
      the first bytes they had cached. The page looked unchanged while the file
      on disk was correct, which is a confusing failure to debug.
   
@@ -139,7 +139,7 @@ export function HowWeHelp() {
           there.
         </p>
 
-        {/* Stretch, not centre.
+        {/* Stretch, not center.
 
             The gap this section had was ~245px of nothing above the first
             role, because the figure column was far taller than the text one.
@@ -173,7 +173,7 @@ export function HowWeHelp() {
               code" and Project Quest "needs the ones already in them", under
               "when a partner needs hands". Three problems, in rising order.
           
-              It characterised two organisations' needs without either of them
+              It characterised two organizations' needs without either of them
               saying so. Project Quest has run since 1992, describes itself as
               "nationally-recognized" and as having "helped thousands find
               amazing in-demand careers"; Youth Code Jam runs teacher
@@ -182,7 +182,7 @@ export function HowWeHelp() {
               with DEVSA as the one who supplies the hands — is not ours to say.
           
               It had no destination. /api/volunteers is an event-specific open
-              call (Access Granted's), not a route into partner programmes.
+              call (Access Granted's), not a route into partner programs.
               There is no page, form or link for this, so a reader moved by it
               had nowhere to go.
           

@@ -48,7 +48,7 @@ import { ArrowUpRight } from "lucide-react"
  *
  * ## The scrim is this heavy because the frame is this bright
  *
- * Every earlier frame here was `grayscale`. This one is in colour, which is
+ * Every earlier frame here was `grayscale`. This one is in color, which is
  * the point of it — but it is also a daylit room where the previous one was a
  * dark stage, and that changes the arithmetic completely rather than slightly.
  *
@@ -162,7 +162,7 @@ export function GroupsHero() {
               Building Together
             </p>
             {/* This was "Where Partners and Communities Come Together to
-                Build." — true of almost any community organisation, and
+                Build." — true of almost any community organization, and
                 nothing a reader could picture. The page's own WhyDevsa section
                 said the same thing far better two scrolls down, so it is the
                 headline now and that section is gone.

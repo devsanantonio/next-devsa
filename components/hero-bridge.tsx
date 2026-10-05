@@ -14,9 +14,9 @@ import { ArrowUpRight } from "lucide-react"
 //
 // Deliberately a mix of two eras and two kinds of room.
 //
-// Three of the sastw frames are community organisers rather than attendees —
-// the PyLadies organiser at the sticker-covered laptop, the Unreal Engine SA
-// organiser among the group listening, and the ACM-UTSA and RowdyHacks
+// Three of the sastw frames are community organizers rather than attendees —
+// the PyLadies organizer at the sticker-covered laptop, the Unreal Engine SA
+// organizer among the group listening, and the ACM-UTSA and RowdyHacks
 // president on stage, and an AI engineering director who has spoken at More
 // Human Than Human. That is the claim HowWeHelp makes on /buildingtogether,
 // "from student organizations through to working professionals", with faces on

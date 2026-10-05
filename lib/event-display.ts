@@ -134,7 +134,7 @@ export function formatWeekday(dayKey: string): string {
  * The calendar day a grid cell stands for, as a `localDayKey`.
  *
  * Built from the cell's own year/month/day rather than by converting a Date,
- * because the cell is not an instant — it is a square labelled "18". Running it
+ * because the cell is not an instant — it is a square labeled "18". Running it
  * through a timezone would move it.
  */
 export function dayKeyFromParts(year: number, month: number, day: number): string {

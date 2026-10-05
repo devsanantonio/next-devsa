@@ -60,7 +60,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
  *
  * It used to open on "DEVSA bridges the gap between passionate builders, local
  * partners, and the growing tech ecosystem" — true, and indistinguishable from
- * any other community organisation's description. It named no technology, so a
+ * any other community organization's description. It named no technology, so a
  * search for "python meetup san antonio" or "san antonio AI group" had nothing
  * to match on, even though DEVSA lists groups for both.
  *
@@ -76,7 +76,7 @@ const SITE_DESCRIPTION =
 export const metadata: Metadata = {
   title: {
     /* Names the thing a reader is searching for rather than describing the
-       organisation. "Your Direct Connection to the Tech Community" said
+       organization. "Your Direct Connection to the Tech Community" said
        nothing a search engine or a human could match against. */
     default: "DEVSA — San Antonio Tech Meetups, Workshops and Conferences",
     template: "%s | DEVSA",

@@ -125,7 +125,7 @@ export function MoreHumanHero() {
           gives it room — the same move PySanAntonio's mascot makes on its own
           masthead, for the same reason.
 
-          Both columns are centred on the section's own middle — the clip by
+          Both columns are centered on the section's own middle — the clip by
           `top-1/2`, the copy by `justify-center` — so they share an axis and
           the slack a full-viewport hero leaves over is split above and below
           rather than all pooling underneath. Top-aligning the copy and hanging
@@ -142,7 +142,7 @@ export function MoreHumanHero() {
       </div>
 
       <div
-        /* Symmetric from lg, where the content is centred: the old
+        /* Symmetric from lg, where the content is centered: the old
            pt-3/pb-24 pair pushed the copy 37px off the axis the clip
            centers on, so the two read as almost-aligned rather than
            aligned. Below lg the copy is a stack under the back link and

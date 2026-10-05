@@ -7,7 +7,7 @@ import { ModelLabel, ModelWordmark } from "@/components/brand/the-model"
  * What The Model is — not what it is called, or when it ran.
  *
  * The copy here is held to what the activation's own material says. Two
- * inventions came out of it: it was labelled DEVSA's flagship conference,
+ * inventions came out of it: it was labeled DEVSA's flagship conference,
  * which it is not, and the body described designers and filmmakers "making the
  * culture", a phrase that appears nowhere in the brand's own writing. Both
  * were mine. What is left is the organizers' framing — creators, creatives,

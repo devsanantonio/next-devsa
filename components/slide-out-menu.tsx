@@ -221,7 +221,7 @@ export function SlideOutMenu({ isOpen, onClose }: SlideOutMenuProps) {
       name: "ACM SA",
       logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/flyers-74-acm-sa.png",
       description:
-        "ACM is short for the Association for Computing Machinery. ACM National is classified as a non-profit and that makes us one too! ACMs main goal is advancing computing as a science and a profession. Together, sharing and creating technology is the best way towards that goal!",
+        "ACM is short for the Association for Computing Machinery. ACM National is classified as a non-profit and that makes us one too! ACMs main goal is advancing computing as a science and a profession. Together, sharing and creating technology is the best way toward that goal!",
       website: "https://acmsa.org/",
     },
     {

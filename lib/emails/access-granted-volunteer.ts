@@ -30,7 +30,7 @@ export function AccessGrantedVolunteerEmail({
     ? `<p style="margin: 10px 0 0 0; font-size: 13px; color: #a3a3a3;">With: <strong style="color: #e5e5e5;">${org}</strong></p>`
     : '';
 
-  // Skipped whole when neither is set, so the email does not carry a labelled
+  // Skipped whole when neither is set, so the email does not carry a labeled
   // card with nothing in it.
   const detailBlock = role || org
     ? `<table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #0a0a0a; border-radius: 12px; border: 1px solid #262626; margin-bottom: 24px;">

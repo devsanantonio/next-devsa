@@ -131,7 +131,7 @@ export function FeaturedSastw() {
     // A contained band inside the calendar, not a hero in front of it.
     //
     // This used to be `min-h-dvh` and full-bleed, which meant a visitor who
-    // clicked a nav item labelled "Community Calendar" landed on a screen with
+    // clicked a nav item labeled "Community Calendar" landed on a screen with
     // no calendar on it and nothing indicating one existed. It also put a
     // permanent full-viewport promo above twenty other groups' events on the
     // surface whose whole value is being the neutral index — and it needed a

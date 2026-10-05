@@ -578,11 +578,11 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
  *
  * Three capabilities were already built and shipped here, and the site spoke
  * to none of them: an iCal subscription that lands every group's events in a
- * reader's own calendar app, organiser accounts that write to the calendar
+ * reader's own calendar app, organizer accounts that write to the calendar
  * directly, and an RSS feed plus an iframe embed that let anyone re-publish
  * the whole thing on their own site or pipe it into their own Discord.
  *
- * They were reachable only through a 13px button and a grey footnote, so the
+ * They were reachable only through a 13px button and a gray footnote, so the
  * two modals behind them — which are good, and cover Google, Apple, Outlook,
  * MonitoRSS, Slack and a field reference — were effectively unlisted.
  *
@@ -924,7 +924,7 @@ export function CommunityEventsSection({
 
           A minimum, not a height. Where the content already exceeds the
           viewport — a laptop, a phone, any narrow window — it does nothing,
-          and justify-center keeps the pair centred in whatever it gets. */}
+          and justify-center keeps the pair centered in whatever it gets. */}
       <div
         className="relative flex flex-col justify-center bg-[#0a0a0a] lg:min-h-dvh"
         data-bg-type="dark"
@@ -1016,7 +1016,7 @@ export function CommunityEventsSection({
             {/* Subscribing is the action this page exists to produce.
 
                 It was a 13px button weighted exactly like "Add Event" beside
-                it — and "Add Event" serves the twenty-odd people who organise,
+                it — and "Add Event" serves the twenty-odd people who organize,
                 while this serves everybody else. Worse, the home page's claim
                 for this site is that it is "the one that stays current", and
                 subscribing is the mechanism that keeps that promise without
@@ -1026,7 +1026,7 @@ export function CommunityEventsSection({
 
                 The RSS footnote that sat under this row went to the band at
                 the foot of the section, where the feed, the embed and
-                organiser publishing are explained properly instead of as an
+                organizer publishing are explained properly instead of as an
                 aside nobody read. */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <button
@@ -1246,7 +1246,7 @@ export function CommunityEventsSection({
 
                  The line lives on this container rather than on each day, so
                  it runs through the gaps between them; the dots live on the
-                 days. Its left-[7px] is the centre of a 14px dot sitting at
+                 days. Its left-[7px] is the center of a 14px dot sitting at
                  each section's left-0. */
               <div className="relative space-y-8">
                 <span
@@ -1334,7 +1334,7 @@ export function CommunityEventsSection({
                              and the rest down in the "with" row. A group and a
                              partner put the group on the plate and the partner
                              in the row. In none of those did it look like two
-                             organisations had done something together, which
+                             organizations had done something together, which
                              is the one thing the card needed to show.
 
                              One list now, communities first because they are
@@ -1402,7 +1402,7 @@ export function CommunityEventsSection({
                               ? collabMarks.map((m) => m.name).join(" + ")
                               : primaryName
                           /* One number for one question: how many
-                             organisations are behind this. It used to be
+                             organizations are behind this. It used to be
                              assembled from two different branches depending on
                              whether a community was present, because the hosts
                              and the partners lived in different places. They
@@ -1435,7 +1435,7 @@ export function CommunityEventsSection({
                              One element, two mount points, each hidden at the
                              other's breakpoint. They are aria-hidden in both:
                              the line under the title already names every
-                             organisation in them, so announcing the marks as
+                             organization in them, so announcing the marks as
                              well would read the hosts out twice. */
                           /* The host marks, inline on the `By` line, at every
                              width.
@@ -1719,7 +1719,7 @@ export function CommunityEventsSection({
                                       weight beside the icons around it. */}
                                   {/* "By …", under the title, the way Luma
                                       bills a host. Names only: the marks for
-                                      the same organisations are the anchor on
+                                      the same organizations are the anchor on
                                       the right of this card, and showing both
                                       would be the same fact twice. */}
                                   <p className={`mt-2 flex min-w-0 items-center gap-2 text-[13px] font-medium ${brand ? "text-white/70" : "text-gray-600"}`}>
@@ -1765,7 +1765,7 @@ export function CommunityEventsSection({
                                        fine for three marks sharing a line and
                                        wrong for one: a single partner logo
                                        stretched to the full width of the
-                                       content column and centred itself in it,
+                                       content column and centered itself in it,
                                        so the same card looked tidy with three
                                        credits and random with one. That is the
                                        "logo floating in space" — it was never
@@ -1862,7 +1862,7 @@ export function CommunityEventsSection({
                                   on screen and the wrong one to hard-code into
                                   the markup. */}
                               <div className={`relative flex flex-wrap items-center justify-between gap-x-3 gap-y-4 border-t pt-4 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:items-stretch xl:justify-end xl:gap-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
-                                {/* Labelled, and visibly secondary.
+                                {/* Labeled, and visibly secondary.
 
                                     These were two unlabelled 36px icon squares
                                     — a Google glyph and a calendar glyph — that

@@ -11,7 +11,7 @@ import { conferences } from "@/data/conferences"
  * This said "PySanAntonio, the More Human Than Human conference, and monthly
  * community workshops". By then DEVSA ran four conferences and the homepage
  * said so in a headline — so a reader who scrolled from "Four Conferences.
- * Built Here." to the donation ask met a smaller organisation than the one
+ * Built Here." to the donation ask met a smaller organization than the one
  * they had just been shown, with The Model and Access Granted missing even
  * though both have their own event page billed as DEVSA-led.
  *
