@@ -136,7 +136,7 @@ export function MoreHumanHero() {
           the pitch, where there is no room for it beside anything. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-1/2 hidden aspect-16/9 w-[62%] -translate-y-1/2 select-none lg:block xl:w-[58%]"
+        className="pointer-events-none absolute right-0 top-1/2 hidden aspect-video w-[62%] -translate-y-1/2 select-none lg:block xl:w-[58%]"
       >
         <MoreHumanClip conference={conference} className="h-full w-full" />
       </div>
@@ -150,7 +150,7 @@ export function MoreHumanHero() {
            stays. */
         className="page-shell relative z-10 flex flex-1 flex-col pt-2 pb-14 md:pt-3 md:pb-20 lg:pt-16 lg:pb-16">
         <div className="flex flex-1 flex-col justify-center gap-12">
-          <div className="order-2 lg:order-none lg:max-w-xl xl:max-w-2xl">
+          <div className="order-2 lg:order-0 lg:max-w-xl xl:max-w-2xl">
             <MoreHumanWordmark size="hero" as="h1" />
 
             <p

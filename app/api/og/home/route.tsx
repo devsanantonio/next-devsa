@@ -109,10 +109,24 @@ export async function GET() {
               fontWeight: 400,
             }}
           >
-            Our platform simplifies how local partners and tech communities collaborate, exchange resources, and grow the ecosystem together.
+            Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google — 20+ specialty groups, one calendar.
           </p>
         </div>
 
+        {/* The row under the headline.
+          
+            It read "Our platform simplifies how local partners and tech
+            communities collaborate, exchange resources, and grow the ecosystem
+            together" — forty words of abstraction on a card people see for
+            about a second in a feed, naming nothing. The verticals replace it:
+            a reader scanning a shared link can see whether their thing is in
+            the list. */}
+        {/* Tile 1 was "Coworking Space / Downtown San Antonio" until 4375fa2
+            closed the space and changed the label to "Building Together" —
+            leaving the subtext behind. The card then carried "Building
+            Together" twice, tiles 1 and 3, with tile 1 pointing at a locality
+            that no longer meant anything. It is the conferences now, which the
+            site leads with and which this card did not mention at all. */}
         {/* Stats row */}
         <div
           style={{
@@ -131,7 +145,7 @@ export async function GET() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Building Together
+              Four Conferences
             </span>
             <span
               style={{
@@ -141,7 +155,7 @@ export async function GET() {
                 lineHeight: 1.5,
               }}
             >
-              Downtown San Antonio
+              Built here, with partners
             </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

@@ -54,16 +54,62 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
  * that had been deleted months earlier. A single const is the only thing that
  * makes the next correction a one-line change.
  */
+/**
+ * One description, used by the metadata, the OpenGraph card, Twitter and the
+ * Organization JSON-LD.
+ *
+ * It used to open on "DEVSA bridges the gap between passionate builders, local
+ * partners, and the growing tech ecosystem" — true, and indistinguishable from
+ * any other community organisation's description. It named no technology, so a
+ * search for "python meetup san antonio" or "san antonio AI group" had nothing
+ * to match on, even though DEVSA lists groups for both.
+ *
+ * Verticals first, and the whole thing fits. 154 characters against a ~155
+ * ceiling before Google truncates — an earlier draft ended on "If it's
+ * happening here, it's here", which pushed it to 185 and would have cut the
+ * group names, which are the half worth having. That claim lives on the page
+ * instead, in the hero and the closing section.
+ */
 const SITE_DESCRIPTION =
-  "DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio. Find meetups, workshops, and conferences from 20+ local developer groups."
+  "San Antonio tech meetups, workshops and conferences in one calendar — Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google."
 
 export const metadata: Metadata = {
   title: {
-    default: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+    /* Names the thing a reader is searching for rather than describing the
+       organisation. "Your Direct Connection to the Tech Community" said
+       nothing a search engine or a human could match against. */
+    default: "DEVSA — San Antonio Tech Meetups, Workshops and Conferences",
     template: "%s | DEVSA",
   },
   description: SITE_DESCRIPTION,
+  /*
+   * Verticals first.
+   *
+   * This list had twenty entries and named no technology — "programming
+   * community", "coding community", "tech networking". Generic enough that it
+   * could belong to any city's tech org, and matching nothing a person
+   * actually types. Somebody looking for a group searches "python meetup san
+   * antonio", not "developer community".
+   *
+   * Each term below is backed by a live group in the admin; the mapping is in
+   * components/audience-lanes.tsx. Worth saying that `keywords` carries little
+   * weight with Google now — the title, the description and the on-page copy
+   * do the work, and all three name these too. This is for the crawlers and
+   * engines that still read it, and costs nothing.
+   */
   keywords: [
+    "Python meetup San Antonio",
+    "Linux user group San Antonio",
+    "AI meetup San Antonio",
+    "AI agents San Antonio",
+    "creative technologists San Antonio",
+    "cybersecurity meetup San Antonio",
+    "game development San Antonio",
+    "UX community San Antonio",
+    "data engineering San Antonio",
+    "AWS user group San Antonio",
+    "Google Developer Group San Antonio",
+    ".NET user group San Antonio",
     "San Antonio tech community",
     "DEVSA",
     "developers San Antonio",
@@ -98,7 +144,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "DEVSA - Your Direct Connection to the Tech Community in San Antonio",
+    title: "DEVSA — San Antonio Tech Meetups, Workshops and Conferences",
     description: SITE_DESCRIPTION,
     url: siteUrl,
     siteName: "DEVSA",

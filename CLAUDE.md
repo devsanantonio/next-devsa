@@ -94,4 +94,6 @@ Still open: whether it stays at all, or 301s to `/events`. That was deliberately
 
 Product judgment for this site — what to lead with, who the audience is — lives in memory, not here. Check it before restructuring pages or CTAs.
 
-Skills in `.claude/skills/` cover recurring procedures (admin dashboard internals, adding an API route, adding an OG image route). Load the relevant one instead of pattern-matching from a neighboring file.
+Skills in `.claude/skills/` cover recurring procedures (admin dashboard internals, adding an API route, adding an OG image route) and the **design system** — the type scale, spacing, card shape, the two eyebrow idioms and the measured colour-contrast floors. Load the relevant one instead of pattern-matching from a neighboring file.
+
+Pattern-matching from a neighbour is specifically how the design drifts. There is no component library here; every section hardcodes its class strings, so the only thing holding the system together is that people copy the right neighbour. The homepage had six eyebrow definitions and five h2 definitions before `design-system` was written down, because a section built out of `/events` inherited that page's mono idiom onto a marketing page. Read the skill before adding or restyling a section.

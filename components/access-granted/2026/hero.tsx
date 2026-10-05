@@ -73,7 +73,7 @@ export function AccessGrantedHero() {
               section's padding, which is the only thing that should set it. */}
           <div className="flex flex-col gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14 xl:gap-20">
           {/* Copy */}
-          <div className="order-2 lg:order-none">
+          <div className="order-2 lg:order-0">
             <h1 className="font-display text-5xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
               <span style={{ color: ACCESS_GREEN }}>Access</span> Granted
             </h1>
@@ -148,7 +148,7 @@ export function AccessGrantedHero() {
               position does not, landing within a pixel at 1440 and overshooting
               by 43px at 1920. Fixing the asset is what made a fixed offset
               correct. */}
-          <div className="relative order-1 mx-auto w-full max-w-md lg:order-none lg:-mt-11 lg:max-w-none">
+          <div className="relative order-1 mx-auto w-full max-w-md lg:order-0 lg:-mt-11 lg:max-w-none">
             {/* Muted and autoplaying, so it is decoration by every definition
                 the platforms use: no sound, no controls, nothing announced.
                 `poster` is the loop's own lit frame, so the first paint is the

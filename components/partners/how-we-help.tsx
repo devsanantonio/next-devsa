@@ -15,8 +15,18 @@ import Image from "next/image"
  *
  * The three things it does are specific: it finds the room, through partners
  * who have one; it finds the people who can teach, through the network; and it
- * puts the thing in front of twenty-plus groups through the calendar. None of
- * that was written down anywhere on the site.
+ * gives a group access to that network — the active learners and frontline
+ * people in the industries that drive the city. None of that was written down
+ * anywhere on the site.
+ *
+ * The third one said "The audience … from the calendar", which undersold it in
+ * two directions. The calendar is a mechanism, not the thing of value, and
+ * "audience" is the word a sales funnel uses. DEVSA is not a lead generator for
+ * anyone's business; the only funnel it runs points active learners at the
+ * specialty group that matches what they are into. What a group actually gets
+ * is access to a community of builders — which is also why partners are here,
+ * since DEVSA reaches those industries through frontline employees rather than
+ * at the executive level the partners already occupy.
  *
  * ## Why one example rather than three bullets
  *
@@ -35,27 +45,37 @@ const GIVE_A_LOT = {
   lockupWidth: 630,
   lockupHeight: 230,
   fullName: "Give-a-LOT Computer Donation Drive",
-  driveLabel: "Drop-off · Sept 28 – Oct 1",
-  dateLabel: "Friday, October 2, 2026",
-  timeLabel: "12 – 2:30 PM",
-  venue: "LaunchSA",
-  venueDetail: "Central Library, 1st Floor",
   photo: "/hero/sastw-workshop.webp",
+  /* The drive dates, the session time and the venue used to sit here, feeding a
+     facts strip under the caption. Every one of them was already on the page:
+     the venue in "The room" above, the four days of drop-offs and the afternoon
+     on Linux in the caption itself. Said twice it read as an event listing, and
+     for an afternoon that has already run, exact times date the section rather
+     than evidence it. Removed rather than left set-but-unread, which is the
+     state that rots — they are all in lib/give-a-lot.ts in next-sasw if the
+     strip is ever wanted back. */
 } as const
 
 /** What DEVSA brought, in the order a group needs it. */
 const ROLES = [
   {
     label: "The room",
-    body: "From a partner who has one. LaunchSA put the drive on the Central Library's first floor — a venue no single community group could have booked on its own.",
+    /* Not "a venue no single community group could have booked on its own",
+       which this said and which is not true — the Central Library takes
+       bookings, and a group could make one. The real thing DEVSA brought is
+       the relationship: it already works with LaunchSA, so the ask arrived
+       warm and with a concept attached rather than cold from a stranger.
+       Overclaiming exclusivity made DEVSA sound like a gatekeeper, which is
+       the opposite of what this section is arguing. */
+    body: "From a partner DEVSA already works with. LaunchSA hosted the drive on the Central Library's first floor — the relationship was already built, so the ask was a warm conversation with a concept attached rather than a cold one.",
   },
   {
     label: "The people who can teach",
-    body: "From the network. learnOPENtech ran two and a half hours on Linux and open source, and handled the rebuilds and the certified drive erasure.",
+    body: "From the people DEVSA knows. learnOPENtech ran two and a half hours on Linux and open source, and handled the rebuilds and the certified drive erasure.",
   },
   {
-    label: "The audience",
-    body: "From the calendar. One listing in front of twenty-plus groups, which is the part a specialty group cannot do for itself.",
+    label: "Access to a network",
+    body: "A community of builders — the active learners and the frontline people already working in the industries that drive this city, from student organizations through to working professionals. Not everyone is on Discord, or LinkedIn, or X. They come here.",
   },
 ] as const
 
@@ -63,7 +83,11 @@ export function HowWeHelp() {
   return (
     <section className="w-full bg-neutral-950" data-bg-type="dark">
       <div className="page-shell py-20 md:py-28">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-white/40">
+        {/* Building Together's own eyebrow, matching WhyDevsa directly above
+            and GetInvolved below: sans, text-sm md:text-base, 0.2em. The mono
+            11px form this started as belongs to /events and the conference
+            pages. white/50 clears 4.5:1 on this ground; /40 does not. */}
+        <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">
           How It Works
         </p>
         <h2 className="mt-4 max-w-3xl text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl font-black tracking-[-0.02em]">
@@ -75,22 +99,52 @@ export function HowWeHelp() {
         <p className="mt-5 max-w-2xl text-lg md:text-xl font-light leading-[1.45] text-white/65">
           Most groups here are specialty groups with their own people and their
           own subject. They don&apos;t need running. They need a room, someone
-          who can teach, and an audience that knows it&apos;s happening.
+          who can teach, and a way to reach the builders who would want to be
+          there.
         </p>
 
         <div className="mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
-          <ul className="space-y-8">
-            {ROLES.map((role) => (
-              <li key={role.label} className="border-l-2 border-white/15 pl-5">
-                <p className="font-sans text-base font-semibold text-white">
-                  {role.label}
-                </p>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-white/55">
-                  {role.body}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <div>
+            <ul className="space-y-8">
+              {ROLES.map((role) => (
+                <li key={role.label} className="border-l-2 border-white/15 pl-5">
+                  <p className="font-sans text-base font-semibold text-white">
+                    {role.label}
+                  </p>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-white/55">
+                    {role.body}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+          {/* Volunteering was here and has been pulled.
+          
+              The copy said Youth Code Jam "needs people who can teach kids to
+              code" and Project Quest "needs the ones already in them", under
+              "when a partner needs hands". Three problems, in rising order.
+          
+              It characterised two organisations' needs without either of them
+              saying so. Project Quest has run since 1992, describes itself as
+              "nationally-recognized" and as having "helped thousands find
+              amazing in-demand careers"; Youth Code Jam runs teacher
+              professional development and free community outreach. Neither
+              presents itself as short-handed, and publishing that they are —
+              with DEVSA as the one who supplies the hands — is not ours to say.
+          
+              It had no destination. /api/volunteers is an event-specific open
+              call (Access Granted's), not a route into partner programmes.
+              There is no page, form or link for this, so a reader moved by it
+              had nowhere to go.
+          
+              And it did not read as an invitation. No heading, no action, no
+              link — ambiguous enough that it was unclear whether it was copy
+              for visitors at all.
+          
+              Volunteering is still a real gap and worth saying. Putting it back
+              needs two things first: somewhere for a reader to land, and the
+              partners' own words for what they actually want. */}
+          </div>
 
           {/* The worked example. The lockup is the partner's own — a
               hand-lettered wordmark on amber — so it is placed rather than
@@ -120,24 +174,6 @@ export function HowWeHelp() {
                 everyone who sat through the session left with a working
                 machine.
               </p>
-              <dl className="mt-5 flex flex-wrap gap-x-5 gap-y-1.5 font-mono text-[11px] uppercase tracking-wider text-white/40">
-                <div>
-                  <dt className="sr-only">Drive</dt>
-                  <dd>{GIVE_A_LOT.driveLabel}</dd>
-                </div>
-                <div>
-                  <dt className="sr-only">Session</dt>
-                  <dd>
-                    {GIVE_A_LOT.dateLabel} · {GIVE_A_LOT.timeLabel}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="sr-only">Venue</dt>
-                  <dd>
-                    {GIVE_A_LOT.venue} — {GIVE_A_LOT.venueDetail}
-                  </dd>
-                </div>
-              </dl>
             </figcaption>
           </figure>
         </div>

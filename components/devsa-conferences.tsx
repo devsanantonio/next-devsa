@@ -1,9 +1,7 @@
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import { conferences } from "@/data/conferences"
-import {
-  ConferenceBand,
-  accentOf,
-} from "@/components/events/conference-band"
+import { ConferenceBand } from "@/components/events/conference-band"
 
 /**
  * The four conferences DEVSA runs, as evidence rather than as a catalogue.
@@ -105,7 +103,7 @@ export function DevsaConferences() {
       className="w-full scroll-mt-20 bg-[#0a0a0a]"
       data-bg-type="dark"
     >
-      <div className="page-shell py-16 md:py-20">
+      <div className="page-shell py-16 md:py-24">
         <div className="max-w-2xl">
           {/* An eyebrow, because the three sections in this half of the page
               all carry one — "Who's Building Here", "Who DEVSA Serves", "Come
@@ -116,10 +114,25 @@ export function DevsaConferences() {
               It also does the connective work, which frees the h2 to be short.
               The section used to open by explaining the arrangement; now the
               label carries that and the heading can just name the thing. */}
-          <p className="font-mono text-[11px] uppercase tracking-widest text-white/45">
+          {/* The homepage's eyebrow, not the events page's.
+          
+              This read `font-mono text-[11px] tracking-widest text-white/45`,
+              which is the /events idiom — mono, 11px, borrowed wholesale when
+              this section was built out of that one. Every eyebrow on this page
+              is sans at `text-sm md:text-base`, `font-medium`, `tracking-[0.2em]`
+              (EcosystemShowcase, AudienceLanes, HeroCommunities all agree), so
+              this section was announcing itself a size smaller and in a
+              different typeface than its neighbours.
+          
+              white/50 rather than /45 for contrast: see the note in
+              docs/design-system.md. */}
+          <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">
             What We Run Together
           </p>
-          <h2 className="mt-4 text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl font-black tracking-[-0.02em]">
+          {/* `xl:text-7xl` was missing. Every other h2 on this page carries
+              the full ramp 4xl/5xl/6xl/7xl, so above 1280px this heading
+              rendered one step smaller than the sections either side of it. */}
+          <h2 className="mt-5 text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
             {/* Two short sentences, because at this size the heading wraps to
                 two lines in its column whatever it says — and the only break
                 worth having is the one at the full stop. */}
@@ -132,106 +145,90 @@ export function DevsaConferences() {
           </p>
         </div>
 
-        {/* Two across, not four, and the marks set at `panel` rather than
-            `card` — the two halves of the same fix.
+        {/* The site's own card, not a bespoke one.
 
-            Four across gave each tile about 305px. PySanAntonio's wordmark is
-            drawn art at a fixed 240px, so it was already at its width ceiling
-            and could not grow; the lettering marks were set at 24px inside a
-            208px tile, which left every panel about 85% empty. Four
-            conferences read as four small logos floating in black rather than
-            as the activations they are.
+            This section spent two passes as something else: four bare marks in
+            a row, then two big transparent tiles per row with nothing in them
+            but lettering. Both were out of step with every other card on this
+            site. AudienceLanes directly below — and the /events portfolio band
+            — are built the same way, and it is a shape with rules: a visual
+            slot at aspect-16/10, then padded content, inside a rounded-2xl
+            neutral-900 card with a neutral-800 border that lifts on hover.
+            A section that invents its own geometry reads as pasted in, however
+            good the pieces are.
 
-            Two across doubles the tile to roughly 632px, which is what lets
-            every mark grow: PySA's wordmark to 460px and the lettering to 48px
-            at lg. The section gets taller in exchange, which is the right
-            trade for the one part of this page that shows what DEVSA makes.
+            So the brand mark and its hover effect now live in the slot a photo
+            occupies on the other cards, and the copy block underneath carries
+            what a reader actually needs: what the conference is, who runs it
+            with DEVSA, and a way in.
 
-            The tiles still need their height for the effects — the cipher
-            field needs area to write ciphertext into, the mascots need floor
-            to walk on, and the clips need a box to fill.
+            The "Run with" pills that sat under this grid are gone. Collecting
+            eleven organisations into one list below four cards separated each
+            name from the conference it belongs to and made a second thing to
+            read. Inside the card, the same fact needs no label and no colour
+            coding — it is simply the line under the blurb. */}
+        <div className="mt-12 grid gap-4 grid-cols-1 md:mt-14 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {conferences.map((conference) => {
+            const runWith = (conference.poweredBy ?? []).filter(
+              (org) => org !== "DEVSA"
+            )
 
-            Linked, one per conference, which is what replaced the single "See
-            all four" link below the row. The site's CTA ranking still puts the
-            Community Calendar first and these must not read as a competing
-            primary — so they are tiles a reader discovers by pointing at them,
-            not buttons. A tile that animates under the cursor and then cannot
-            be clicked is a tease, which is the other reason they link. */}
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 md:mt-14">
-          {conferences.map((conference) => (
-            <li key={conference.key}>
-              {conference.href ? (
-                <Link href={conference.href} className="block overflow-hidden">
-                  <ConferenceBand
-                    conference={conference}
-                    ground="none"
-                    markSize="panel"
-                    className="h-48 px-6 sm:h-56 lg:h-60 lg:px-8"
-                  />
-                </Link>
-              ) : (
-                /* No page, so no link. A tile that looks clickable and is not
-                   is worse than one that plainly is not. */
-                <div className="overflow-hidden">
-                  <ConferenceBand
-                    conference={conference}
-                    ground="none"
-                    markSize="panel"
-                    className="h-48 px-6 sm:h-56 lg:h-60 lg:px-8"
-                  />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+            const inner = (
+              <div className="flex h-full flex-col">
+                {/* The slot a photograph fills on the other cards. Here it is
+                    the brand's own ground and lettering, and it is where the
+                    hover lives — see ConferenceBand. */}
+                <ConferenceBand
+                  conference={conference}
+                  className="aspect-16/10 w-full px-5"
+                  markClassName="lg:scale-[0.88]"
+                />
 
-        {/* Who runs them with us.
-            
-            Borrowed from vercel.com/connect, which renders each integration as
-            a pill carrying a logo and the one specific thing that connection
-            can do — `chat:write`, `issues:create`. The device works because it
-            answers "what IS this relationship" in the smallest possible unit,
-            which is exactly what a logo wall never does. EcosystemShowcase
-            further up this page shows twenty-three marks and says nothing about
-            what any of them is to DEVSA.
+                <div className="flex flex-1 flex-col gap-4 p-6">
+                  <p className="flex-1 text-[15px] leading-relaxed text-white/60">
+                    {conference.blurb}
+                  </p>
 
-            Two departures. Vercel's chips carry logos; these carry type,
-            because the names here come from `poweredBy` as plain strings and
-            three of them — San Antonio Hacker Association, UTSA CyberJedis,
-            Digital Canvas — have no record and so no logo. A row where some
-            chips have a mark and others do not reads as broken rather than
-            mixed. And where Vercel's second half is an API scope, here it is
-            the conference, set in that conference's own accent — the colour is
-            what links a chip back to the tile above it.
+                  {/* white/55 and /45. At /40 and /30 these measured 3.84:1
+                      and 2.72:1 on neutral-900 — both under the 4.5:1 WCAG AA
+                      floor for text this size. The minimum that clears it on
+                      this ground is 0.46. */}
+                  {runWith.length > 0 && (
+                    <p className="text-[13px] leading-relaxed text-white/55">
+                      <span className="text-white/50">Run with </span>
+                      {runWith.join(", ")}
+                    </p>
+                  )}
 
-            Every pairing is from data/conferences.ts and was set by the
-            organisers. Nothing here is a relationship I characterised. DEVSA is
-            filtered out of its own list: it is the subject, not a collaborator
-            on its own conference. */}
-        <div className="mt-10 md:mt-12">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-white/35">
-            Run with
-          </p>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {conferences.flatMap((conference) =>
-              (conference.poweredBy ?? [])
-                .filter((org) => org !== "DEVSA")
-                .map((org) => (
-                  <li
-                    key={`${conference.key}-${org}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[13px] text-white/75"
-                  >
-                    {org}
-                    <span
-                      className="font-mono text-[10px] uppercase tracking-wider"
-                      style={{ color: accentOf(conference) }}
-                    >
-                      {conference.name}
+                  {conference.href && (
+                    <span className="inline-flex items-center gap-2 pt-1 text-sm font-medium text-white">
+                      Event page
+                      <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </span>
-                  </li>
-                ))
-            )}
-          </ul>
+                  )}
+                </div>
+              </div>
+            )
+
+            const shell =
+              "group block h-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 transition-all duration-200"
+
+            return conference.href ? (
+              <Link
+                key={conference.key}
+                href={conference.href}
+                className={`${shell} hover:border-neutral-700 hover:bg-neutral-900/70`}
+              >
+                {inner}
+              </Link>
+            ) : (
+              /* No page, so no link. A card that looks clickable and is not is
+                 worse than one that plainly is not. */
+              <div key={conference.key} className={shell}>
+                {inner}
+              </div>
+            )
+          })}
         </div>
 
       </div>

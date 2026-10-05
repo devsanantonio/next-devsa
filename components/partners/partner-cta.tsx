@@ -44,9 +44,22 @@ export function PartnerCta() {
                 </strong>
                 , reaching 20+ tech communities across San&nbsp;Antonio.
               </p>
-              <p className="text-base md:text-lg text-white/50 leading-relaxed">
-                One relationship, one bridge to the whole ecosystem. Let&apos;s
-                design something together.
+              {/* The distinction that makes this worth a partner's time, and
+                  it was missing.
+          
+                  "Reaching 20+ communities" on its own is the vocabulary of a
+                  lead list, which is the one thing DEVSA is not. What it
+                  actually offers is a different altitude: partners already have
+                  the director and executive relationships in these industries.
+                  What they do not have is the frontline — the engineers,
+                  analysts, designers and students doing the work — and that is
+                  who DEVSA is made of. Saying so is both more honest and a
+                  better argument. */}
+              <p className="text-base md:text-lg text-white/55 leading-relaxed">
+                You already have the relationships at the director and executive
+                level. This is the other altitude — the engineers, analysts,
+                designers and students doing the work day to day, in the same
+                industries. Let&apos;s design something together.
               </p>
             </div>
           </motion.div>

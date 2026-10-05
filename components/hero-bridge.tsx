@@ -26,7 +26,6 @@ import { ArrowUpRight } from "lucide-react"
 // `i % cols` — a block of new frames followed by a block of old ones would put
 // one era in each column.
 const mediaItems = [
-  { src: "/hero/sastw-stage-grid.webp", alt: "A speaker on the Startup + Tech Week stage against a neon schematic backdrop" },
   { src: "/hero/shebuilds.webp", alt: "SheBuilds Event" },
   { src: "/hero/sastw-room-full.webp", alt: "A full room at long tables during a Startup + Tech Week session" },
   { src: "/hero/replay7.webp", alt: "GDG San Antonio" },
@@ -38,11 +37,11 @@ const mediaItems = [
   { src: "/hero/ltai-talk.webp", alt: "A speaker walking through a workflow at a DEVSA talk" },
   { src: "/hero/sastw-story-show.webp", alt: "A speaker mid-talk on a darkened stage" },
   { src: "/hero/replay9.webp", alt: "Andrea from Geeks fam" },
-  { src: "/hero/sastw-week-venue.webp", alt: "The Startup + Tech Week banner above a spread of food at the venue" },
+  { src: "/hero/sastw-room-tables.webp", alt: "Attendees at long tables mid-session, the room full behind them" },
   { src: "/hero/morehuman-9743.webp", alt: "More Human Event" },
   { src: "/hero/sastw-lounge.webp", alt: "Attendees seated together in a lounge between sessions" },
-  { src: "/hero/replay13.webp", alt: "DevSA Replay Event" },
   { src: "/hero/sastw-workshop.webp", alt: "A hands-on workshop session with attendees at laptops" },
+  { src: "/hero/replay13.webp", alt: "DevSA Replay Event" },
   { src: "/hero/sastw-stage-wide.webp", alt: "A speaker on stage with the room's screens behind them" },
 ]
 
@@ -245,12 +244,27 @@ export function HeroBridge() {
               local partners, and the growing tech ecosystem in San&nbsp;Antonio.
             </p>
 
-            <p className="md:text-pretty text-base md:text-lg text-white/60 md:text-white/60 leading-relaxed">
-              Discover{" "}
-              <span className="font-medium text-white/80 md:text-white/85">communities</span>,{" "}
-              <span className="font-medium text-white/80 md:text-white/85">events</span>, and{" "}
-              <span className="font-medium text-white/80 md:text-white/85">resources</span>{" "}
-              — all in one place.
+            {/* "Discover communities, events, and resources — all in one
+                place" was the vaguest line on the site. Three abstract nouns
+                that could describe any community org anywhere, in the position
+                where a reader decides whether this is for them.
+          
+                Named verticals do that job instead. Somebody does not think of
+                themselves as looking for a "community"; they think Python, or
+                Linux, or agents. The twelve here are the same ones the For
+                Builders lane names, and each is backed by a live group — see
+                the note in components/audience-lanes.tsx.
+          
+                The second sentence is the claim the site makes nowhere else:
+                the groups keep their own channels, those channels do not reach
+                the same people, and this is the one that is always current. */}
+            <p className="md:text-pretty text-base md:text-lg text-white/70 leading-relaxed">
+              <span className="font-medium text-white/85">
+                Python, Linux, .NET, AI, agents, game dev, UX, design, data,
+                security, AWS, Google
+              </span>{" "}
+              — 20+ specialty groups, one calendar. If it&apos;s happening in
+              San&nbsp;Antonio tech, it&apos;s here.
             </p>
           </div>
 

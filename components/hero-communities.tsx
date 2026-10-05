@@ -67,6 +67,23 @@ export function HeroCommunities() {
               <p className="text-2xl md:text-3xl text-gray-900 leading-[1.2] font-black tracking-[-0.02em]">
                 So we built DEVSA to bring them together.
               </p>
+              {/* The claim the site had never actually made.
+          
+                  Everything else here says "one place" and "one shared
+                  calendar", which describes the mechanism. This says what the
+                  mechanism is for, and it is a stronger promise: the groups
+                  keep their own channels, those channels do not reach the same
+                  people, and this is the one that is always current. Worth
+                  stating plainly at the end, where the page has just finished
+                  explaining why DEVSA exists. */}
+              <p className="text-lg md:text-xl text-gray-600 leading-[1.5] font-light">
+                Not every group runs a Discord. Not everyone is on LinkedIn, or
+                X, or checks a Meetup page.{" "}
+                <strong className="font-semibold text-gray-900">
+                  This site is the one that stays current
+                </strong>{" "}
+                — if it is happening in San Antonio tech, it is here.
+              </p>
             </motion.div>
 
             {/* Stay close — inward CTA + social */}

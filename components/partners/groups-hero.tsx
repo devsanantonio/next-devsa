@@ -18,6 +18,13 @@ import { ArrowUpRight } from "lucide-react"
  * The frame changed too. A full session room from Startup + Tech Week says what
  * this page is about — a room with the ecosystem in it — better than a tight
  * shot of a few people at a meetup did.
+ *
+ * It is IMG_0441 rather than IMG_0444, which this used first. 0444 is already
+ * in the homepage marquee as /hero/sastw-room-full.webp, so the two top-level
+ * pages were opening on the same photograph. 0441 is the same room a moment
+ * earlier — speaker at the mic on the left, tables running the full width —
+ * which suits a hero scrimmed from the left better anyway: there are people
+ * all the way to the right edge, where the scrim lets the picture through.
  */
 const HERO_IMAGE_URL = "/photos/buildingtogether-hero.webp"
 
