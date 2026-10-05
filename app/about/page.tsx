@@ -25,10 +25,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${siteUrl}/api/og/home`,
+        url: `${siteUrl}/api/og/about`,
         width: 1200,
         height: 630,
-        alt: "DEVSA — the community calendar for San Antonio tech",
+        alt: "About DEVSA — a Discord server in 2023, a 501(c)(3) in 2024",
         type: "image/png",
       },
     ],
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "About DEVSA — How It Started and Who Runs It",
     description: SHORT,
-    images: [`${siteUrl}/api/og/home`],
+    images: [`${siteUrl}/api/og/about`],
     creator: "@devsatx",
     site: "@devsatx",
   },
