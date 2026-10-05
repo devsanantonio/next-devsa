@@ -462,3 +462,26 @@ body {
     scale: 1;
   }
 }
+
+
+/* The shell caret on the Texas Linux Fest band — a hard on/off rather than a
+   fade, because a terminal cursor does not dim. Roughly 0.9Hz, well under the
+   3Hz flash threshold, but held steady anyway for readers who ask for less
+   motion: a blinking block in the corner of the eye is exactly what that
+   preference is for. See components/events/featured-txlf.tsx. */
+@keyframes txlfCaret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[txlfCaret_1\.1s_infinite\] {
+    animation: none;
+  }
+}

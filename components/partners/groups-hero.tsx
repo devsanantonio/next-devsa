@@ -5,28 +5,30 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
 /**
- * Local, and cropped for this slot.
+ * Type on black. There is no photograph here any more.
  *
- * This used to hotlink the camera original from S3 —
- * devsa-assets.s3.us-east-2.amazonaws.com/techday5.jpg, 5.4 MB — as the
- * background of a `min-h-dvh` hero, so it was in the critical path of a
- * top-level page. The same photograph already existed in this repo at
- * /hero/techday5.webp, 73 KB, which is the version the homepage marquee had
- * been using all along: a 74x difference for an image that renders as a
- * grayscaled, heavily scrimmed backdrop.
+ * There was one for a long time, and it went through four frames — techday5,
+ * IMG_0444, IMG_0441, 4W1A6905, mason.jpg — each swapped for the same reason:
+ * /events, /buildingtogether and the homepage marquee all draw on one weekend
+ * of photography, and it is easy to land on the same room twice. The rule that
+ * came out of that, kept here because the photo pool has not changed and the
+ * other two surfaces still use it: **a shared venue is not a duplicate, a
+ * shared vantage point is.** IMG_0441 and the /events band's jordana.jpg are
+ * the same angle on the same moment, which is why they collided; mason.jpg
+ * looks the other way down the same room and did not. Filenames and hashes
+ * will not tell you which is which — only rendering both in their own
+ * treatments, at size, side by side.
  *
- * The frame changed too. A full session room from Startup + Tech Week says what
- * this page is about — a room with the ecosystem in it — better than a tight
- * shot of a few people at a meetup did.
+ * None of that applies while the hero is black, which is the point. The
+ * headline is a premise, the paragraph under it is the argument, and the
+ * pull-quote is the reassurance an organizer needs before handing over their
+ * group's events. All three were competing with a grayscale room for
+ * attention, and the room was never carrying an idea the words did not.
  *
- * It is IMG_0441 rather than IMG_0444, which this used first. 0444 is already
- * in the homepage marquee as /hero/sastw-room-full.webp, so the two top-level
- * pages were opening on the same photograph. 0441 is the same room a moment
- * earlier — speaker at the mic on the left, tables running the full width —
- * which suits a hero scrimmed from the left better anyway: there are people
- * all the way to the right edge, where the scrim lets the picture through.
+ * It also cost: the scrims had to sit at 95% across the left of the frame to
+ * hold the type at AA, which meant most of the picture was being paid for and
+ * thrown away.
  */
-const HERO_IMAGE_URL = "/photos/buildingtogether-hero.webp"
 
 export function GroupsHero() {
   return (
@@ -34,29 +36,7 @@ export function GroupsHero() {
       className="relative overflow-hidden bg-black min-h-dvh flex flex-col items-center justify-center"
       data-bg-type="dark"
     >
-      {/* Background image */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={HERO_IMAGE_URL}
-        alt=""
-        width={1600}
-        height={900}
-        className="absolute inset-0 w-full h-full object-cover grayscale"
-      />
-
-      {/* Dark overlay — heavy left for text readability, fading right to reveal the photo */}
-      <div className="absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/85 to-transparent z-10" />
-      <div className="absolute inset-0 bg-linear-to-b from-neutral-950/70 via-transparent to-neutral-950/70 z-10" />
-      <div
-        className="absolute inset-0 z-10"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.15) 65%, transparent 100%)",
-        }}
-      />
-
-      {/* Main content */}
-      <div className="relative z-20 page-shell py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 flex flex-col">
+      <div className="page-shell py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 flex flex-col">
         <motion.div
           initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +44,12 @@ export function GroupsHero() {
           className="max-w-4xl"
         >
           <div className="space-y-4">
-            <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
+            {/* /55, not /40. On black that was 3.66:1 against a 4.5:1 floor for
+                text this size — it only ever passed inspection because a
+                photograph was behind it. The floor is alpha 0.456 on both
+                #000 and #0a0a0a; /55 measures 6.27:1 and matches the eyebrow
+                on /events' band. */}
+            <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
               Building Together
             </p>
             {/* This was "Where Partners and Communities Come Together to

@@ -572,6 +572,125 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
   )
 }
 
+/**
+ * What this calendar can do that a list of links cannot.
+ *
+ * Three capabilities were already built and shipped here, and the site spoke
+ * to none of them: an iCal subscription that lands every group's events in a
+ * reader's own calendar app, organiser accounts that write to the calendar
+ * directly, and an RSS feed plus an iframe embed that let anyone re-publish
+ * the whole thing on their own site or pipe it into their own Discord.
+ *
+ * They were reachable only through a 13px button and a grey footnote, so the
+ * two modals behind them — which are good, and cover Google, Apple, Outlook,
+ * MonitoRSS, Slack and a field reference — were effectively unlisted.
+ *
+ * They are also the clearest proof of the thing /buildingtogether claims:
+ * DEVSA does not run these events and does not own this calendar. The groups
+ * publish it and anybody may take it. A band that says so belongs at the foot
+ * of the list, after a reader has seen what is in it.
+ *
+ * Light, not dark. ConferencePortfolio opens on #0a0a0a immediately below
+ * this, and two dark bands back to back is exactly the repeat that got the
+ * homepage's conferences section rebuilt.
+ *
+ * The eyebrow is the page's own marketing idiom, not the mono one the four
+ * conference routes use. The header above this already set the sans form on
+ * /events, and a second idiom on one page is the drift the design-system
+ * skill was written about.
+ */
+function OpenCalendarBand({
+  onSubscribe,
+  onFeed,
+}: {
+  onSubscribe: () => void
+  onFeed: () => void
+}) {
+  const cards = [
+    {
+      key: "subscribe",
+      icon: CalendarPlus,
+      title: "In your own calendar",
+      body: "Subscribe once and every group's events show up in Google, Apple or Outlook — new ones appear on their own, and change when a group changes them.",
+      action: { label: "Subscribe", onClick: onSubscribe },
+    },
+    {
+      key: "publish",
+      icon: Plus,
+      title: "Organizers publish it",
+      body: "If you run a group here, you add your own events and they are live the moment you save. Nobody at DEVSA is in the middle of it, and nobody has to be asked.",
+      action: { label: "Add your event", href: "/signin" },
+    },
+    {
+      key: "republish",
+      icon: Rss,
+      title: "Take it with you",
+      body: "An embed snippet puts the live calendar on your own website, and an RSS feed pipes it into your Discord or Slack. The whole city's calendar, on your page.",
+      action: { label: "Feed and embed", onClick: onFeed },
+    },
+  ]
+
+  return (
+    <div className="page-shell mt-20 md:mt-28">
+      <div className="border-t border-gray-200 pt-12 md:pt-16">
+        <div className="max-w-3xl">
+          <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+            The Calendar Is Open
+          </p>
+          <h2 className="mt-5 text-balance font-sans text-gray-900 leading-[1.0] text-3xl md:text-4xl lg:text-5xl font-black tracking-[-0.02em]">
+            Yours to Subscribe,{" "}
+            <span className="text-gray-600 font-light italic">Publish</span> and
+            Embed.
+          </h2>
+          <p className="mt-5 text-lg md:text-xl font-light leading-[1.45] text-gray-600">
+            These events are not DEVSA&apos;s. Neither is the feed — it is built
+            to be taken, which is the whole point of keeping one.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 md:mt-14 md:grid-cols-3 md:gap-6">
+          {cards.map((card) => {
+            const Icon = card.icon
+            return (
+              <div
+                key={card.key}
+                className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 transition-colors duration-200 hover:border-gray-300"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
+                  <Icon className="h-4 w-4 text-gray-600" aria-hidden />
+                </div>
+                <p className="mt-4 text-base font-semibold text-gray-900">
+                  {card.title}
+                </p>
+                <p className="mt-2 flex-1 text-sm font-light leading-[1.65] text-gray-600">
+                  {card.body}
+                </p>
+                {card.action.href ? (
+                  <Link
+                    href={card.action.href}
+                    className="group/act mt-5 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-gray-900"
+                  >
+                    {card.action.label}
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={card.action.onClick}
+                    className="group/act mt-5 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-gray-900"
+                  >
+                    {card.action.label}
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function CommunityEventsSection({
   featured,
 }: {
@@ -722,24 +841,90 @@ export function CommunityEventsSection({
     // full screen of promo, without the fixed navbar covering the heading.
     <section
       id="community-calendar"
-      className="relative scroll-mt-20 bg-white py-16 sm:py-24"
+      className="relative scroll-mt-20 bg-white pb-16 sm:pb-24"
       data-bg-type="light"
     >
-      <div className="relative page-shell">
-        {/* Header - Left aligned */}
-        <div className="mb-12">
+      {/* A band, not a hero.
+
+          /events opened on white type on white, which next to the home page
+          and /buildingtogether read as unfinished. It does not get what they
+          get, though: those are pages a reader has not decided anything on
+          yet, and this is one they arrive at having decided. A full-viewport
+          hero here would put a screen of scrolling between somebody and the
+          list they came for — which is the exact trade this file already
+          recorded losing once, when a second paragraph of preamble was cut
+          for sitting "between a reader and the events they came for".
+
+          So: the same copy, on a photograph, at roughly 400px. The page gets
+          the footing and keeps the reading order.
+
+          The photograph is a PySanAntonio session from Startup + Tech Week —
+          a speaker on the left where the copy sits, a full room on the right
+          where it does not. That is the whole argument for this page in one
+          frame, and it is this calendar's own content rather than stock.
+
+          The scrim is a hard left-to-right ramp rather than a flat tint: at
+          the copy it is solid #0a0a0a, so every measured contrast below holds
+          exactly as it would on the section grounds, and the room is still
+          legible where the copy ends. A flat tint dark enough for the type
+          would have taken the photograph with it. */}
+      <div
+        className="relative isolate overflow-hidden bg-[#0a0a0a]"
+        data-bg-type="dark"
+      >
+        <Image
+          src="/photos/events-hero.webp"
+          alt=""
+          aria-hidden
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center opacity-65"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 40%, rgba(10,10,10,0.80) 64%, rgba(10,10,10,0.30) 100%)",
+          }}
+        />
+        {/* On a phone the copy runs the full width, so the ramp alone leaves
+            the right-hand words over the room. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[#0a0a0a]/75 md:hidden"
+        />
+
+        <div className="page-shell relative py-16 md:py-20 lg:py-24">
+          <div className="mb-0">
           <div className="space-y-4">
-            <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+            <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
               Community Calendar
             </p>
 
             {/* The page's h1. This section is the subject of /events, so the
                 headline belongs here rather than on the featured-event promo
-                above it, which rotates and is deliberately an h2. */}
-            <h1 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              Find Your Next Event.{" "}
-              <span className="text-gray-600 font-light italic">Build Your</span>{" "}
-              Network.
+                above it, which rotates and is deliberately an h2.
+
+                It read "Find Your Next Event. Build Your Network." That is the
+                same construction as the home hero's "Find Your People. Build
+                Your Future.", so a reader arriving on the home page's primary
+                CTA got the same sentence shape twice, carrying less the second
+                time. And "Build Your Network" promised a networking outcome —
+                the vague-outcome register that came out of the metadata, out
+                of /buildingtogether and out of the footer, because DEVSA's
+                claim is the calendar and the room, not what happens to your
+                career afterwards.
+
+                The home page now says something specific twice: "this site is
+                the one that stays current", and "if it is happening in San
+                Antonio tech, it is here". This is the page where that is
+                either true or false. The headline is the payoff. */}
+            <h1 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+              Every Group.{" "}
+              <span className="text-white/55 font-light italic">One</span>{" "}
+              Calendar.
             </h1>
           </div>
 
@@ -753,48 +938,82 @@ export function CommunityEventsSection({
               they came for — on a section already below a full-viewport promo.
               The attribution was the only load-bearing part, so it moved into
               the line above it. */}
+          {/* The verticals, on the page that has to rank for them.
+
+              The site's title, description and keywords all lead with Python,
+              Linux, .NET, AI and the rest, and the home hero names the same
+              twelve. /events named none of them — it said "every community",
+              which matches nothing anybody types into a search box. These are
+              the same twelve, in the same order, and each is backed by a live
+              group; the mapping is in components/audience-lanes.tsx.
+
+              The count is read from Firestore rather than written here. A
+              hardcoded one is how the footer came to publish nine of
+              twenty-three groups and the OG card ten of fifteen partners. It
+              renders only once the fetch lands, so the sentence has to read
+              correctly without it — hence the fallback clause rather than a
+              number that pops in from nowhere. */}
           <div className="space-y-5 max-w-3xl mt-6">
-            <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
-              One calendar for every community. Stop hunting for links — DEVSA brings San Antonio&apos;s tech groups together in{" "}
-              <strong className="font-semibold text-gray-900">one place</strong>.{" "}
+            <p className="text-balance tracking-tight md:tracking-normal text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+              Python, Linux, .NET, AI, agents, game dev, UX, design, data,
+              security, AWS, Google.{" "}
+              <strong className="font-semibold text-white">
+                {allCommunities.length > 0
+                  ? `All ${allCommunities.length} communities publish here`
+                  : "San Antonio's tech communities publish here"}
+              </strong>{" "}
+              — and this is the page that stays current.{" "}
               {/* Desktop only. On a phone this is a third sentence of preamble
                   above a list somebody opened to find out what is on tonight,
                   and it is the least load-bearing of the three. */}
-              <span className="hidden text-gray-500 sm:inline">
+              <span className="hidden text-white/50 sm:inline">
                 Part of Building Together, DEVSA&apos;s 501(c)(3) platform.
               </span>
             </p>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            {/* Subscribing is the action this page exists to produce.
+
+                It was a 13px button weighted exactly like "Add Event" beside
+                it — and "Add Event" serves the twenty-odd people who organise,
+                while this serves everybody else. Worse, the home page's claim
+                for this site is that it is "the one that stays current", and
+                subscribing is the mechanism that keeps that promise without
+                the reader ever coming back. It is now the page's primary
+                control, at the size the rest of the site gives a primary
+                control, and it says what it does rather than naming a verb.
+
+                The RSS footnote that sat under this row went to the band at
+                the foot of the section, where the feed, the embed and
+                organiser publishing are explained properly instead of as an
+                aside nobody read. */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <button
                 onClick={() => setShowCalendarSubscribe(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-gray-800"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
               >
-                <CalendarPlus className="h-3.5 w-3.5" />
-                Subscribe
+                <CalendarPlus className="h-4 w-4" />
+                Subscribe to the calendar
               </button>
               <Link
                 href="/signin"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                className="group inline-flex items-center gap-1.5 text-sm font-medium text-white/70 underline underline-offset-4 decoration-white/30 transition-colors hover:text-white hover:decoration-white/60"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add Event
+                Organizing something? Add your event
               </Link>
             </div>
 
-            <p className="text-sm text-gray-500">
-              Building an integration?{" "}
-              <button
-                onClick={() => setShowRssFeed(true)}
-                className="inline-flex items-center gap-1.5 font-medium text-gray-900 underline underline-offset-2 hover:text-gray-700 transition-colors cursor-pointer"
-              >
-                <Rss className="h-3 w-3" />
-                Use the RSS feed
-              </button>
+            <p className="text-sm text-white/60">
+              Google, Apple or Outlook — new events arrive on their own, and
+              update when a group changes one.
             </p>
+
+          </div>
           </div>
         </div>
+      </div>
 
+      <div className="relative page-shell pt-12 sm:pt-16">
         {/* The featured band, after the headline and before the list. The page
             says what it is, makes its pitch, then delivers. */}
         {featured && <div className="mb-12">{featured}</div>}
@@ -1191,7 +1410,30 @@ export function CommunityEventsSection({
                                   style={{ backgroundColor: brand.accent }}
                                 />
                               )}
-                              <div className="relative flex gap-4">
+                              {/* Two columns from xl.
+
+                                  The card runs to roughly 900px on a wide
+                                  display and every piece of content sat in the
+                                  left 60% of it: a short title, a venue, two
+                                  clamped lines of description. The actions were
+                                  a full-width footer under a rule, which put
+                                  "Add to Google · .ics" at the far left and
+                                  "View Details" at the far right with half a
+                                  card of nothing between them. Tall cards,
+                                  empty cards.
+
+                                  The actions become a rail instead, so the
+                                  width is spent and the card is shorter.
+
+                                  xl rather than lg deliberately: the calendar
+                                  rail appears at lg, which is where this column
+                                  is narrowest — around 600px — and taking 224
+                                  of those for a second column would squeeze the
+                                  description harder than the empty space ever
+                                  cost. Below xl the stacked footer is still the
+                                  right shape. */}
+                              <div className="relative flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-6">
+                                <div className="flex min-w-0 flex-1 gap-4">
                                 {/* The host mark, on every viewport.
 
                                     Two changes. It was `hidden sm:block`, so it
@@ -1433,10 +1675,20 @@ export function CommunityEventsSection({
                                     </div>
                                   )}
                                 </div>
-                              </div>
+                                </div>
 
-                              {/* Footer */}
-                              <div className={`relative mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 ${brand ? "border-white/15" : "border-gray-100"}`}>
+                              {/* The actions. A footer below xl, a rail at xl
+                                  and up.
+
+                                  flex-col-reverse so the rail leads with "View
+                                  Details" without moving it in the DOM, where
+                                  it belongs after the quieter add-to-calendar
+                                  controls — in column-reverse, justify-end
+                                  packs toward the top and the children stack
+                                  last-first, which is exactly the order wanted
+                                  on screen and the wrong one to hard-code into
+                                  the markup. */}
+                              <div className={`relative mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:items-stretch xl:justify-end xl:gap-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
                                 {/* Labelled, and visibly secondary.
 
                                     These were two unlabelled 36px icon squares
@@ -1448,7 +1700,7 @@ export function CommunityEventsSection({
                                     text buttons under a shared label, with
                                     "View Details" left as the only filled
                                     control on the card. */}
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5 xl:w-full">
                                   <span className={`mr-0.5 text-[12px] font-normal ${brand ? "text-white/45" : "text-gray-400"}`}>Add to</span>
                                   <a
                                     href={buildCalendarLinks(event).googleUrl}
@@ -1477,7 +1729,7 @@ export function CommunityEventsSection({
                                   <Link
                                     href={eventLink}
                                     {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                                    className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity ${
+                                    className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity xl:w-full xl:py-2.5 ${
                                       brand ? "hover:opacity-90" : "bg-gray-900 text-white hover:bg-gray-800"
                                     }`}
                                     style={brand ? { backgroundColor: brand.accent, color: brand.onAccent } : undefined}
@@ -1490,6 +1742,7 @@ export function CommunityEventsSection({
                                     )}
                                   </Link>
                                 )}
+                              </div>
                               </div>
                             </article>
                           )
@@ -1515,6 +1768,11 @@ export function CommunityEventsSection({
           </div>
         </div>
       </div>
+
+      <OpenCalendarBand
+        onSubscribe={() => setShowCalendarSubscribe(true)}
+        onFeed={() => setShowRssFeed(true)}
+      />
 
       {/* RSS Feed Modal */}
       <RssFeedModal open={showRssFeed} onClose={() => setShowRssFeed(false)} />
