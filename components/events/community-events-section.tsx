@@ -693,7 +693,14 @@ function OpenCalendarBand({
 
 export function CommunityEventsSection({
   featured,
+  communityCount,
 }: {
+  /**
+   * Rendered on the server by app/events/page.tsx. Previously taken from this
+   * component's own /api/communities fetch, which made the headline's
+   * paragraph change wording after hydration — see the note on the page.
+   */
+  communityCount?: number
   /**
    * The featured-event band, rendered between this section's headline and its
    * list rather than above the whole page.
@@ -844,60 +851,58 @@ export function CommunityEventsSection({
       className="relative scroll-mt-20 bg-white pb-16 sm:pb-24"
       data-bg-type="light"
     >
-      {/* A band, not a hero.
+      {/* A band, not a hero, and no photograph in it.
 
-          /events opened on white type on white, which next to the home page
-          and /buildingtogether read as unfinished. It does not get what they
-          get, though: those are pages a reader has not decided anything on
-          yet, and this is one they arrive at having decided. A full-viewport
-          hero here would put a screen of scrolling between somebody and the
-          list they came for — which is the exact trade this file already
-          recorded losing once, when a second paragraph of preamble was cut
-          for sitting "between a reader and the events they came for".
+          There was one — a Startup + Tech Week session, scrimmed from the left
+          — added to give /events the visual footing the homepage and
+          /buildingtogether have. It stopped earning that the moment the
+          featured event moved up beside the headline: the band already has a
+          picture in it, the partner's, and a second image behind the type was
+          two things competing in a space that is meant to get somebody to the
+          calendar.
 
-          So: the same copy, on a photograph, at roughly 400px. The page gets
-          the footing and keeps the reading order.
+          Losing it also loses the ramp, the blur and the flat mobile tint that
+          existed only to hold copy over it, which is three layers and a 128KB
+          download for a page whose job is a list. On flat #0a0a0a every ratio
+          here is the one measured on the section grounds: body 9.96:1, eyebrow
+          6.27:1.
 
-          The photograph is a PySanAntonio session from Startup + Tech Week —
-          a speaker on the left where the copy sits, a full room on the right
-          where it does not. That is the whole argument for this page in one
-          frame, and it is this calendar's own content rather than stock.
+          The asset stays at /photos/events-hero.webp. It is a good frame and
+          nothing else uses it; if a photograph is ever wanted back here, that
+          is the one, and the scrim it needs is in this file's history. */}
+      {/* Takes the viewport from lg.
 
-          The scrim is a hard left-to-right ramp rather than a flat tint: at
-          the copy it is solid #0a0a0a, so every measured contrast below holds
-          exactly as it would on the section grounds, and the room is still
-          legible where the copy ends. A flat tint dark enough for the type
-          would have taken the photograph with it. */}
+          A sliver of the list showing under the band read as an accident
+          rather than as an invitation to scroll, which is what a partial
+          reveal always reads as unless it is unmistakably deliberate.
+
+          This would be the wrong call for a band that was only a statement —
+          on a page people open to find out what is on tonight, a screen of
+          promo before the first event is a real cost, and that is the argument
+          this band was built short to respect. What changed is what is in it:
+          the headline, the verticals, Subscribe and the featured event itself.
+          That is a screenful of content, so taking the screen is honest.
+
+          A minimum, not a height. Where the content already exceeds the
+          viewport — a laptop, a phone, any narrow window — it does nothing,
+          and justify-center keeps the pair centred in whatever it gets. */}
       <div
-        className="relative isolate overflow-hidden bg-[#0a0a0a]"
+        className="relative flex flex-col justify-center bg-[#0a0a0a] lg:min-h-dvh"
         data-bg-type="dark"
       >
-        <Image
-          src="/photos/events-hero.webp"
-          alt=""
-          aria-hidden
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center opacity-65"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 40%, rgba(10,10,10,0.80) 64%, rgba(10,10,10,0.30) 100%)",
-          }}
-        />
-        {/* On a phone the copy runs the full width, so the ramp alone leaves
-            the right-hand words over the room. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[#0a0a0a]/75 md:hidden"
-        />
+        {/* Two columns from lg: the page's statement, and what is featured.
 
-        <div className="page-shell relative py-16 md:py-20 lg:py-24">
-          <div className="mb-0">
+            These were two stacked full-width bands — a photo band about 480px
+            tall and the featured event about 430 — so the page made two
+            promotional statements, roughly 900px of them, before showing a
+            single event. Each was defensible alone and together they delayed
+            the thing people came for.
+
+            Side by side it is one opening band instead of two, the featured
+            event reads as part of the masthead rather than as a second
+            interruption, and the calendar starts a screen earlier. */}
+        <div className="page-shell relative grid items-center gap-10 py-16 md:py-20 lg:grid-cols-[1fr_minmax(0,0.9fr)] lg:gap-12 lg:py-20 xl:gap-16">
+          <div>
           <div className="space-y-4">
             <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
               Community Calendar
@@ -921,7 +926,11 @@ export function CommunityEventsSection({
                 the one that stays current", and "if it is happening in San
                 Antonio tech, it is here". This is the page where that is
                 either true or false. The headline is the payoff. */}
-            <h1 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            {/* Stops at 6xl now that it shares the band with the featured
+                event. At 72px in a column this wide it wrapped to three lines;
+                at 60px it breaks cleanly after "Every Group." — same reason
+                PartnerCta's heading is capped. */}
+            <h1 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl font-black tracking-[-0.02em]">
               Every Group.{" "}
               <span className="text-white/55 font-light italic">One</span>{" "}
               Calendar.
@@ -958,17 +967,11 @@ export function CommunityEventsSection({
               Python, Linux, .NET, AI, agents, game dev, UX, design, data,
               security, AWS, Google.{" "}
               <strong className="font-semibold text-white">
-                {allCommunities.length > 0
-                  ? `All ${allCommunities.length} communities publish here`
+                {communityCount
+                  ? `All ${communityCount} communities publish here`
                   : "San Antonio's tech communities publish here"}
-              </strong>{" "}
-              — and this is the page that stays current.{" "}
-              {/* Desktop only. On a phone this is a third sentence of preamble
-                  above a list somebody opened to find out what is on tonight,
-                  and it is the least load-bearing of the three. */}
-              <span className="hidden text-white/50 sm:inline">
-                Part of Building Together, DEVSA&apos;s 501(c)(3) platform.
-              </span>
+              </strong>
+              , and this is the page that stays current.
             </p>
 
             {/* Subscribing is the action this page exists to produce.
@@ -1003,20 +1006,19 @@ export function CommunityEventsSection({
               </Link>
             </div>
 
-            <p className="text-sm text-white/60">
-              Google, Apple or Outlook — new events arrive on their own, and
-              update when a group changes one.
-            </p>
 
           </div>
           </div>
+
+          {/* The featured slot, in the band rather than below it. Still a slot
+              — the calendar does not know what is in it, the page decides —
+              and still after the headline in the reading order, just beside it
+              rather than under. */}
+          {featured && <div className="min-w-0">{featured}</div>}
         </div>
       </div>
 
       <div className="relative page-shell pt-12 sm:pt-16">
-        {/* The featured band, after the headline and before the list. The page
-            says what it is, makes its pitch, then delivers. */}
-        {featured && <div className="mb-12">{featured}</div>}
 
         {/* Mobile Calendar */}
         <div className="lg:hidden mb-8">

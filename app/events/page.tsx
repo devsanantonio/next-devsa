@@ -3,6 +3,7 @@ import { ConferencePortfolio } from "@/components/events/conference-portfolio"
 import { FeaturedTxlf } from "@/components/events/featured-txlf"
 import { EventsVisitMarker } from "@/components/events/conference-back-link"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
+import { listCommunities } from "@/lib/communities"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -68,7 +69,24 @@ export const metadata: Metadata = {
  * month picker all fetch client-side, so they are live regardless of how long
  * the shell is cached.
  */
-export default function EventsPage() {
+/**
+ * `async`, so the headline's community count is rendered on the server.
+ *
+ * It was read from the client fetch inside CommunityEventsSection, which meant
+ * the h1's paragraph painted "San Antonio's tech communities publish here",
+ * waited for /api/communities, then swapped to "All 23 communities publish
+ * here" — a visible copy change in the largest text on the page, with a reflow
+ * behind it because the two strings are different lengths. That is what a
+ * refresh looked like.
+ *
+ * The count is not live data in the sense the event list is: nobody needs it
+ * to the second, and listCommunities() is already cached per render. Reading
+ * it here puts it in the HTML, kills the swap, and means a crawler sees the
+ * real number too.
+ */
+export default async function EventsPage() {
+  const communityCount = (await listCommunities()).length
+
   return (
     <>
       <script
@@ -123,7 +141,10 @@ export default function EventsPage() {
           dropping them at the top of the list. Renders nothing. */}
       <EventsVisitMarker />
       <main className="min-h-screen bg-white text-gray-900">
-        <CommunityEventsSection featured={<FeaturedTxlf />} />
+        <CommunityEventsSection
+          communityCount={communityCount}
+          featured={<FeaturedTxlf />}
+        />
         {/* What DEVSA runs.
         
             The on-demand archive that sat below this is gone. It was a video
