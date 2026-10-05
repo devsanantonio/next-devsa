@@ -202,8 +202,8 @@ export function BrandingKitPage() {
         <div className="border border-neutral-800/50 rounded-2xl p-8 bg-neutral-900/30">
           <h2 className="text-xl font-semibold text-white mb-4">About DEVSA</h2>
           <p className="text-neutral-400 text-sm leading-relaxed mb-3">
-            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> tech education nonprofit that bridges the gap between passionate builders,
-            local partners, and the growing tech ecosystem in San Antonio.
+            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> nonprofit that gives San Antonio&apos;s tech groups one shared
+            calendar, one public directory, and one room to meet partners in. The groups run themselves.
           </p>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Our tagline: <span className="text-white font-medium">&quot;Find Your People. Build Your Future.&quot;</span>

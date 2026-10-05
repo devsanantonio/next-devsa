@@ -113,17 +113,15 @@ export function TerminalDrawer({
                   <span className="text-[#ef426f] mr-2">{">"}</span>
                   Community Calendar
                 </Link>
-                <Link
-                  href="/shop"
-                  onClick={onClose}
-                  className={`${linkClass(pathname.startsWith("/shop"))} flex items-center gap-2`}
-                >
-                  <span className="text-[#ef426f]">{">"}</span>
-                  Shop
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
-                    New
-                  </span>
-                </Link>
+                {/* Shop came out of here with the desktop nav, and this is
+                    where it was costing the most: it carried a green "New"
+                    badge, which on a drawer with three items made merch the
+                    only thing flagged as worth a look. It is in the footer, on
+                    both breakpoints.
+
+                    The Support DEVSA button directly below has always been the
+                    drawer's real action; the desktop bar now has the same one,
+                    which it never did. */}
               </div>
 
               {/* Donate CTA */}
@@ -136,7 +134,7 @@ export function TerminalDrawer({
                   Support DEVSA
                 </Link>
                 <p className="mt-2.5 text-[11px] text-white/40 text-center leading-relaxed">
-                  A 501(c)(3) tech education nonprofit.
+                  A 501(c)(3) nonprofit for San Antonio tech.
                 </p>
               </div>
 

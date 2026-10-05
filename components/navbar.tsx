@@ -11,7 +11,6 @@ export function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const { openCart, totalItems } = useCart()
   const pathname = usePathname()
-  const isShopPage = pathname.startsWith("/shop")
 
   return (
     <>
@@ -75,15 +74,29 @@ export function Navbar() {
                 >
                   Community Calendar
                 </Link>
+                {/* Donate, where Shop was.
+
+                    Shop was the only commercial item in a 501(c)(3)'s
+                    navigation, sitting beside the two pages the site is
+                    actually about — and it outranked the donation ask, which
+                    had no navigation presence at all. It is unchanged in the
+                    footer, so this is a demotion rather than a removal; the
+                    nav is now the two pages plus the ask.
+
+                    A button rather than a link, because it is not a
+                    destination in the sense the other two are: those say "go
+                    here", this says "do this". Filled white so it reads as the
+                    one action in the bar without needing the brand pink, which
+                    on a black bar at 13px would vibrate.
+
+                    Points at the anchor rather than the page, so it lands on
+                    the donation form instead of the top of /buildingtogether
+                    with the ask three screens down. */}
                 <Link
-                  href="/shop"
-                  className={`px-3 py-1.5 rounded-lg text-[13px] leading-tight font-normal tracking-wide transition-colors ${
-                    isShopPage
-                      ? "text-white bg-white/10"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
-                  }`}
+                  href="/buildingtogether#donate"
+                  className="ml-1.5 rounded-lg bg-white px-3.5 py-1.5 text-[13px] font-semibold leading-tight tracking-wide text-gray-900 transition-colors hover:bg-gray-100"
                 >
-                  Shop
+                  Donate
                 </Link>
               </div>
 

@@ -748,7 +748,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
             </div>
             {isCustomEvent ? (
               <div className="mb-6">
-                <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA bridges the gap between passionate builders, local partners, and the growing tech ecosystem in San Antonio.</p>
+                <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.</p>
               </div>
             ) : (
               <p className="text-[15px] text-gray-600 leading-relaxed mb-6">{comm.description}</p>

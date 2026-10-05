@@ -124,7 +124,20 @@ const lanes: Lane[] = [
     cta: "Start your group",
     href: "/signin",
     accent: "text-[#ff8200]",
-    image: "/photos/lane-aws.webp",
+    /* Re-cut from the camera original with headroom above the banner, and
+       renamed because the file changed.
+    
+       The old crop started level with the "aws" wordmark, so the roller bar
+       and the space above it were never in the file — the top of the banner
+       was gone before any hover, and no amount of transform-origin brings back
+       pixels that were cropped out. This one starts 170px higher in the source,
+       which keeps the whole banner head visible at rest and still visible
+       under the 5% hover zoom.
+    
+       New filename on purpose: the same name with different bytes is how the
+       Give-a-LOT and SheBuilds images went on serving stale versions from the
+       image optimiser while the files on disk were correct. */
+    image: "/photos/lane-aws-usergroup.webp",
     imageAlt: "Organizers from the AWS User Group San Antonio at their meetup",
   },
   {
@@ -174,7 +187,21 @@ function LaneCard({ lane, index }: { lane: Lane; index: number }) {
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           decoding="async"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          /* origin-top, so the hover zoom grows downward.
+          
+             All three assets are 1000x625 and the frame is aspect-16/10, so at
+             rest object-cover crops nothing — the top of the image is the top
+             of the frame. The hover scale was the whole problem: scaling from
+             the centre takes about 2.5% off every edge, and the "aws" wordmark
+             on the For Organizers banner sits roughly five pixels from the top
+             of the source, so it was the first thing to go.
+          
+             Anchoring the transform to the top pins that edge in both states
+             and spends the crop on the floor instead, which costs nothing in
+             any of the three frames. object-top is belt-and-braces for the same
+             edge, and a no-op while the aspects agree — it earns its place the
+             day somebody swaps in an asset that is not 1.6:1. */
+          className="object-cover object-top origin-top transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-t from-neutral-900 via-neutral-900/10 to-transparent" />
       </div>

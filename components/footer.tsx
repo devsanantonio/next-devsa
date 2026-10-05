@@ -267,7 +267,22 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
               >
                 501(c)(3)
               </button>
-              {" "}tech education nonprofit.
+              {/* Not "tech education nonprofit".
+              
+                  The same claim that came out of Meet the Team's headline, in
+                  shorter form. /buildingtogether spends a section establishing
+                  that the teaching belongs to the groups and the partners —
+                  "the people who can teach, from the people DEVSA knows" — so a
+                  footer calling DEVSA an education nonprofit contradicts the
+                  page two clicks away.
+              
+                  The 501(c)(3) stays, because that is the part a footer is for:
+                  it is what makes a donation deductible and it is checkable.
+                  Whether "educational" is the registered exempt purpose is a
+                  question for the determination letter, not for this file —
+                  describing the work precisely here does not change what the
+                  letter says. */}
+              {" "}nonprofit for San Antonio tech.
             </p>
           </motion.div>
 
