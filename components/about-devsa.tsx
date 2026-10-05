@@ -103,89 +103,135 @@ export function AboutDevsa() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="space-y-8"
         >
-          <div className="space-y-6 max-w-4xl">
+          {/* Two lines, and a wider measure to hold them.
+
+              At max-w-4xl this heading had 896px to run in while the shell
+              around it is nearer 1380, so text-balance evened it into three
+              short lines and left most of the row empty on a laptop or a
+              monitor. Widening the measure and breaking it deliberately fills
+              that space and puts the break where the sentence has its hinge —
+              the city on one line, what DEVSA serves on the next.
+
+              `block` rather than a <br />, so each line is still one element
+              and can wrap inside itself at tablet and phone widths without the
+              pair coming apart. text-balance stays for that case; with the
+              lines explicit it does nothing at desktop width.
+
+              The lead paragraph below keeps its own max-w-3xl: a 1280px
+              measure is right for a 72px heading and much too wide for 24px
+              body copy. */}
+          <div className="space-y-6 max-w-7xl">
             <h2 className="text-balance font-sans text-gray-900 leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              Built to{" "}
-              <span className="text-gray-600 font-light italic">Serve</span>{" "}
-              San Antonio&apos;s Tech Communities.
+              <span className="block">
+                Built to{" "}
+                <span className="text-gray-600 font-light italic">Serve</span>{" "}
+                San Antonio&apos;s
+              </span>
+              <span className="block">Tech Communities.</span>
             </h2>
             <p className="max-w-3xl text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
               DEVSA is the 501(c)(3) bridge across San Antonio&apos;s tech
-              ecosystem. We connect{" "}
+              ecosystem —{" "}
               <strong className="font-semibold text-gray-900">
-                20+ grassroots groups
+                one shared calendar and one public directory
               </strong>
-              , local builders, and industry partners through one shared
-              calendar and one public directory.
+              , open to every grassroots group in the city.
             </p>
           </div>
 
-          {/* Supporting detail.
+          {/* The distinction, as two columns rather than one paragraph.
 
-              This used to end on "a shared community calendar, monthly
-              workshops, and conferences built right here in San Antonio". The
-              workshops are no longer DEVSA's to claim: it stopped running its
-              own and now helps the groups run theirs, through exactly the
-              mechanism /buildingtogether's How It Works lays out — the room,
-              the people who can teach, access to a network. The group runs the
-              session.
+              This was a single block of about sixty words carrying three
+              separate ideas — that DEVSA does not replace the groups, that the
+              workshops are theirs, and that what DEVSA runs is conferences and
+              pop-ups. All true, all load-bearing, and all of it skipped: it sat
+              below a video on a page people scroll, in one undifferentiated
+              run of prose at the size this section uses for supporting detail.
 
-              Saying otherwise put DEVSA in front of the groups on the one
-              sentence that exists to say it stands behind them, and it was the
-              sort of claim that quietly stops being true without anybody
-              editing the file.
+              Split, it is the page's own thesis made visible. A reader who
+              stops for two seconds gets the two labels, which is the whole
+              argument; a reader who stops for ten gets the detail under them.
+              Nothing was cut.
 
-              The calendar and the directory are not repeated here because the
-              paragraph directly above already names them. What is added is the
-              other half of what DEVSA actually runs: the conferences, and the
-              sponsored pop-ups a partner makes possible.
+              No count in the lead any more either. It said "20+ grassroots
+              groups" against a Firestore figure of twenty-three — the last
+              hardcoded one the homepage carried in copy — and a number cannot
+              be read live here, because this is a client tree and the only
+              /api/communities call on the page belongs to EcosystemShowcase.
+              "Every grassroots group in the city" is both truer and the claim
+              the site already makes on /events and in HeroCommunities.
 
-              Named and linked rather than left abstract, which is the pattern
-              that has been fixing the rest of these pages: "sponsored pop-ups"
-              on its own is the kind of claim a reader has to take on trust,
-              and one click settles it. The Zero to Agent route calls itself
-              "San Antonio's official Zero to Agent pop-up", so the noun here
-              is the site's rather than one invented for this sentence.
+              The conferences are not counted here on purpose: DevsaConferences
+              says "Four Conferences. Built Here." two sections below, and a
+              second hardcoded four is a second thing to update.
 
-              Both are named in the order they ran — SheBuilds on
-              International Women's Day, Zero to Agent on 25 April 2026 —
-              which is what keeps "most recently" true rather than
-              aspirational. If a later pop-up overtakes it, this is the
-              sentence to update.
+              The channels and the partner relationships are named in this
+              column because without them it lists outputs and never the asset
+              that produces them — a reader finishes it thinking DEVSA is a
+              website and some events. The reach is the standing contribution
+              to every group, and the relationships are what a group draws on
+              when it asks for a venue or a speaker.
 
-              SheBuilds pointed at its Luma page for a while, because it had
-              nowhere on this site to go — an activation shown twice and never
-              named, /hero/shebuilds.webp in this page's own marquee and
-              /photos/lane-shebuilds.webp on an AudienceLanes card. It has a
-              home now: the worked example under Partner with DEVSA, which
-              credits Lovable, Anthropic, Stripe, Berry to Bean and the person
-              who taught it, over a photograph whose slide says all of it.
-              Pointing there keeps the reader on the site and lands them on the
-              documented version rather than a closed signup. */}
-          <p className="max-w-3xl text-base md:text-lg text-gray-500 leading-relaxed">
-            We don&apos;t replace the communities doing the work — we{" "}
-            <span className="font-medium text-gray-700">host them</span>,{" "}
-            <span className="font-medium text-gray-700">connect them</span>, and{" "}
-            <span className="font-medium text-gray-700">help them grow</span>.
-            The workshops belong to the groups: DEVSA brings the room, the
-            people who can teach and the network, and they run the session.
-            What DEVSA runs itself is the conferences, and the sponsored
-            pop-ups a partner makes possible —{" "}
-            <Link
-              href="/buildingtogether#partner"
-              className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
-            >
-              SheBuilds
-            </Link>{" "}
-            with Lovable on International Women&apos;s Day, and most recently{" "}
-            <Link
-              href="/events/zero-to-agent"
-              className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
-            >
-              Zero to Agent
-            </Link>{" "}
-            with Vercel.
-          </p>
+              Neither is asserted on its own. "Strategic partnerships" is the
+              register this site has spent several passes removing, so the
+              relationships are cashed out in the same sentence by the two
+              pop-ups they produced, both of which a reader can click. */}
+          <div className="grid max-w-4xl gap-8 sm:grid-cols-2 sm:gap-10">
+            <div className="border-t border-gray-200 pt-6">
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-gray-500">
+                The Groups Run
+              </p>
+              {/* The order here is the correction.
+
+                  This said "DEVSA brings the room, someone who can teach and
+                  the network", which reads as three things supplied as a
+                  matter of course. Only one of them is. What DEVSA does for
+                  every group, every time, is carry their event to its own
+                  audience — the calendar and the social channels reaching
+                  people the group's own channels do not. The venue and the
+                  speaker are the escalation: real, and provided when a group
+                  asks, not standing. Listing all three flat overstated the
+                  routine contribution and undersold the reach, which is the
+                  one DEVSA actually controls. */}
+              <p className="mt-3 text-base md:text-lg text-gray-600 leading-relaxed">
+                Their own meetups and workshops, with their own people and their
+                own subject. DEVSA carries it to the builders who would want to
+                be there, and finds a room or someone to teach when a group asks
+                for one.{" "}
+                <span className="font-medium text-gray-900">
+                  They run the session.
+                </span>
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 pt-6">
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-gray-500">
+                DEVSA Runs
+              </p>
+              <p className="mt-3 text-base md:text-lg text-gray-600 leading-relaxed">
+                <span className="font-medium text-gray-900">
+                  The calendar, the public directory and the channels that carry
+                  them.
+                </span>{" "}
+                Its own conferences. And the partner relationships that become
+                pop-ups:{" "}
+                <Link
+                  href="/buildingtogether#partner"
+                  className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
+                >
+                  SheBuilds
+                </Link>{" "}
+                with Lovable, and most recently{" "}
+                <Link
+                  href="/events/zero-to-agent"
+                  className="font-medium text-gray-700 underline underline-offset-2 decoration-gray-300 transition-colors hover:text-gray-900 hover:decoration-gray-500"
+                >
+                  Zero to Agent
+                </Link>{" "}
+                with Vercel.
+              </p>
+            </div>
+          </div>
 
           {/* CTAs — Community Calendar leads (subscribe / embed / RSS);
               Support DEVSA is the secondary action. It took the slot the

@@ -91,8 +91,21 @@ function EffectLayer({
           src={conference.hoverVideo}
           poster={conference.hoverPoster}
           active={active}
-          /* Heavier than the card's tint. There the type sat on a panel beside
-             the footage; here it sits directly on it. */
+          /* `contain`, like Access Granted's padlock above and for the same
+             reason: both of these are a lit object on black — PySanAntonio's
+             luchador, More Human's wireframe head — rather than a filmed room.
+             They are placed, not cropped.
+
+             With `cover` they were cut, and only on a wide display, which is
+             what made it easy to miss. This layer is full-bleed, so the band's
+             aspect is the viewport's: a MacBook Air at 1470 is about 1.8:1
+             against a 1.55:1 clip and loses a little, while a 2560 monitor is
+             nearer 3.2:1 and crops roughly half the clip's height — taking the
+             sombrero off the top and the guitar off the bottom.
+
+             It costs nothing to show them whole. Both clips are black-grounded
+             and this section is #0a0a0a, so there is no letterbox to see. */
+          className="h-full w-full object-contain"
           scrim="bg-black/70"
         />
       )}
@@ -115,7 +128,24 @@ export function DevsaConferences() {
   return (
     <section
       id="devsa-conferences"
-      className="relative w-full scroll-mt-20 overflow-hidden bg-[#0a0a0a]"
+      /* Takes the viewport from lg up.
+
+         The content — eyebrow, headline, intro and four marks in two columns —
+         runs to roughly 800px, which fills a laptop and leaves the top of
+         AudienceLanes showing on a tall external monitor. A lineup that shares
+         the screen with the next section's heading stops being a lineup.
+
+         It also gives the hover effects the canvas they were designed for.
+         Each of these brands owns a piece of motion and the whole argument for
+         this section over a card grid was that the hovered brand gets the
+         whole band; a taller band means the mascots have more floor to cross
+         and the object-contain clips render larger rather than being pinned to
+         a short strip.
+
+         A minimum, not a height: below lg, and anywhere the content outgrows
+         the viewport, it simply flows. justify-center keeps the lineup in the
+         middle of whatever it gets. */
+      className="relative flex w-full scroll-mt-20 flex-col justify-center overflow-hidden bg-[#0a0a0a] lg:min-h-dvh"
       data-bg-type="dark"
     >
       {conferences.map((conference) => (

@@ -132,9 +132,29 @@ const lanes: Lane[] = [
     headlineLead: "Reach the ",
     headlineItalic: "Ecosystem",
     headlineTail: ".",
-    body: "Reach the whole ecosystem from one place — 20+ specialty community groups and the builders and learners inside them. The simplest way to connect with your people and back their future.",
+    /* The altitude, not the aggregate.
+    
+       This read "Reach the whole ecosystem from one place — 20+ specialty
+       community groups and the builders and learners inside them. The simplest
+       way to connect with your people and back their future." Three problems:
+       the count was stale against twenty-three and is the last hardcoded one
+       the homepage carried; "the simplest way to connect with your people" is
+       the vague register everything else on this site has shed; and it sold
+       breadth, which is the vocabulary of a lead list.
+    
+       What a partner cannot buy elsewhere is the altitude — they already have
+       the director and executive relationships in these industries, and what
+       they do not have is the frontline. That is the argument PartnerCta makes
+       in full, so the lane makes it in short and hands off, which is what a
+       lane is for. No number: a count would have to be fetched client-side on
+       a page that is a client tree, for one word, and /buildingtogether and
+       /events both carry the live figure already.
+    
+       The href is the anchor rather than the page, so the handoff lands on the
+       section that finishes the thought instead of the top of a long page. */
+    body: "You already have the director and executive relationships in these industries. This is the other altitude — the engineers, analysts, designers and students doing the work day to day, in every community group in the city.",
     cta: "Become a partner",
-    href: "/buildingtogether",
+    href: "/buildingtogether#partner",
     accent: "text-[#ef426f]",
     image: "/photos/lane-techbloc.webp",
     imageAlt: "Panelists speaking at a Tech Bloc event in San Antonio",
