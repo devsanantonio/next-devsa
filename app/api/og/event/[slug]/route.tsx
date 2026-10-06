@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
-import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import { OgCard } from "@/lib/og-card"
 
 // Use Node.js runtime to access Firestore directly (and fetch logo bytes)
 export const runtime = "nodejs"
@@ -111,147 +111,21 @@ export async function GET(
   const hostLabel = event.hostName || "Community Event"
   const location = event.location || "San Antonio, TX"
 
+  // The host and the date are the hook. On a per-event card the date is the
+  // point — somebody shares this to get people to turn up on a specific day —
+  // which is the opposite of the conference cards, where a date goes stale and
+  // the description does not.
+  const when = formattedTime ? `${formattedDate} · ${formattedTime}` : formattedDate
+  const by = event.hostName ? `Hosted by ${event.hostName}` : "On the DEVSA community calendar"
+
   return new ImageResponse(
     (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#ffffff",
-          fontFamily: "Geist Sans",
-        }}
-      >
-        <BrandGradientBar direction="ltr" />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            padding: "44px 64px",
-          }}
-        >
-          {/* Header: DEVSA mark + hosting org */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              marginBottom: 48,
-            }}
-          >
-            <DevsaLogoMark size={40} />
-
-            {/* Host chip — the community or partner hosting this event */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "#fafafa",
-                border: "1px solid #ececec",
-                borderRadius: 999,
-                padding: "10px 22px",
-              }}
-            >
-              <span style={{ color: "#111827", fontSize: 18, fontWeight: 700, letterSpacing: "0.01em" }}>
-                {hostLabel}
-                {event.extraHosts > 0 ? ` +${event.extraHosts}` : ""}
-              </span>
-            </div>
-          </div>
-
-          {/* Main content area */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              justifyContent: "center",
-            }}
-          >
-            {/* Event title */}
-            <h1
-              style={{
-                fontSize: displayTitle.length > 50 ? 48 : displayTitle.length > 35 ? 58 : 66,
-                fontWeight: 800,
-                color: "#111827",
-                lineHeight: 1.2,
-                margin: 0,
-                marginBottom: 28,
-                maxWidth: 950,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {displayTitle}
-            </h1>
-
-            {/* Event details */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-              }}
-            >
-              {/* Date and time */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#ef426f" strokeWidth="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" stroke="#ef426f" strokeWidth="2" />
-                  <line x1="8" y1="2" x2="8" y2="6" stroke="#ef426f" strokeWidth="2" />
-                  <line x1="3" y1="10" x2="21" y2="10" stroke="#ef426f" strokeWidth="2" />
-                </svg>
-                <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                  {formattedDate}{formattedTime && ` · ${formattedTime} CST`}
-                </span>
-              </div>
-
-              {/* Location */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#ef426f" strokeWidth="2" />
-                  <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
-                </svg>
-                <span style={{ color: "#374151", fontSize: 20, fontWeight: 500, lineHeight: 1.4 }}>
-                  {location}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              paddingTop: 24,
-              borderTop: "2px solid #f3f4f6",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Find your people.
-              </span>
-              <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-                Build your future.
-              </span>
-            </div>
-            <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-              devsa.community/events
-            </span>
-          </div>
-        </div>
-        <BrandGradientBar direction="rtl" />
-      </div>
+      <OgCard
+        title={[event.title]}
+        hook={`${when} · ${location}`}
+        footer={by}
+      />
     ),
-    {
-      width: 1200,
-      height: 630,
-      fonts,
-    }
+    { width: 1200, height: 630, fonts }
   )
 }

@@ -1,197 +1,26 @@
 import { ImageResponse } from "next/og"
-import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
+import { OgCard } from "@/lib/og-card"
 import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
+/**
+ * The coworking room, which closed in September 2026.
+ *
+ * This card was the last thing still selling it, in the present tense, with a
+ * street address, under a badge that said "Closed September 2026". A share of
+ * that link invited someone to an address they cannot walk into.
+ */
 export async function GET() {
   const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#ffffff",
-          fontFamily: "Geist Sans",
-        }}
-      >
-        <BrandGradientBar direction="ltr" />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            padding: "44px 64px",
-          }}
-        >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            marginBottom: 48,
-          }}
-        >
-          <DevsaLogoMark size={40} />
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#fef2f2",
-              border: "2px solid #ef426f",
-              borderRadius: 24,
-              padding: "8px 22px",
-            }}
-          >
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 15,
-                fontWeight: 600,
-                letterSpacing: "0.01em",
-              }}
-            >
-              Closed September 2026
-            </span>
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            justifyContent: "center",
-          }}
-        >
-          {/* Main title */}
-          <h1
-            style={{
-              fontSize: 66,
-              fontWeight: 800,
-              color: "#111827",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 8,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Community Space,
-          </h1>
-          <h2
-            style={{
-              fontSize: 66,
-              fontWeight: 800,
-              color: "#ef426f",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 24,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Downtown San Antonio
-          </h2>
-
-          {/* Subtitle */}
-          <p
-            style={{
-              fontSize: 24,
-              color: "#6b7280",
-              margin: 0,
-              marginBottom: 36,
-              maxWidth: 800,
-              lineHeight: 1.5,
-              fontWeight: 400,
-            }}
-          >
-            Thanks to Geekdom, we have a physical space right in the heart of downtown available to our growing tech community
-          </p>
-
-          {/* Features */}
-          <div
-            style={{
-              display: "flex",
-              gap: 36,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#ef426f" strokeWidth="2" />
-                <circle cx="12" cy="10" r="3" stroke="#ef426f" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                110 E Houston St, 6th Floor
-              </span>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#ef426f" strokeWidth="2" />
-                <path d="M9 3v18" stroke="#ef426f" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Local Builders
-              </span>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#ef426f" strokeWidth="2" />
-                <circle cx="9" cy="7" r="4" stroke="#ef426f" strokeWidth="2" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#ef426f" strokeWidth="2" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#ef426f" strokeWidth="2" />
-              </svg>
-              <span style={{ color: "#374151", fontSize: 19, fontWeight: 500, lineHeight: 1.4 }}>
-                Community Driven
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            paddingTop: 24,
-            borderTop: "2px solid #f3f4f6",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-              Powered by
-            </span>
-            <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-              Geekdom
-            </span>
-          </div>
-          <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-            devsa.community/coworking-space
-          </span>
-        </div>
-        </div>
-        <BrandGradientBar direction="rtl" />
-      </div>
+      <OgCard
+        title={["The room at", "Geekdom."]}
+        hook="For two years DEVSA kept a space open to anyone building, staffed by volunteers. It closed in September 2026. This page is the thank-you."
+        footer="A record, not an invitation"
+      />
     ),
-    {
-      width: 1200,
-      height: 630,
-      fonts,
-    }
+    { width: 1200, height: 630, fonts }
   )
 }

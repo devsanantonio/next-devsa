@@ -1,28 +1,37 @@
 import { ImageResponse } from "next/og"
 import { getProduct } from "@/lib/printify"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import { OgCard } from "@/lib/og-card"
 
 export const runtime = "nodejs"
 
-interface RouteParams {
-  params: Promise<{ productId: string }>
-}
-
-export async function GET(_request: Request, { params }: RouteParams) {
+/**
+ * The per-product card.
+ *
+ * The product photograph came off. It was a Printify CDN URL fetched at render
+ * time, which made the card depend on a third party being up to produce a share
+ * image, and at feed size it was a small shirt on a white field competing with
+ * the title. The price does the work the photo was failing to do.
+ *
+ * A Printify failure still returns a card — the catch leaves the defaults in
+ * place rather than throwing, because a broken share image is worse than a
+ * plain one.
+ */
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ productId: string }> }
+) {
   const { productId } = await params
+  const fonts = await loadBrandFonts()
 
-  let title = "Product"
+  let title = "DEVSA merch"
   let description = ""
-  let productImage = ""
   let priceText = ""
 
   try {
     const product = await getProduct(productId)
     title = product.title
-    description = product.description.replace(/<[^>]*>/g, "").slice(0, 120)
-
-    const defaultImg = product.images.find((img) => img.is_default)
-    productImage = defaultImg?.src || product.images[0]?.src || ""
+    description = product.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 120)
 
     const enabled = product.variants.filter((v) => v.is_enabled)
     if (enabled.length > 0) {
@@ -35,154 +44,21 @@ export async function GET(_request: Request, { params }: RouteParams) {
           : `$${(min / 100).toFixed(2)} – $${(max / 100).toFixed(2)}`
     }
   } catch {
-    // fallback to defaults
+    // Leave the defaults — render something rather than nothing.
   }
 
-  const fonts = await loadBrandFonts()
+  const hook = [priceText, description || "Designed in San Antonio, printed on demand."]
+    .filter(Boolean)
+    .join(" · ")
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          backgroundColor: "#ffffff",
-          padding: "56px 64px",
-          fontFamily: "Geist Sans",
-        }}
-      >
-        {/* Left side — text content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            justifyContent: "space-between",
-            paddingRight: 48,
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 6,
-                height: 32,
-                backgroundColor: "#ef426f",
-                borderRadius: 3,
-                display: "flex",
-              }}
-            />
-            <span
-              style={{
-                color: "#111827",
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DEVSA Shop
-            </span>
-          </div>
-
-          {/* Product info */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            <h1
-              style={{
-                fontSize: 52,
-                fontWeight: 800,
-                color: "#111827",
-                lineHeight: 1.1,
-                margin: 0,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {title}
-            </h1>
-
-            {priceText && (
-              <span
-                style={{
-                  fontSize: 32,
-                  fontWeight: 700,
-                  color: "#ef426f",
-                  lineHeight: 1.2,
-                }}
-              >
-                {priceText}
-              </span>
-            )}
-
-            {description && (
-              <p
-                style={{
-                  fontSize: 20,
-                  color: "#6b7280",
-                  margin: 0,
-                  maxWidth: 500,
-                  lineHeight: 1.5,
-                  fontWeight: 400,
-                }}
-              >
-                {description}
-              </p>
-            )}
-          </div>
-
-          {/* Footer */}
-          <span
-            style={{
-              color: "#9ca3af",
-              fontSize: 16,
-              fontWeight: 500,
-            }}
-          >
-            devsa.community/shop
-          </span>
-        </div>
-
-        {/* Right side — product image */}
-        {productImage && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 420,
-              height: "100%",
-              position: "relative",
-            }}
-          >
-            <img
-              src={productImage}
-              alt={title}
-              width={400}
-              height={400}
-              style={{
-                objectFit: "contain",
-                borderRadius: 16,
-              }}
-            />
-          </div>
-        )}
-      </div>
+      <OgCard
+        title={[title]}
+        hook={hook}
+        footer="Every order pays for the next conference"
+      />
     ),
-    {
-      width: 1200,
-      height: 630,
-      fonts,
-    }
+    { width: 1200, height: 630, fonts }
   )
 }

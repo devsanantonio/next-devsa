@@ -1,251 +1,26 @@
 import { ImageResponse } from "next/og"
-import { BrandGradientBar, DevsaLogoMark } from "@/lib/og-brand"
+import { OgCard } from "@/lib/og-card"
 import { loadBrandFonts } from "@/lib/og-fonts"
 
 export const runtime = "nodejs"
 
+/**
+ * The homepage card.
+ *
+ * The hook names the problem rather than the product. "Every tech community
+ * group, on one calendar" describes a feature; missing the meetup you wanted
+ * is what actually happens to people, and it is why the calendar exists.
+ */
 export async function GET() {
   const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#ffffff",
-          fontFamily: "Geist Sans",
-        }}
-      >
-        <BrandGradientBar direction="ltr" />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            padding: "44px 64px",
-          }}
-        >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            marginBottom: 48,
-          }}
-        >
-          <DevsaLogoMark size={40} />
-
-          {/* Badge */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#fef2f2",
-              border: "2px solid #ef426f",
-              borderRadius: 24,
-              padding: "8px 22px",
-            }}
-          >
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 15,
-                fontWeight: 600,
-                letterSpacing: "0.01em",
-              }}
-            >
-              Community Driven Platform
-            </span>
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            justifyContent: "center",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: 64,
-              fontWeight: 800,
-              color: "#111827",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 8,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Find your people.
-          </h1>
-          <h2
-            style={{
-              fontSize: 64,
-              fontWeight: 700,
-              color: "#ef426f",
-              lineHeight: 1.2,
-              margin: 0,
-              marginBottom: 28,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Build your future.
-          </h2>
-
-          <p
-            style={{
-              fontSize: 22,
-              color: "#6b7280",
-              margin: 0,
-              maxWidth: 750,
-              lineHeight: 1.55,
-              fontWeight: 400,
-            }}
-          >
-            Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google — every specialty group, one calendar.
-          </p>
-        </div>
-
-        {/* The row under the headline.
-          
-            It read "Our platform simplifies how local partners and tech
-            communities collaborate, exchange resources, and grow the ecosystem
-            together" — forty words of abstraction on a card people see for
-            about a second in a feed, naming nothing. The verticals replace it:
-            a reader scanning a shared link can see whether their thing is in
-            the list. */}
-        {/* Tile 1 was "Coworking Space / Downtown San Antonio" until 4375fa2
-            closed the space and changed the label to "Building Together" —
-            leaving the subtext behind. The card then carried "Building
-            Together" twice, tiles 1 and 3, with tile 1 pointing at a locality
-            that no longer meant anything. It is the conferences now, which the
-            site leads with and which this card did not mention at all. */}
-        {/* Stats row */}
-        <div
-          style={{
-            display: "flex",
-            gap: 48,
-            marginBottom: 32,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 24,
-                fontWeight: 700,
-                lineHeight: 1.3,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Four Conferences
-            </span>
-            <span
-              style={{
-                color: "#9ca3af",
-                fontSize: 15,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}
-            >
-              Built here, with partners
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 24,
-                fontWeight: 700,
-                lineHeight: 1.3,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Community Calendar
-            </span>
-            <span
-              style={{
-                color: "#9ca3af",
-                fontSize: 15,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}
-            >
-              Workshops & Events
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span
-              style={{
-                color: "#ef426f",
-                fontSize: 24,
-                fontWeight: 700,
-                lineHeight: 1.3,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Building Together
-            </span>
-            <span
-              style={{
-                color: "#9ca3af",
-                fontSize: 15,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}
-            >
-              Partners & Communities
-            </span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            paddingTop: 24,
-            borderTop: "2px solid #f3f4f6",
-          }}
-        >
-          <span
-            style={{
-              color: "#9ca3af",
-              fontSize: 17,
-              fontWeight: 500,
-              lineHeight: 1.4,
-            }}
-          >
-            Find your people. Build your future.
-          </span>
-          <span
-            style={{
-              color: "#9ca3af",
-              fontSize: 15,
-              fontWeight: 400,
-              lineHeight: 1.4,
-            }}
-          >
-            devsa.community
-          </span>
-        </div>
-        </div>
-        <BrandGradientBar direction="rtl" />
-      </div>
+      <OgCard
+        title={["Find your people.", "Build your future."]}
+        hook="Python, Linux, AI, security, game dev, design — every group&apos;s events in one place, so you stop hearing about them the week after."
+        footer="A 501(c)(3) nonprofit in San Antonio, Texas"
+      />
     ),
-    {
-      width: 1200,
-      height: 630,
-      fonts,
-    }
+    { width: 1200, height: 630, fonts }
   )
 }

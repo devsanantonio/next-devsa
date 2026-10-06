@@ -1,68 +1,32 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
-import { getPartner } from "@/lib/partners"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { getPartner } from "@/lib/partners"
 import { loadBrandFonts } from "@/lib/og-fonts"
+import { OgCard } from "@/lib/og-card"
 
 export const runtime = "nodejs"
 
-/* Shared header component style for OG images */
-function OgHeader({ label }: { label: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        marginBottom: 48,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div
-          style={{
-            width: 6,
-            height: 32,
-            backgroundColor: "#ef426f",
-            borderRadius: 3,
-            display: "flex",
-          }}
-        />
-        <span
-          style={{
-            color: "#111827",
-            fontSize: 26,
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-          }}
-        >
-          DEVSA
-        </span>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          backgroundColor: "#fef2f2",
-          border: "2px solid #ef426f",
-          borderRadius: 24,
-          padding: "8px 22px",
-        }}
-      >
-        <span
-          style={{
-            color: "#ef426f",
-            fontSize: 15,
-            fontWeight: 600,
-            letterSpacing: "0.01em",
-          }}
-        >
-          {label}
-        </span>
-      </div>
-    </div>
-  )
+/**
+ * The per-record card for a community group or a partner.
+ *
+ * It used to be two 340-line hand-rolled layouts on a white ground, each with
+ * its own badge pill and header rule — so a shared group link looked nothing
+ * like a shared page link from the same site. Both branches now go through the
+ * shared card, which is the whole point of having one.
+ *
+ * A record's own description is the hook when it has one. Those are written by
+ * the groups themselves in the admin, so they are trimmed rather than trusted
+ * to be short: an unbounded string would push the footer off the card.
+ *
+ * Both misses fall through to a generic DEVSA card rather than a 500. A broken
+ * share image is worse than a plain one, and these slugs come straight off a
+ * URL anyone can type.
+ */
+const trim = (s: string | undefined, max = 155) => {
+  const clean = (s || "").replace(/\s+/g, " ").trim()
+  if (!clean) return ""
+  return clean.length <= max ? clean : `${clean.slice(0, max - 1).trimEnd()}…`
 }
 
 export async function GET(
@@ -70,273 +34,58 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
+  const fonts = await loadBrandFonts()
 
-  // Check if it's a community (from Firestore)
-  let community: { id: string; name: string; logo: string; description: string } | null = null
+  let community: { name: string; description?: string } | null = null
   try {
     const db = getDb()
     const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(slug).get()
     if (doc.exists) {
       const data = doc.data()
-      community = { id: doc.id, name: data?.name, logo: data?.logo, description: data?.description }
+      community = { name: data?.name, description: data?.description }
     }
   } catch {}
 
-  const fonts = await loadBrandFonts()
-
-  if (community) {
+  if (community?.name) {
     return new ImageResponse(
       (
-        <div
-          style={{
-            height: "100%",
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#ffffff",
-            padding: "56px 64px",
-            fontFamily: "Geist Sans",
-          }}
-        >
-          <OgHeader label="Tech Group" />
-
-          {/* Main content */}
-          <div
-            style={{
-              display: "flex",
-              flex: 1,
-              alignItems: "center",
-              gap: 48,
-            }}
-          >
-            {/* Logo */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 200,
-                height: 200,
-                backgroundColor: "#f9fafb",
-                borderRadius: 24,
-                padding: 24,
-                border: "1px solid #f3f4f6",
-              }}
-            >
-              <img
-                src={community.logo}
-                alt={community.name}
-                width={160}
-                height={160}
-                style={{ objectFit: "contain" }}
-              />
-            </div>
-
-            {/* Text content */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <h1
-                style={{
-                  fontSize: community.name.length > 25 ? 48 : 58,
-                  fontWeight: 800,
-                  color: "#111827",
-                  lineHeight: 1.2,
-                  margin: 0,
-                  marginBottom: 18,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                {community.name}
-              </h1>
-
-              <p
-                style={{
-                  fontSize: 21,
-                  color: "#6b7280",
-                  margin: 0,
-                  lineHeight: 1.55,
-                  fontWeight: 400,
-                  maxWidth: 650,
-                }}
-              >
-                {community.description.slice(0, 200)}
-                {community.description.length > 200 ? "..." : ""}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              paddingTop: 24,
-              borderTop: "2px solid #f3f4f6",
-            }}
-          >
-            <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 500, lineHeight: 1.4 }}>
-              Find your people. Build your future.
-            </span>
-            <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-              devsa.community/buildingtogether/{slug}
-            </span>
-          </div>
-        </div>
+        <OgCard
+          title={[community.name]}
+          hook={
+            trim(community.description) ||
+            "A San Antonio tech community group, running its own events and publishing them to the city's shared calendar."
+          }
+          footer="A community group on the DEVSA calendar"
+        />
       ),
       { width: 1200, height: 630, fonts }
     )
   }
 
-  // Check if it's a partner
   const partner = await getPartner(slug)
-  if (partner) {
+  if (partner?.name) {
     return new ImageResponse(
       (
-        <div
-          style={{
-            height: "100%",
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#ffffff",
-            padding: "56px 64px",
-            fontFamily: "Geist Sans",
-          }}
-        >
-          <OgHeader label="Partner" />
-
-          {/* Main content */}
-          <div
-            style={{
-              display: "flex",
-              flex: 1,
-              alignItems: "center",
-              gap: 48,
-            }}
-          >
-            {/* Logo */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 200,
-                height: 200,
-                backgroundColor: "#f9fafb",
-                borderRadius: 24,
-                padding: 24,
-                border: "1px solid #f3f4f6",
-              }}
-            >
-              <img
-                src={partner.logo}
-                alt={partner.name}
-                width={160}
-                height={160}
-                style={{ objectFit: "contain" }}
-              />
-            </div>
-
-            {/* Text content */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <h1
-                style={{
-                  fontSize: partner.name.length > 25 ? 48 : 58,
-                  fontWeight: 800,
-                  color: "#111827",
-                  lineHeight: 1.2,
-                  margin: 0,
-                  marginBottom: 18,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                {partner.name}
-              </h1>
-
-              <p
-                style={{
-                  fontSize: 21,
-                  color: "#6b7280",
-                  margin: 0,
-                  lineHeight: 1.55,
-                  fontWeight: 400,
-                  maxWidth: 650,
-                }}
-              >
-                {partner.description.slice(0, 200)}
-                {partner.description.length > 200 ? "..." : ""}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              paddingTop: 24,
-              borderTop: "2px solid #f3f4f6",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "#9ca3af", fontSize: 17, fontWeight: 400, lineHeight: 1.4 }}>
-                Building
-              </span>
-              <span style={{ color: "#111827", fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>
-                Together
-              </span>
-            </div>
-            <span style={{ color: "#9ca3af", fontSize: 15, fontWeight: 400, lineHeight: 1.4 }}>
-              devsa.community/buildingtogether/{slug}
-            </span>
-          </div>
-        </div>
+        <OgCard
+          title={[partner.name]}
+          hook={
+            trim(partner.description) ||
+            "A partner backing San Antonio's tech community — the rooms, the sponsorship and the people that make the events happen."
+          }
+          footer="A DEVSA partner"
+        />
       ),
       { width: 1200, height: 630, fonts }
     )
   }
 
-  // Fallback for unknown slugs
   return new ImageResponse(
     (
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#ffffff",
-          gap: 16,
-          fontFamily: "Geist Sans",
-        }}
-      >
-        <span style={{ color: "#ef426f", fontSize: 28, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.4 }}>
-          DEVSA
-        </span>
-        <span style={{ color: "#111827", fontSize: 48, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-          Community
-        </span>
-        <span style={{ color: "#9ca3af", fontSize: 20, fontWeight: 400, lineHeight: 1.4 }}>
-          Find your people. Build your future.
-        </span>
-      </div>
+      <OgCard
+        title={["Building", "together."]}
+        hook="San Antonio's tech groups run themselves. DEVSA brings the room, the audience and the partners."
+        footer="Partners & communities"
+      />
     ),
     { width: 1200, height: 630, fonts }
   )

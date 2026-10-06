@@ -118,8 +118,14 @@ def ratio(a, b):
 ## Typefaces
 
 Geist Sans everywhere, Geist Mono for the mono idiom, both via `next/font`.
-Oswald is **only** Access Granted's wordmark — one `font-display` class in the
-repo, on that one `h1`.
+
+**In pages**, Oswald is only Access Granted's wordmark — one `font-display`
+class in the repo, on that one `h1`.
+
+**In OG cards** it is the display face for all five conference cards, while
+DEVSA's own pages stay in Geist so they read as the site rather than as an
+event. Satori cannot use `next/font` — it needs the bytes — so those cards load
+TTFs from `lib/og-fonts/` through `loadDisplayFonts()`, not the CSS variable.
 
 Reach the faces through `font-sans` / `font-mono`, which resolve through
 `--font-sans` / `--font-mono` to the `next/font` variables. Never write a literal
