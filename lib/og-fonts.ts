@@ -61,3 +61,38 @@ export async function loadBrandMonoFonts(): Promise<OgFont[]> {
   ]
   return cachedMono
 }
+
+/**
+ * Oswald, for the conference cards.
+ *
+ * Oswald is the display face the Startup + Tech Week activations are set in,
+ * and Access Granted's wordmark is specified as Oswald bold uppercase. The app
+ * reaches it through next/font/google, which gives a hashed CSS family name and
+ * no file — useless to Satori, which needs the actual bytes. So the TTFs are
+ * bundled here beside Geist and loaded the same way.
+ *
+ * Returned alongside Geist rather than instead of it: a conference card sets
+ * its title in Oswald and its hook in Geist, which is the split the site makes
+ * between display and body.
+ */
+let cachedDisplay: OgFont[] | null = null
+
+export async function loadDisplayFonts(): Promise<OgFont[]> {
+  if (cachedDisplay) return cachedDisplay
+
+  const load = (file: string) =>
+    readFile(fileURLToPath(new URL(`./og-fonts/${file}`, import.meta.url)))
+
+  const [brand, medium, bold] = await Promise.all([
+    loadBrandFonts(),
+    load("Oswald-500.ttf"),
+    load("Oswald-700.ttf"),
+  ])
+
+  cachedDisplay = [
+    ...brand,
+    { name: "Oswald", data: medium, weight: 500, style: "normal" },
+    { name: "Oswald", data: bold, weight: 700, style: "normal" },
+  ]
+  return cachedDisplay
+}
