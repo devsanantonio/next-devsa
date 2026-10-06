@@ -264,7 +264,21 @@ export function AboutDevsa() {
 
               A strip, not a second copy of that section: three faces and a
               way through, so the homepage borrows the credibility without
-              duplicating the page that holds it. */}
+              duplicating the page that holds it.
+
+              Points at /about#team. It pointed at /buildingtogether#team,
+              which was correct when that page held the board and became a dead
+              link the moment the board moved — "Meet them" landed a reader at
+              the top of a page that no longer contained them.
+
+              The line said "governs DEVSA and every program it funds", which
+              overstated the relationship in the direction this page spends the
+              rest of its words arguing against. DEVSA does not fund the
+              groups' programs; the column two inches above says the groups run
+              their own meetups and workshops and DEVSA runs the calendar, the
+              directory and the channels. And under a donation ask the question
+              a stranger actually has is who decides where their money goes,
+              which is what it says now. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pt-6">
             <div className="flex -space-x-2.5">
               {boardMembers.map((member) => (
@@ -283,9 +297,10 @@ export function AboutDevsa() {
               ))}
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
-              A volunteer board governs DEVSA and every program it funds.{" "}
+              A volunteer board governs DEVSA and decides where the money
+              goes.{" "}
               <Link
-                href="/buildingtogether#team"
+                href="/about#team"
                 className="font-medium text-gray-900 underline underline-offset-2 transition-colors hover:text-gray-700"
               >
                 Meet them
