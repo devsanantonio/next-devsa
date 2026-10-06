@@ -4,71 +4,119 @@ import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 import { loadBrandFonts } from "@/lib/og-fonts"
 import { OgCard } from "@/lib/og-card"
 
-// Use Node.js runtime to access Firestore directly (and fetch logo bytes)
 export const runtime = "nodejs"
 
+/**
+ * The share card for one calendar event.
+ *
+ * ## Every host, not the first one
+ *
+ * This used to resolve `communityIds[0]` or, in an `else if`, `partnerIds[0]`
+ * — so a co-hosted event named one group, and an event with both a community
+ * and a partner dropped the partner entirely, because the `else` meant the
+ * partner branch never ran when a community existed. The extra hosts survived
+ * only as a count that nothing rendered.
+ *
+ * Hosts are now resolved as one list: every community, then every partner,
+ * joined with " + ". That is the same model the calendar cards use, so a
+ * collaboration reads the same in the feed as it does on the site, and it
+ * covers all three shapes — two communities, two partners, or a mix.
+ *
+ * Lookups go out in one Promise.all rather than sequentially, because this
+ * runs on every crawl of every event page.
+ *
+ * ## When and where get their own row
+ *
+ * They were a clause in the grey hook sentence. On a card somebody shares to
+ * get people to turn up, the date and the room are the message, so they sit in
+ * the accent above it at 32px.
+ *
+ * The date is deliberate here, against the no-dates rule the conference cards
+ * follow: a conference card is evergreen and a date makes it stale, while a
+ * calendar event is shared precisely to get people somewhere on a given day.
+ *
+ * The end time is included because duration actually varies — the published
+ * events run from one hour to thirteen, median two — so "6:00 PM" alone does
+ * not tell a reader whether they are giving up an evening or a Saturday. It is
+ * on 151 of 160 events rather than all of them, so the range degrades to the
+ * start alone when endTime is absent, and also when it is at or before the
+ * start, which one record currently is.
+ */
 async function getEventBySlug(slug: string) {
-  // Try to fetch from Firestore directly
   try {
     const db = getDb()
-    const eventsSnapshot = await db
+    const snap = await db
       .collection(COLLECTIONS.EVENTS)
       .where("slug", "==", slug)
       .where("status", "==", "published")
       .limit(1)
       .get()
 
-    if (!eventsSnapshot.empty) {
-      const doc = eventsSnapshot.docs[0]
-      const data = doc.data()
+    if (!snap.empty) {
+      const data = snap.docs[0].data()
+      const ids = (field: string) =>
+        (data[field] || "")
+          .split(",")
+          .map((s: string) => s.trim())
+          .filter(Boolean)
 
-      // Hosts can be communities and/or partners (comma-separated, co-hosted)
-      const communityIds = (data.communityId || "").split(",").map((s: string) => s.trim()).filter(Boolean)
-      const partnerIds = (data.partnerId || "").split(",").map((s: string) => s.trim()).filter(Boolean)
+      const communityIds: string[] = ids("communityId")
+      const partnerIds: string[] = ids("partnerId")
 
-      // Resolve the primary host name — prefer a community, else a partner
-      let hostName = data.communityName || "DEVSA Community"
+      const [communities, partners] = await Promise.all([
+        Promise.all(
+          communityIds.map(async (id) => {
+            try {
+              const d = await db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()
+              return d.exists ? (d.data()?.name as string | undefined) : undefined
+            } catch {
+              return undefined
+            }
+          })
+        ),
+        Promise.all(
+          partnerIds.map(async (id) => {
+            try {
+              const d = await db.collection(COLLECTIONS.PARTNERS).doc(id).get()
+              return d.exists ? (d.data()?.name as string | undefined) : undefined
+            } catch {
+              return undefined
+            }
+          })
+        ),
+      ])
 
-      if (communityIds[0]) {
-        try {
-          const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(communityIds[0]).get()
-          if (communityDoc.exists) hostName = communityDoc.data()?.name || hostName
-        } catch {}
-      } else if (partnerIds[0]) {
-        try {
-          const partnerDoc = await db.collection(COLLECTIONS.PARTNERS).doc(partnerIds[0]).get()
-          if (partnerDoc.exists) hostName = partnerDoc.data()?.name || hostName
-        } catch {}
-      }
-
-      const extraHosts = Math.max(0, communityIds.length + partnerIds.length - 1)
+      const hosts = [...communities, ...partners].filter(Boolean) as string[]
+      // data.communityName is the denormalized label the admin writes. It is
+      // the fallback, not the source — it holds one name even for a collab.
+      if (!hosts.length && data.communityName) hosts.push(data.communityName)
 
       return {
-        title: data.title,
-        date: data.date,
-        location: data.location,
-        hostName,
-        extraHosts,
+        title: data.title as string,
+        date: data.date as string | null,
+        endTime: (data.endTime as string | undefined) ?? null,
+        location: data.location as string | null,
+        hosts,
       }
     }
   } catch (error) {
-    console.error("OG: Error fetching event from Firestore:", error)
+    console.error("OG: error fetching event", error)
   }
 
-  // Last resort: parse from slug
+  // Last resort: the slug carries a trailing yyyy-mm-dd.
   const parts = slug.split("-")
   const dateStr = parts.slice(-3).join("-")
-  const titleParts = parts.slice(0, -3)
-  const title = titleParts
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+  const title = parts
+    .slice(0, -3)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ")
 
   return {
     title: title || "Community Event",
     date: dateStr ? `${dateStr}T00:00:00.000Z` : null,
+    endTime: null as string | null,
     location: null,
-    hostName: null as string | null,
-    extraHosts: 0,
+    hosts: [] as string[],
   }
 }
 
@@ -77,53 +125,60 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
+  const [event, fonts] = await Promise.all([getEventBySlug(slug), loadBrandFonts()])
 
-  const event = await getEventBySlug(slug)
-  const fonts = await loadBrandFonts()
+  // Central time, explicitly. The render runs on a UTC box, so a 6pm event
+  // reads as the next day without this.
+  const CT = "America/Chicago"
+  const dayOf = (d: Date) =>
+    d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: CT })
+  const timeOf = (d: Date) =>
+    d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: CT })
+  const isMidnight = (d: Date) =>
+    d.toLocaleTimeString("en-US", { hour12: false, timeZone: CT }).startsWith("00:00")
 
-  // Format date - explicitly use CST (America/Chicago) timezone
-  let formattedDate = "Date TBA"
-  let formattedTime = ""
-  if (event.date) {
-    try {
-      const date = new Date(event.date)
-      if (!isNaN(date.getTime())) {
-        formattedDate = date.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          timeZone: "America/Chicago",
-        })
-        formattedTime = date.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-          timeZone: "America/Chicago",
-        })
+  let when = ""
+  const start = event.date ? new Date(event.date) : null
+  if (start && !isNaN(start.getTime())) {
+    if (isMidnight(start)) {
+      // A midnight stamp means the admin recorded a date with no time, not an
+      // event that begins at 12:00 AM.
+      when = dayOf(start)
+    } else {
+      const end = event.endTime ? new Date(event.endTime) : null
+      const hasEnd = end && !isNaN(end.getTime()) && end.getTime() > start.getTime()
+
+      if (!hasEnd) {
+        // 9 of 160 published events carry no endTime, and one has an end at or
+        // before its start. Both fall back to the start alone rather than
+        // rendering an empty or backwards range.
+        when = `${dayOf(start)} · ${timeOf(start)}`
+      } else if (dayOf(end) !== dayOf(start)) {
+        // Crosses midnight, or a genuinely multi-day event.
+        when = `${dayOf(start)} · ${timeOf(start)} – ${dayOf(end)} · ${timeOf(end)}`
+      } else {
+        // Same day: drop the opening meridiem when both ends share one, so an
+        // evening event reads "6:00 – 8:00 PM" rather than "6:00 PM – 8:00 PM".
+        const a = timeOf(start)
+        const b = timeOf(end)
+        const mer = (t: string) => t.slice(-2)
+        const compact = mer(a) === mer(b) ? a.slice(0, -3) : a
+        when = `${dayOf(start)} · ${compact} – ${b}`
       }
-    } catch {
-      formattedDate = "Date TBA"
     }
   }
 
-  const displayTitle = event.title || "Community Event"
-  const hostLabel = event.hostName || "Community Event"
-  const location = event.location || "San Antonio, TX"
-
-  // The host and the date are the hook. On a per-event card the date is the
-  // point — somebody shares this to get people to turn up on a specific day —
-  // which is the opposite of the conference cards, where a date goes stale and
-  // the description does not.
-  const when = formattedTime ? `${formattedDate} · ${formattedTime}` : formattedDate
-  const by = event.hostName ? `Hosted by ${event.hostName}` : "On the DEVSA community calendar"
+  const hostLine = event.hosts.length
+    ? `Hosted by ${event.hosts.join(" + ")}`
+    : "On the DEVSA community calendar"
 
   return new ImageResponse(
     (
       <OgCard
         title={[event.title]}
-        hook={`${when} · ${location}`}
-        footer={by}
+        meta={{ when: when || "Date to be announced", where: event.location || "San Antonio, TX" }}
+        hook={hostLine}
+        footer="On the DEVSA community calendar"
       />
     ),
     { width: 1200, height: 630, fonts }

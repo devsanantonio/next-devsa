@@ -55,6 +55,7 @@ export function OgCard({
    * DEVSA's own pages stay in Geist so they read as the site, not as an event.
    */
   display = false,
+  meta,
 }: {
   title: string[]
   hook: string
@@ -62,7 +63,19 @@ export function OgCard({
   wordmark?: React.ReactNode
   footer: string
   display?: boolean
+  /**
+   * Events only: when and where, given their own row instead of being folded
+   * into the hook. On a card someone shares to get people to turn up, the date
+   * and the room are the message — as a clause in a grey sentence they read as
+   * incidental.
+   */
+  meta?: { when?: string; where?: string }
 }) {
+  // Page titles are written to fit; event titles come out of the admin and run
+  // long, so the headline steps down rather than wrapping into the meta row.
+  const longest = Math.max(0, ...title.map((t) => t.length))
+  const titleSize = longest <= 26 ? 72 : longest <= 44 ? 58 : longest <= 68 ? 46 : 38
+
   return (
     <div
       style={{
@@ -94,7 +107,7 @@ export function OgCard({
                 key={line}
                 style={{
                   fontFamily: display ? "Oswald" : "Geist Sans",
-                  fontSize: display ? 92 : 72,
+                  fontSize: display ? 92 : titleSize,
                   fontWeight: 700,
                   textTransform: display ? "uppercase" : "none",
                   color: i === 0 ? theme.ink : theme.accent,
@@ -108,12 +121,27 @@ export function OgCard({
           </div>
         )}
 
+        {meta && (meta.when || meta.where) ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 28 }}>
+            {meta.when ? (
+              <span style={{ fontSize: 32, fontWeight: 700, color: theme.accent, letterSpacing: "-0.01em" }}>
+                {meta.when}
+              </span>
+            ) : null}
+            {meta.where ? (
+              <span style={{ fontSize: 26, fontWeight: 500, color: theme.ink }}>
+                {meta.where}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         <p
           style={{
             fontSize: 26,
             color: theme.muted,
             margin: 0,
-            marginTop: 26,
+            marginTop: meta ? 20 : 26,
             maxWidth: 920,
             lineHeight: 1.45,
             fontWeight: 400,
