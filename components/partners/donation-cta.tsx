@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 import { conferences } from "@/data/conferences"
 
 /**
@@ -37,10 +38,35 @@ import { conferences } from "@/data/conferences"
  */
 const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six", "seven"]
 
-function conferenceList() {
-  const names = conferences.map((c) => c.name)
-  if (names.length < 2) return names.join("")
-  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+/**
+ * The conference names, linked to their own pages.
+ *
+ * They were plain text, which made this the one place on the site that names
+ * all four and offers no way to look at any of them — on a page asking for
+ * money, where "built right here in San Antonio" is the claim being made.
+ *
+ * Linked inline rather than replaced with the four wordmarks. The marks are
+ * not a set: The Model's is mono type, More Human's is a two-line stack,
+ * PySanAntonio's is an ornate SVG and Access Granted has no component at all.
+ * Four of those mid-sentence would break the line, and at body size most of
+ * them stop being legible.
+ */
+function ConferenceList() {
+  return (
+    <>
+      {conferences.map((c, i) => (
+        <span key={c.name}>
+          {i > 0 && (i === conferences.length - 1 ? " and " : ", ")}
+          <Link
+            href={c.href ?? "/events"}
+            className="font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+          >
+            {c.name}
+          </Link>
+        </span>
+      ))}
+    </>
+  )
 }
 
 const PRESET_AMOUNTS = [50, 100, 250, 500]
@@ -125,7 +151,7 @@ export function DonationCta() {
                 every group publishes to, and the{" "}
                 {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
                 conferences built right here in San&nbsp;Antonio —{" "}
-                {conferenceList()}.
+                <ConferenceList />.
               </p>
               <p className="text-base md:text-lg text-white/70 leading-relaxed">
                 That is the channel the{" "}
