@@ -54,6 +54,14 @@ const TXLF_NAVY = "#002070"
 const TXLF_PAPER = "#f0f0f0"
 const TXLF_ORANGE = "#ff6600"
 
+/**
+ * The festival runs two days, and the calendar lists days. Both keys are
+ * written out rather than derived from a range, because the list groups on a
+ * `YYYY-MM-DD` string in San Antonio's timezone and a Date built from a range
+ * would have to be converted back into exactly these.
+ */
+export const TXLF_DAY_KEYS = ["2026-11-06", "2026-11-07"] as const
+
 const TXLF = {
   name: "Texas Linux Festival 2026",
   dateLabel: "November 6–7, 2026",
@@ -62,7 +70,24 @@ const TXLF = {
   since: "community-run since 2010",
 } as const
 
-export function FeaturedTxlf() {
+/**
+ * `day` puts the card inside the calendar list on each of the festival's two
+ * days instead of in the featured slot above it.
+ *
+ * The same card either way — the branding is the point, and a plain row would
+ * lose it — but the label and the date line change. In the featured slot it
+ * says "Featured Event" and carries the full range; in the list it says which
+ * of the two days this is and carries that day alone. Without that, a reader
+ * scrolling past November 6 and 7 sees one identical card twice and reads it
+ * as a bug rather than as a two-day festival.
+ */
+export function FeaturedTxlf({ day }: { day?: 1 | 2 } = {}) {
+  const inList = day !== undefined
+  const label = inList ? `Day ${day} of 2` : "Featured Event"
+  const dateLabel = inList
+    ? `${day === 1 ? "Friday, November 6" : "Saturday, November 7"}, 2026`
+    : TXLF.dateLabel
+
   return (
     <section
       className="group overflow-hidden rounded-2xl"
@@ -79,7 +104,7 @@ export function FeaturedTxlf() {
             style={{ color: TXLF_ORANGE }}
           >
             <span aria-hidden>$</span>
-            Featured Event
+            {label}
             {/* Held steady for readers who ask for less motion — the rule is
                 in globals.css beside the keyframe. */}
             <span
@@ -130,7 +155,7 @@ export function FeaturedTxlf() {
                   className="h-3.5 w-3.5 shrink-0"
                   style={{ color: TXLF_ORANGE }}
                 />
-                {TXLF.dateLabel}
+                {dateLabel}
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin

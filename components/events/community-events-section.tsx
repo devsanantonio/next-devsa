@@ -10,6 +10,7 @@ import { logoOnLight, logoOnDark } from "@/lib/logo-invert"
 import { getEventBrand } from "@/lib/event-brands"
 import { EventBrandLockup } from "@/components/events/event-brand-lockup"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
+import { FeaturedTxlf, TXLF_DAY_KEYS } from "@/components/events/featured-txlf"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -96,6 +97,10 @@ function EventCalendar({
   const eventDays = useMemo(() => {
     const days = new Set<string>()
     events.forEach((event) => days.add(localDayKey(event.date)))
+    // Texas Linux Fest is a pinned card rather than a Firestore record, so its
+    // two days have to be added by hand or the grid renders them dead and
+    // clicking them does nothing.
+    TXLF_DAY_KEYS.forEach((key: string) => days.add(key))
     return days
   }, [events])
 
@@ -865,15 +870,51 @@ export function CommunityEventsSection({
    * order without a second sort.
    */
   const eventsByDay = useMemo(() => {
-    const days: Array<{ key: string; events: MergedEvent[] }> = []
+    const days: Array<{ key: string; events: MergedEvent[]; txlfDay?: 1 | 2 }> = []
     for (const event of filteredEvents) {
       const key = localDayKey(event.date)
       const last = days[days.length - 1]
       if (last && last.key === key) last.events.push(event)
       else days.push({ key, events: [event] })
     }
+
+    /**
+     * Texas Linux Fest, pinned into the list on each of its two days.
+     *
+     * It is not a Firestore record — DEVSA is a community partner, not the
+     * host, and the festival is in Austin — so there is nothing for the normal
+     * path to pick up. It is injected here instead of being seeded into the
+     * events collection, which would put an event DEVSA does not run into the
+     * calendar's own data and onto the feed and the digest.
+     *
+     * It honors both filters. Searching has to match it or the card would
+     * survive a search for something else and look pinned-in-place; picking a
+     * day has to match it or clicking November 6 in the grid would show an
+     * empty list on a date the grid just said had something.
+     *
+     * Merged in date order rather than appended, so a day in November lands
+     * between the days around it.
+     */
+    const txlfHay = "texas linux fest festival linux open source austin conference devsa community partner"
+    const matchesSearch = !search || txlfHay.includes(search.toLowerCase().trim())
+
+    TXLF_DAY_KEYS.forEach((key: string, i: number) => {
+      if (!matchesSearch) return
+      if (selectedDay && selectedDay !== key) return
+      const txlfDay = (i + 1) as 1 | 2
+      const existing = days.find((d) => d.key === key)
+      if (existing) {
+        existing.txlfDay = txlfDay
+        return
+      }
+      const at = days.findIndex((d) => d.key > key)
+      const entry = { key, events: [] as MergedEvent[], txlfDay }
+      if (at === -1) days.push(entry)
+      else days.splice(at, 0, entry)
+    })
+
     return days
-  }, [filteredEvents])
+  }, [filteredEvents, search, selectedDay])
 
   const hasActiveFilters = Boolean(search || selectedDay)
 
@@ -1177,8 +1218,15 @@ export function CommunityEventsSection({
                   </div>
                 ))}
               </div>
-            ) : filteredEvents.length === 0 ? (
+            ) : eventsByDay.length === 0 ? (
               /* An empty state with somewhere to go.
+
+                 Keyed on eventsByDay rather than filteredEvents, because the
+                 pinned Texas Linux Fest days live only in the former. On
+                 filteredEvents, searching "linux" or clicking November 6 in
+                 the grid showed "no events" while the card that matched sat
+                 one branch away — and the grid had just said that day had
+                 something on it.
 
                  It used to say "No events found / Check back later for new
                  events!" and stop there — the one moment a visitor is most
@@ -1305,6 +1353,12 @@ export function CommunityEventsSection({
                       </h2>
 
                       <div className="space-y-5">
+                        {/* Texas Linux Fest, on each of its two days. It sits
+                            above the day's own events because it is a two-day
+                            festival rather than something scheduled at an hour,
+                            and because the branded card would otherwise read as
+                            an interruption halfway down a list of plain rows. */}
+                        {day.txlfDay ? <FeaturedTxlf day={day.txlfDay} /> : null}
                         {day.events.map((event, index) => {
                           // Support comma-separated communityIds for collaborative events
                           const communityIds = (event.communityId || '').split(',').map(id => id.trim()).filter(Boolean)
