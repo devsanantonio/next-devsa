@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation"
 import { type TechCommunity } from "@/data/communities"
 
 import Image from "next/image"
-import Link from "next/link"
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
+import { Calendar, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
 import {
   buildCalendarLinks,
   downloadIcs,
@@ -53,6 +52,8 @@ interface Event {
   description: string
   url?: string
   communityId: string
+  /** Partners co-host too. /api/events already aligns these as {id,name,logo}. */
+  partners?: { id: string; name: string; logo: string }[]
   communityName?: string
   communityLogo?: string
   communityLogos?: string[]
@@ -199,7 +200,6 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
-  const [community, setCommunity] = useState<TechCommunity | null>(null)
   const [allEventCommunities, setAllEventCommunities] = useState<TechCommunity[]>([])
 
   // Update current time every minute for live "Happening Now" detection
@@ -232,52 +232,78 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     fetchEvent()
   }, [slug])
 
-  // Fetch community data from API (Firestore) - supports multi-community events
+  /**
+   * Every host on the event: communities and partners, as one list.
+   *
+   * This read /api/communities alone, so a partner-hosted event rendered with
+   * no mark and no name — the hero simply had no host row. Four published
+   * events are partner-only and ten more pair a partner with a community, so
+   * it was not an edge case.
+   *
+   * Partners come off the event itself: /api/events already resolves them into
+   * an aligned {id, name, logo} array, specifically because its partnerNames
+   * and partnerLogos arrays cannot be zipped — one partner without a logo
+   * shifts every later name onto the wrong mark. No second request needed.
+   *
+   * Communities first, then partners, which is the order the calendar rows and
+   * the OG card use, so a collaboration reads the same wherever you meet it.
+   */
   useEffect(() => {
     if (!event) return
-    
-    const fetchCommunity = async () => {
+
+    const partnerHosts: TechCommunity[] = (event.partners || [])
+      .filter((p) => p.name)
+      .map((p) => ({ id: p.id, name: p.name, logo: p.logo, description: '' }))
+
+    const communityIds = (event.communityId || '')
+      .split(',')
+      .map((id: string) => id.trim())
+      .filter(Boolean)
+
+    if (!communityIds.length) {
+      if (partnerHosts.length) setAllEventCommunities(partnerHosts)
+      return
+    }
+
+    const fetchHosts = async () => {
       try {
         const response = await fetch('/api/communities')
-        if (response.ok) {
-          const data = await response.json()
-          const communities = data.communities || []
-          // Support comma-separated communityIds for collaborative events
-          const communityIds = (event.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean)
-          const matched = communityIds
-            .map((id: string) => {
-              const found = communities.find((c: TechCommunity) => c.id === id)
-              if (found) return found
-              // For custom/one-off communities, build a placeholder from API data
-              if (event.communityName) {
-                return {
-                  id,
-                  name: event.communityName,
-                  logo: event.communityLogo || '/devsa-gradient.svg',
-                  description: '',
-                } as TechCommunity
-              }
-              return null
-            })
-            .filter(Boolean) as TechCommunity[]
-          
-          if (matched.length > 0) {
-            setCommunity(matched[0]) // Primary community
-            setAllEventCommunities(matched)
-          }
-        }
+        const communities: TechCommunity[] = response.ok
+          ? (await response.json()).communities || []
+          : []
+
+        const matched = communityIds
+          .map((id: string) => {
+            const found = communities.find((c) => c.id === id)
+            if (found) return found
+            // A one-off host typed into the admin rather than picked from the
+            // directory: the event carries its own name and logo.
+            if (event.communityName) {
+              return {
+                id,
+                name: event.communityName,
+                logo: event.communityLogo || '/devsa-gradient.svg',
+                description: '',
+              } as TechCommunity
+            }
+            return null
+          })
+          .filter(Boolean) as TechCommunity[]
+
+        const hosts = [...matched, ...partnerHosts]
+        if (hosts.length) setAllEventCommunities(hosts)
       } catch (error) {
-        console.error("Error fetching community:", error)
+        console.error("Error fetching event hosts:", error)
       }
     }
-    
-    fetchCommunity()
+
+    fetchHosts()
   }, [event])
 
   if (event === undefined) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-20 flex items-center justify-center">
+        <div className="page-shell py-20 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
         </div>
       </main>
@@ -287,7 +313,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   if (event === null) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-20 text-center">
+        <div className="page-shell py-20 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">Event Not Found</h1>
           <p className="text-lg text-gray-600 leading-relaxed mb-8">
             The event you&apos;re looking for doesn&apos;t exist or has been removed.
@@ -388,153 +414,190 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
   return (
     <main className="min-h-screen bg-white">
-      <section data-bg-type="light">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
-          {/* Back button using router.back() */}
+      {/* The hero.
+...
+          This page used to open the way nothing else on the site opens: a
+          white ground, a back link and a rounded-2xl card wrapping the whole
+          page. Home, /events, /buildingtogether and /about all open full-bleed
+          on #0a0a0a, so an event — the thing every share link and every
+          calendar row points at — was the one destination that looked like a
+          different product.
+
+          It now opens on the same ground, and deliberately echoes the share
+          card for this event: host marks, title, when and where, in that
+          order. Somebody who clicks a posted link should land on the thing
+          they clicked.
+
+          The title is the documented marketing ramp. It was
+          `text-2xl sm:text-3xl lg:text-4xl font-extrabold`, which rendered an
+          event name two steps below the h2 of any marketing section on the
+          site — the one piece of copy the page exists for, set smaller than
+          its neighbours' subheadings.
+
+          Labels are the mono idiom, which is the one this route is supposed to
+          use: /events and the conference pages are where mono *is* the brand
+          grammar. The page had invented a third form — sans at mono's size
+          with tracking-widest — which is exactly the drift the design-system
+          skill was written to stop. */}
+      <section className="relative bg-[#0a0a0a]" data-bg-type="dark">
+        {/* pt clears the fixed navbar. The hero is the first thing under it
+              and the back link was sitting almost against the bar. */}
+          <div className="page-shell pb-10 pt-24 md:pb-14 md:pt-28">
           <button
-            onClick={() => hasHistory ? router.back() : router.push('/events')}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-8 cursor-pointer"
+            onClick={() => (hasHistory ? router.back() : router.push("/events"))}
+            className="mb-8 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-white/55 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            {hasHistory ? 'Back' : 'All Events'}
+            {hasHistory ? "Back" : "All events"}
           </button>
 
-          {/* Event header */}
-          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-            {/* Community banner with logo */}
-            {community && (
-              <div 
-                className="p-6 sm:p-8 flex items-center gap-5 border-b border-gray-200"
+          {/* Every host, marks and names, joined with "+" — the same model the
+              calendar rows and the OG card use. This page said " × ", which
+              made one relationship read two ways depending on where you met
+              it. */}
+          {allEventCommunities.length > 0 && (
+            <div className="mb-7 flex flex-wrap items-center gap-x-4 gap-y-3">
+              {/* Overlapped, but only just, and only when there is more than
+                  one. The marks were square tiles at -space-x-2.5, so each one
+                  covered a corner of the mark behind it — on square logos that
+                  reads as clipping rather than as a stack. Circles overlap
+                  cleanly because the shape that gets covered is the same shape
+                  doing the covering, and a lone host sits on its own with no
+                  negative margin at all.
+
+                  The ring is the hero's own ground, so the gap between marks
+                  reads as space rather than as a border. */}
+              <span
+                aria-hidden
+                className={`flex shrink-0 ${allEventCommunities.length > 1 ? "-space-x-3" : ""}`}
               >
-              {allEventCommunities.length > 1 ? (
-                <>
-                  <div className="flex -space-x-3">
-                    {allEventCommunities.map((c) => (
-                      <div key={c.id} className="relative h-14 w-14 shrink-0 rounded-lg bg-gray-950 p-2 shadow-sm ring-2 ring-white">
-                        <Image
-                          src={c.logo || '/devsa-gradient.svg'}
-                          alt={c.name}
-                          fill
-                          className="object-contain"
-                          sizes="56px"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">Hosted by</span>
-                    <h2 className="text-xl font-bold tracking-tight text-gray-900 mt-1 leading-snug">
-                      {allEventCommunities.map(c => c.name).join(' × ')}
-                    </h2>
-                    <span className="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-500 mt-1">
-                      Collab
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className={`relative h-16 w-16 shrink-0 rounded-xl shadow-sm overflow-hidden ${community.description ? 'bg-gray-950 p-2.5' : ''}`}>
+                {allEventCommunities.map((c) => (
+                  <span
+                    key={c.id}
+                    className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/[0.07] ring-2 ring-[#0a0a0a]"
+                  >
                     <Image
-                      src={community.logo || '/devsa-gradient.svg'}
-                      alt={community.name}
+                      src={c.logo || "/devsa-gradient.svg"}
+                      alt=""
                       fill
-                      className={community.description ? 'object-contain' : 'object-cover'}
-                      sizes="64px"
+                      className="object-contain p-2"
+                      sizes="48px"
                     />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">Hosted by</span>
-                    <h2 className="text-xl font-bold tracking-tight text-gray-900 mt-1 leading-snug">{community.name}</h2>
-                  </div>
-                </>
-              )}
+                  </span>
+                ))}
+              </span>
+              <p className="min-w-0 font-mono text-[11px] uppercase tracking-widest text-white/55">
+                Hosted by{" "}
+                <span className="text-white/85">
+                  {allEventCommunities.map((c) => c.name).join(" + ")}
+                </span>
+              </p>
             </div>
           )}
 
-          {/* Event content */}
-          <div className="p-6 sm:p-8 lg:p-10">
-            {/* Title with status badge */}
-            <div className="flex flex-wrap items-start gap-3 mb-8">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-gray-900 leading-[1.15]">{event.title}</h1>
-              {eventStatus === "happening" && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shrink-0 mt-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                  Happening Now
-                </span>
-              )}
-              {eventStatus === "ended" && (
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-500 shrink-0 mt-1">
-                  Event Ended
-                </span>
-              )}
-              {event.eventType && event.eventType !== 'in-person' && (
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shrink-0 mt-1 leading-none ${
-                  event.eventType === 'hybrid'
-                    ? 'bg-gray-100 text-gray-600 border border-gray-200'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200'
-                }`}>
-                  {event.eventType}
-                </span>
-              )}
+          <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+            <h1 className="max-w-4xl text-balance font-sans text-4xl font-black leading-[0.98] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
+              {event.title}
+            </h1>
+            {eventStatus === "happening" && (
+              <span className="mt-2 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-500 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-white">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                Happening now
+              </span>
+            )}
+            {eventStatus === "ended" && (
+              <span className="mt-2 inline-flex shrink-0 items-center rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-white/60">
+                Event ended
+              </span>
+            )}
+            {event.eventType && event.eventType !== "in-person" && (
+              <span className="mt-2 inline-flex shrink-0 items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-white/60">
+                {event.eventType}
+              </span>
+            )}
+          </div>
+
+          {/* When and where, as two columns of plain type rather than two
+              bordered grey tiles with icon chips. The tiles were the page's
+              loudest element and they carried its least surprising
+              information. */}
+          <div className="mt-9 grid gap-7 sm:grid-cols-2 sm:gap-10">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/45">
+                Date &amp; time
+              </p>
+              <p className="mt-2.5 text-xl font-semibold leading-snug text-white">
+                {formatFullDate(event.date)}
+              </p>
+              {/* The zone is derived per event. This line ended in a literal
+                  " CST" on every event; San Antonio observes daylight time
+                  from March to November, so most of the calendar printed the
+                  wrong zone beside a correct time. */}
+              <p className="mt-1 text-[15px] text-white/65">
+                {formatTime(event.date)}
+                {event.endTime && (
+                  <>
+                    {" – "}
+                    {formatTime(event.endTime)}
+                  </>
+                )}{" "}
+                {formatZoneLabel(event.date)}
+              </p>
             </div>
 
-            {/* Date and location */}
-            <div className="grid grid-cols-1 gap-6 mb-10">
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-white border border-gray-200">
-                  <Calendar className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Date & Time</p>
-                  <p className="text-base font-semibold text-gray-900 leading-relaxed">
-                    {formatFullDate(event.date)}
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/45">
+                Location
+              </p>
+              {event.venue ? (
+                <>
+                  <p className="mt-2.5 text-xl font-semibold leading-snug text-white">
+                    {event.venue}
                   </p>
-                  {/* The zone is derived per event, not hardcoded. This line
-                      ended in a literal " CST" on every event; San Antonio
-                      observes daylight time from March to November, so most of
-                      the calendar printed the wrong zone beside a correct time
-                      — the worst version, because the time looks authoritative
-                      and the label quietly contradicts it. */}
-                  <p className="text-[15px] font-medium text-gray-600 mt-0.5 leading-relaxed">
-                    {formatTime(event.date)}
-                    {event.endTime && <>{" – "}{formatTime(event.endTime)}</>}
-                    {" "}
-                    {formatZoneLabel(event.date)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-white border border-gray-200">
-                  <MapPin className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Location</p>
-                  {event.venue ? (
-                    <>
-                      <p className="text-base font-semibold text-gray-900 leading-relaxed">{event.venue}</p>
-                      {event.address && (
-                        <p className="text-sm text-gray-500 mt-0.5">{event.address}</p>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-base font-semibold text-gray-900 leading-relaxed">{event.location}</p>
+                  {event.address && (
+                    <p className="mt-1 text-[15px] text-white/65">{event.address}</p>
                   )}
-                </div>
-              </div>
+                </>
+              ) : (
+                <p className="mt-2.5 text-xl font-semibold leading-snug text-white">
+                  {event.location}
+                </p>
+              )}
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Description */}
-            <div className="mb-10">
-              <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-4">About this event</h3>
-              <div className="prose prose-gray max-w-none">
+      <section data-bg-type="light">
+        <div className="page-shell py-12 sm:py-16">
+          {/* Left-aligned, not centered. The hero above runs the full page-shell
+              and starts at its left gutter; a centered column underneath it
+              started further right, so the page had two left edges and the
+              most visible vertical line on it was a misalignment.
+
+              This is what /about does — max-w-3xl with no mx-auto in both the
+              hero and the prose, so one gutter carries the whole page. */}
+          <div className="max-w-3xl">
+            <div className="space-y-10">
+            <div>
+              {/* The section head, in the mono idiom the hero now uses.
+                  It was an 18px bold sans h3 — the same weight and nearly the
+                  same size as the body it introduced, so after a 60px hero it
+                  read as the page giving up rather than as a new section. A
+                  small mono label with a rule does the separating, and leaves
+                  the description itself as the largest thing below the fold. */}
+              <h2 className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-gray-400">
+                About this event
+                <span aria-hidden className="h-px flex-1 bg-gray-200" />
+              </h2>
+              <div className="prose prose-gray max-w-none prose-p:text-[17px] prose-p:leading-[1.75] prose-li:text-[17px]">
                 {renderMarkdown(event.description)}
               </div>
             </div>
 
             {/* RSVP — built-in form */}
             {event.rsvpEnabled && eventStatus === "upcoming" && (
-              <div className="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+              <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
                 <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-4">RSVP for this event</h3>
                 {rsvpSuccess ? (
                   <div className="text-center py-6">
@@ -626,7 +689,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
             {/* RSVP — external registration button */}
             {!event.rsvpEnabled && event.externalRsvpUrl && eventStatus === "upcoming" && (
-              <div className="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+              <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
                 <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-2">Register for this event</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   {(() => {
@@ -725,175 +788,183 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Community info - show all communities for collaborative events */}
-        {allEventCommunities.length > 0 && (
-          <div className="space-y-6 mt-8">
-            {allEventCommunities.map((comm) => {
-              const isCustomEvent = !comm.description
-              return (
-          <div key={comm.id} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-4 mb-5">
-              <div className={`relative h-12 w-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${isCustomEvent ? '' : 'bg-gray-900 p-2'}`}>
-                <Image
-                  src={comm.logo || '/devsa-gradient.svg'}
-                  alt={comm.name}
-                  fill
-                  className={isCustomEvent ? 'object-cover' : 'object-contain p-1'}
-                  sizes="48px"
-                />
+          {/* One card per host, communities and partners alike.
+
+              Headed by a mono label like the rest of the page, so the stack of
+              cards reads as a section rather than as three more boxes after the
+              description ends. */}
+          {allEventCommunities.length > 0 && (
+            <div className="mt-14 space-y-6">
+              <h2 className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-gray-400">
+                {allEventCommunities.length > 1 ? "The hosts" : "The host"}
+                <span aria-hidden className="h-px flex-1 bg-gray-200" />
+              </h2>
+              {allEventCommunities.map((comm) => {
+                const isCustomEvent = !comm.description
+                return (
+            <div key={comm.id} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-4 mb-5">
+                <div className={`relative h-12 w-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${isCustomEvent ? '' : 'bg-gray-900 p-2'}`}>
+                  <Image
+                    src={comm.logo || '/devsa-gradient.svg'}
+                    alt={comm.name}
+                    fill
+                    className={isCustomEvent ? 'object-cover' : 'object-contain p-1'}
+                    sizes="48px"
+                  />
+                </div>
+                <h3 className="text-xl font-bold tracking-[-0.01em] text-gray-900 sm:text-2xl">{isCustomEvent ? (<>Find your people.<br />Build your future.</>) : `About ${comm.name}`}</h3>
               </div>
-              <h3 className="text-lg font-bold tracking-tight text-gray-900">{isCustomEvent ? (<>Find Your People.<br />Build Your Future.</>) : `About ${comm.name}`}</h3>
-            </div>
-            {isCustomEvent ? (
-              <div className="mb-6">
-                <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.</p>
-              </div>
-            ) : (
-              <p className="text-[15px] text-gray-600 leading-relaxed mb-6">{comm.description}</p>
-            )}
+              {isCustomEvent ? (
+                <div className="mb-6">
+                  <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.</p>
+                </div>
+              ) : (
+                <p className="text-[15px] text-gray-600 leading-relaxed mb-6">{comm.description}</p>
+              )}
             
-            {/* Community Links */}
-            <div className="flex flex-wrap gap-2">
-              {comm.website && (
+              {/* Community Links */}
+              <div className="flex flex-wrap gap-2">
+                {comm.website && (
+                  <a
+                    href={comm.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <Globe className="h-4 w-4" />
+                    Website
+                  </a>
+                )}
+                {comm.meetup && (
+                  <a
+                    href={comm.meetup}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6.98.555a.518.518 0 00-.105.011.53.53 0 10.222 1.04.533.533 0 00.409-.633.531.531 0 00-.526-.418zm6.455.638a.984.984 0 00-.514.143.99.99 0 101.02 1.699.99.99 0 00.34-1.36.992.992 0 00-.846-.482zm-3.03 2.236a5.029 5.029 0 00-4.668 3.248 3.33 3.33 0 00-1.46.551 3.374 3.374 0 00-.94 4.562 3.634 3.634 0 00-.605 4.649 3.603 3.603 0 002.465 1.597c.018.732.238 1.466.686 2.114a3.9 3.9 0 005.423.992c.068-.047.12-.106.184-.157.987.881 2.47 1.026 3.607.24a2.91 2.91 0 001.162-1.69 4.238 4.238 0 002.584-.739 4.274 4.274 0 001.19-5.789 2.466 2.466 0 00.433-3.308 2.448 2.448 0 00-1.316-.934 4.436 4.436 0 00-.776-2.873 4.467 4.467 0 00-5.195-1.656 5.106 5.106 0 00-2.773-.807zm-5.603.817a.759.759 0 00-.423.135.758.758 0 10.863 1.248.757.757 0 00.193-1.055.758.758 0 00-.633-.328zm15.994 2.37a.842.842 0 00-.47.151.845.845 0 101.175.215.845.845 0 00-.705-.365zm-8.15 1.028c.063 0 .124.005.182.014a.901.901 0 01.45.187c.169.134.273.241.432.393.24.227.414.089.534.02.208-.122.369-.219.984-.208.633.011 1.363.237 1.514 1.317.168 1.199-1.966 4.289-1.817 5.722.106 1.01 1.815.299 1.96 1.22.186 1.198-2.136.753-2.667.493-.832-.408-1.337-1.34-1.12-2.26.16-.688 1.7-3.498 1.757-3.93.059-.44-.177-.476-.324-.484-.19-.01-.34.081-.526.362-.169.255-2.082 4.085-2.248 4.398-.296.56-.67.694-1.044.674-.548-.029-.798-.32-.72-.848.047-.31 1.26-3.049 1.323-3.476.039-.265-.013-.546-.275-.68-.263-.135-.572.07-.664.227-.128.215-1.848 4.706-2.032 5.038-.316.576-.65.76-1.152.784-1.186.056-2.065-.92-1.678-2.116.173-.532 1.316-4.571 1.895-5.599.389-.69 1.468-1.216 2.217-.892.387.167.925.437 1.084.507.366.163.759-.277.913-.412.155-.134.302-.276.49-.357.142-.06.343-.095.532-.094zm10.88 2.057a.468.468 0 00-.093.011.467.467 0 00-.36.555.47.47 0 00.557.36.47.47 0 00.36-.557.47.47 0 00-.464-.37zm-22.518.81a.997.997 0 00-.832.434 1 1 0 101.39-.258 1 1 0 00-.558-.176zm21.294 2.094a.635.635 0 00-.127.013.627.627 0 00-.48.746.628.628 0 00.746.483.628.628 0 00.482-.746.63.63 0 00-.621-.496zm-18.24 6.097a.453.453 0 00-.092.012.464.464 0 10.195.908.464.464 0 00.356-.553.465.465 0 00-.459-.367zm13.675 1.55a1.044 1.044 0 00-.583.187 1.047 1.047 0 101.456.265 1.044 1.044 0 00-.873-.451zM11.4 22.154a.643.643 0 00-.36.115.646.646 0 00-.164.899.646.646 0 00.899.164.646.646 0 00.164-.898.646.646 0 00-.54-.28z" />
+                    </svg>
+                    Meetup
+                  </a>
+                )}
+                {comm.luma && (
+                  <a
+                    href={comm.luma}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Lu.ma
+                  </a>
+                )}
+                {comm.linkedin && (
+                  <a
+                    href={comm.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#0077b5] hover:text-white hover:border-[#0077b5]"
+                  >
+                    <LinkedInIcon className="h-4 w-4" />
+                    LinkedIn
+                  </a>
+                )}
+                {comm.twitter && (
+                  <a
+                    href={comm.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-900 hover:text-white hover:border-gray-900"
+                  >
+                    <XIcon className="h-4 w-4" />
+                    X / Twitter
+                  </a>
+                )}
+                {comm.instagram && (
+                  <a
+                    href={comm.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-linear-to-r hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743] hover:text-white hover:border-transparent"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                    </svg>
+                    Instagram
+                  </a>
+                )}
+                {comm.youtube && (
+                  <a
+                    href={comm.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    YouTube
+                  </a>
+                )}
+                {comm.twitch && (
+                  <a
+                    href={comm.twitch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF]"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                    </svg>
+                    Twitch
+                  </a>
+                )}
+                {comm.facebook && (
+                  <a
+                    href={comm.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    Facebook
+                  </a>
+                )}
+                {comm.github && (
+                  <a
+                    href={comm.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-900 hover:text-white hover:border-gray-900"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                    </svg>
+                    GitHub
+                  </a>
+                )}
+                {/* Always show Discord - link to DEVSA Discord where all organizers are */}
                 <a
-                  href={comm.website}
+                  href={comm.discord || DEVSA_DISCORD}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2]"
                 >
-                  <Globe className="h-4 w-4" />
-                  Website
+                  <DiscordIcon className="h-4 w-4" />
+                  Discord
                 </a>
-              )}
-              {comm.meetup && (
-                <a
-                  href={comm.meetup}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.98.555a.518.518 0 00-.105.011.53.53 0 10.222 1.04.533.533 0 00.409-.633.531.531 0 00-.526-.418zm6.455.638a.984.984 0 00-.514.143.99.99 0 101.02 1.699.99.99 0 00.34-1.36.992.992 0 00-.846-.482zm-3.03 2.236a5.029 5.029 0 00-4.668 3.248 3.33 3.33 0 00-1.46.551 3.374 3.374 0 00-.94 4.562 3.634 3.634 0 00-.605 4.649 3.603 3.603 0 002.465 1.597c.018.732.238 1.466.686 2.114a3.9 3.9 0 005.423.992c.068-.047.12-.106.184-.157.987.881 2.47 1.026 3.607.24a2.91 2.91 0 001.162-1.69 4.238 4.238 0 002.584-.739 4.274 4.274 0 001.19-5.789 2.466 2.466 0 00.433-3.308 2.448 2.448 0 00-1.316-.934 4.436 4.436 0 00-.776-2.873 4.467 4.467 0 00-5.195-1.656 5.106 5.106 0 00-2.773-.807zm-5.603.817a.759.759 0 00-.423.135.758.758 0 10.863 1.248.757.757 0 00.193-1.055.758.758 0 00-.633-.328zm15.994 2.37a.842.842 0 00-.47.151.845.845 0 101.175.215.845.845 0 00-.705-.365zm-8.15 1.028c.063 0 .124.005.182.014a.901.901 0 01.45.187c.169.134.273.241.432.393.24.227.414.089.534.02.208-.122.369-.219.984-.208.633.011 1.363.237 1.514 1.317.168 1.199-1.966 4.289-1.817 5.722.106 1.01 1.815.299 1.96 1.22.186 1.198-2.136.753-2.667.493-.832-.408-1.337-1.34-1.12-2.26.16-.688 1.7-3.498 1.757-3.93.059-.44-.177-.476-.324-.484-.19-.01-.34.081-.526.362-.169.255-2.082 4.085-2.248 4.398-.296.56-.67.694-1.044.674-.548-.029-.798-.32-.72-.848.047-.31 1.26-3.049 1.323-3.476.039-.265-.013-.546-.275-.68-.263-.135-.572.07-.664.227-.128.215-1.848 4.706-2.032 5.038-.316.576-.65.76-1.152.784-1.186.056-2.065-.92-1.678-2.116.173-.532 1.316-4.571 1.895-5.599.389-.69 1.468-1.216 2.217-.892.387.167.925.437 1.084.507.366.163.759-.277.913-.412.155-.134.302-.276.49-.357.142-.06.343-.095.532-.094zm10.88 2.057a.468.468 0 00-.093.011.467.467 0 00-.36.555.47.47 0 00.557.36.47.47 0 00.36-.557.47.47 0 00-.464-.37zm-22.518.81a.997.997 0 00-.832.434 1 1 0 101.39-.258 1 1 0 00-.558-.176zm21.294 2.094a.635.635 0 00-.127.013.627.627 0 00-.48.746.628.628 0 00.746.483.628.628 0 00.482-.746.63.63 0 00-.621-.496zm-18.24 6.097a.453.453 0 00-.092.012.464.464 0 10.195.908.464.464 0 00.356-.553.465.465 0 00-.459-.367zm13.675 1.55a1.044 1.044 0 00-.583.187 1.047 1.047 0 101.456.265 1.044 1.044 0 00-.873-.451zM11.4 22.154a.643.643 0 00-.36.115.646.646 0 00-.164.899.646.646 0 00.899.164.646.646 0 00.164-.898.646.646 0 00-.54-.28z" />
-                  </svg>
-                  Meetup
-                </a>
-              )}
-              {comm.luma && (
-                <a
-                  href={comm.luma}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
-                >
-                  <Calendar className="h-4 w-4" />
-                  Lu.ma
-                </a>
-              )}
-              {comm.linkedin && (
-                <a
-                  href={comm.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#0077b5] hover:text-white hover:border-[#0077b5]"
-                >
-                  <LinkedInIcon className="h-4 w-4" />
-                  LinkedIn
-                </a>
-              )}
-              {comm.twitter && (
-                <a
-                  href={comm.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-900 hover:text-white hover:border-gray-900"
-                >
-                  <XIcon className="h-4 w-4" />
-                  X / Twitter
-                </a>
-              )}
-              {comm.instagram && (
-                <a
-                  href={comm.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-linear-to-r hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743] hover:text-white hover:border-transparent"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
-                  </svg>
-                  Instagram
-                </a>
-              )}
-              {comm.youtube && (
-                <a
-                  href={comm.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                  YouTube
-                </a>
-              )}
-              {comm.twitch && (
-                <a
-                  href={comm.twitch}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF]"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-                  </svg>
-                  Twitch
-                </a>
-              )}
-              {comm.facebook && (
-                <a
-                  href={comm.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  Facebook
-                </a>
-              )}
-              {comm.github && (
-                <a
-                  href={comm.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-900 hover:text-white hover:border-gray-900"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                  </svg>
-                  GitHub
-                </a>
-              )}
-              {/* Always show Discord - link to DEVSA Discord where all organizers are */}
-              <a
-                href={comm.discord || DEVSA_DISCORD}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2]"
-              >
-                <DiscordIcon className="h-4 w-4" />
-                Discord
-              </a>
+              </div>
             </div>
+                )
+              })}
+            </div>
+          )}
           </div>
-              )
-            })}
-          </div>
-        )}
         </div>
       </section>
     </main>
