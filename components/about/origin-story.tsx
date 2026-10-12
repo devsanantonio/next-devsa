@@ -336,6 +336,9 @@ export function OriginProse() {
  * exempt-function income rather than on gifts and grants, which is a different
  * organization than a 509(a)(1) and a funder reading carefully will know it.
  */
+const IRS_TEOS_URL =
+  "https://apps.irs.gov/app/eos/details/?ein=992066455&name=DEVSA&city=San%20Antonio&state=TX&countryAbbr=US&dba=&type=CHARITIES,%20DETERMINATIONLETTERS,%20EPOSTCARD&orgTags=CHARITIES&orgTags=DETERMINATIONLETTERS&orgTags=EPOSTCARD"
+
 export function TheRecord() {
   const facts: { label: string; value: string }[] = [
     { label: "Legal name", value: "DEVSA" },
@@ -344,6 +347,11 @@ export function TheRecord() {
     { label: "Exemption effective", value: "March 12, 2024" },
     { label: "Fiscal year", value: "January 1 – December 31" },
     { label: "Contributions", value: "Tax-deductible under Section 170" },
+    // The 990-N is a postcard: name, EIN, receipts under $50,000. Stated, not
+    // posted — the filed copy carries the residential address of record, which
+    // this section leaves out on purpose. The IRS link below lets a funder see it.
+    { label: "Annual filing", value: "Form 990-N (e-Postcard), 2025" },
+    { label: "Code of conduct", value: "Adopted October 12, 2026" },
   ]
 
   return (
@@ -359,7 +367,7 @@ export function TheRecord() {
           </h2>
         </div>
 
-        <dl className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-y border-gray-200 py-10 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-y border-gray-200 py-10 sm:grid-cols-2 lg:grid-cols-4">
           {facts.map((fact) => (
             <div key={fact.label}>
               <dt className="text-sm leading-snug text-gray-500">{fact.label}</dt>
@@ -370,7 +378,21 @@ export function TheRecord() {
           ))}
         </dl>
 
+        {/* IRS Tax Exempt Organization Search: the determination letter and every
+            e-Postcard, from the source, so no one has to take this page's word for it.
+            The IRS blocks automated requests, so this link was not machine-checked. */}
         <p className="mt-6 text-sm text-gray-500">
+          <a
+            href={IRS_TEOS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900"
+          >
+            Verify with the IRS
+          </a>{" "}
+          · <Link href="/code-of-conduct" className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900">Code of conduct</Link>
+        </p>
+        <p className="mt-3 text-sm text-gray-500">
           Need something that is not here?{" "}
           <a
             href={`mailto:${FUNDER_CONTACT}`}
