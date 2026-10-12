@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
       // landing page or call for speakers for it. Permanent (308) — a future
       // year would live at its own slug, not this one.
       { source: "/startup-week-2026", destination: "https://www.sasw.co/", permanent: true },
+
+      // Demo Day was renamed Confluencia (a DEVSA Demo Day) before launch.
+      // Permanent, so any link already shared lands on the new address.
+      { source: "/events/demo-day", destination: "/events/confluencia", permanent: true },
     ];
   },
 };

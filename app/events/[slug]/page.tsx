@@ -91,7 +91,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description = `Join ${community?.name || 'the community'} on ${eventDate} in San Antonio. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem.`
     
     return {
-      title,
+      // The root layout's template appends " | DEVSA"; `title` above keeps the
+      // suffix for the X card, which the template does not reach.
+      title: event.title,
       description,
       openGraph: {
         title: event.title,
@@ -121,7 +123,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // /buildingtogether/[slug] carries it: the page below calls notFound(), but
   // `notFound()` after streaming has begun cannot take back a 200, so the
   // defense against a soft 404 being indexed is the robots directive.
-  const fallbackTitle = "Community Event | DEVSA"
+  const fallbackTitle = "Community Event"
   const fallbackDescription = "Join the San Antonio tech community. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem."
   
   return {

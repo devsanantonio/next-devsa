@@ -36,10 +36,12 @@ import {
   Menu,
   Home,
   Download,
-  Handshake
+  Handshake,
+  Megaphone
 } from "lucide-react"
 
 import { RichTextEditor } from "@/components/rich-text-editor"
+import { demoDayInterestLabel } from "@/lib/demo-day"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
 import { useDragOrder } from "@/lib/hooks/use-drag-order"
@@ -194,7 +196,37 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "devsa" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch"
+type Tab = "newsletter" | "devsa" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch" | "demoday"
+
+/**
+ * A Demo Day partner or sponsor inquiry, as /api/admin/demo-day-inquiries
+ * returns it. Admin and super admin only — the route refuses everyone else.
+ */
+type DemoDayInquiryRow = {
+  id: string
+  name: string
+  email: string
+  organization: string
+  title: string | null
+  interest: string
+  industry: string | null
+  message: string
+  status: "new" | "contacted" | "closed"
+  submittedAt: string | null
+}
+
+/**
+ * Inquiry text is stored through sanitizeInput, which escapes entities ("&amp;").
+ * React escapes on render anyway, so decode the handful sanitize-html produces
+ * rather than showing a partner's "R&amp;D" back to an admin.
+ */
+const decodeEntities = (text: string): string =>
+  text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&#x27;/g, "'")
+    .replace(/&amp;/g, "&")
 
 // Protected super admin email - cannot be removed or modified
 const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
@@ -324,6 +356,7 @@ export default function AdminPage() {
   const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
   const [devsaSubs, setDevsaSubs] = useState<DevSASubscriber[]>([])
   const [merchSubmissions, setMerchSubmissions] = useState<{id: string; communityName: string; contactName: string; contactEmail: string; description: string; logoUrl: string; status: string; submittedAt: string}[]>([])
+  const [demoDayInquiries, setDemoDayInquiries] = useState<DemoDayInquiryRow[]>([])
   const [editingDevsaSub, setEditingDevsaSub] = useState<DevSASubscriber | null>(null)
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
@@ -349,7 +382,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "devsa", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "merch",
+      "newsletter", "devsa", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "merch", "demoday",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -531,6 +564,15 @@ export default function AdminPage() {
           }
         } catch {
           // Silently fail — subscribers tab will show empty
+        }
+        try {
+          const demoDayRes = await fetch(`/api/admin/demo-day-inquiries?adminEmail=${encodeURIComponent(email)}`)
+          if (demoDayRes.ok) {
+            const demoDayData = await demoDayRes.json()
+            setDemoDayInquiries(demoDayData.inquiries || [])
+          }
+        } catch {
+          // Silently fail — the Demo Day tab will show empty
         }
         try {
           const merchRes = await fetch('/api/shop/merch-submissions')
@@ -912,6 +954,44 @@ export default function AdminPage() {
       setError("Failed to delete event")
     } finally {
       setIsDeleting(null)
+    }
+  }
+
+  const handleDemoDayStatus = async (inquiryId: string, status: DemoDayInquiryRow["status"]) => {
+    try {
+      const response = await fetch("/api/admin/demo-day-inquiries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiryId, status, adminEmail }),
+      })
+      if (response.ok) {
+        setDemoDayInquiries(prev => prev.map(i => (i.id === inquiryId ? { ...i, status } : i)))
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to update inquiry")
+      }
+    } catch {
+      setError("Failed to update inquiry")
+    }
+  }
+
+  const handleDeleteDemoDayInquiry = async (inquiryId: string) => {
+    if (!confirm("Delete this Confluencia inquiry? This action cannot be undone.")) return
+    try {
+      const response = await fetch("/api/admin/demo-day-inquiries", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiryId, adminEmail }),
+      })
+      if (response.ok) {
+        setDemoDayInquiries(prev => prev.filter(i => i.id !== inquiryId))
+        setSuccessMessage("Confluencia inquiry deleted")
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete inquiry")
+      }
+    } catch {
+      setError("Failed to delete inquiry")
     }
   }
 
@@ -1508,6 +1588,7 @@ export default function AdminPage() {
   // Derived nav + notification data for the sidebar shell
   const pendingAccessCount = accessRequests.filter((r) => r.status === "pending").length
   const pendingMerchCount = merchSubmissions.filter((s) => s.status === "pending").length
+  const newDemoDayCount = demoDayInquiries.filter((i) => i.status === "new").length
 
   type NavItem = { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }
 
@@ -1546,6 +1627,7 @@ export default function AdminPage() {
     { id: "access", label: "Access Requests", icon: Users, count: accessRequests.length, alert: pendingAccessCount },
     { id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length },
     { id: "merch", label: "Merch Submissions", icon: Upload, count: merchSubmissions.length, alert: pendingMerchCount },
+    { id: "demoday", label: "Confluencia", icon: Megaphone, count: demoDayInquiries.length, alert: newDemoDayCount },
   ]
 
   const tabTitles: Record<Tab, string> = {
@@ -1560,6 +1642,7 @@ export default function AdminPage() {
     access: "Access Requests",
     admins: "Manage Admins",
     merch: "Merch Submissions",
+    demoday: "Confluencia Inquiries",
   }
 
   const notifications: { id: Tab; label: string; icon: typeof Users }[] = [
@@ -1568,6 +1651,9 @@ export default function AdminPage() {
       : []),
     ...(pendingMerchCount > 0
       ? [{ id: "merch" as Tab, label: `${pendingMerchCount} merch submission${pendingMerchCount > 1 ? "s" : ""} pending review`, icon: Upload }]
+      : []),
+    ...(hasAdminAccess(adminRole) && newDemoDayCount > 0
+      ? [{ id: "demoday" as Tab, label: `${newDemoDayCount} new Confluencia inquir${newDemoDayCount > 1 ? "ies" : "y"}`, icon: Megaphone }]
       : []),
   ]
   const notificationCount = notifications.length
@@ -4824,6 +4910,112 @@ export default function AdminPage() {
                   </>
                 )
               })()}
+            </div>
+          )}
+
+          {/* Demo Day Inquiries - Admin Only. The tab is hidden from organizers
+              and /api/admin/demo-day-inquiries refuses them; this guard keeps a
+              ?tab=demoday deep link from rendering for them either. */}
+          {activeTab === "demoday" && hasAdminAccess(adminRole) && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold tracking-tight text-white">Confluencia Inquiries</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
+                    <Shield className="h-3 w-3" /> Admin Only
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-neutral-400">{newDemoDayCount} new</span>
+                  <a
+                    href="/events/confluencia"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="h-3 w-3" /> View page
+                  </a>
+                </div>
+              </div>
+
+              {demoDayInquiries.length === 0 ? (
+                <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-12 text-center">
+                  <Megaphone className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
+                  <p className="text-neutral-400 text-sm">No inquiries yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {demoDayInquiries.map((inq) => (
+                    <div
+                      key={inq.id}
+                      className={`rounded-xl border p-5 transition-colors ${
+                        inq.status === "new"
+                          ? "border-amber-500/30 bg-amber-500/5"
+                          : "border-neutral-800 bg-neutral-900/50"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-400">
+                              {demoDayInterestLabel(inq.interest)}
+                            </span>
+                            {inq.industry && (
+                              <span className="inline-flex items-center rounded-full bg-neutral-700/60 px-2 py-0.5 text-[10px] font-bold uppercase text-neutral-300">
+                                {decodeEntities(inq.industry)}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-white font-semibold text-sm">
+                            {decodeEntities(inq.organization)}
+                          </h3>
+                          <p className="text-neutral-400 text-xs mt-0.5">
+                            {decodeEntities(inq.name)}
+                            {inq.title ? ` · ${decodeEntities(inq.title)}` : ""} &middot;{" "}
+                            <a href={`mailto:${inq.email}`} className="text-neutral-300 hover:text-white underline-offset-2 hover:underline">
+                              {inq.email}
+                            </a>
+                          </p>
+                          <p className="text-neutral-300 text-sm leading-relaxed mt-3 whitespace-pre-wrap">
+                            {decodeEntities(inq.message)}
+                          </p>
+                          {inq.submittedAt && (
+                            <p className="text-neutral-600 text-[11px] mt-3">
+                              Submitted {new Date(inq.submittedAt).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-2">
+                          <select
+                            value={inq.status}
+                            onChange={(e) => handleDemoDayStatus(inq.id, e.target.value as DemoDayInquiryRow["status"])}
+                            className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-neutral-500"
+                            aria-label="Inquiry status"
+                          >
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="closed">Closed</option>
+                          </select>
+                          <a
+                            href={`mailto:${inq.email}?subject=${encodeURIComponent("Confluencia, a DEVSA Demo Day")}`}
+                            className="inline-flex items-center gap-1 rounded-lg bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
+                          >
+                            <Mail className="h-3 w-3" /> Reply
+                          </a>
+                          <button
+                            onClick={() => handleDeleteDemoDayInquiry(inq.id)}
+                            className="cursor-pointer inline-flex items-center rounded-lg bg-neutral-800 p-1.5 text-neutral-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                            aria-label="Delete inquiry"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

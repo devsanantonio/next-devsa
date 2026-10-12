@@ -49,6 +49,9 @@ function staticRoutes(): MetadataRoute.Sitemap {
     // priority 0.8.
     { url: `${baseUrl}/events/pysanantonio/2025`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/events/zero-to-agent`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // Below the conferences: a campaign for an event that only happens if it
+    // is funded, not yet an event with a date.
+    { url: `${baseUrl}/events/confluencia`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/branding`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: `${baseUrl}/signin`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },

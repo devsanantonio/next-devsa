@@ -101,6 +101,9 @@ export const COLLECTIONS = {
   // first one is true.
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
   MERCH_SUBMISSIONS: 'merch_submissions',
+  // Partner and sponsor inquiries from /events/confluencia. Admin and super admin
+  // only — organizers never see them, in the API or the dashboard.
+  DEMO_DAY_INQUIRIES: 'demo_day_inquiries',
   FAILED_ORDERS: 'failed_orders',
   ORDERS: 'orders',
 } as const;
@@ -159,6 +162,29 @@ export interface SpeakerSubmission {
   eventId?: string;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
+}
+
+/**
+ * Someone answering the Demo Day ask: offering the lead seat, the build
+ * partnership, the evening sponsorship, or something else.
+ *
+ * Free text is stored through sanitizeInput, so it holds HTML entities
+ * ("&amp;"), not raw characters — safe to drop into the notification email,
+ * and decoded for display in the admin inbox.
+ */
+export interface DemoDayInquiry {
+  name: string;
+  email: string;
+  organization: string;
+  /** Their title or role at the organization. */
+  title: string | null;
+  /** 'lead' | 'build' | 'evening' | 'other' — see DEMO_DAY_INTERESTS. */
+  interest: string;
+  /** One of DEMO_DAY_INDUSTRIES, 'Other', or null when not given. */
+  industry: string | null;
+  message: string;
+  submittedAt: Date;
+  status: 'new' | 'contacted' | 'closed';
 }
 
 export interface AccessRequest {

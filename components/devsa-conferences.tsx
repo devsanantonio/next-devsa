@@ -203,8 +203,8 @@ export function DevsaConferences() {
                     {inner}
                   </Link>
                 ) : (
-                  /* No page, so no link — More Human's came down with the
-                     conference. It still lights the band on hover. */
+                  /* A conference with no page of its own yet. It still
+                     lights the band on hover. */
                   <div className="w-fit">{inner}</div>
                 )}
               </li>

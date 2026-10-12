@@ -29,11 +29,11 @@ import type { EventBrandKey } from "@/lib/event-brands";
  * the brand again and the page should say so before there is a date, which is
  * what all three Startup + Tech Week activations are waiting on now.
  *
- * `history` is the opposite and is not a soft delete. More Human Than Human is
- * here deliberately: The Model replaces it on the calendar going forward, and
- * the site should still say the first one happened. The recap
- * footage on the homepage is from it, so retiring the name while continuing to
- * run the video would be the worst of both.
+ * `history` is the opposite and is not a soft delete: a brand DEVSA has stopped
+ * running stays in this list so the site still says it happened. Nothing is
+ * `history` at the moment. More Human Than Human was, briefly, on the theory
+ * that The Model replaced it — it did not. It is returning as The Model's
+ * engineering-side counterpart.
  */
 export type ConferenceStatus = "returning" | "history";
 

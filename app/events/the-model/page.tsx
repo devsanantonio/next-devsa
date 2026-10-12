@@ -13,7 +13,7 @@ import { MODEL_INK, MODEL_LAVENDER, THE_MODEL } from "@/data/the-model/2026"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
-  title: "The Model — Creators, Creatives, Founders and Builders | DEVSA",
+  title: "The Model — Creators, Creatives, Founders and Builders",
   description:
     "The Model is the DEVSA conference that puts creators, creatives, founders and builders in one room for an afternoon of showing each other what comes next. Held at Geekdom in San Antonio.",
   alternates: { canonical: "/events/the-model" },

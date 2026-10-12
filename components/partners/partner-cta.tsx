@@ -2,6 +2,8 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
+import Link from "next/link"
+import { ConfluenciaName } from "@/components/demo-day/wordmark"
 import { Handshake, Mail, ArrowUpRight } from "lucide-react"
 
 /**
@@ -222,6 +224,19 @@ export function PartnerCta({ communityCount }: { communityCount?: number }) {
                   Sponsor an Event
                 </a>
               </div>
+
+              {/* The one partnership with a fixed shape and a single seat, so
+                  it gets its own line rather than a third button. */}
+              <p className="mt-6 text-sm leading-relaxed text-white/55">
+                Leading an industry? Once a year, one partner leads{" "}
+                <Link
+                  href="/events/confluencia"
+                  className="font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+                >
+                  <ConfluenciaName />
+                </Link>
+                , DEVSA&apos;s Demo Day: the brief, the build and the demos.
+              </p>
             </div>
           </motion.div>
 

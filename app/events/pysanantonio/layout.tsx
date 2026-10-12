@@ -27,7 +27,7 @@ const description =
   "PySanAntonio is San Antonio's Python conference, led by Alamo Python with the PyTexas Foundation and DEVSA. The second edition ran on October 2, 2026 at Geekdom as part of SA Startup + Tech Week — an afternoon of talks, networking and community building for the city's Python community."
 
 export const metadata: Metadata = {
-  title: "PySanAntonio — San Antonio's Python Conference | DEVSA",
+  title: "PySanAntonio — San Antonio's Python Conference",
   description,
   keywords: [
     "PySanAntonio",

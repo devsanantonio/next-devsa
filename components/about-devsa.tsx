@@ -276,9 +276,20 @@ export function AboutDevsa() {
               rest of its words arguing against. DEVSA does not fund the
               groups' programs; the column two inches above says the groups run
               their own meetups and workshops and DEVSA runs the calendar, the
-              directory and the channels. And under a donation ask the question
-              a stranger actually has is who decides where their money goes,
-              which is what it says now. */}
+              directory and the channels. Under a donation ask the question a
+              stranger actually has is who decides where their money goes.
+
+              "Donations", not "the money". Every dollar DEVSA has taken in so
+              far was event sponsorship that the sponsor directed — the board
+              has not allocated general funds because there have not been any.
+              The authority is real and applies the moment somebody gives; the
+              history it implied was not.
+
+              The second link is the point of the edit. The board is an
+              assertion; the EIN, the 509(a)(2) status and the effective date
+              are checkable, and until /about#the-record existed there was
+              nothing to check. The footer reaches it and the homepage — which
+              carries the donation ask most people actually see — did not. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pt-6">
             <div className="flex -space-x-2.5">
               {boardMembers.map((member) => (
@@ -297,15 +308,23 @@ export function AboutDevsa() {
               ))}
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
-              A volunteer board governs DEVSA and decides where the money
-              goes.{" "}
+              A volunteer board governs DEVSA and decides where donations
+              go.{" "}
               <Link
                 href="/about#team"
                 className="font-medium text-gray-900 underline underline-offset-2 transition-colors hover:text-gray-700"
               >
                 Meet them
               </Link>
-              .
+              <span aria-hidden className="px-2 text-gray-300">
+                ·
+              </span>
+              <Link
+                href="/about#the-record"
+                className="font-medium text-gray-900 underline underline-offset-2 transition-colors hover:text-gray-700"
+              >
+                The record
+              </Link>
             </p>
           </div>
         </motion.div>

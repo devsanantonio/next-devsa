@@ -4,7 +4,7 @@ import { ZeroToAgentResources } from "@/components/events/zero-to-agent-resource
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
-  title: "Zero to Agent — Vercel Global Build Week | San Antonio | DEVSA",
+  title: "Zero to Agent — Vercel Global Build Week | San Antonio",
   description:
     "DEVSA is the official San Antonio community partner for Zero to Agent — a 10-day global initiative to ship AI agents with the Vercel AI SDK, v0, and AI Gateway. April 25, 2026 at Geekdom. $30 in v0 credits, $6K+ global prize pool, and limited edition swag.",
   keywords: [

@@ -12,5 +12,6 @@ initBotId({
     { path: '/api/access-request', method: 'POST' },
     { path: '/api/call-for-speakers', method: 'POST' },
     { path: '/api/volunteers', method: 'POST' },
+    { path: '/api/demo-day/inquiries', method: 'POST' },
   ],
 });

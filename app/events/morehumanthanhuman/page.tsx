@@ -14,7 +14,7 @@ const DESCRIPTION =
   "More Human Than Human is DEVSA's AI conference for engineering, security and the people leading the change — fourteen sessions at Geekdom on what shifts when the tools stop being tools."
 
 export const metadata: Metadata = {
-  title: "More Human Than Human — DEVSA's AI Conference | DEVSA",
+  title: "More Human Than Human — DEVSA's AI Conference",
   description: DESCRIPTION,
   alternates: { canonical: "/events/morehumanthanhuman" },
   openGraph: {

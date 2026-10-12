@@ -121,7 +121,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // note above generateMetadata. Without it, every mistyped or retired slug is
   // a soft 404 a crawler is entitled to index.
   return {
-    title: "Not Found | DEVSA",
+    title: "Not Found",
     description: "The page you're looking for doesn't exist.",
     robots: { index: false, follow: false },
   }

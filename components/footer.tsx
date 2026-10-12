@@ -278,11 +278,32 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
               
                   The 501(c)(3) stays, because that is the part a footer is for:
                   it is what makes a donation deductible and it is checkable.
-                  Whether "educational" is the registered exempt purpose is a
-                  question for the determination letter, not for this file —
-                  describing the work precisely here does not change what the
-                  letter says. */}
+
+                  The determination letter has since been read: IRS Letter 947,
+                  24 May 2024, exemption effective 12 March 2024, public charity
+                  under 509(a)(2). It classifies the organization and does not
+                  assign it a subject, so nothing in it calls DEVSA an education
+                  nonprofit. */}
               {" "}nonprofit for San Antonio tech.
+            </p>
+            {/* The EIN, because a footer is where a funder looks for it.
+
+                It is public — it is on the 990-N, which is marked "Open to
+                Public Inspection", and in the IRS Tax Exempt Organization
+                Search. A corporate match portal or a donor-advised fund asks
+                for it before it will process anything, and until now the site
+                claimed 501(c)(3) status in eleven places without ever giving a
+                number anyone could check it against.
+
+                The full record is on /about. */}
+            <p className="text-neutral-500 text-[13px] font-normal mt-2 leading-normal">
+              EIN{" "}
+              <Link
+                href="/about#the-record"
+                className="font-mono text-neutral-400 underline decoration-neutral-700 underline-offset-4 transition-colors hover:text-white"
+              >
+                99-2066455
+              </Link>
             </p>
           </motion.div>
 

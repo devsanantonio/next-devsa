@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import {
   AboutHero,
+  DemoDayCampaign,
   FoundingFacts,
   OriginProse,
+  TheRecord,
 } from "@/components/about/origin-story"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { listCommunities } from "@/lib/communities"
@@ -99,6 +101,8 @@ export default async function AboutPage() {
         />
         <OriginProse />
         <MeetTheTeam />
+        <TheRecord />
+        <DemoDayCampaign />
       </main>
     </>
   )

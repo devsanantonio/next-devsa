@@ -5,6 +5,8 @@ import { motion } from "motion/react"
 import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { conferences } from "@/data/conferences"
+import { getCampaign, type CampaignKey } from "@/lib/campaigns"
+import { CampaignName, CampaignText } from "@/components/partners/campaign-name"
 
 /**
  * What a donation pays for, read from the source rather than written down.
@@ -71,7 +73,14 @@ function ConferenceList() {
 
 const PRESET_AMOUNTS = [50, 100, 250, 500]
 
-export function DonationCta() {
+/**
+ * `campaign` comes from a campaign page's link (?campaign=<key>, read and
+ * validated by the page). The form says plainly where the gift is going and
+ * lets the donor make it a general gift instead — a designation the donor
+ * never saw would be no better than none.
+ */
+export function DonationCta({ campaign }: { campaign?: CampaignKey } = {}) {
+  const [designated, setDesignated] = useState(Boolean(campaign))
   const [selectedAmount, setSelectedAmount] = useState(100)
   const [customAmount, setCustomAmount] = useState("")
   const [isCustom, setIsCustom] = useState(false)
@@ -99,6 +108,7 @@ export function DonationCta() {
           amount: donationAmount,
           name: name || undefined,
           email: email || undefined,
+          campaign: designated ? campaign : undefined,
         }),
       })
 
@@ -143,24 +153,60 @@ export function DonationCta() {
             </div>
 
             <div className="space-y-6 max-w-5xl mt-8">
-              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                Every dollar goes to what DEVSA actually runs: the{" "}
-                <strong className="font-semibold text-white">
-                  community calendar and public directory
-                </strong>{" "}
-                every group publishes to, and the{" "}
-                {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
-                conferences built right here in San&nbsp;Antonio —{" "}
-                <ConferenceList />.
-              </p>
-              <p className="text-base md:text-lg text-white/70 leading-relaxed">
-                That is the channel the{" "}
-                <strong className="font-semibold text-white">
-                  active builders
-                </strong>
-                , the community groups and the partners all find each other on.
-                Giving keeps it open.
-              </p>
+              {/* Follows the form's designation, not just the link. A donor
+                  who switches to a general gift gets the general pitch back,
+                  so the column never says one thing while the form says
+                  another. */}
+              {designated && campaign ? (
+                <>
+                  <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+                    This campaign funds{" "}
+                    <strong className="font-semibold text-white">
+                      <CampaignName campaign={campaign} />
+                    </strong>
+                    : {getCampaign(campaign).summary}.
+                  </p>
+                  <p className="text-base md:text-lg text-white/70 leading-relaxed">
+                    {getCampaign(campaign).goal && (
+                      <>
+                        The goal is{" "}
+                        <strong className="font-semibold text-white">
+                          {getCampaign(campaign).goal?.amount}
+                        </strong>
+                        , {getCampaign(campaign).goal?.covers}.{" "}
+                      </>
+                    )}
+                    <CampaignText campaign={campaign} text={getCampaign(campaign).ifUnfunded} />{" "}
+                    <Link
+                      href={getCampaign(campaign).href}
+                      className="font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+                    >
+                      How <CampaignName campaign={campaign} /> works
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+                    Every dollar goes to what DEVSA actually runs: the{" "}
+                    <strong className="font-semibold text-white">
+                      community calendar and public directory
+                    </strong>{" "}
+                    every group publishes to, and the{" "}
+                    {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
+                    conferences built right here in San&nbsp;Antonio —{" "}
+                    <ConferenceList />.
+                  </p>
+                  <p className="text-base md:text-lg text-white/70 leading-relaxed">
+                    That is the channel the{" "}
+                    <strong className="font-semibold text-white">
+                      active builders
+                    </strong>
+                    , the community groups and the partners all find each other on.
+                    Giving keeps it open.
+                  </p>
+                </>
+              )}
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
                 As a 501(c)(3), your donation may be tax-deductible.
               </p>
@@ -176,6 +222,37 @@ export function DonationCta() {
             className="flex items-center"
           >
             <div className="w-full max-w-3xl rounded-2xl bg-white/4 border border-white/8 p-6 sm:p-8 space-y-6">
+              {campaign && (
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-white/4 px-4 py-3">
+                  <p className="text-sm text-white/70">
+                    {designated ? (
+                      <>
+                        Your gift goes to{" "}
+                        <span className="font-semibold text-white">
+                          <CampaignName campaign={campaign} />
+                        </span>
+                        .
+                      </>
+                    ) : (
+                      "General gift to DEVSA."
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDesignated(!designated)}
+                    className="cursor-pointer text-sm font-medium text-white/55 underline underline-offset-4 transition-colors hover:text-white"
+                  >
+                    {designated ? (
+                      "Give generally instead"
+                    ) : (
+                      <>
+                        Give to <CampaignName campaign={campaign} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
               {/* Amount selection */}
               <div>
                 <label className="block text-sm font-medium text-white/50 mb-3">

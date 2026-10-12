@@ -10,11 +10,12 @@ import { GetInvolved } from "@/components/partners/get-involved"
 import { HowWeHelp } from "@/components/partners/how-we-help"
 import { PartnerCta } from "@/components/partners/partner-cta"
 import { DonationCta } from "@/components/partners/donation-cta"
+import { toCampaignKey } from "@/lib/campaigns"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 export const metadata: Metadata = {
-  title: "San Antonio Tech Communities & Partners | DEVSA",
+  title: "San Antonio Tech Communities & Partners",
   description: "San Antonio's tech groups run themselves. DEVSA gives them one shared calendar, one public directory, and one room to meet partners in.",
   keywords: [
     "San Antonio tech communities",
@@ -70,7 +71,14 @@ export const metadata: Metadata = {
  * to send people to. Reading them in the page keeps the data exactly as live,
  * since nothing is cached between requests, and puts every href in the HTML.
  */
-export default async function GroupsPage() {
+export default async function GroupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ campaign?: string | string[] }>
+}) {
+  // A campaign page links here with ?campaign=<key> so the gift is designated.
+  const campaign = toCampaignKey((await searchParams).campaign)
+
   const [communities, partners] = await Promise.all([
     listCommunities(),
     listPartners(),
@@ -143,7 +151,7 @@ export default async function GroupsPage() {
           the question the page exists for, and the flow here runs straight from
           the partner ask to the donation ask, which is the order a reader is
           already in. */}
-      <DonationCta />
+      <DonationCta campaign={campaign} />
       </main>
     </>
   )

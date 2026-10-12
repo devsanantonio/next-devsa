@@ -1,0 +1,17 @@
+/**
+ * The organization's working mailbox.
+ *
+ * On devsanantonio.com, not devsa.community, even though the latter is the
+ * canonical host and has Google Workspace MX. Mail forwarding is independent
+ * of the web redirect — devsanantonio.com answers on Porkbun's forwarders —
+ * and this is the address that is actually read.
+ *
+ * Confirmed against DNS rather than taken on trust: devsaantonio.com, which
+ * is one letter off and easy to type, resolves to nothing at all. A funder
+ * page is the worst possible place to publish an address into a void.
+ */
+export const FUNDER_CONTACT = "jesse@devsanantonio.com"
+
+export function mailto(subject: string): string {
+  return `mailto:${FUNDER_CONTACT}?subject=${encodeURIComponent(subject)}`
+}

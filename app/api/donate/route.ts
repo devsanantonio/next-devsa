@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { CAMPAIGNS, toCampaignKey } from "@/lib/campaigns";
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
     const name =
       typeof body.name === "string" ? body.name.trim().slice(0, 100) : undefined;
 
+    // Only keys in lib/campaigns.ts designate a gift; anything else is general.
+    const campaign = toCampaignKey(body.campaign);
+    const campaignName = campaign ? CAMPAIGNS[campaign].name : undefined;
+
     const origin = request.headers.get("origin") || "";
     const unitAmount = Math.round(amount * 100); // cents
 
@@ -34,8 +39,12 @@ export async function POST(request: Request) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "DEVSA Donation",
-              description: `Support DEVSA — 501(c)(3) Education Nonprofit`,
+              name: campaignName
+                ? `DEVSA Donation — ${campaignName}`
+                : "DEVSA Donation",
+              description: campaignName
+                ? `Designated to DEVSA ${campaignName} — 501(c)(3) nonprofit`
+                : "Support DEVSA — 501(c)(3) nonprofit",
             },
             unit_amount: unitAmount,
           },
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
       ],
       metadata: {
         type: "donation",
+        campaign: campaign ?? "",
         donor_name: name || "",
         donor_email: email || "",
       },

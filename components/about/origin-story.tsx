@@ -1,6 +1,9 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
+import { FUNDER_CONTACT } from "@/lib/contact"
+import { ConfluenciaDisplay, ConfluenciaName } from "@/components/demo-day/wordmark"
+import { DEMO_DAY_DEADLINE, DEMO_DAY_DESCRIPTOR, DEMO_DAY_PAVILION_YEAR } from "@/lib/demo-day"
 
 /**
  * Why DEVSA exists, on the page where that belongs.
@@ -297,6 +300,171 @@ export function OriginProse() {
           >
             The coworking space
             <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * The record, for anyone who has to verify it.
+ *
+ * A grantmaker, a corporate match portal and a donor-advised fund all ask for
+ * the same handful of fields before they will process anything, and until this
+ * none of them were on the site. The 501(c)(3) claim appeared in eleven places
+ * and was nowhere backed by a number anyone could check.
+ *
+ * Everything here is already public. The EIN is on the 990-N, which is marked
+ * "Open to Public Inspection", and the whole record is in the IRS Tax Exempt
+ * Organization Search. Publishing it is not disclosure, it is saving a program
+ * officer a lookup.
+ *
+ * What is deliberately NOT here: the address of record, which is residential;
+ * budget figures, which would need maintaining to stay honest; and any history
+ * of who has or has not funded DEVSA. An earlier draft carried a paragraph on
+ * where the money had come from and a line about the one grant application
+ * DEVSA has made. Both were true and both were oversharing — a funding history
+ * is something to answer when a funder asks, not something to lead with on a
+ * public page. The ask is the campaign below.
+ *
+ * Built in FoundingFacts' shape — the same bordered row on white — because it
+ * is the same kind of thing: facts to scan, not an argument to read.
+ *
+ * 509(a)(2) is stated rather than just "501(c)(3)" because the distinction is
+ * load-bearing. It is the public-support test built on program service and
+ * exempt-function income rather than on gifts and grants, which is a different
+ * organization than a 509(a)(1) and a funder reading carefully will know it.
+ */
+export function TheRecord() {
+  const facts: { label: string; value: string }[] = [
+    { label: "Legal name", value: "DEVSA" },
+    { label: "EIN", value: "99-2066455" },
+    { label: "IRS status", value: "501(c)(3) public charity, 509(a)(2)" },
+    { label: "Exemption effective", value: "March 12, 2024" },
+    { label: "Fiscal year", value: "January 1 – December 31" },
+    { label: "Contributions", value: "Tax-deductible under Section 170" },
+  ]
+
+  return (
+    <section id="the-record" className="w-full scroll-mt-20 bg-white" data-bg-type="light">
+      <div className="page-shell py-16 md:py-24">
+        <div className="max-w-3xl">
+          <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">
+            For Funders
+          </p>
+          <h2 className="mt-5 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-5xl lg:text-6xl xl:text-7xl">
+            On the{" "}
+            <span className="font-light italic text-gray-400">Record</span>.
+          </h2>
+        </div>
+
+        <dl className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-y border-gray-200 py-10 sm:grid-cols-2 lg:grid-cols-3">
+          {facts.map((fact) => (
+            <div key={fact.label}>
+              <dt className="text-sm leading-snug text-gray-500">{fact.label}</dt>
+              <dd className="mt-2 text-xl font-black leading-tight tracking-[-0.01em] text-gray-900">
+                {fact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-6 text-sm text-gray-500">
+          Need something that is not here?{" "}
+          <a
+            href={`mailto:${FUNDER_CONTACT}`}
+            className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900"
+          >
+            {FUNDER_CONTACT}
+          </a>
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * The campaign, as a pointer. The page ends here on purpose.
+ *
+ * Story, then the board, then the record, then the ask: by this point a reader
+ * knows who DEVSA is, who governs it and that it is real, and the last thing on
+ * the page is the one thing it asks for.
+ *
+ * The event page's masthead in miniature — display wordmark, "DEVSA Demo Day
+ * 2027", the pitch and the funding rule — beside the papel picado sheet,
+ * which lives here and on the share card now that the event page leads with
+ * the name instead. Only the headline, the one-line pitch and the funding rule. The full case —
+ * the arc, the ways to back it, the terms — is on /events/confluencia. This band
+ * used to carry all of it and was trying to explain the event, recruit a lead
+ * partner and take donations in one closing section.
+ */
+export function DemoDayCampaign() {
+  return (
+    <section
+      id="demo-day"
+      className="w-full scroll-mt-20 bg-[#0a0a0a]"
+      data-bg-type="dark"
+    >
+      <div className="page-shell py-16 md:py-24 lg:py-28">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
+          <div className="min-w-0">
+            <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/55">
+              Our First Campaign
+            </p>
+            {/* The same masthead as /events/confluencia — the display wordmark
+                and the dated descriptor — so the band and the page read as one
+                campaign. Sized to the half-width column: ~6.25rem fits the
+                eleven letters beside the sheet from lg up. */}
+            <h2 className="mt-5">
+              <ConfluenciaDisplay className="block text-[16vw] text-white sm:text-8xl lg:text-[5.5rem] xl:text-[6.25rem]" />
+              <span className="sr-only">, {DEMO_DAY_DESCRIPTOR}</span>
+            </h2>
+            <p
+              className="mt-3 font-sans text-2xl font-black tracking-[-0.02em] md:text-3xl"
+              style={{ color: "#ffb81c" }}
+            >
+              DEVSA Demo Day {DEMO_DAY_PAVILION_YEAR}
+            </p>
+            <p className="mt-6 text-xl md:text-2xl font-light leading-[1.45] text-white/70">
+              San Antonio&apos;s builders, on a stage DEVSA owns. Once a year, an
+              industry partner brings the problem, the builders bring the work,
+              and investors are in the room when they show it.{" "}
+              <span className="font-normal text-white">
+                It happens if it is funded by {DEMO_DAY_DEADLINE}.
+              </span>
+            </p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              {/* Opens the event page's inquiry form with "Lead partner"
+                  already chosen — the form reads the #inquire-lead hash. */}
+              <Link
+                href="/events/confluencia#inquire-lead"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ffb81c] px-6 py-3 text-sm font-semibold text-[#0a0a0a] transition-opacity hover:opacity-90"
+              >
+                Lead <ConfluenciaName />
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/events/confluencia"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10"
+              >
+                See <ConfluenciaName />
+              </Link>
+            </div>
+          </div>
+
+          {/* The campaign's face, the same sheet that leads /events/confluencia,
+              so the band and the page read as one campaign. Only the sheet —
+              the event page's swaying flags and stars stay there. */}
+          <Link href="/events/confluencia" className="block" aria-label="See Confluencia">
+            <Image
+              src="/demo-day/papel-picado-sheet.webp"
+              alt="Confluencia, a DEVSA Demo Day: the DEVSA logo and the words DEMO DAY cut from a sheet of marigold papel picado"
+              width={1200}
+              height={896}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-auto w-full"
+            />
           </Link>
         </div>
       </div>
