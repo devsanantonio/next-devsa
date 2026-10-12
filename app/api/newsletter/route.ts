@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
 
@@ -88,7 +89,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { subscriptionId, adminEmail } = body;
+    const { subscriptionId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!subscriptionId || !adminEmail) {
       return NextResponse.json(

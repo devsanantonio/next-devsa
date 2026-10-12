@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
@@ -202,7 +203,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { submissionId, adminEmail } = body;
+    const { submissionId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!submissionId || !adminEmail) {
       return NextResponse.json(

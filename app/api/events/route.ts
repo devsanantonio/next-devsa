@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 
 // Helper to build community lookup map from Firestore
@@ -114,7 +115,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, organizerEmail } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled } = body;
+    const organizerEmail = await verifiedEmail(request);
 
     // An event needs at least one host — a community, a partner, or both
     if (!title || !date || !description || (!communityId && !partnerId) || !organizerEmail) {
@@ -205,7 +207,8 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, organizerEmail, communityId, communityName, partnerId, isOfficial, brand, detailsUrl } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl } = body;
+    const organizerEmail = await verifiedEmail(request);
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -311,7 +314,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, organizerEmail } = body;
+    const { eventId } = body;
+    const organizerEmail = await verifiedEmail(request);
 
     if (!eventId || !organizerEmail) {
       return NextResponse.json(
@@ -375,7 +379,8 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, organizerEmail, eventId, newCommunityId } = body;
+    const { action, eventId, newCommunityId } = body;
+    const organizerEmail = await verifiedEmail(request);
 
     if (!organizerEmail) {
       return NextResponse.json(

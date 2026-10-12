@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { PYSA_EVENT_ID, PYSA_HOST_COMMUNITY } from '@/data/pysa/2026';
 import {
@@ -46,11 +47,11 @@ const byNewest = (field: string) => (a: Record<string, unknown>, b: Record<strin
 // Get all data for admin dashboard
 export async function GET(request: NextRequest) {
   try {
-    const email = request.nextUrl.searchParams.get('email');
+    const email = await verifiedEmail(request);
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email is required for authentication' },
+        { error: 'Sign in required' },
         { status: 401 }
       );
     }

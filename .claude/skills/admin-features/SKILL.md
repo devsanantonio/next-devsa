@@ -39,7 +39,9 @@ The active tab syncs to a `?tab=` query param. Organizers land on `communities`,
 
 ## Permission model
 
-Every admin API route authenticates by looking up an email in `approved_admins`. There is no session token — the caller passes `adminEmail` (or `organizerEmail`, depending on the route; they are not interchangeable) in the body or query string and the server verifies it. `SUPER_ADMIN_EMAIL` in `lib/firebase-admin.ts` is the bootstrap account.
+**Identity comes from a Firebase ID token, never from the request body.** The admin page signs in with Firebase Auth (emailed sign-in link, or Google) and sends every request through `adminFetch`, which adds `Authorization: Bearer <idToken>`. Routes call `verifiedEmail(request)` from `lib/admin-auth.ts`, which verifies the token with the Admin SDK and returns the email only if Firebase has verified it; the route then looks that email up in `approved_admins` for role and community. The super admins no one can remove or demote are `PROTECTED_ADMIN_EMAILS` in `lib/protected-admins.ts` (jesse@devsanantonio.com and jesseovr@gmail.com); the server enforces it and the Manage Admins table hides those controls.
+
+Until 2026-10-12 the caller passed `adminEmail` / `organizerEmail` / `approverEmail` in the body or query string and the server trusted it — anyone who knew an admin's address (the super admin's is published on /about) had admin access. The client still sends those fields in some bodies; the server ignores them for identity. **A new admin route must call `verifiedEmail(request)`; never read an identity email from the request.** Sign-in requires the Email link and Google providers to be enabled in the Firebase console, with the site's domains under Authorized domains.
 
 | Role | Scope |
 |---|---|

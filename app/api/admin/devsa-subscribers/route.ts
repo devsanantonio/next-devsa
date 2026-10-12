@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
 // Helper to verify admin access
@@ -20,10 +21,10 @@ async function verifyAdmin(db: FirebaseFirestore.Firestore, email: string) {
 // GET - Fetch all DevSA subscribers
 export async function GET(request: NextRequest) {
   try {
-    const adminEmail = request.nextUrl.searchParams.get('adminEmail');
+    const adminEmail = await verifiedEmail(request);
 
     if (!adminEmail) {
-      return NextResponse.json({ error: 'Admin email is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Sign in required' }, { status: 400 });
     }
 
     const db = getDb();
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { adminEmail, subscriberId, name, email } = body;
+    const { subscriberId, name, email } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!adminEmail || !subscriberId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -78,7 +80,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { adminEmail, subscriberId } = body;
+    const { subscriberId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!adminEmail || !subscriberId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
@@ -123,7 +124,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { requestId, adminEmail } = body;
+    const { requestId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!requestId || !adminEmail) {
       return NextResponse.json(

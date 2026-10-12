@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin, type AccessRequest } from '@/lib/firebase-admin';
+import { verifiedEmail } from '@/lib/admin-auth';
+import { getDb, COLLECTIONS, type ApprovedAdmin, type AccessRequest } from '@/lib/firebase-admin';
+import { isProtectedAdmin } from '@/lib/protected-admins';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
 import { AccessApprovedEmail } from '@/lib/emails/access-approved';
 
 // Check if user is an approved admin
 export async function GET(request: NextRequest) {
   try {
-    const email = request.nextUrl.searchParams.get('email');
+    const email = await verifiedEmail(request);
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
+        { error: 'Sign in required' },
+        { status: 401 }
       );
     }
 
@@ -76,7 +78,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, role, communityId, approverEmail } = body;
+    const { email, role, communityId } = body;
+    const approverEmail = await verifiedEmail(request);
 
     if (!email || !role || !approverEmail) {
       return NextResponse.json(
@@ -112,7 +115,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase();
 
     // Protect super admin from having their role changed
-    if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (isProtectedAdmin(normalizedEmail)) {
       return NextResponse.json(
         { error: 'Cannot modify super admin account' },
         { status: 403 }
@@ -203,7 +206,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, approverEmail } = body;
+    const { email } = body;
+    const approverEmail = await verifiedEmail(request);
 
     if (!email || !approverEmail) {
       return NextResponse.json(
@@ -239,7 +243,7 @@ export async function DELETE(request: NextRequest) {
     const normalizedEmail = email.toLowerCase();
 
     // Protect super admin from being removed
-    if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (isProtectedAdmin(normalizedEmail)) {
       return NextResponse.json(
         { error: 'Cannot remove super admin account' },
         { status: 403 }
@@ -279,12 +283,14 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, firstName, lastName, profileImage } = body;
+    // Your own profile only: the email is the signed-in one, not a field.
+    const { firstName, lastName, profileImage } = body;
+    const email = await verifiedEmail(request);
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
+        { error: 'Sign in required' },
+        { status: 401 }
       );
     }
 

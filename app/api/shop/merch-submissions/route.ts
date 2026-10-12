@@ -1,3 +1,4 @@
+import { verifiedEmail } from '@/lib/admin-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin'
@@ -84,9 +85,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+// Admin and super admin only. This used to answer anyone who asked.
+export async function GET(request: NextRequest) {
   try {
     const db = getDb()
+    const email = await verifiedEmail(request)
+    const adminQuery = email
+      ? await db.collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get()
+      : null
+    const role = adminQuery && !adminQuery.empty ? adminQuery.docs[0].data().role : null
+    if (role !== 'admin' && role !== 'superadmin') {
+      return NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 })
+    }
     const snapshot = await db
       .collection(COLLECTIONS.MERCH_SUBMISSIONS)
       .orderBy('submittedAt', 'desc')

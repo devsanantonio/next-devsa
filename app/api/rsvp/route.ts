@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
@@ -165,12 +166,12 @@ export async function GET(request: NextRequest) {
   try {
     const eventId = request.nextUrl.searchParams.get('eventId');
     const communityId = request.nextUrl.searchParams.get('communityId');
-    const adminEmail = request.nextUrl.searchParams.get('adminEmail');
+    const adminEmail = await verifiedEmail(request);
     const format = request.nextUrl.searchParams.get('format'); // 'csv' for export
 
     if (!adminEmail) {
       return NextResponse.json(
-        { error: 'Admin email is required' },
+        { error: 'Sign in required' },
         { status: 400 }
       );
     }
@@ -274,7 +275,8 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { rsvpId, adminEmail } = body;
+    const { rsvpId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!rsvpId || !adminEmail) {
       return NextResponse.json(

@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, COLLECTIONS, SUPER_ADMIN_EMAIL, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { verifiedEmail } from '@/lib/admin-auth';
+import { getDb, COLLECTIONS, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { isProtectedAdmin } from '@/lib/protected-admins';
 
 // POST - Migrate static data to Firestore (super admin only)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { adminEmail, migrateType } = body;
+    const { migrateType } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!adminEmail) {
       return NextResponse.json(
-        { error: 'Admin email is required' },
+        { error: 'Sign in required' },
         { status: 400 }
       );
     }
 
     // Only super admin can run migrations
-    if (adminEmail.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (!isProtectedAdmin(adminEmail)) {
       return NextResponse.json(
         { error: 'Unauthorized - only super admin can run migrations' },
         { status: 403 }
@@ -69,11 +72,11 @@ export async function POST(request: NextRequest) {
 // GET - Check migration status
 export async function GET(request: NextRequest) {
   try {
-    const adminEmail = request.nextUrl.searchParams.get('adminEmail');
+    const adminEmail = await verifiedEmail(request);
 
     if (!adminEmail) {
       return NextResponse.json(
-        { error: 'Admin email is required' },
+        { error: 'Sign in required' },
         { status: 400 }
       );
     }

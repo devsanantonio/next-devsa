@@ -40,8 +40,18 @@ import {
   Megaphone
 } from "lucide-react"
 
+import {
+  isSignInWithEmailLink,
+  onAuthStateChanged,
+  sendSignInLinkToEmail,
+  signInWithEmailLink,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth"
+import { getAuthInstance, getGoogleProvider } from "@/lib/firebase"
 import { RichTextEditor } from "@/components/rich-text-editor"
 import { demoDayInterestLabel } from "@/lib/demo-day"
+import { isProtectedAdmin } from "@/lib/protected-admins"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
 import { useDragOrder } from "@/lib/hooks/use-drag-order"
@@ -228,8 +238,27 @@ const decodeEntities = (text: string): string =>
     .replace(/&#39;|&#x27;/g, "'")
     .replace(/&amp;/g, "&")
 
-// Protected super admin email - cannot be removed or modified
-const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com'
+/**
+ * Sign-in is Firebase Auth — an emailed sign-in link, or Google — and every
+ * request from this page carries the signed-in user's ID token. The server
+ * reads who you are from that token (lib/admin-auth.ts), never from an email
+ * in the request. Before 2026-10-12 this page signed in by trusting a typed
+ * email, and so did every admin API route.
+ *
+ * getIdToken() refreshes an expired token on its own, so a tab left open for
+ * hours keeps working.
+ */
+async function adminFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const user = getAuthInstance().currentUser
+  const headers = new Headers(init.headers)
+  if (user) headers.set("Authorization", `Bearer ${await user.getIdToken()}`)
+  return fetch(input, { ...init, headers })
+}
+
+/** Where the email a sign-in link was sent to waits until the link is opened. */
+const LINK_EMAIL_KEY = "devsa-admin-link-email"
+
+// Protected super admins — cannot be removed or modified. See lib/protected-admins.ts.
 
 // Helper to check if a role has admin-level access
 const hasAdminAccess = (role: string | null | undefined): boolean => {
@@ -252,6 +281,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(false)
+  const [linkSentTo, setLinkSentTo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("events")
@@ -369,14 +399,37 @@ export default function AdminPage() {
     return community?.name || communityId
   }
 
-  // Check auth on load
+  // Session: Firebase Auth. Finishes an emailed sign-in link if that is how
+  // the page was opened, then follows the signed-in user.
   useEffect(() => {
-    const storedEmail = localStorage.getItem("devsa-admin-email")
-    if (storedEmail) {
-      checkAdminStatus(storedEmail)
-    } else {
-      setIsLoading(false)
+    const auth = getAuthInstance()
+    // The old session was just an email in localStorage; retire it.
+    localStorage.removeItem("devsa-admin-email")
+
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      // Same browser: we saved the email when the link was sent. Different
+      // browser or device: ask, because the link alone is not enough.
+      const email =
+        localStorage.getItem(LINK_EMAIL_KEY) ||
+        window.prompt("Confirm the email address the sign-in link was sent to")
+      if (email) {
+        signInWithEmailLink(auth, email.trim().toLowerCase(), window.location.href)
+          .then(() => localStorage.removeItem(LINK_EMAIL_KEY))
+          .catch(() => setError("That sign-in link is invalid or has expired. Request a new one."))
+          .finally(() => window.history.replaceState(null, "", "/admin"))
+      }
     }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user?.email) {
+        checkAdminStatus(user.email.toLowerCase())
+      } else {
+        setIsAuthenticated(false)
+        setIsLoading(false)
+      }
+    })
+    return unsubscribe
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
@@ -421,7 +474,7 @@ export default function AdminPage() {
     setError(null)
     
     try {
-      const response = await fetch(`/api/admin/auth?email=${encodeURIComponent(email)}`)
+      const response = await adminFetch("/api/admin/auth")
       const data = await response.json()
 
       if (data.isAdmin) {
@@ -432,7 +485,6 @@ export default function AdminPage() {
         setAdminLastName(data.lastName || "")
         setAdminProfileImage(data.profileImage || "")
         setIsAuthenticated(true)
-        localStorage.setItem("devsa-admin-email", email)
         // Land on the section that matters most for the role — organizers open
         // on their own community, everyone else on Events. Skipped when the URL
         // already deep-links a section, so shared links still win.
@@ -441,8 +493,8 @@ export default function AdminPage() {
         }
         await fetchData(email, data.role, data.communityId)
       } else {
-        setError("You are not authorized to access the admin panel")
-        localStorage.removeItem("devsa-admin-email")
+        setError(`${email} isn't approved for the admin portal. Request access below, or sign in with the email your access was approved under.`)
+        await signOut(getAuthInstance())
       }
     } catch {
       setError("Failed to verify admin status")
@@ -470,7 +522,7 @@ export default function AdminPage() {
   ) => {
     setError(null)
     try {
-      const res = await fetch(`/api/${endpoint}`, {
+      const res = await adminFetch(`/api/${endpoint}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderedIds, adminEmail }),
@@ -497,10 +549,10 @@ export default function AdminPage() {
   const fetchData = async (email: string, role?: string, communityId?: string) => {
     try {
       const [adminDataRes, eventsRes, communitiesRes, partnersRes] = await Promise.all([
-        fetch(`/api/admin/data?email=${encodeURIComponent(email)}`),
-        fetch('/api/events?includeAll=true'),
-        fetch('/api/communities'),
-        fetch('/api/partners')
+        adminFetch("/api/admin/data"),
+        adminFetch('/api/events?includeAll=true'),
+        adminFetch('/api/communities'),
+        adminFetch('/api/partners')
       ])
 
       const adminData = await adminDataRes.json()
@@ -547,7 +599,7 @@ export default function AdminPage() {
       }
 
       // Fetch RSVPs
-      const rsvpsRes = await fetch(`/api/rsvp?adminEmail=${encodeURIComponent(email)}`)
+      const rsvpsRes = await adminFetch(`/api/rsvp?adminEmail=${encodeURIComponent(email)}`)
       if (rsvpsRes.ok) {
         const rsvpsData = await rsvpsRes.json()
         setRsvps(rsvpsData.rsvps || [])
@@ -557,7 +609,7 @@ export default function AdminPage() {
       const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
       if (isAdmin) {
         try {
-          const devsaRes = await fetch(`/api/admin/devsa-subscribers?adminEmail=${encodeURIComponent(email)}`)
+          const devsaRes = await adminFetch(`/api/admin/devsa-subscribers?adminEmail=${encodeURIComponent(email)}`)
           if (devsaRes.ok) {
             const devsaData = await devsaRes.json()
             setDevsaSubs(devsaData.subscribers || [])
@@ -566,7 +618,7 @@ export default function AdminPage() {
           // Silently fail — subscribers tab will show empty
         }
         try {
-          const demoDayRes = await fetch(`/api/admin/demo-day-inquiries?adminEmail=${encodeURIComponent(email)}`)
+          const demoDayRes = await adminFetch(`/api/admin/demo-day-inquiries?adminEmail=${encodeURIComponent(email)}`)
           if (demoDayRes.ok) {
             const demoDayData = await demoDayRes.json()
             setDemoDayInquiries(demoDayData.inquiries || [])
@@ -575,7 +627,7 @@ export default function AdminPage() {
           // Silently fail — the Demo Day tab will show empty
         }
         try {
-          const merchRes = await fetch('/api/shop/merch-submissions')
+          const merchRes = await adminFetch('/api/shop/merch-submissions')
           if (merchRes.ok) {
             const merchData = await merchRes.json()
             setMerchSubmissions(merchData.submissions || [])
@@ -663,7 +715,7 @@ export default function AdminPage() {
         url += `&eventId=${eventId}`
       }
       
-      const response = await fetch(url)
+      const response = await adminFetch(url)
       if (response.ok) {
         const blob = await response.blob()
         const downloadUrl = window.URL.createObjectURL(blob)
@@ -684,24 +736,52 @@ export default function AdminPage() {
     }
   }
 
+  // Emails a one-tap sign-in link. Sent whether or not the address is
+  // approved, so the form never reveals who has access; the approval check
+  // happens after the link proves the person owns the inbox.
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const email = (e.target as HTMLFormElement).email.value
-    await checkAdminStatus(email)
+    const email = String((e.target as HTMLFormElement).email.value).trim().toLowerCase()
+    setIsCheckingAuth(true)
+    setError(null)
+    try {
+      await sendSignInLinkToEmail(getAuthInstance(), email, {
+        url: `${window.location.origin}/admin`,
+        handleCodeInApp: true,
+      })
+      localStorage.setItem(LINK_EMAIL_KEY, email)
+      setLinkSentTo(email)
+    } catch {
+      setError("Couldn't send the sign-in link. Try again, or continue with Google.")
+    } finally {
+      setIsCheckingAuth(false)
+    }
   }
 
-  const handleLogout = () => {
+  const handleGoogleLogin = async () => {
+    setError(null)
+    try {
+      await signInWithPopup(getAuthInstance(), getGoogleProvider())
+    } catch (err) {
+      const code = (err as { code?: string })?.code
+      if (code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") {
+        setError("Google sign-in didn't complete. Try again, or use an email link.")
+      }
+    }
+  }
+
+  const handleLogout = async () => {
+    await signOut(getAuthInstance())
     setIsAuthenticated(false)
     setAdminEmail("")
     setAdminRole(null)
     setAdminCommunityId(null)
-    localStorage.removeItem("devsa-admin-email")
   }
 
   const handleApproveAccess = async (request: AccessRequest) => {
     setIsApprovingAccess(request.id)
     try {
-      const response = await fetch("/api/admin/auth", {
+      const response = await adminFetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -729,7 +809,7 @@ export default function AdminPage() {
     
     setIsRejectingAccess(requestId)
     try {
-      const response = await fetch("/api/access-request", {
+      const response = await adminFetch("/api/access-request", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -755,7 +835,7 @@ export default function AdminPage() {
     e.preventDefault()
     
     try {
-      const response = await fetch("/api/admin/auth", {
+      const response = await adminFetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -794,7 +874,7 @@ export default function AdminPage() {
     if (!confirm(`Remove admin access for ${email}?`)) return
     
     try {
-      const response = await fetch("/api/admin/auth", {
+      const response = await adminFetch("/api/admin/auth", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -883,7 +963,7 @@ export default function AdminPage() {
     const isCreate = !editingEvent.id
 
     try {
-      const response = await fetch("/api/events", {
+      const response = await adminFetch("/api/events", {
         method: isCreate ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -935,7 +1015,7 @@ export default function AdminPage() {
     
     setIsDeleting(eventId)
     try {
-      const response = await fetch("/api/events", {
+      const response = await adminFetch("/api/events", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -959,7 +1039,7 @@ export default function AdminPage() {
 
   const handleDemoDayStatus = async (inquiryId: string, status: DemoDayInquiryRow["status"]) => {
     try {
-      const response = await fetch("/api/admin/demo-day-inquiries", {
+      const response = await adminFetch("/api/admin/demo-day-inquiries", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inquiryId, status, adminEmail }),
@@ -978,7 +1058,7 @@ export default function AdminPage() {
   const handleDeleteDemoDayInquiry = async (inquiryId: string) => {
     if (!confirm("Delete this Confluencia inquiry? This action cannot be undone.")) return
     try {
-      const response = await fetch("/api/admin/demo-day-inquiries", {
+      const response = await adminFetch("/api/admin/demo-day-inquiries", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inquiryId, adminEmail }),
@@ -1000,7 +1080,7 @@ export default function AdminPage() {
     
     setIsDeletingNewsletter(subscriptionId)
     try {
-      const response = await fetch("/api/newsletter", {
+      const response = await adminFetch("/api/newsletter", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1028,7 +1108,7 @@ export default function AdminPage() {
 
     setIsDeletingVolunteer(signupId)
     try {
-      const response = await fetch("/api/volunteers", {
+      const response = await adminFetch("/api/volunteers", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ signupId, adminEmail }),
@@ -1053,7 +1133,7 @@ export default function AdminPage() {
     
     setIsDeletingRsvp(rsvpId)
     try {
-      const response = await fetch("/api/rsvp", {
+      const response = await adminFetch("/api/rsvp", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1081,7 +1161,7 @@ export default function AdminPage() {
     
     setIsDeletingSpeaker(submissionId)
     try {
-      const response = await fetch("/api/call-for-speakers", {
+      const response = await adminFetch("/api/call-for-speakers", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1109,7 +1189,7 @@ export default function AdminPage() {
     setIsMigrating(true)
     setError(null)
     try {
-      const response = await fetch("/api/admin/migrate", {
+      const response = await adminFetch("/api/admin/migrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1153,7 +1233,7 @@ export default function AdminPage() {
       formData.append('adminEmail', adminEmail)
       formData.append('communityId', newCommunity.id)
 
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -1185,7 +1265,7 @@ export default function AdminPage() {
     setError(null)
 
     try {
-      const response = await fetch("/api/communities", {
+      const response = await adminFetch("/api/communities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1238,7 +1318,7 @@ export default function AdminPage() {
       formData.append('adminEmail', adminEmail)
       formData.append('communityId', editingCommunity.id)
 
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -1289,7 +1369,7 @@ export default function AdminPage() {
       // unsaved partner still takes the partner path and lands as `new-<ts>`.
       formData.append('partnerId', partnerId)
 
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -1315,7 +1395,7 @@ export default function AdminPage() {
     setIsSavingCommunity(true)
     setError(null)
     try {
-      const response = await fetch("/api/communities", {
+      const response = await adminFetch("/api/communities", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1360,7 +1440,7 @@ export default function AdminPage() {
     setIsDeletingCommunity(communityId)
     setError(null)
     try {
-      const response = await fetch("/api/communities", {
+      const response = await adminFetch("/api/communities", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1388,7 +1468,7 @@ export default function AdminPage() {
     setIsSavingPartner(true)
     setError(null)
     try {
-      const response = await fetch("/api/partners", {
+      const response = await adminFetch("/api/partners", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...newPartner, adminEmail }),
@@ -1415,7 +1495,7 @@ export default function AdminPage() {
     setIsSavingPartner(true)
     setError(null)
     try {
-      const response = await fetch("/api/partners", {
+      const response = await adminFetch("/api/partners", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editingPartner, adminEmail }),
@@ -1442,7 +1522,7 @@ export default function AdminPage() {
     setIsDeletingPartner(partnerId)
     setError(null)
     try {
-      const response = await fetch("/api/partners", {
+      const response = await adminFetch("/api/partners", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: partnerId, adminEmail }),
@@ -1515,7 +1595,8 @@ export default function AdminPage() {
                     Sign in
                   </h1>
                   <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                    Enter the email your access was approved under.
+                    Use the email your access was approved under. We&apos;ll email
+                    you a one-tap sign-in link, or continue with Google.
                   </p>
                 </div>
 
@@ -1529,6 +1610,22 @@ export default function AdminPage() {
                   </div>
                 )}
 
+                {linkSentTo ? (
+                  <div className="rounded-lg border border-neutral-700 bg-neutral-800/60 p-4">
+                    <p className="text-sm font-semibold text-white">Check your inbox</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-neutral-400">
+                      We sent a sign-in link to <span className="text-neutral-200">{linkSentTo}</span>.
+                      Open it on this device to finish signing in. It expires in an hour.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setLinkSentTo(null)}
+                      className="mt-3 cursor-pointer text-[13px] font-medium text-[#ef426f] transition-colors hover:text-[#ff7096]"
+                    >
+                      Use a different email
+                    </button>
+                  </div>
+                ) : (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
                     <label
@@ -1559,13 +1656,31 @@ export default function AdminPage() {
                     {isCheckingAuth ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Verifying
+                        Sending
                       </>
                     ) : (
-                      "Continue"
+                      "Email me a sign-in link"
                     )}
                   </button>
                 </form>
+                )}
+
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-neutral-800" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">or</span>
+                  <div className="h-px flex-1 bg-neutral-800" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-lg border border-neutral-700 bg-neutral-800 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-neutral-600 hover:bg-neutral-700"
+                >
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
+                    <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4-5.5 4-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z"/>
+                  </svg>
+                  Continue with Google
+                </button>
 
                 {/* Previously a dead end for anyone not yet approved. */}
                 <p className="mt-5 text-center text-[13px] leading-relaxed text-neutral-500">
@@ -1858,7 +1973,7 @@ export default function AdminPage() {
                             onClick={async () => {
                               setIsSavingProfile(true)
                               try {
-                                const res = await fetch('/api/admin/auth', {
+                                const res = await adminFetch('/api/admin/auth', {
                                   method: 'PATCH',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({
@@ -2277,7 +2392,7 @@ export default function AdminPage() {
                               <button
                                 onClick={async () => {
                                   try {
-                                    const res = await fetch('/api/admin/devsa-subscribers', {
+                                    const res = await adminFetch('/api/admin/devsa-subscribers', {
                                       method: 'PUT',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({
@@ -2321,7 +2436,7 @@ export default function AdminPage() {
                                 onClick={async () => {
                                   if (confirm(`Remove ${sub.name || sub.email || 'this subscriber'}?`)) {
                                     try {
-                                      const res = await fetch('/api/admin/devsa-subscribers', {
+                                      const res = await adminFetch('/api/admin/devsa-subscribers', {
                                         method: 'DELETE',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({
@@ -2722,7 +2837,7 @@ export default function AdminPage() {
                         <tr key={admin.id} className="hover:bg-neutral-800/30 transition-colors">
                           <td className="py-4 px-4 text-sm font-medium text-white">
                             {admin.email}
-                            {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                            {isProtectedAdmin(admin.email) && (
                               <span className="ml-2 text-xs text-yellow-500">(Site Owner)</span>
                             )}
                           </td>
@@ -2763,8 +2878,8 @@ export default function AdminPage() {
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">
-                              {/* Edit button - not for super admin */}
-                              {admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
+                              {/* Edit button - not for the protected super admins */}
+                              {!isProtectedAdmin(admin.email) && (
                                 <button
                                   onClick={() => handleEditAdmin(admin)}
                                   className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
@@ -2772,8 +2887,8 @@ export default function AdminPage() {
                                   Edit
                                 </button>
                               )}
-                              {/* Prevent removing yourself or the super admin */}
-                              {admin.email !== adminEmail && admin.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() && (
+                              {/* Prevent removing yourself or a protected super admin */}
+                              {admin.email !== adminEmail && !isProtectedAdmin(admin.email) && (
                                 <button
                                   onClick={() => handleRemoveAdmin(admin.email)}
                                   className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
@@ -2781,7 +2896,7 @@ export default function AdminPage() {
                                   Remove
                                 </button>
                               )}
-                              {admin.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                              {isProtectedAdmin(admin.email) && (
                                 <span className="text-xs text-neutral-500 italic">Protected</span>
                               )}
                             </div>

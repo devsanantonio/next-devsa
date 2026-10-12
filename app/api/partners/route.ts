@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Partner, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // Only admins/superadmins may create, edit, or delete partners.
@@ -51,7 +52,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, video, isEasterEgg, adminEmail } = body;
+    const { id, name, logo, description, website, video, isEasterEgg } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !name || !logo || !description || !adminEmail) {
       return NextResponse.json(
@@ -93,7 +95,8 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, video, isEasterEgg, adminEmail } = body;
+    const { id, name, logo, description, website, video, isEasterEgg } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
       return NextResponse.json({ error: 'Partner ID and adminEmail are required' }, { status: 400 });
@@ -130,7 +133,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, adminEmail } = body;
+    const { id } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
       return NextResponse.json({ error: 'Partner ID and adminEmail are required' }, { status: 400 });
@@ -171,7 +175,8 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { orderedIds, adminEmail } = body as { orderedIds?: unknown; adminEmail?: string };
+    const { orderedIds } = body as { orderedIds?: unknown; adminEmail?: string };
+    const adminEmail = await verifiedEmail(request);
 
     if (!Array.isArray(orderedIds) || !orderedIds.every((id) => typeof id === 'string')) {
       return NextResponse.json({ error: 'orderedIds must be an array of ids' }, { status: 400 });

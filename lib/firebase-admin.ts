@@ -287,6 +287,8 @@ export interface Partner {
 }
 
 // Protected super admin - cannot be removed or have role changed
+// The original super admin. Who is protected from removal or demotion is
+// PROTECTED_ADMIN_EMAILS in lib/protected-admins.ts — check there, not here.
 export const SUPER_ADMIN_EMAIL = 'jesse@devsanantonio.com';
 
 export interface Event {

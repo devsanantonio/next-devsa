@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { put } from '@vercel/blob';
 import { getDb, COLLECTIONS, type ApprovedAdmin } from '@/lib/firebase-admin';
 
@@ -6,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const adminEmail = formData.get('adminEmail') as string;
+    const adminEmail = await verifiedEmail(request);
     const communityId = formData.get('communityId') as string;
     // Partner logos land in their own prefix. Without this every upload went to
     // `communities/`, so a partner logo would have been filed under a community

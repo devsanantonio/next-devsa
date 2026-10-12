@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
 /**
@@ -31,7 +32,7 @@ const STATUSES = ['new', 'contacted', 'closed'] as const;
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
-    if (!(await verifyAdmin(db, request.nextUrl.searchParams.get('adminEmail')))) return forbidden();
+    if (!(await verifyAdmin(db, await verifiedEmail(request)))) return forbidden();
 
     const snapshot = await db
       .collection(COLLECTIONS.DEMO_DAY_INQUIRIES)
@@ -55,7 +56,8 @@ export async function GET(request: NextRequest) {
 // PATCH { adminEmail, inquiryId, status } — move an inquiry along
 export async function PATCH(request: NextRequest) {
   try {
-    const { adminEmail, inquiryId, status } = await request.json();
+    const { inquiryId, status } = await request.json();
+    const adminEmail = await verifiedEmail(request);
     const db = getDb();
     if (!(await verifyAdmin(db, adminEmail))) return forbidden();
     if (!inquiryId || !STATUSES.includes(status)) {
@@ -76,7 +78,8 @@ export async function PATCH(request: NextRequest) {
 // DELETE { adminEmail, inquiryId }
 export async function DELETE(request: NextRequest) {
   try {
-    const { adminEmail, inquiryId } = await request.json();
+    const { inquiryId } = await request.json();
+    const adminEmail = await verifiedEmail(request);
     const db = getDb();
     if (!(await verifyAdmin(db, adminEmail))) return forbidden();
     if (!inquiryId) {

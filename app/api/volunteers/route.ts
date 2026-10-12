@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type VolunteerSignup } from '@/lib/firebase-admin';
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
@@ -207,7 +208,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { signupId, adminEmail } = body;
+    const { signupId } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!signupId || !adminEmail) {
       return NextResponse.json(

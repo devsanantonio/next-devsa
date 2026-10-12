@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // GET - Fetch all communities (public)
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, adminEmail } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !name || !logo || !description || !adminEmail) {
       return NextResponse.json(
@@ -120,7 +122,8 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, adminEmail } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
       return NextResponse.json(
@@ -206,7 +209,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, adminEmail } = body;
+    const { id } = body;
+    const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
       return NextResponse.json(
@@ -280,7 +284,8 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { orderedIds, adminEmail } = body as { orderedIds?: unknown; adminEmail?: string };
+    const { orderedIds } = body as { orderedIds?: unknown; adminEmail?: string };
+    const adminEmail = await verifiedEmail(request);
 
     if (!Array.isArray(orderedIds) || !orderedIds.every((id) => typeof id === 'string')) {
       return NextResponse.json({ error: 'orderedIds must be an array of ids' }, { status: 400 });
