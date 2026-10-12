@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useId, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { DEVSA_CUT } from "@/components/demo-day/devsa-cut"
 import { DD, FESTIVAL } from "@/components/demo-day/theme"
 import { DEMO_DAY_INDUSTRIES } from "@/lib/demo-day"
@@ -42,8 +42,15 @@ import { BUILDER_SYMBOLS, INDUSTRY_SYMBOLS } from "@/components/demo-day/papel-s
  * which would read as an endorsement nobody gave. Aerospace is a plane because
  * the builders' strip already has the rocket.
  *
- * Each strip namespaces its mask ids with useId(); two strips sharing
- * `dd-cut-0` would make a browser apply one strip's cuts to the other's sheets.
+ * Each strip namespaces its mask ids with its variant plus `name`; two strips
+ * sharing `dd-cut-0` would make a browser apply one strip's cuts to the
+ * other's sheets. A page that renders the same variant twice (the Confluencia
+ * page's mobile and desktop builders strips) must give each a distinct `name`.
+ *
+ * Not useId(): its ids come from the component's position in the tree, and
+ * when anything above the strip renders differently on the server and in the
+ * browser, they drift apart and React reports a hydration mismatch on every
+ * mask. A fixed name cannot drift.
  *
  * ## It moves
  *
@@ -177,14 +184,16 @@ function SheetCuts({ kind }: { kind: SheetKind }) {
 
 export function PapelPicado({
   variant = "builders",
+  name,
   className,
 }: {
   variant?: "builders" | "industries"
+  /** Distinguishes two strips of the same variant on one page. */
+  name?: string
   className?: string
 }) {
   const industries = variant === "industries"
-  // useId() returns ids like ":r1:"; keep them to characters safe in url(#…).
-  const uid = `dd-${variant}-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`
+  const uid = `dd-${variant}${name ? `-${name}` : ""}`
   const step = FLAG_W + GAP
   const width = FLAGS * step
   const height = FLAG_H + 18

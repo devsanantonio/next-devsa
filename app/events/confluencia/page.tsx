@@ -133,9 +133,9 @@ export default function ConfluenciaPage() {
           external monitors), where the name gets the top of the page. Two
           instances, one shown per breakpoint: the hidden one never intersects
           the viewport, so its animation loop never starts. */}
-      <PapelPicado className="-mt-2 lg:hidden" />
+      <PapelPicado name="mobile" className="-mt-2 lg:hidden" />
       <DemoDayHero />
-      <PapelPicado className="hidden lg:block" />
+      <PapelPicado name="desktop" className="hidden lg:block" />
       <DemoDayIndustries />
       <DemoDaySteps />
       <DemoDayWhy />
