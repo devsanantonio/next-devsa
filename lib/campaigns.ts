@@ -40,7 +40,8 @@ export const CAMPAIGNS = {
     summary:
       "DEVSA's Demo Day: once a year, an industry partner brings the problem, San Antonio's builders spend four weeks on it, and the best of the work is shown to the partner and investors on a stage DEVSA owns",
     href: "/events/confluencia",
-    // Pending board approval — a refund promise is the board's to make.
+    // Approved by the DEVSA board (confirmed by Jesse, 2026-10-12). Changing
+    // what happens to designated gifts is the board's call, not a copy edit.
     ifUnfunded:
       "Confluencia only goes ahead if it is funded by January 31, 2027. If it is not, every gift made to it is refunded.",
     // goal: unset until there is a venue quote. See DemoDayCampaign.
