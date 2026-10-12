@@ -427,7 +427,14 @@ export function DemoDayTerms() {
               , {DEMO_DAY.goal.covers}.
             </>
           )}{" "}
-          DEVSA is a 501(c)(3), so gifts may be tax-deductible —{" "}
+          Everyone at <ConfluenciaName /> is covered by DEVSA&apos;s{" "}
+          <Link
+            href="/code-of-conduct"
+            className="font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+          >
+            code of conduct
+          </Link>
+          . DEVSA is a 501(c)(3), so gifts may be tax-deductible —{" "}
           <Link
             href="/about#the-record"
             className="font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"

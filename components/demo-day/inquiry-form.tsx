@@ -218,6 +218,14 @@ export function DemoDayInquiryForm() {
               </p>
             )}
 
+            <p className="text-xs leading-relaxed text-white/55">
+              Partners, sponsors and builders at Confluencia follow DEVSA&apos;s{" "}
+              <a href="/code-of-conduct" className="text-white/80 underline underline-offset-4 hover:text-white">
+                code of conduct
+              </a>
+              .
+            </p>
+
             <button
               type="submit"
               disabled={submitting}

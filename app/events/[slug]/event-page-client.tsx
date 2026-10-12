@@ -60,6 +60,8 @@ interface Event {
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
   externalRsvpUrl?: string | null
+  /** DEVSA's own event — the only events the code of conduct governs directly. */
+  isOfficial?: boolean
 }
 
 interface EventPageClientProps {
@@ -667,6 +669,17 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     </div>
                     {rsvpError && (
                       <p className="text-sm text-red-600">{rsvpError}</p>
+                    )}
+                    {/* DEVSA's own events only: a group's event on the calendar
+                        runs under that group's rules, not DEVSA's. */}
+                    {event.isOfficial && (
+                      <p className="text-sm text-gray-500">
+                        This is a DEVSA event, and our{" "}
+                        <a href="/code-of-conduct" className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">
+                          code of conduct
+                        </a>{" "}
+                        applies.
+                      </p>
                     )}
                     <button
                       type="submit"
