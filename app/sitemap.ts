@@ -53,7 +53,6 @@ function staticRoutes(): MetadataRoute.Sitemap {
     // Below the conferences: a campaign for an event that only happens if it
     // is funded, not yet an event with a date.
     { url: `${baseUrl}/events/confluencia`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/branding`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: `${baseUrl}/signin`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ]

@@ -100,10 +100,18 @@ export const COLLECTIONS = {
   // referencing it" and "the data is gone" are different claims, and only the
   // first one is true.
   DEVSA_SUBSCRIBERS: 'devsa_subscribers',
+  // Logo submissions from the shop's "Submit Your Logo" form, removed
+  // 2026-10-12 along with its admin tab, and then the shop itself. Empty when
+  // checked that day.
   MERCH_SUBMISSIONS: 'merch_submissions',
   // Partner and sponsor inquiries from /events/confluencia. Admin and super admin
   // only — organizers never see them, in the API or the dashboard.
   DEMO_DAY_INQUIRIES: 'demo_day_inquiries',
+  // The shop's order audit trail. The shop, Printify integration and its
+  // reconcile cron were removed on 2026-10-12; nothing writes these now.
+  // `orders` holds one document: a June 2026 hat that was never produced
+  // (Printify accepted it but could not collect payment), refunded in Stripe
+  // and canceled in Printify. Kept as the record of that.
   FAILED_ORDERS: 'failed_orders',
   ORDERS: 'orders',
 } as const;
@@ -162,6 +170,9 @@ export interface SpeakerSubmission {
   eventId?: string;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
+  /** Who last set the status in the admin, and when. */
+  reviewedBy?: string;
+  reviewedAt?: Date;
 }
 
 /**

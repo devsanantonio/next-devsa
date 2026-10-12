@@ -116,8 +116,8 @@ export function TerminalDrawer({
                 {/* Shop came out of here with the desktop nav, and this is
                     where it was costing the most: it carried a green "New"
                     badge, which on a drawer with three items made merch the
-                    only thing flagged as worth a look. It is in the footer, on
-                    both breakpoints.
+                    only thing flagged as worth a look. The shop itself was
+                    removed on 2026-10-12.
 
                     The Support DEVSA button directly below has always been the
                     drawer's real action; the desktop bar now has the same one,

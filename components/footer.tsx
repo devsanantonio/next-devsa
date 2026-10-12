@@ -322,7 +322,6 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
                 <li><Link href="/buildingtogether" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Building Together</Link></li>
                 <li><Link href="/events" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Community Calendar</Link></li>
                 <li><Link href="/about" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">About</Link></li>
-                <li><Link href="/shop" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Shop</Link></li>
                 <li><Link href="/code-of-conduct" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Code of Conduct</Link></li>
               </ul>
 

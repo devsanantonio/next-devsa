@@ -4,12 +4,10 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { TerminalDrawer } from "./terminal-drawer"
-import { useCart } from "./shop/cart-context"
 import { LogoContextMenu } from "./logo-context-menu"
 
 export function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const { openCart, totalItems } = useCart()
   const pathname = usePathname()
 
   return (
@@ -79,9 +77,9 @@ export function Navbar() {
                     Shop was the only commercial item in a 501(c)(3)'s
                     navigation, sitting beside the two pages the site is
                     actually about — and it outranked the donation ask, which
-                    had no navigation presence at all. It is unchanged in the
-                    footer, so this is a demotion rather than a removal; the
-                    nav is now the two pages plus the ask.
+                    had no navigation presence at all. The nav is now the two
+                    pages plus the ask. (The shop itself was removed on
+                    2026-10-12.)
 
                     A button rather than a link, because it is not a
                     destination in the sense the other two are: those say "go
@@ -99,22 +97,6 @@ export function Navbar() {
                   Donate
                 </Link>
               </div>
-
-              {/* Cart Icon — visible on all pages when items in cart */}
-              {totalItems > 0 && (
-                <button
-                  onClick={openCart}
-                  className="relative cursor-pointer p-3 rounded-xl hover:bg-white/5 transition-all duration-200 text-white"
-                  aria-label="Open cart"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                  <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 bg-[#ef426f] text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                    {totalItems > 9 ? "9+" : totalItems}
-                  </span>
-                </button>
-              )}
 
               {/* Terminal dots — mobile only */}
               <button

@@ -15,8 +15,6 @@ import { SiteAnalytics } from "@/components/site-analytics"
 import { Suspense } from "react"
 import { LayoutChrome } from "@/components/layout-chrome"
 import { listCommunities } from "@/lib/communities"
-import { CartProvider } from "@/components/shop/cart-context"
-import { CartSlideOut } from "@/components/shop/cart-slide-out"
 
 /**
  * Oswald — the display face the Startup + Tech Week activations are set in.
@@ -271,10 +269,7 @@ export default async function RootLayout({
       </head>
       <body className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${spaceGrotesk.variable} ${oswald.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <CartProvider>
-            <LayoutChrome communities={communities}>{children}</LayoutChrome>
-            <CartSlideOut />
-          </CartProvider>
+          <LayoutChrome communities={communities}>{children}</LayoutChrome>
           <SiteAnalytics />
         </Suspense>
       </body>

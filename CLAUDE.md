@@ -55,11 +55,21 @@ A route that calls `checkBotId()` without a matching entry in `instrumentation-c
 
 The three Discord digest crons went too, and with them all of `lib/discord.ts` and the `rss-parser` dependency.
 
-**`/api/events/weekly-digest` has since been restored** — it posts the week's calendar to the DEVSA Discord's #community-calendar every Monday at 15:00 UTC. `lib/discord.ts` came back with only the events sender in it; the jobs, news and YouTube webhooks did not, and `/api/news-digest` and `/api/youtube-digest` remain gone along with `rss-parser`. `vercel.json` carries two crons: that one and `/api/shop/reconcile`.
+**`/api/events/weekly-digest` has since been restored** — it posts the week's calendar to the DEVSA Discord's #community-calendar every Monday at 15:00 UTC. `lib/discord.ts` came back with only the events sender in it; the jobs, news and YouTube webhooks did not, and `/api/news-digest` and `/api/youtube-digest` remain gone along with `rss-parser`. `vercel.json` carries one cron: that one. (`/api/shop/reconcile` went with the shop.)
 
 It needs `DISCORD_EVENTS_WEBHOOK_URL`, which was deleted from Vercel when the crons were removed and has to be set again. Missing, the digest fails soft: the cron returns `success: true` having posted nothing.
 
 **Their thirteen Firestore collections still hold 2,444 documents.** Nothing reads them, but the data is there — including 12 `job_board_users`, real accounts whose owners can no longer sign in. See the `COLLECTIONS` comment in `lib/firebase-admin.ts` for the counts and what is safe to clear.
+
+## Removed: the shop
+
+`/shop`, its product and checkout pages, `/api/shop/*`, the Printify integration (`lib/printify.ts`, `lib/shop-fulfillment.ts`), the cart that wrapped every page in the root layout, the shop OG cards, the order-confirmation email and the daily reconcile cron all went on 2026-10-12. `/shop` and `/shop/*` 301 to `/buildingtogether#donate`.
+
+Why: one order through the site in seven months, and that one was never produced. Stripe pays DEVSA and Printify charges its own wallet, and nothing connects the two, so every sale needed someone to front the print cost; the June order's charge failed, Printify did not retry, and it sat on hold for four months until it was refunded. At the June 16 prices most items were break-even at best.
+
+The Stripe webhook also sent donation thank-you emails. That handler now lives at `/api/donate/webhook`, and the Stripe endpoint points at `https://www.devsa.community/api/donate/webhook` — the canonical host, because Stripe does not follow redirects (that is what broke the shop's webhook in June 2026).
+
+`PRINTIFY_TOKEN` and `PRINTIFY_SHOP_ID` are dead in Vercel. `STRIPE_WEBHOOK_SECRET` is not — the donation webhook uses it.
 
 ## Firestore uses a NAMED database
 
@@ -69,8 +79,8 @@ Any script written against this data must pass `'devsa'` explicitly. `getFiresto
 
 Two things that survived and look like they shouldn't:
 
-- **Stripe** — the shop uses it. Only Connect went.
-- **`CRON_SECRET`** — still guards `/api/shop/reconcile`, `/api/shop/orders` and `/api/events/weekly-digest`.
+- **Stripe** — donations use it (`/api/donate`, thank-you emails from `/api/donate/webhook`). Only Connect went, and later the shop.
+- **`CRON_SECRET`** — still guards `/api/events/weekly-digest`.
 
 `STATUS_API_TOKEN` and `DISCORD_BOT_BASE_URL` are now dead. They drove the Discord bot behind the coworking page's live status and its "ping an admin" button; both routes went when the space closed on 19 September 2026. Nothing in the app reads either variable — they can be deleted from Vercel.
 

@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
       // Demo Day was renamed Confluencia (a DEVSA Demo Day) before launch.
       // Permanent, so any link already shared lands on the new address.
       { source: "/events/demo-day", destination: "/events/confluencia", permanent: true },
+      // The shop was removed on 2026-10-12. Old product links and shares land
+      // on the donation form, the nearest thing to what a shopper came to do.
+      { source: "/shop", destination: "/buildingtogether#donate", permanent: true },
+      { source: "/shop/:path*", destination: "/buildingtogether#donate", permanent: true },
     ];
   },
 };

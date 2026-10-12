@@ -58,7 +58,7 @@ Accent pink is `#ef426f`. Body/muted greys in use: `#111827`, `#6b7280`, `#9ca3a
 
 ## Dynamic cards
 
-For per-record cards (`og/event/[slug]`, `og/buildingtogether/[slug]`, `og/shop/[productId]`), fetch the record inside the handler and always render something — a missing document should produce a generic branded card, not a 500. A broken share image is worse than a plain one.
+For per-record cards (`og/event/[slug]`, `og/buildingtogether/[slug]`), fetch the record inside the handler and always render something — a missing document should produce a generic branded card, not a 500. A broken share image is worse than a plain one.
 
 Remote images must be absolute URLs on hosts allow-listed in `next.config.ts`.
 
