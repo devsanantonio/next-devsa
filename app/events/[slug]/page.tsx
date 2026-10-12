@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     
     // OG best practices: title under 60 chars, description 120-160 chars
     const title = `${event.title} | DEVSA`
-    const description = `Join ${community?.name || 'the community'} on ${eventDate} in San Antonio. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem.`
+    const description = `Join ${community?.name || 'the community'} on ${eventDate} in San Antonio. DEVSA is the bridge between the city's builders, tech groups and partners.`
     
     return {
       // The root layout's template appends " | DEVSA"; `title` above keeps the
@@ -124,7 +124,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // `notFound()` after streaming has begun cannot take back a 200, so the
   // defense against a soft 404 being indexed is the robots directive.
   const fallbackTitle = "Community Event"
-  const fallbackDescription = "Join the San Antonio tech community. DEVSA bridges passionate builders, local partners, and the growing tech ecosystem."
+  const fallbackDescription = "Join the San Antonio tech community. DEVSA is the bridge between the city's builders, tech groups and partners."
   
   return {
     title: fallbackTitle,

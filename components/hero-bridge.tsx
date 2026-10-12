@@ -130,6 +130,73 @@ function ScrollingColumn({
   )
 }
 
+interface HeroEvent {
+  title: string
+  slug: string
+  date: string
+  communityName?: string
+}
+
+/**
+ * The next event on the calendar, under the buttons — the proof that the
+ * calendar the hero points at is alive. Fetched from /api/events at request
+ * time like every other public surface, so an admin's add or delete shows on
+ * the next load. Renders nothing until it has an event, and nothing at all if
+ * there is none upcoming, rather than a placeholder.
+ *
+ * The date is formatted after the fetch, in the browser, so there is no
+ * server/client difference for hydration to trip on; America/Chicago because
+ * every event is in San Antonio, wherever the reader is.
+ */
+function NextUp() {
+  const [next, setNext] = useState<HeroEvent | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/events")
+      .then((r) => (r.ok ? r.json() : { events: [] }))
+      .then((d: { events?: HeroEvent[] }) => {
+        if (cancelled) return
+        const now = Date.now()
+        const upcoming = (d.events || []).find((e) => e.slug && new Date(e.date).getTime() > now)
+        setNext(upcoming ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (!next) return null
+
+  const when = new Date(next.date).toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Chicago",
+  })
+
+  return (
+    <Link
+      href={`/events/${next.slug}`}
+      className="group inline-flex max-w-full items-center gap-3 rounded-lg text-sm text-white/70 transition-colors hover:text-white"
+    >
+      <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+        <span className="absolute inline-flex h-full w-full rounded-full bg-[#00b2a9] opacity-60 motion-safe:animate-ping" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00b2a9]" />
+      </span>
+      <span className="min-w-0 truncate">
+        <span className="font-medium text-white/85">Next up:</span>{" "}
+        <span className="text-white group-hover:underline underline-offset-4">{next.title}</span>
+        {next.communityName && <span> · {next.communityName}</span>}
+        <span> · {when}</span>
+      </span>
+    </Link>
+  )
+}
+
 export function HeroBridge() {
   const [columnCount, setColumnCount] = useState(3)
   const [isMobile, setIsMobile] = useState(false)
@@ -227,16 +294,24 @@ export function HeroBridge() {
           ))}
         </div>
 
-        {/* Desktop gradients — heavy left for text readability, fading right to reveal images */}
-        <div className="hidden md:block absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/85 to-transparent z-10" />
-        <div className="hidden md:block absolute inset-0 bg-linear-to-b from-neutral-950/70 via-transparent to-neutral-950/70 z-10" />
+        {/* Desktop shading. Dark behind the copy, which needs it, and clear
+            over the right side, which is where the photos have to read.
+
+            There used to be three stacked layers here, and together they held
+            the gallery under the left ~60% of the screen at roughly 10–15%
+            visibility — the strongest thing on the page reduced to a grey wash.
+            The text column ends near 48% of the width, so the dark hold stops
+            just past it and fades out by 70%; top and bottom get a lighter
+            vignette so the nav and the next section still meet the hero
+            cleanly. */}
         <div
           className="hidden md:block absolute inset-0 z-10"
           style={{
             background:
-              "linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 40%, rgba(10,10,10,0.15) 65%, transparent 100%)",
+              "linear-gradient(to right, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.88) 36%, rgba(10,10,10,0.45) 52%, rgba(10,10,10,0.08) 70%, transparent 100%)",
           }}
         />
+        <div className="hidden md:block absolute inset-0 bg-linear-to-b from-neutral-950/50 via-transparent to-neutral-950/60 z-10" />
 
         {/* Mobile fades — blend the gallery into the text above and below */}
         <div className="md:hidden absolute inset-x-0 top-0 h-20 bg-linear-to-b from-neutral-950 to-transparent z-10" />
@@ -252,10 +327,17 @@ export function HeroBridge() {
           className="space-y-7 md:space-y-8"
         >
           <div className="space-y-4 md:space-y-5 max-w-[96rem] md:max-w-7xl">
+            {/* What DEVSA is, in one line. It used to read "DEVSA bridges the
+                gap between passionate builders, local partners, and the growing
+                tech ecosystem" — the right image in stock words, saying neither
+                what the gap was nor who was on each side. A bridge is still the
+                image (the section below is "Three Audiences, One Bridge."), now
+                as a noun with the three audiences named. "Nonprofit" is left to
+                the About section one scroll down, where it is explained. */}
             <p className="md:text-pretty text-lg md:text-2xl text-white/75 leading-relaxed md:leading-[1.45] font-normal">
-              DEVSA bridges the gap between{" "}
-              <strong className="font-semibold text-white">passionate builders</strong>,
-              local partners, and the growing tech ecosystem in San&nbsp;Antonio.
+              DEVSA is{" "}
+              <strong className="font-semibold text-white">the bridge</strong>{" "}
+              between San&nbsp;Antonio&apos;s builders, tech groups and partners.
             </p>
 
             {/* "Discover communities, events, and resources — all in one
@@ -307,6 +389,8 @@ export function HeroBridge() {
               Partners &amp; Communities
             </Link>
           </div>
+
+          <NextUp />
         </motion.div>
       </div>
     </section>
