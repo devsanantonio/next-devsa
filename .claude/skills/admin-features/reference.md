@@ -86,14 +86,6 @@ The aggregate fetch behind most tabs: newsletter, speakers, volunteers, access r
 
 Speaker and volunteer submissions are scoped **per event**, not per community. The route holds a table mapping a host community to the `eventId` whose submissions its organizers may see (currently PySanAntonio and Access Granted, imported from `data/pysa/2026.ts` and `data/access-granted/2026.ts`). Adding an event to that table is the whole job.
 
-### `GET /api/admin/devsa-subscribers`
-
-Separate route over `devsa_subscribers`. Also supports `PUT` and `DELETE`.
-
-### `GET /api/shop/merch-submissions`
-
-Backs the Merch tab, over `merch_submissions`. The public `POST` side is rate-limited to 5 per hour per IP and uploads its file to Vercel Blob.
-
 ## Communities and partners
 
 ### `POST /api/upload`

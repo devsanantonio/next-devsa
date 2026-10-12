@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { hostedEventIdsFor } from '@/lib/hosted-events';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
@@ -255,6 +256,67 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('Delete speaker submission error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+const REVIEW_STATUSES: SpeakerSubmission['status'][] = ['pending', 'approved', 'rejected'];
+
+/**
+ * Set a submission's review status. Admins can review any event; an organizer
+ * only the events their community hosts — the same scope /api/admin/data uses
+ * to decide what they can read, from the same helper. Changing a status sends
+ * nothing to the speaker.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const adminEmail = await verifiedEmail(request);
+    if (!adminEmail) {
+      return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
+    }
+
+    const { submissionId, status } = await request.json();
+    if (!submissionId || !REVIEW_STATUSES.includes(status)) {
+      return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
+    }
+
+    const db = getDb();
+    const adminQuery = await db
+      .collection(COLLECTIONS.APPROVED_ADMINS)
+      .where('email', '==', adminEmail.toLowerCase())
+      .limit(1)
+      .get();
+    if (adminQuery.empty) {
+      return NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 });
+    }
+
+    const ref = db.collection(COLLECTIONS.SPEAKERS).doc(submissionId);
+    const submissionDoc = await ref.get();
+    if (!submissionDoc.exists) {
+      return NextResponse.json({ error: 'Speaker submission not found' }, { status: 404 });
+    }
+
+    const adminData = adminQuery.docs[0].data();
+    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+    if (!isAdmin) {
+      const eventIds = await hostedEventIdsFor(adminData.communityId);
+      if (!eventIds.includes(submissionDoc.data()?.eventId)) {
+        return NextResponse.json({ error: 'Unauthorized - not your event' }, { status: 403 });
+      }
+    }
+
+    await ref.update({
+      status,
+      reviewedBy: adminEmail.toLowerCase(),
+      reviewedAt: new Date(),
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Update speaker status error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }

@@ -1,6 +1,6 @@
 ---
 name: admin-features
-description: How the DEVSA admin dashboard works — the single-page tabbed shell, the event and community slide-out drawers, the organizer permission model, RSVP capture and CSV export, logo uploads, and the submission inboxes (speakers, volunteers, access requests, merch). Use when working on app/admin/page.tsx, the admin API routes (/api/admin/*, /api/events, /api/communities, /api/partners, /api/rsvp, /api/newsletter, /api/upload), or the RichTextEditor.
+description: How the DEVSA admin dashboard works — the single-page tabbed shell, the event and community slide-out drawers, the organizer permission model, RSVP capture and CSV export, logo uploads, and the submission inboxes (speakers, volunteers, access requests, Confluencia). Use when working on app/admin/page.tsx, the admin API routes (/api/admin/*, /api/events, /api/communities, /api/partners, /api/rsvp, /api/newsletter, /api/upload), or the RichTextEditor.
 ---
 
 # Admin dashboard
@@ -27,13 +27,12 @@ Eleven, not the five an earlier version of this skill listed. `Tab` is a union n
 | `rsvps` | RSVPs | all roles (organizers see only their community) |
 | `communities` | Communities, or **My Community** for organizers | all roles |
 | `partners` | Partners | `hasAdminAccess` |
-| `devsa` | DEVSA Subscribers | `hasAdminAccess` |
 | `newsletter` | Newsletter | `hasAdminAccess` |
 | `speakers` | Speakers | all roles, scoped |
 | `volunteers` | Volunteers | all roles, scoped |
 | `access` | Access Requests | `hasAdminAccess` |
 | `admins` | Manage Admins | `hasAdminAccess` |
-| `merch` | Merch Submissions | `hasAdminAccess` |
+| `demoday` | Confluencia | `hasAdminAccess` |
 
 The active tab syncs to a `?tab=` query param. Organizers land on `communities`, everyone else on `events`.
 
@@ -55,13 +54,13 @@ Until 2026-10-12 the caller passed `adminEmail` / `organizerEmail` / `approverEm
 
 ## Reads go through one endpoint
 
-`GET /api/admin/data` is the dashboard's aggregate fetch — newsletter, speakers, volunteers, access requests, admins and communities in one response, already permission-filtered. Events, partners, RSVPs, DEVSA subscribers and merch submissions have their own routes.
+`GET /api/admin/data` is the dashboard's aggregate fetch — newsletter, speakers, volunteers, access requests, admins and communities in one response, already permission-filtered. Events, partners, RSVPs and Confluencia inquiries have their own routes.
 
 If you add a tab, prefer extending `/api/admin/data` over a new route, unless the data is large or needs its own query params.
 
 ## Firestore collections
 
-Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, never write string literals. The dashboard touches: `events`, `communities`, `partners`, `event_rsvps`, `newsletter_subscriptions`, `devsa_subscribers`, `speaker_submissions`, `volunteer_signups`, `access_requests`, `approved_admins`, `merch_submissions`.
+Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, never write string literals. The dashboard touches: `events`, `communities`, `partners`, `event_rsvps`, `newsletter_subscriptions`, `speaker_submissions`, `volunteer_signups`, `access_requests`, `approved_admins`, `demo_day_inquiries`.
 
 `getDb()` opens the **named** database `'devsa'`, not `(default)`. Any script you write against this data must pass `'devsa'` explicitly or it reads a different, near-empty database in the same project and reports zeros for everything.
 
@@ -103,3 +102,9 @@ Logos go to Vercel Blob via `POST /api/upload`. Allow-list: JPEG, PNG, WebP, SVG
 | `partnerId` | `partners/{id}-{ts}.{ext}` | admin/superadmin only |
 
 The branch keys on `partnerId !== null`, not on truthiness, so an unsaved record can still upload — it lands as `new-{ts}` and the form carries the returned URL into the create request. That distinction is also what stops an organizer reaching the partner path: sending `partnerId` takes the admin-only branch instead of falling through to the community check.
+
+## List tabs use the shared table system
+
+Newsletter, Volunteers, Access Requests, Manage Admins and Confluencia are all built from `components/admin/data-table.tsx`: `TabHeader` (title, one-line summary of counts, actions), `DataTable`/`Th`/`Tr`/`Td`, `PrimaryCell` for the first column, `Pill`, `DateCell`, `LongText` for notes and messages, `RowAction(s)`, `EmptyState` and `ToolbarButton`. A new list tab should be assembled from these, not from class strings copied out of a neighbor — that is how the five tabs ended up with five header styles.
+
+Readable text never goes below `text-neutral-400`. On the admin panel's ground `neutral-500` measures 4.3:1 and `neutral-600` 2.5:1, both under AA. Speakers is a review queue (list + detail) rather than a table, but its header uses `TabHeader` too.

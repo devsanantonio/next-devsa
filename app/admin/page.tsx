@@ -30,14 +30,16 @@ import {
   Settings,
   LogOut,
   User,
-  RocketIcon,
   X,
   Bell,
   Menu,
   Home,
   Download,
   Handshake,
-  Megaphone
+  Megaphone,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 import {
@@ -54,17 +56,23 @@ import { demoDayInterestLabel } from "@/lib/demo-day"
 import { isProtectedAdmin } from "@/lib/protected-admins"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
+import {
+  TabHeader,
+  DataTable,
+  Th,
+  Tr,
+  Td,
+  PrimaryCell,
+  MailLink,
+  Pill,
+  DateCell,
+  LongText,
+  RowAction,
+  RowActions,
+  EmptyState,
+  ToolbarButton,
+} from "@/components/admin/data-table"
 import { useDragOrder } from "@/lib/hooks/use-drag-order"
-
-interface DevSASubscriber {
-  id: string
-  name: string
-  email: string
-  source: "luma" | "meetup"
-  subscribedAt: string
-  status: "active"
-  location?: string
-}
 
 interface NewsletterSubscription {
   id: string
@@ -108,6 +116,18 @@ interface SpeakerSubmission {
   eventId?: string
   submittedAt: string
   status: string
+}
+
+type SpeakerStatus = "pending" | "approved" | "rejected"
+
+// Records written before review existed may have no status; they are unreviewed.
+const speakerStatus = (s: SpeakerSubmission): SpeakerStatus =>
+  s.status === "approved" || s.status === "rejected" ? s.status : "pending"
+
+const SPEAKER_STATUS: Record<SpeakerStatus, { label: string; dot: string; chip: string }> = {
+  pending: { label: "To review", dot: "bg-neutral-400", chip: "bg-neutral-700/60 text-neutral-200" },
+  approved: { label: "Accepted", dot: "bg-emerald-400", chip: "bg-emerald-500/15 text-emerald-300" },
+  rejected: { label: "Declined", dot: "bg-red-400", chip: "bg-red-500/15 text-red-300" },
 }
 
 interface AccessRequest {
@@ -206,7 +226,7 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "devsa" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "merch" | "demoday"
+type Tab = "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday"
 
 /**
  * A Demo Day partner or sponsor inquiry, as /api/admin/demo-day-inquiries
@@ -304,6 +324,13 @@ export default function AdminPage() {
   const [volunteers, setVolunteers] = useState<VolunteerSignup[]>([])
   const [volunteerEventFilter, setVolunteerEventFilter] = useState<string>("all")
   const [speakerEventFilter, setSpeakerEventFilter] = useState<string>("all")
+  const [speakerStatusFilter, setSpeakerStatusFilter] = useState<"all" | SpeakerStatus>("pending")
+  const [speakerSearch, setSpeakerSearch] = useState("")
+  const [selectedSpeakerId, setSelectedSpeakerId] = useState<string | null>(null)
+  // Below lg the list and the detail can't sit side by side, so one replaces
+  // the other; this says which.
+  const [speakerDetailOpen, setSpeakerDetailOpen] = useState(false)
+  const [updatingSpeakerStatus, setUpdatingSpeakerStatus] = useState<string | null>(null)
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -381,13 +408,12 @@ export default function AdminPage() {
   const [isUploadingNewLogo, setIsUploadingNewLogo] = useState(false)
   const [isDeletingCommunity, setIsDeletingCommunity] = useState<string | null>(null)
   const [isDevsaAccordionOpen, setIsDevsaAccordionOpen] = useState(false)
-  const [devsaSourceFilter, setDevsaSourceFilter] = useState<"luma" | "meetup">("luma")
   const [newsletterCommunityFilter, setNewsletterCommunityFilter] = useState<string>("all")
+  const [newsletterSearch, setNewsletterSearch] = useState("")
+  const [newsletterStatus, setNewsletterStatus] = useState<"all" | "active" | "unsubscribed">("all")
+  const [newsletterPage, setNewsletterPage] = useState(0)
   const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
-  const [devsaSubs, setDevsaSubs] = useState<DevSASubscriber[]>([])
-  const [merchSubmissions, setMerchSubmissions] = useState<{id: string; communityName: string; contactName: string; contactEmail: string; description: string; logoUrl: string; status: string; submittedAt: string}[]>([])
   const [demoDayInquiries, setDemoDayInquiries] = useState<DemoDayInquiryRow[]>([])
-  const [editingDevsaSub, setEditingDevsaSub] = useState<DevSASubscriber | null>(null)
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
   const [editEventCustomCommunityName, setEditEventCustomCommunityName] = useState("")
@@ -435,7 +461,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "devsa", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "merch", "demoday",
+      "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -605,18 +631,9 @@ export default function AdminPage() {
         setRsvps(rsvpsData.rsvps || [])
       }
 
-      // Fetch DevSA subscribers from Firestore (admin only)
+      // Admin-only data
       const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
       if (isAdmin) {
-        try {
-          const devsaRes = await adminFetch(`/api/admin/devsa-subscribers?adminEmail=${encodeURIComponent(email)}`)
-          if (devsaRes.ok) {
-            const devsaData = await devsaRes.json()
-            setDevsaSubs(devsaData.subscribers || [])
-          }
-        } catch {
-          // Silently fail — subscribers tab will show empty
-        }
         try {
           const demoDayRes = await adminFetch(`/api/admin/demo-day-inquiries?adminEmail=${encodeURIComponent(email)}`)
           if (demoDayRes.ok) {
@@ -625,15 +642,6 @@ export default function AdminPage() {
           }
         } catch {
           // Silently fail — the Demo Day tab will show empty
-        }
-        try {
-          const merchRes = await adminFetch('/api/shop/merch-submissions')
-          if (merchRes.ok) {
-            const merchData = await merchRes.json()
-            setMerchSubmissions(merchData.submissions || [])
-          }
-        } catch {
-          // Silently fail
         }
       }
     } catch {
@@ -1153,6 +1161,34 @@ export default function AdminPage() {
       setError("Failed to delete RSVP")
     } finally {
       setIsDeletingRsvp(null)
+    }
+  }
+
+  // Optimistic: the row changes at once and reverts if the API refuses.
+  // `next` is the submission to land on when this one leaves the current
+  // filter, so working through "To review" moves straight to the next talk.
+  const handleSpeakerStatus = async (submissionId: string, status: SpeakerStatus, next: string | null) => {
+    const previous = speakers.find((s) => s.id === submissionId)?.status
+    setUpdatingSpeakerStatus(submissionId)
+    setSpeakers((list) => list.map((s) => (s.id === submissionId ? { ...s, status } : s)))
+    if (speakerStatusFilter !== "all" && speakerStatusFilter !== status) setSelectedSpeakerId(next)
+    try {
+      const response = await adminFetch("/api/call-for-speakers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId, status }),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to update status")
+      }
+    } catch (err) {
+      setSpeakers((list) =>
+        list.map((s) => (s.id === submissionId ? { ...s, status: previous ?? "pending" } : s))
+      )
+      setError(err instanceof Error ? err.message : "Failed to update status")
+    } finally {
+      setUpdatingSpeakerStatus(null)
     }
   }
 
@@ -1702,7 +1738,6 @@ export default function AdminPage() {
 
   // Derived nav + notification data for the sidebar shell
   const pendingAccessCount = accessRequests.filter((r) => r.status === "pending").length
-  const pendingMerchCount = merchSubmissions.filter((s) => s.status === "pending").length
   const newDemoDayCount = demoDayInquiries.filter((i) => i.status === "new").length
 
   type NavItem = { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }
@@ -1717,7 +1752,12 @@ export default function AdminPage() {
   }
   const eventsNav: NavItem = { id: "events", label: "Events", icon: CalendarDays, count: events.length }
   const rsvpsNav: NavItem = { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length }
-  const speakersNav: NavItem = { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length }
+  const speakersNav: NavItem = {
+    id: "speakers",
+    label: "Speakers",
+    icon: Mic2,
+    count: speakers.filter((s) => speakerStatus(s) === "pending").length,
+  }
   const volunteersNav: NavItem = { id: "volunteers", label: "Volunteers", icon: Users, count: volunteers.length }
 
   // Organizers lead with their own community, then the things they run. Speakers
@@ -1733,16 +1773,36 @@ export default function AdminPage() {
       ]
     : [eventsNav, rsvpsNav, myCommunityNav]
 
-  const adminNav: NavItem[] = [
-    { id: "partners", label: "Partners", icon: Handshake, count: partners.length },
-    { id: "devsa", label: "DEVSA Subscribers", icon: RocketIcon, count: devsaSubs.length },
-    { id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.length },
-    { id: "speakers", label: "Speakers", icon: Mic2, count: speakers.length },
-    { id: "volunteers", label: "Volunteers", icon: Users, count: volunteers.length },
-    { id: "access", label: "Access Requests", icon: Users, count: accessRequests.length, alert: pendingAccessCount },
-    { id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length },
-    { id: "merch", label: "Merch Submissions", icon: Upload, count: merchSubmissions.length, alert: pendingMerchCount },
-    { id: "demoday", label: "Confluencia", icon: Megaphone, count: demoDayInquiries.length, alert: newDemoDayCount },
+  /**
+   * Admins and super admins see everything, so the sidebar groups it by what
+   * the work is: the calendar, the directory, the audience, the inbox of
+   * things waiting on someone, and the team. Organizers keep their short
+   * mainNav list — this replaces only the admin view.
+   *
+   * DEVSA Subscribers was removed 2026-10-12: its 221 Luma calendar contacts
+   * were imported into the newsletter, and its 166 Meetup rows have no email.
+   * The devsa_subscribers collection is kept as the import's source record.
+   */
+  const adminGroups: { label: string; items: NavItem[] }[] = [
+    { label: "Calendar", items: [eventsNav, rsvpsNav] },
+    {
+      label: "Directory",
+      items: [myCommunityNav, { id: "partners", label: "Partners", icon: Handshake, count: partners.length }],
+    },
+    {
+      label: "Audience",
+      items: [{ id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.filter((s) => s.status === "active").length }],
+    },
+    {
+      label: "Inbox",
+      items: [
+        { id: "demoday", label: "Confluencia", icon: Megaphone, count: demoDayInquiries.length, alert: newDemoDayCount },
+        { id: "access", label: "Access Requests", icon: Users, count: pendingAccessCount, alert: pendingAccessCount },
+        speakersNav,
+        volunteersNav,
+      ],
+    },
+    { label: "Team", items: [{ id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length }] },
   ]
 
   const tabTitles: Record<Tab, string> = {
@@ -1750,22 +1810,17 @@ export default function AdminPage() {
     rsvps: "RSVPs",
     communities: adminRole === "organizer" ? "My Community" : "Communities",
     partners: "Partners",
-    devsa: "DEVSA Subscribers",
     newsletter: "Newsletter",
     speakers: "Speakers",
     volunteers: "Volunteers",
     access: "Access Requests",
     admins: "Manage Admins",
-    merch: "Merch Submissions",
     demoday: "Confluencia Inquiries",
   }
 
   const notifications: { id: Tab; label: string; icon: typeof Users }[] = [
     ...(pendingAccessCount > 0
       ? [{ id: "access" as Tab, label: `${pendingAccessCount} access request${pendingAccessCount > 1 ? "s" : ""} pending review`, icon: Users }]
-      : []),
-    ...(pendingMerchCount > 0
-      ? [{ id: "merch" as Tab, label: `${pendingMerchCount} merch submission${pendingMerchCount > 1 ? "s" : ""} pending review`, icon: Upload }]
       : []),
     ...(hasAdminAccess(adminRole) && newDemoDayCount > 0
       ? [{ id: "demoday" as Tab, label: `${newDemoDayCount} new Confluencia inquir${newDemoDayCount > 1 ? "ies" : "y"}`, icon: Megaphone }]
@@ -1844,14 +1899,17 @@ export default function AdminPage() {
 
         {/* Nav */}
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          <div className="space-y-1">
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">General</p>
-            {mainNav.map(renderNavItem)}
-          </div>
-          {hasAdminAccess(adminRole) && (
+          {hasAdminAccess(adminRole) ? (
+            adminGroups.map((group) => (
+              <div key={group.label} className="space-y-1">
+                <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">{group.label}</p>
+                {group.items.map(renderNavItem)}
+              </div>
+            ))
+          ) : (
             <div className="space-y-1">
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">Administration</p>
-              {adminNav.map(renderNavItem)}
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">General</p>
+              {mainNav.map(renderNavItem)}
             </div>
           )}
         </nav>
@@ -2143,8 +2201,49 @@ export default function AdminPage() {
           {/* Newsletter Tab - Admin Only */}
           {activeTab === "newsletter" && hasAdminAccess(adminRole) && (
             <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <h2 className="text-xl font-bold tracking-tight text-white">Newsletter Subscriptions</h2>
+              {/* The audience at a glance, then search and filters. Paged at 25:
+                  the list passed 200 with the Luma calendar import and grows
+                  with every RSVP opt-in. */}
+              <TabHeader
+                title="Newsletter"
+                summary={
+                  <>
+                  {newsletter.filter((s) => s.status === "active").length} active subscribers
+                  {" · "}
+                  {newsletter.filter((s) => s.source === "luma-calendar").length} Luma calendar
+                  {" · "}
+                  {newsletter.filter((s) => s.source?.startsWith("event-rsvp:")).length} from RSVPs
+                  {newsletter.some((s) => s.status !== "active") && (
+                    <>
+                      {" · "}
+                      {newsletter.filter((s) => s.status !== "active").length} unsubscribed
+                    </>
+                  )}
+                  </>
+                }
+              />
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="relative flex-1 sm:min-w-56">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                  <input
+                    type="search"
+                    value={newsletterSearch}
+                    onChange={(e) => { setNewsletterSearch(e.target.value); setNewsletterPage(0) }}
+                    placeholder="Search email or source"
+                    aria-label="Search subscribers"
+                    className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-2 pl-9 pr-3 text-sm text-white placeholder:text-neutral-500 focus:border-neutral-500 focus:outline-none"
+                  />
+                </div>
+                <select
+                  value={newsletterStatus}
+                  onChange={(e) => { setNewsletterStatus(e.target.value as typeof newsletterStatus); setNewsletterPage(0) }}
+                  aria-label="Filter by status"
+                  className="rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-300 focus:border-neutral-500 focus:outline-none"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="unsubscribed">Unsubscribed</option>
+                </select>
                 {/* Community Group Filter */}
                 <div className="relative">
                   <button
@@ -2152,7 +2251,7 @@ export default function AdminPage() {
                     className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 transition-colors"
                   >
                     <Users className="h-4 w-4 text-neutral-400" />
-                    {newsletterCommunityFilter === "all" ? "All Groups" : getCommunityNameFromState(newsletterCommunityFilter)}
+                    {newsletterCommunityFilter === "all" ? "All Groups" : newsletterCommunityFilter === "luma-calendar" ? "Luma calendar subscribers" : getCommunityNameFromState(newsletterCommunityFilter)}
                     <ChevronDown className={`h-4 w-4 text-neutral-400 transition-transform ${showNewsletterCommunityDropdown ? "rotate-180" : ""}`} />
                   </button>
                   {showNewsletterCommunityDropdown && (
@@ -2160,7 +2259,7 @@ export default function AdminPage() {
                       <div className="fixed inset-0 z-40" onClick={() => setShowNewsletterCommunityDropdown(false)} />
                       <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-xl border border-neutral-700 bg-neutral-800 py-1 shadow-xl max-h-64 overflow-y-auto">
                         <button
-                          onClick={() => { setNewsletterCommunityFilter("all"); setShowNewsletterCommunityDropdown(false) }}
+                          onClick={() => { setNewsletterCommunityFilter("all"); setNewsletterPage(0); setShowNewsletterCommunityDropdown(false) }}
                           className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                             newsletterCommunityFilter === "all" ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
                           }`}
@@ -2177,7 +2276,7 @@ export default function AdminPage() {
                           return (
                             <button
                               key={c.id}
-                              onClick={() => { setNewsletterCommunityFilter(c.id); setShowNewsletterCommunityDropdown(false) }}
+                              onClick={() => { setNewsletterCommunityFilter(c.id); setNewsletterPage(0); setShowNewsletterCommunityDropdown(false) }}
                               className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                                 newsletterCommunityFilter === c.id ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
                               }`}
@@ -2187,8 +2286,19 @@ export default function AdminPage() {
                             </button>
                           )
                         })}
+                        {/* The 221 Luma calendar subscribers imported 2026-10-12: they
+                            subscribed to DEVSA's calendar on Luma, not to one event. */}
                         <button
-                          onClick={() => { setNewsletterCommunityFilter("uncategorized"); setShowNewsletterCommunityDropdown(false) }}
+                          onClick={() => { setNewsletterCommunityFilter("luma-calendar"); setNewsletterPage(0); setShowNewsletterCommunityDropdown(false) }}
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                            newsletterCommunityFilter === "luma-calendar" ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
+                          }`}
+                        >
+                          Luma calendar subscribers
+                          <span className="ml-auto text-xs text-neutral-500">{newsletter.filter(sub => sub.source === "luma-calendar").length}</span>
+                        </button>
+                        <button
+                          onClick={() => { setNewsletterCommunityFilter("uncategorized"); setNewsletterPage(0); setShowNewsletterCommunityDropdown(false) }}
                           className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                             newsletterCommunityFilter === "uncategorized" ? "bg-[#ef426f]/20 text-[#ef426f]" : "text-neutral-300 hover:bg-neutral-700"
                           }`}
@@ -2197,7 +2307,7 @@ export default function AdminPage() {
                           <span className="ml-auto text-xs text-neutral-500">{newsletter.filter(sub => {
                             const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
                             const ev = slug ? events.find(e => e.slug === slug) : null
-                            return !ev
+                            return !ev && sub.source !== "luma-calendar"
                           }).length}</span>
                         </button>
                       </div>
@@ -2206,266 +2316,113 @@ export default function AdminPage() {
                 </div>
               </div>
               {(() => {
-                const filteredNewsletter = newsletterCommunityFilter === "all" 
-                  ? newsletter 
-                  : newsletter.filter(sub => {
-                      const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
-                      const ev = slug ? events.find(e => e.slug === slug) : null
-                      if (newsletterCommunityFilter === "uncategorized") return !ev
-                      return ev?.communityId === newsletterCommunityFilter
-                    })
+                const PAGE = 25
+                const q = newsletterSearch.trim().toLowerCase()
+                const describe = (sub: NewsletterSubscription) => {
+                  const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
+                  const event = slug ? events.find(e => e.slug === slug) : null
+                  const community = event ? communities.find(c => c.id === event.communityId) : null
+                  const origin = event?.title || (sub.source === "luma-calendar" ? "Luma calendar subscriber" : sub.source || "Direct signup")
+                  return { event, community, origin }
+                }
+                const filteredNewsletter = newsletter.filter(sub => {
+                  const { event, community, origin } = describe(sub)
+                  if (newsletterStatus !== "all" && (newsletterStatus === "active") !== (sub.status === "active")) return false
+                  if (newsletterCommunityFilter === "luma-calendar" && sub.source !== "luma-calendar") return false
+                  if (newsletterCommunityFilter === "uncategorized" && (event || sub.source === "luma-calendar")) return false
+                  if (!["all", "luma-calendar", "uncategorized"].includes(newsletterCommunityFilter) && event?.communityId !== newsletterCommunityFilter) return false
+                  if (q && ![sub.email, origin, community?.name ?? ""].some(v => v.toLowerCase().includes(q))) return false
+                  return true
+                })
+                const pages = Math.max(1, Math.ceil(filteredNewsletter.length / PAGE))
+                const page = Math.min(newsletterPage, pages - 1)
+                const pageRows = filteredNewsletter.slice(page * PAGE, page * PAGE + PAGE)
+                const exportCsv = () => {
+                  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+                  const rows = filteredNewsletter.map(sub => {
+                    const { community, origin } = describe(sub)
+                    return [sub.email, sub.status, origin, community?.name ?? "", new Date(sub.subscribedAt).toISOString().split("T")[0]].map(esc).join(",")
+                  })
+                  const blob = new Blob(["\ufeff" + ["Email,Status,Source,Community,Subscribed", ...rows].join("\n")], { type: "text/csv;charset=utf-8;" })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = `newsletter-${new Date().toISOString().split("T")[0]}.csv`
+                  document.body.appendChild(a)
+                  a.click()
+                  document.body.removeChild(a)
+                  URL.revokeObjectURL(url)
+                }
                 return filteredNewsletter.length === 0 ? (
-                  <p className="text-neutral-400 text-center py-8">No newsletter subscriptions{newsletterCommunityFilter !== "all" ? " for this group" : ""} yet.</p>
+                  <EmptyState>No subscribers match{q ? ` "${newsletterSearch}"` : ""} with these filters.</EmptyState>
                 ) : (
-                  <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-neutral-800">
-                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
-                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Community</th>
-                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Event</th>
-                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                          <th className="text-left py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Subscribed</th>
-                          <th className="text-right py-3 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-800/50">
-                        {filteredNewsletter.map((sub) => {
-                          const eventSlug = sub.source?.startsWith('event-rsvp:') 
-                            ? sub.source.replace('event-rsvp:', '') 
-                            : null
-                          const event = eventSlug ? events.find(e => e.slug === eventSlug) : null
-                          const community = event ? communities.find(c => c.id === event.communityId) : null
-                          
-                          return (
-                            <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
-                              <td className="py-2.5 px-4 text-sm font-semibold text-white whitespace-nowrap">{sub.email}</td>
-                              <td className="py-2.5 px-4 whitespace-nowrap">
-                                {community ? (
-                                  <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#ef426f]">
-                                    {community.name}
-                                  </span>
-                                ) : (
-                                  <span className="text-sm text-neutral-500">—</span>
-                                )}
-                              </td>
-                              <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap max-w-50 truncate">
-                                {event?.title || (sub.source || "Direct signup")}
-                              </td>
-                              <td className="py-2.5 px-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                                  sub.status === "active"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "bg-neutral-500/20 text-neutral-400"
-                                }`}>
-                                  {sub.status}
-                                </span>
-                              </td>
-                              <td className="py-2.5 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">
-                                {new Date(sub.subscribedAt).toLocaleDateString()}
-                              </td>
-                              <td className="py-2.5 px-4 text-right whitespace-nowrap">
-                                <button
+                  <div>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-[13px] tabular-nums text-neutral-400">
+                      Showing {page * PAGE + 1}–{Math.min(filteredNewsletter.length, page * PAGE + PAGE)} of {filteredNewsletter.length}
+                    </p>
+                    <ToolbarButton onClick={exportCsv} icon={<Download className="h-4 w-4" />}>
+                      Export CSV ({filteredNewsletter.length})
+                    </ToolbarButton>
+                  </div>
+                  <DataTable>
+                    <thead>
+                      <tr>
+                        <Th>Email</Th>
+                        <Th>Community</Th>
+                        <Th>Source</Th>
+                        <Th>Status</Th>
+                        <Th>Subscribed</Th>
+                        <Th align="right"><span className="sr-only">Actions</span></Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageRows.map((sub) => {
+                        const { community, origin } = describe(sub)
+                        return (
+                          <Tr key={sub.id}>
+                            <Td><span className="font-medium text-white">{sub.email}</span></Td>
+                            <Td>
+                              {community ? <Pill tone="pink">{community.name}</Pill> : <span className="text-neutral-400">—</span>}
+                            </Td>
+                            <Td className="max-w-[16rem] truncate">{origin}</Td>
+                            <Td>
+                              <Pill tone={sub.status === "active" ? "green" : "neutral"}>
+                                {sub.status === "active" ? "Active" : "Unsubscribed"}
+                              </Pill>
+                            </Td>
+                            <Td><DateCell value={sub.subscribedAt} /></Td>
+                            <Td align="right">
+                              <RowActions>
+                                <RowAction
+                                  tone="danger"
                                   onClick={() => handleDeleteNewsletter(sub.id)}
                                   disabled={isDeletingNewsletter === sub.id}
-                                  className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                                  icon={isDeletingNewsletter === sub.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                 >
-                                  {isDeletingNewsletter === sub.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-3 w-3" />
-                                  )}
                                   Delete
-                                </button>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+                                </RowAction>
+                              </RowActions>
+                            </Td>
+                          </Tr>
+                        )
+                      })}
+                    </tbody>
+                  </DataTable>
+                  {pages > 1 && (
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <ToolbarButton onClick={() => setNewsletterPage(Math.max(0, page - 1))} disabled={page === 0}>
+                        Previous
+                      </ToolbarButton>
+                      <span className="text-[13px] tabular-nums text-neutral-400">Page {page + 1} of {pages}</span>
+                      <ToolbarButton onClick={() => setNewsletterPage(Math.min(pages - 1, page + 1))} disabled={page >= pages - 1}>
+                        Next
+                      </ToolbarButton>
+                    </div>
+                  )}
                   </div>
                 )
               })()}
-            </div>
-          )}
-
-          {/* DevSA Newsletter Subscribers Tab - Admin & Super Admin Only */}
-          {activeTab === "devsa" && hasAdminAccess(adminRole) && (
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-bold tracking-tight text-white">Subscribers from {devsaSourceFilter === "luma" ? "Luma" : "Meetup"}</h2>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
-                      <Shield className="h-3 w-3" /> Admin Only
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(["luma", "meetup"] as const).map((source) => {
-                    const count = devsaSubs.filter(s => s.source === source).length
-                    return (
-                      <button
-                        key={source}
-                        onClick={() => setDevsaSourceFilter(source)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                          devsaSourceFilter === source
-                            ? source === "luma" 
-                              ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                              : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700"
-                        }`}
-                      >
-                        {source === "luma" ? "Luma" : "Meetup"}
-                        <span className="text-[10px] opacity-70">({count})</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div className="overflow-hidden">
-                <table className="w-full table-fixed">
-                  <thead>
-                    <tr className="border-b border-neutral-800">
-                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[25%]">Name</th>
-                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[30%]">Email</th>
-                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[10%]">Source</th>
-                      <th className="text-left py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[15%]">Subscribed</th>
-                      <th className="text-right py-3 px-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider w-[20%]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-800/50">
-                    {devsaSubs
-                      .filter(sub => sub.source === devsaSourceFilter)
-                      .sort((a, b) => {
-                        const parseDate = (d: string) => {
-                          if (d.includes('T')) return new Date(d).getTime()
-                          const parsed = new Date(d)
-                          return isNaN(parsed.getTime()) ? 0 : parsed.getTime()
-                        }
-                        return parseDate(b.subscribedAt) - parseDate(a.subscribedAt)
-                      })
-                      .map((sub) => (
-                      <tr key={sub.id} className="hover:bg-neutral-800/30 transition-colors">
-                        <td className="py-2 px-3 text-sm font-semibold text-white truncate">
-                          {editingDevsaSub?.id === sub.id ? (
-                            <input
-                              type="text"
-                              value={editingDevsaSub.name}
-                              onChange={(e) => setEditingDevsaSub({ ...editingDevsaSub, name: e.target.value })}
-                              className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-[#ef426f] focus:outline-none"
-                            />
-                          ) : (
-                            sub.name || "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3 text-sm text-neutral-300 truncate">
-                          {editingDevsaSub?.id === sub.id ? (
-                            <input
-                              type="email"
-                              value={editingDevsaSub.email}
-                              onChange={(e) => setEditingDevsaSub({ ...editingDevsaSub, email: e.target.value })}
-                              className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-[#ef426f] focus:outline-none"
-                            />
-                          ) : (
-                            sub.email || "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3">
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                            sub.source === "luma"
-                              ? "bg-purple-500/20 text-purple-400"
-                              : "bg-blue-500/20 text-blue-400"
-                          }`}>
-                            {sub.source === "luma" ? "Luma" : "Meetup"}
-                          </span>
-                        </td>
-                        <td className="py-2 px-3 text-xs text-neutral-400">
-                          {sub.subscribedAt.includes('T') 
-                            ? new Date(sub.subscribedAt).toLocaleDateString() 
-                            : sub.subscribedAt}
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          {editingDevsaSub?.id === sub.id ? (
-                            <div className="flex items-center justify-end gap-1">
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const res = await adminFetch('/api/admin/devsa-subscribers', {
-                                      method: 'PUT',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                        adminEmail,
-                                        subscriberId: editingDevsaSub.id,
-                                        name: editingDevsaSub.name,
-                                        email: editingDevsaSub.email,
-                                      }),
-                                    })
-                                    if (res.ok) {
-                                      setDevsaSubs(prev => prev.map(s => s.id === editingDevsaSub.id ? editingDevsaSub : s))
-                                    } else {
-                                      setError('Failed to update subscriber')
-                                    }
-                                  } catch {
-                                    setError('Failed to update subscriber')
-                                  }
-                                  setEditingDevsaSub(null)
-                                }}
-                                className="inline-flex items-center gap-1 rounded-lg bg-green-500/20 px-2 py-1 text-xs font-semibold text-green-400 hover:bg-green-500/30 transition-colors"
-                              >
-                                <CheckCircle className="h-3 w-3" />
-                                Save
-                              </button>
-                              <button
-                                onClick={() => setEditingDevsaSub(null)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-neutral-700/50 px-2 py-1 text-xs font-semibold text-neutral-400 hover:bg-neutral-700 transition-colors"
-                              >
-                                <XCircle className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-end gap-1">
-                              <button
-                                onClick={() => setEditingDevsaSub({ ...sub })}
-                                className="inline-flex items-center gap-1 rounded-lg bg-neutral-700/50 px-2 py-1 text-xs font-semibold text-neutral-300 hover:bg-neutral-700 transition-colors"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (confirm(`Remove ${sub.name || sub.email || 'this subscriber'}?`)) {
-                                    try {
-                                      const res = await adminFetch('/api/admin/devsa-subscribers', {
-                                        method: 'DELETE',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                          adminEmail,
-                                          subscriberId: sub.id,
-                                        }),
-                                      })
-                                      if (res.ok) {
-                                        setDevsaSubs(prev => prev.filter(s => s.id !== sub.id))
-                                      } else {
-                                        setError('Failed to delete subscriber')
-                                      }
-                                    } catch {
-                                      setError('Failed to delete subscriber')
-                                    }
-                                  }
-                                }}
-                                className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </div>
           )}
 
@@ -2476,137 +2433,307 @@ export default function AdminPage() {
             const speakerEvents = Array.from(
               new Set(speakers.map((s) => s.eventId || "—"))
             ).sort()
-            const filteredSpeakers =
+            const inEvent =
               speakerEventFilter === "all"
                 ? speakers
                 : speakers.filter((s) => (s.eventId || "—") === speakerEventFilter)
+            const statusCount = (st: SpeakerStatus) => inEvent.filter((s) => speakerStatus(s) === st).length
+            const q = speakerSearch.trim().toLowerCase()
+            const filteredSpeakers = inEvent.filter(
+              (s) =>
+                (speakerStatusFilter === "all" || speakerStatus(s) === speakerStatusFilter) &&
+                (!q ||
+                  [s.sessionTitle, s.name, s.company, s.email]
+                    .some((v) => v?.toLowerCase().includes(q)))
+            )
+            const selectedIndex = Math.max(
+              0,
+              filteredSpeakers.findIndex((s) => s.id === selectedSpeakerId)
+            )
+            const selected = filteredSpeakers[selectedIndex]
+            const neighbour = (offset: number) => filteredSpeakers[selectedIndex + offset]?.id ?? null
+            const select = (id: string | null) => {
+              setSelectedSpeakerId(id)
+              setSpeakerDetailOpen(true)
+            }
+            const statusTabs: { value: "all" | SpeakerStatus; label: string; count: number }[] = [
+              { value: "pending", label: SPEAKER_STATUS.pending.label, count: statusCount("pending") },
+              { value: "approved", label: SPEAKER_STATUS.approved.label, count: statusCount("approved") },
+              { value: "rejected", label: SPEAKER_STATUS.rejected.label, count: statusCount("rejected") },
+              { value: "all", label: "All", count: inEvent.length },
+            ]
+            const fact = (label: string, value?: string) =>
+              value ? (
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</dt>
+                  <dd className="mt-1 text-sm text-neutral-200">{value}</dd>
+                </div>
+              ) : null
             return (
             <div>
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                <h2 className="text-xl font-bold tracking-tight text-white">
-                  Speaker Submissions{" "}
-                  <span className="text-base font-normal text-neutral-500">
-                    ({filteredSpeakers.length})
-                  </span>
-                </h2>
-                <div className="flex flex-wrap items-center gap-3">
-                  <AdminCombobox
-                    className="w-64"
-                    value={speakerEventFilter}
-                    onChange={setSpeakerEventFilter}
-                    options={[
-                      { value: "all", label: "All events", count: speakers.length },
-                      ...speakerEvents.map((ev) => ({
-                        value: ev,
-                        label: ev,
-                        count: speakers.filter((s) => (s.eventId || "—") === ev).length,
-                      })),
-                    ]}
+              <TabHeader
+                title="Speaker Submissions"
+                summary={`${statusCount("pending")} to review · ${statusCount("approved")} accepted · ${statusCount("rejected")} declined`}
+                actions={
+                  <>
+                    <AdminCombobox
+                      className="w-64"
+                      value={speakerEventFilter}
+                      onChange={setSpeakerEventFilter}
+                      options={[
+                        { value: "all", label: "All events", count: speakers.length },
+                        ...speakerEvents.map((ev) => ({
+                          value: ev,
+                          label: ev,
+                          count: speakers.filter((s) => (s.eventId || "—") === ev).length,
+                        })),
+                      ]}
+                    />
+                    <ToolbarButton
+                      onClick={() => handleExportSpeakers(filteredSpeakers, speakerEventFilter)}
+                      disabled={filteredSpeakers.length === 0}
+                      icon={<Download className="h-4 w-4" />}
+                    >
+                      Export CSV
+                    </ToolbarButton>
+                  </>
+                }
+              />
+
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap gap-1 rounded-xl border border-neutral-800 bg-neutral-900/60 p-1">
+                  {statusTabs.map((t) => (
+                    <button
+                      key={t.value}
+                      onClick={() => setSpeakerStatusFilter(t.value)}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                        speakerStatusFilter === t.value
+                          ? "bg-neutral-700 text-white"
+                          : "text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      {t.label} <span className="text-neutral-500">{t.count}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="relative min-w-[14rem] flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                  <input
+                    type="search"
+                    value={speakerSearch}
+                    onChange={(e) => setSpeakerSearch(e.target.value)}
+                    placeholder="Search title, speaker, company or email"
+                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder:text-neutral-500 focus:border-neutral-600 focus:outline-none"
                   />
-                  <button
-                    onClick={() => handleExportSpeakers(filteredSpeakers, speakerEventFilter)}
-                    disabled={filteredSpeakers.length === 0}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50"
-                  >
-                    <Download className="h-4 w-4" />
-                    Export CSV
-                  </button>
                 </div>
               </div>
+
               {filteredSpeakers.length === 0 ? (
-                <p className="text-neutral-400 text-center py-8">No speaker submissions yet.</p>
+                <p className="rounded-xl border border-neutral-800 py-12 text-center text-neutral-400">
+                  {speakers.length === 0
+                    ? "No speaker submissions yet."
+                    : speakerStatusFilter === "pending" && !q
+                      ? "Nothing left to review."
+                      : "No submissions match."}
+                </p>
               ) : (
-                <div className="space-y-4">
-                  {filteredSpeakers.map((speaker) => (
-                    <div key={speaker.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
-                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                        <div>
-                          <div className="mb-2 flex flex-wrap items-center gap-2">
-                            {speaker.eventId && (
-                              <span className="rounded-full bg-neutral-700/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
-                                {speaker.eventId}
-                              </span>
-                            )}
-                            {speaker.track && (
-                              <span className="rounded-full bg-[#ec228d]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ec228d]">
-                                {speaker.track}
-                              </span>
-                            )}
-                            {speaker.audienceLevel && (
-                              <span className="rounded-full bg-[#4a90d9]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4a90d9]">
-                                {speaker.audienceLevel}
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="text-lg font-bold tracking-tight text-white">{speaker.sessionTitle}</h3>
-                          <p className="text-neutral-400 text-sm mt-1">
-                            {speaker.name} {speaker.company && <span className="text-neutral-500">• {speaker.company}</span>}
-                          </p>
-                          <p className="text-neutral-500 text-sm">{speaker.email}</p>
-                          {speaker.linkedin && (
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+                  {/* The queue */}
+                  <ul
+                    className={`${speakerDetailOpen ? "hidden lg:block" : ""} divide-y divide-neutral-800 overflow-hidden rounded-xl border border-neutral-800 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto`}
+                  >
+                    {filteredSpeakers.map((s) => {
+                      const st = SPEAKER_STATUS[speakerStatus(s)]
+                      const active = selected?.id === s.id
+                      return (
+                        <li key={s.id}>
+                          <button
+                            onClick={() => select(s.id)}
+                            aria-current={active ? "true" : undefined}
+                            className={`block w-full px-4 py-3 text-left transition-colors ${
+                              active ? "bg-neutral-800" : "hover:bg-neutral-800/50"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${st.dot}`} title={st.label} />
+                              <div className="min-w-0">
+                                <p className="line-clamp-2 text-sm font-semibold leading-snug text-white">
+                                  {s.sessionTitle}
+                                </p>
+                                <p className="mt-0.5 truncate text-xs text-neutral-400">
+                                  {s.name}
+                                  {s.company && <span className="text-neutral-500"> · {s.company}</span>}
+                                </p>
+                                <p className="mt-1 truncate text-xs text-neutral-500">
+                                  {[speakerEventFilter === "all" ? s.eventId : null, s.sessionFormat]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+
+                  {/* The submission under review */}
+                  {selected && (
+                    <article
+                      className={`${speakerDetailOpen ? "" : "hidden lg:block"} min-w-0 rounded-xl border border-neutral-800 bg-neutral-800/30`}
+                    >
+                      <div className="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-3">
+                        <button
+                          onClick={() => setSpeakerDetailOpen(false)}
+                          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white lg:invisible"
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          All submissions
+                        </button>
+                        <div className="flex items-center gap-1 text-sm text-neutral-400">
+                          <span className="mr-1 tabular-nums">
+                            {selectedIndex + 1} of {filteredSpeakers.length}
+                          </span>
+                          <button
+                            onClick={() => select(neighbour(-1))}
+                            disabled={!neighbour(-1)}
+                            aria-label="Previous submission"
+                            className="rounded-lg p-1.5 hover:bg-neutral-700 hover:text-white disabled:opacity-30"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => select(neighbour(1))}
+                            disabled={!neighbour(1)}
+                            aria-label="Next submission"
+                            className="rounded-lg p-1.5 hover:bg-neutral-700 hover:text-white disabled:opacity-30"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-5 sm:p-6">
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${SPEAKER_STATUS[speakerStatus(selected)].chip}`}>
+                            {SPEAKER_STATUS[speakerStatus(selected)].label}
+                          </span>
+                          {selected.eventId && (
+                            <span className="rounded-full bg-neutral-700/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
+                              {selected.eventId}
+                            </span>
+                          )}
+                          {selected.track && (
+                            <span className="rounded-full bg-[#ec228d]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ec228d]">
+                              {selected.track}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-2xl font-bold leading-tight tracking-tight text-white">
+                          {selected.sessionTitle}
+                        </h3>
+                        <p className="mt-2 text-sm text-neutral-300">
+                          {selected.name}
+                          {selected.company && <span className="text-neutral-500"> · {selected.company}</span>}
+                        </p>
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                          <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 text-[#4a90d9] hover:underline">
+                            <Mail className="h-3.5 w-3.5" />
+                            {selected.email}
+                          </a>
+                          {selected.linkedin && (
                             <a
-                              href={speaker.linkedin}
+                              href={selected.linkedin}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[#4a90d9] text-sm hover:underline break-all"
+                              className="inline-flex min-w-0 items-center gap-1.5 text-[#4a90d9] hover:underline"
                             >
-                              {speaker.linkedin}
+                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate">{selected.linkedin.replace(/^https?:\/\/(www\.)?/, "")}</span>
                             </a>
                           )}
+                        </div>
+
+                        <dl className="mt-6 grid gap-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 sm:grid-cols-3">
+                          {fact("Format", selected.sessionFormat)}
+                          {fact("Audience", selected.audienceLevel)}
+                          {fact("Considered for", selected.considerFor)}
+                          {fact("Submitted", new Date(selected.submittedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }))}
+                        </dl>
+
+                        {selected.accommodations && (
+                          <div className="mt-6 rounded-lg border border-[#ffdd00]/25 bg-[#ffdd00]/5 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[#ffdd00]">Requests / accommodations</p>
+                            <p className="mt-1 text-sm leading-relaxed text-neutral-200">{selected.accommodations}</p>
+                          </div>
+                        )}
+
+                        <section className="mt-6">
+                          <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Abstract</h4>
+                          <p className="mt-2 max-w-prose whitespace-pre-line text-[15px] leading-relaxed text-neutral-200">
+                            {selected.abstract}
+                          </p>
+                        </section>
+                        {selected.bio && (
+                          <section className="mt-6">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Bio</h4>
+                            <p className="mt-2 max-w-prose whitespace-pre-line text-sm leading-relaxed text-neutral-300">
+                              {selected.bio}
+                            </p>
+                          </section>
+                        )}
+                      </div>
+
+                      {/* Decision bar. Status is internal: changing it emails no one. */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-800 px-5 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          {(["approved", "rejected", "pending"] as const)
+                            .filter((st) => st !== "pending" || speakerStatus(selected) !== "pending")
+                            .map((st) => {
+                            const current = speakerStatus(selected) === st
+                            const next = neighbour(1) ?? neighbour(-1)
+                            const tone =
+                              st === "approved"
+                                ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+                                : st === "rejected"
+                                  ? "bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                                  : "bg-neutral-700/60 text-neutral-200 hover:bg-neutral-700"
+                            return (
+                              <button
+                                key={st}
+                                onClick={() => handleSpeakerStatus(selected.id, st, next)}
+                                disabled={current || updatingSpeakerStatus === selected.id}
+                                className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-default ${
+                                  current ? "ring-1 ring-inset ring-white/30 " : ""
+                                }${tone}`}
+                              >
+                                {st === "approved" && <CheckCircle className="h-4 w-4" />}
+                                {st === "rejected" && <XCircle className="h-4 w-4" />}
+                                {st === "pending" ? "Back to review" : st === "approved" ? (current ? "Accepted" : "Accept") : (current ? "Declined" : "Decline")}
+                              </button>
+                            )
+                          })}
                         </div>
                         {/* Deleting a submission is admin/superadmin only on the
                             API side, so organizers do not get a button that
                             would only ever return 403. */}
                         {hasAdminAccess(adminRole) && (
-                        <button
-                          onClick={() => handleDeleteSpeaker(speaker.id)}
-                          disabled={isDeletingSpeaker === speaker.id}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-                        >
-                          {isDeletingSpeaker === speaker.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                          Delete
-                        </button>
+                          <button
+                            onClick={() => handleDeleteSpeaker(selected.id)}
+                            disabled={isDeletingSpeaker === selected.id}
+                            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+                          >
+                            {isDeletingSpeaker === selected.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                            Delete
+                          </button>
                         )}
                       </div>
-                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
-                        {speaker.sessionFormat && (
-                          <div>
-                            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Format</span>
-                            <p className="text-neutral-300 text-sm mt-1">{speaker.sessionFormat}</p>
-                          </div>
-                        )}
-                        {speaker.considerFor && (
-                          <div>
-                            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Considered for</span>
-                            <p className="text-neutral-300 text-sm mt-1">{speaker.considerFor}</p>
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Abstract</span>
-                        <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.abstract}</p>
-                      </div>
-                      {speaker.bio && (
-                        <div className="mt-4">
-                          <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Bio</span>
-                          <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.bio}</p>
-                        </div>
-                      )}
-                      {speaker.accommodations && (
-                        <div className="mt-4 rounded-lg border border-[#ffdd00]/25 bg-[#ffdd00]/5 p-3">
-                          <span className="text-xs font-semibold text-[#ffdd00] uppercase tracking-wider">Requests / accommodations</span>
-                          <p className="text-neutral-300 text-sm mt-1 leading-relaxed">{speaker.accommodations}</p>
-                        </div>
-                      )}
-                      <p className="mt-4 text-xs text-neutral-500">
-                        Submitted: {new Date(speaker.submittedAt).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                    </article>
+                  )}
                 </div>
               )}
             </div>
@@ -2628,109 +2755,96 @@ export default function AdminPage() {
                 : volunteers.filter((v) => (v.eventId || "—") === volunteerEventFilter)
             return (
               <div>
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <h2 className="text-xl font-bold tracking-tight text-white">
-                    Volunteer Signups{" "}
-                    <span className="text-base font-normal text-neutral-500">
-                      ({filteredVolunteers.length})
-                    </span>
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <AdminCombobox
-                      className="w-64"
-                      value={volunteerEventFilter}
-                      onChange={setVolunteerEventFilter}
-                      options={[
-                        { value: "all", label: "All events", count: volunteers.length },
-                        ...volunteerEvents.map((ev) => ({
-                          value: ev,
-                          label: ev,
-                          count: volunteers.filter((v) => (v.eventId || "—") === ev).length,
-                        })),
-                      ]}
-                    />
-                    <button
-                      onClick={() => handleExportVolunteers(filteredVolunteers, volunteerEventFilter)}
-                      disabled={filteredVolunteers.length === 0}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50"
-                    >
-                      <Download className="h-4 w-4" />
-                      Export CSV
-                    </button>
-                  </div>
-                </div>
-                {filteredVolunteers.length === 0 ? (
-                  <p className="py-8 text-center text-neutral-400">No volunteer signups yet.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredVolunteers.map((volunteer) => (
-                      <div
-                        key={volunteer.id}
-                        className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 transition-colors hover:bg-neutral-800/50"
+                <TabHeader
+                  title="Volunteer Signups"
+                  summary={`${filteredVolunteers.length} ${filteredVolunteers.length === 1 ? "volunteer" : "volunteers"}${
+                    volunteerEventFilter === "all" ? " across all events" : ` for ${volunteerEventFilter}`
+                  }`}
+                  actions={
+                    <>
+                      <AdminCombobox
+                        className="w-64"
+                        value={volunteerEventFilter}
+                        onChange={setVolunteerEventFilter}
+                        options={[
+                          { value: "all", label: "All events", count: volunteers.length },
+                          ...volunteerEvents.map((ev) => ({
+                            value: ev,
+                            label: ev,
+                            count: volunteers.filter((v) => (v.eventId || "—") === ev).length,
+                          })),
+                        ]}
+                      />
+                      <ToolbarButton
+                        onClick={() => handleExportVolunteers(filteredVolunteers, volunteerEventFilter)}
+                        disabled={filteredVolunteers.length === 0}
+                        icon={<Download className="h-4 w-4" />}
                       >
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          {volunteer.eventId && (
-                            <span className="rounded-full bg-neutral-700/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
-                              {volunteer.eventId}
-                            </span>
+                        Export CSV
+                      </ToolbarButton>
+                    </>
+                  }
+                />
+                {filteredVolunteers.length === 0 ? (
+                  <EmptyState>No volunteer signups yet.</EmptyState>
+                ) : (
+                  <DataTable minWidth="min-w-[52rem]">
+                    <thead>
+                      <tr>
+                        <Th>Volunteer</Th>
+                        {volunteerEventFilter === "all" && <Th>Event</Th>}
+                        {/* Only when some event asked. Access Granted does not. */}
+                        {filteredVolunteers.some((v) => v.role) && <Th>Role</Th>}
+                        <Th>Notes</Th>
+                        <Th>Signed up</Th>
+                        {hasAdminAccess(adminRole) && <Th align="right"><span className="sr-only">Actions</span></Th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredVolunteers.map((volunteer) => (
+                        <Tr key={volunteer.id}>
+                          <Td className="w-[16rem]">
+                            <PrimaryCell
+                              title={volunteer.name}
+                              sub={
+                                <>
+                                  <MailLink email={volunteer.email} />
+                                  {volunteer.org && <div>With {volunteer.org}</div>}
+                                </>
+                              }
+                            />
+                          </Td>
+                          {volunteerEventFilter === "all" && (
+                            <Td><Pill>{volunteer.eventId || "—"}</Pill></Td>
                           )}
-                          {/* Only shown when the event asked. Access Granted
-                              does not, so this is usually absent. */}
-                          {volunteer.role && (
-                            <span className="rounded-full bg-[#ffb800]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ffb800]">
-                              {volunteer.role}
-                            </span>
+                          {filteredVolunteers.some((v) => v.role) && (
+                            <Td>{volunteer.role ? <Pill tone="amber">{volunteer.role}</Pill> : <span className="text-neutral-400">—</span>}</Td>
                           )}
-                        </div>
-                        <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">{volunteer.name}</h3>
-                            <a
-                              href={`mailto:${volunteer.email}`}
-                              className="text-sm text-neutral-400 hover:text-white"
-                            >
-                              {volunteer.email}
-                            </a>
-                          </div>
+                          <Td><LongText text={volunteer.notes} /></Td>
+                          <Td><DateCell value={volunteer.submittedAt} /></Td>
                           {/* Admin/superadmin only, matching the API. An
                               organizer would only ever get a 403 from it, and
                               this collection is shared across events — one
                               community's organizer must not be able to empty
                               another's crew list. */}
                           {hasAdminAccess(adminRole) && (
-                            <button
-                              onClick={() => handleDeleteVolunteer(volunteer.id)}
-                              disabled={isDeletingVolunteer === volunteer.id}
-                              className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-50"
-                            >
-                              {isDeletingVolunteer === volunteer.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                              Delete
-                            </button>
+                            <Td align="right">
+                              <RowActions>
+                                <RowAction
+                                  tone="danger"
+                                  onClick={() => handleDeleteVolunteer(volunteer.id)}
+                                  disabled={isDeletingVolunteer === volunteer.id}
+                                  icon={isDeletingVolunteer === volunteer.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                >
+                                  Delete
+                                </RowAction>
+                              </RowActions>
+                            </Td>
                           )}
-                        </div>
-                        {volunteer.org && (
-                          <p className="mt-1 text-sm text-neutral-400">With: {volunteer.org}</p>
-                        )}
-                        {volunteer.notes && (
-                          <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/60 p-4">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                              Notes
-                            </p>
-                            <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
-                              {volunteer.notes}
-                            </p>
-                          </div>
-                        )}
-                        <p className="mt-4 text-xs text-neutral-500">
-                          Submitted: {new Date(volunteer.submittedAt).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                        </Tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
                 )}
               </div>
             )
@@ -2739,66 +2853,66 @@ export default function AdminPage() {
           {/* Access Requests Tab - Admin Only */}
           {activeTab === "access" && hasAdminAccess(adminRole) && (
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white mb-6">Access Requests</h2>
-              {accessRequests.length === 0 ? (
-                <p className="text-neutral-400 text-center py-8">No access requests yet.</p>
+              {/* Pending only. Approving adds the person to Manage Admins, so an
+                  approved request here was a duplicate; rejecting deletes it. The
+                  approved records stay in Firestore. */}
+              <TabHeader
+                title="Access Requests"
+                summary={
+                  <>
+                    {pendingAccessCount} waiting on a decision. Approved people are in{" "}
+                    <button onClick={() => goToTab("admins")} className="font-medium text-neutral-200 underline underline-offset-2 hover:text-white">
+                      Manage Admins
+                    </button>
+                    .
+                  </>
+                }
+              />
+              {pendingAccessCount === 0 ? (
+                <EmptyState>No pending requests.</EmptyState>
               ) : (
-                <div className="space-y-4">
-                  {accessRequests.map((request) => (
-                    <div key={request.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-lg font-bold tracking-tight text-white">{request.name}</h3>
-                          <p className="text-neutral-400 text-sm mt-1">{request.email}</p>
-                          <p className="text-neutral-500 text-sm mt-1">
-                            Community: <span className="text-neutral-400">{request.communityOrg}</span>
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-3">
-                            Requested: {new Date(request.submittedAt).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {request.status === "pending" ? (
-                            <>
-                              <button
+                <DataTable>
+                  <thead>
+                    <tr>
+                      <Th>Person</Th>
+                      <Th>Community</Th>
+                      <Th>Requested</Th>
+                      <Th align="right"><span className="sr-only">Actions</span></Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessRequests.filter((request) => request.status === "pending").map((request) => {
+                      const busy = isApprovingAccess === request.id || isRejectingAccess === request.id
+                      return (
+                        <Tr key={request.id}>
+                          <Td><PrimaryCell title={request.name} sub={<MailLink email={request.email} />} /></Td>
+                          <Td>{request.communityOrg || <span className="text-neutral-400">—</span>}</Td>
+                          <Td><DateCell value={request.submittedAt} time /></Td>
+                          <Td align="right">
+                            <RowActions>
+                              <RowAction
+                                tone="success"
                                 onClick={() => handleApproveAccess(request)}
-                                disabled={isApprovingAccess === request.id || isRejectingAccess === request.id}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={busy}
+                                icon={isApprovingAccess === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                               >
-                                {isApprovingAccess === request.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <CheckCircle className="h-4 w-4" />
-                                )}
-                                {isApprovingAccess === request.id ? "Approving..." : "Approve"}
-                              </button>
-                              <button
+                                {isApprovingAccess === request.id ? "Approving…" : "Approve"}
+                              </RowAction>
+                              <RowAction
+                                tone="danger"
                                 onClick={() => handleRejectAccess(request.id)}
-                                disabled={isApprovingAccess === request.id || isRejectingAccess === request.id}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={busy}
+                                icon={isRejectingAccess === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                               >
-                                {isRejectingAccess === request.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <XCircle className="h-4 w-4" />
-                                )}
-                                {isRejectingAccess === request.id ? "Rejecting..." : "Reject"}
-                              </button>
-                            </>
-                          ) : (
-                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                              request.status === "approved"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
-                            }`}>
-                              {request.status}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                                {isRejectingAccess === request.id ? "Rejecting…" : "Reject"}
+                              </RowAction>
+                            </RowActions>
+                          </Td>
+                        </Tr>
+                      )
+                    })}
+                  </tbody>
+                </DataTable>
               )}
             </div>
           )}
@@ -2806,106 +2920,72 @@ export default function AdminPage() {
           {/* Admins Tab - Admin Only */}
           {activeTab === "admins" && hasAdminAccess(adminRole) && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold tracking-tight text-white">Approved Admins</h2>
-                <button
-                  onClick={() => setShowAddAdmin(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Admin
-                </button>
-              </div>
-              
+              <TabHeader
+                title="Manage Admins"
+                summary={`${admins.filter((a) => a.role !== "organizer").length} admins · ${admins.filter((a) => a.role === "organizer").length} organizers`}
+                actions={
+                  <button
+                    onClick={() => setShowAddAdmin(true)}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Admin
+                  </button>
+                }
+              />
+
               {admins.length === 0 ? (
-                <p className="text-neutral-400 text-center py-8">No approved admins yet.</p>
+                <EmptyState>No approved admins yet.</EmptyState>
               ) : (
-                <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-                  <table className="w-full min-w-150">
-                    <thead>
-                      <tr className="border-b border-neutral-800">
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Role</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Community</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Approved At</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Last Login</th>
-                        <th className="text-left py-4 px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-800/50">
-                      {admins.map((admin) => (
-                        <tr key={admin.id} className="hover:bg-neutral-800/30 transition-colors">
-                          <td className="py-4 px-4 text-sm font-medium text-white">
-                            {admin.email}
-                            {isProtectedAdmin(admin.email) && (
-                              <span className="ml-2 text-xs text-yellow-500">(Site Owner)</span>
+                <DataTable>
+                  <thead>
+                    <tr>
+                      <Th>Person</Th>
+                      <Th>Role</Th>
+                      <Th>Community</Th>
+                      <Th>Approved</Th>
+                      <Th>Last sign-in</Th>
+                      <Th align="right"><span className="sr-only">Actions</span></Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {admins.map((admin) => (
+                      <Tr key={admin.id}>
+                        <Td>
+                          <PrimaryCell
+                            title={admin.email}
+                            sub={isProtectedAdmin(admin.email) ? "Site owner · can't be removed" : admin.email === adminEmail ? "You" : undefined}
+                          />
+                        </Td>
+                        <Td>
+                          <Pill tone={admin.role === "superadmin" ? "amber" : admin.role === "admin" ? "violet" : "blue"}>
+                            {admin.role === "superadmin" ? "Super admin" : admin.role === "admin" ? "Admin" : "Organizer"}
+                          </Pill>
+                        </Td>
+                        <Td>{admin.communityId ? getCommunityName(admin.communityId) : <span className="text-neutral-400">All</span>}</Td>
+                        <Td><DateCell value={admin.approvedAt} /></Td>
+                        {/* Date and time, not just the date: "did they log in
+                            today" is the question this column answers. */}
+                        <Td><DateCell value={admin.lastLoginAt} time /></Td>
+                        <Td align="right">
+                          {/* Not for the protected super admins, and you can't remove yourself. */}
+                          <RowActions>
+                            {!isProtectedAdmin(admin.email) && (
+                              <RowAction onClick={() => handleEditAdmin(admin)} icon={<Edit className="h-4 w-4" />}>
+                                Edit
+                              </RowAction>
                             )}
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                              admin.role === "superadmin"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : admin.role === "admin"
-                                ? "bg-purple-500/20 text-purple-400"
-                                : "bg-blue-500/20 text-blue-400"
-                            }`}>
-                              {admin.role === "superadmin" ? "Super Admin" : admin.role}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4 text-sm text-neutral-400">{getCommunityName(admin.communityId)}</td>
-                          <td className="py-4 px-4 text-sm text-neutral-400">
-                            {new Date(admin.approvedAt).toLocaleDateString()}
-                          </td>
-                          {/* Date and time, not just the date: "did they log in
-                              today" is the question this column answers, and a
-                              bare date cannot tell you that. Never-signed-in is
-                              called out rather than left blank — an approved
-                              admin who has never arrived is worth noticing. */}
-                          <td className="py-4 px-4 text-sm text-neutral-400">
-                            {admin.lastLoginAt ? (
-                              <span title={new Date(admin.lastLoginAt).toLocaleString()}>
-                                {new Date(admin.lastLoginAt).toLocaleDateString()}
-                                <span className="ml-1.5 text-xs text-neutral-500">
-                                  {new Date(admin.lastLoginAt).toLocaleTimeString([], {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="text-neutral-600">—</span>
+                            {admin.email !== adminEmail && !isProtectedAdmin(admin.email) && (
+                              <RowAction tone="danger" onClick={() => handleRemoveAdmin(admin.email)} icon={<Trash2 className="h-4 w-4" />}>
+                                Remove
+                              </RowAction>
                             )}
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              {/* Edit button - not for the protected super admins */}
-                              {!isProtectedAdmin(admin.email) && (
-                                <button
-                                  onClick={() => handleEditAdmin(admin)}
-                                  className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
-                                >
-                                  Edit
-                                </button>
-                              )}
-                              {/* Prevent removing yourself or a protected super admin */}
-                              {admin.email !== adminEmail && !isProtectedAdmin(admin.email) && (
-                                <button
-                                  onClick={() => handleRemoveAdmin(admin.email)}
-                                  className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
-                                >
-                                  Remove
-                                </button>
-                              )}
-                              {isProtectedAdmin(admin.email) && (
-                                <span className="text-xs text-neutral-500 italic">Protected</span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          </RowActions>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </tbody>
+                </DataTable>
               )}
 
               {/* Add/Edit Admin Drawer */}
@@ -5033,190 +5113,96 @@ export default function AdminPage() {
               ?tab=demoday deep link from rendering for them either. */}
           {activeTab === "demoday" && hasAdminAccess(adminRole) && (
             <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold tracking-tight text-white">Confluencia Inquiries</h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
-                    <Shield className="h-3 w-3" /> Admin Only
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-neutral-400">{newDemoDayCount} new</span>
+              <TabHeader
+                title="Confluencia Inquiries"
+                summary={`${newDemoDayCount} new · ${demoDayInquiries.filter((i) => i.status === "contacted").length} contacted · ${demoDayInquiries.filter((i) => i.status === "closed").length} closed`}
+                actions={
                   <a
                     href="/events/confluencia"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
                   >
-                    <ExternalLink className="h-3 w-3" /> View page
+                    <ExternalLink className="h-4 w-4" /> View page
                   </a>
-                </div>
-              </div>
+                }
+              />
 
               {demoDayInquiries.length === 0 ? (
-                <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-12 text-center">
-                  <Megaphone className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-400 text-sm">No inquiries yet</p>
-                </div>
+                <EmptyState>No inquiries yet.</EmptyState>
               ) : (
-                <div className="space-y-4">
-                  {demoDayInquiries.map((inq) => (
-                    <div
-                      key={inq.id}
-                      className={`rounded-xl border p-5 transition-colors ${
-                        inq.status === "new"
-                          ? "border-amber-500/30 bg-amber-500/5"
-                          : "border-neutral-800 bg-neutral-900/50"
-                      }`}
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-400">
-                              {demoDayInterestLabel(inq.interest)}
-                            </span>
-                            {inq.industry && (
-                              <span className="inline-flex items-center rounded-full bg-neutral-700/60 px-2 py-0.5 text-[10px] font-bold uppercase text-neutral-300">
-                                {decodeEntities(inq.industry)}
-                              </span>
-                            )}
+                <DataTable minWidth="min-w-[60rem]">
+                  <thead>
+                    <tr>
+                      <Th>From</Th>
+                      <Th>Interested in</Th>
+                      <Th>Message</Th>
+                      <Th>Received</Th>
+                      <Th>Status</Th>
+                      <Th align="right"><span className="sr-only">Actions</span></Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {demoDayInquiries.map((inq) => (
+                      <Tr key={inq.id} highlight={inq.status === "new"}>
+                        <Td className="w-[15rem]">
+                          <PrimaryCell
+                            title={decodeEntities(inq.organization)}
+                            sub={
+                              <>
+                                <div>
+                                  {decodeEntities(inq.name)}
+                                  {inq.title ? `, ${decodeEntities(inq.title)}` : ""}
+                                </div>
+                                <MailLink email={inq.email} />
+                              </>
+                            }
+                          />
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col items-start gap-1.5">
+                            <Pill tone="amber">{demoDayInterestLabel(inq.interest)}</Pill>
+                            {inq.industry && <Pill>{decodeEntities(inq.industry)}</Pill>}
                           </div>
-                          <h3 className="text-white font-semibold text-sm">
-                            {decodeEntities(inq.organization)}
-                          </h3>
-                          <p className="text-neutral-400 text-xs mt-0.5">
-                            {decodeEntities(inq.name)}
-                            {inq.title ? ` · ${decodeEntities(inq.title)}` : ""} &middot;{" "}
-                            <a href={`mailto:${inq.email}`} className="text-neutral-300 hover:text-white underline-offset-2 hover:underline">
-                              {inq.email}
-                            </a>
-                          </p>
-                          <p className="text-neutral-300 text-sm leading-relaxed mt-3 whitespace-pre-wrap">
-                            {decodeEntities(inq.message)}
-                          </p>
-                          {inq.submittedAt && (
-                            <p className="text-neutral-600 text-[11px] mt-3">
-                              Submitted {new Date(inq.submittedAt).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="flex shrink-0 items-center gap-2">
+                        </Td>
+                        <Td><LongText text={decodeEntities(inq.message)} /></Td>
+                        <Td><DateCell value={inq.submittedAt} time /></Td>
+                        <Td>
                           <select
                             value={inq.status}
                             onChange={(e) => handleDemoDayStatus(inq.id, e.target.value as DemoDayInquiryRow["status"])}
-                            className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-neutral-500"
-                            aria-label="Inquiry status"
+                            className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500"
+                            aria-label={`Status for ${decodeEntities(inq.organization)}`}
                           >
                             <option value="new">New</option>
                             <option value="contacted">Contacted</option>
                             <option value="closed">Closed</option>
                           </select>
-                          <a
-                            href={`mailto:${inq.email}?subject=${encodeURIComponent("Confluencia, a DEVSA Demo Day")}`}
-                            className="inline-flex items-center gap-1 rounded-lg bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
-                          >
-                            <Mail className="h-3 w-3" /> Reply
-                          </a>
-                          <button
-                            onClick={() => handleDeleteDemoDayInquiry(inq.id)}
-                            className="cursor-pointer inline-flex items-center rounded-lg bg-neutral-800 p-1.5 text-neutral-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
-                            aria-label="Delete inquiry"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                        </Td>
+                        <Td align="right">
+                          <RowActions>
+                            <a
+                              href={`mailto:${inq.email}?subject=${encodeURIComponent("Confluencia, a DEVSA Demo Day")}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
+                            >
+                              <Mail className="h-4 w-4" /> Reply
+                            </a>
+                            <RowAction
+                              tone="danger"
+                              onClick={() => handleDeleteDemoDayInquiry(inq.id)}
+                              aria-label={`Delete inquiry from ${decodeEntities(inq.organization)}`}
+                              icon={<Trash2 className="h-4 w-4" />}
+                            />
+                          </RowActions>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </tbody>
+                </DataTable>
               )}
             </div>
           )}
 
-          {/* Merch Submissions Tab - Admin Only */}
-          {activeTab === "merch" && hasAdminAccess(adminRole) && (
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold tracking-tight text-white">Merch Submissions</h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">
-                    <Shield className="h-3 w-3" /> Admin Only
-                  </span>
-                </div>
-                <span className="text-sm text-neutral-400">
-                  {merchSubmissions.filter(s => s.status === "pending").length} pending
-                </span>
-              </div>
-
-              {merchSubmissions.length === 0 ? (
-                <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-12 text-center">
-                  <Upload className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-400 text-sm">No submissions yet</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {merchSubmissions.map((sub) => (
-                    <div
-                      key={sub.id}
-                      className={`rounded-xl border p-5 transition-colors ${
-                        sub.status === "pending"
-                          ? "border-emerald-500/30 bg-emerald-500/5"
-                          : "border-neutral-800 bg-neutral-900/50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-5">
-                        {/* Logo Preview */}
-                        <div className="shrink-0 w-16 h-16 rounded-lg border border-neutral-700 bg-neutral-800 flex items-center justify-center overflow-hidden">
-                          <img
-                            src={sub.logoUrl}
-                            alt={sub.communityName}
-                            className="w-12 h-12 object-contain"
-                          />
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-1">
-                            <h3 className="text-white font-semibold text-sm">{sub.communityName}</h3>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-                              sub.status === "pending"
-                                ? "bg-emerald-500/20 text-emerald-400"
-                                : sub.status === "approved"
-                                ? "bg-blue-500/20 text-blue-400"
-                                : "bg-neutral-500/20 text-neutral-400"
-                            }`}>
-                              {sub.status}
-                            </span>
-                          </div>
-                          <p className="text-neutral-400 text-xs mb-1">
-                            {sub.contactName} &middot; {sub.contactEmail}
-                          </p>
-                          {sub.description && (
-                            <p className="text-neutral-500 text-xs leading-relaxed mt-1">{sub.description}</p>
-                          )}
-                          <p className="text-neutral-600 text-[11px] mt-2">
-                            Submitted {new Date(sub.submittedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-
-                        {/* Logo URL */}
-                        <a
-                          href={sub.logoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          View SVG
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
           </div>
         </div>
       </div>
