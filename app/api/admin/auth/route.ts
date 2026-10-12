@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type ApprovedAdmin, type AccessRequest } from '@/lib/firebase-admin';
 import { isProtectedAdmin } from '@/lib/protected-admins';
-import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { AccessApprovedEmail } from '@/lib/emails/access-approved';
 
 // Check if user is an approved admin
@@ -176,7 +176,8 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: normalizedEmail,
-          subject: "You're Approved! Welcome to DEVSA 🎉",
+          replyTo: EMAIL_REPLY_TO,
+          subject: "Your DEVSA organizer access is approved",
           html: AccessApprovedEmail({
             name: userName,
             email: normalizedEmail,

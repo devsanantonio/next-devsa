@@ -3,9 +3,8 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { hostedEventIdsFor } from '@/lib/hosted-events';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type SpeakerSubmission } from '@/lib/firebase-admin';
-import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { SpeakerThankYouEmail, getSpeakerThankYouSubject } from '@/lib/emails/speaker-thank-you';
-import { StartupWeekThankYouEmail, getStartupWeekThankYouSubject } from '@/lib/emails/startup-week-thank-you';
 import { PysaThankYouEmail, getPysaThankYouSubject } from '@/lib/emails/pysa-thank-you';
 import {
   AccessGrantedThankYouEmail,
@@ -90,14 +89,6 @@ export async function POST(request: NextRequest) {
     const resolvedEventId = eventId || DEFAULT_EVENT_ID;
     const { subject, html } = (() => {
       switch (resolvedEventId) {
-        // Retained for the submissions already in Firestore. DEVSA no longer
-        // hosts a Startup Week call for speakers — /startup-week-2026 now
-        // redirects to sasw.co — so nothing posts this eventId anymore.
-        case 'startup-week-2026':
-          return {
-            subject: getStartupWeekThankYouSubject(sessionTitle),
-            html: StartupWeekThankYouEmail({ name, sessionTitle, track: track || '' }),
-          };
         case 'pysanantonio-2026':
           return {
             subject: getPysaThankYouSubject(sessionTitle),
@@ -141,6 +132,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: email.toLowerCase(),
+          replyTo: EMAIL_REPLY_TO,
           subject,
           html,
         });

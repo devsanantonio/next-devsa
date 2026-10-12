@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { resend, EMAIL_FROM, isResendConfigured } from "@/lib/resend";
-import { DonationThankYouEmail } from "@/lib/emails/donation-thank-you";
+import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from "@/lib/resend";
+import { CAMPAIGNS, toCampaignKey } from "@/lib/campaigns";
+import { DonationThankYouEmail, getDonationThankYouSubject } from "@/lib/emails/donation-thank-you";
 
 /**
  * Stripe webhook: sends the donation thank-you email.
@@ -61,15 +62,22 @@ export async function POST(request: Request) {
         `Donation received: $${amountDollars} from ${donorName || "Anonymous"} (${donorEmail || "no email"})`
       );
 
+      // Only keys in lib/campaigns.ts count, as at checkout.
+      const campaignKey = toCampaignKey(session.metadata.campaign);
+      const campaign = campaignKey ? CAMPAIGNS[campaignKey] : undefined;
+
       if (donorEmail && isResendConfigured() && resend) {
         try {
           await resend.emails.send({
             from: EMAIL_FROM,
+            replyTo: EMAIL_REPLY_TO,
             to: donorEmail,
-            subject: `Thank you for your donation to DEVSA!`,
+            subject: getDonationThankYouSubject(campaign?.name),
             html: DonationThankYouEmail({
-              name: donorName || "Friend",
+              name: donorName,
               amount: amountDollars,
+              date: new Date(session.created * 1000),
+              campaign,
             }),
           });
         } catch (emailErr) {

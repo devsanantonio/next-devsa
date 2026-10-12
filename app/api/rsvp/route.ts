@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
-import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-thank-you';
 
 // Submit an RSVP (public endpoint)
@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: normalizedEmail,
+          replyTo: EMAIL_REPLY_TO,
           subject: getRsvpThankYouSubject(eventData?.title || eventSlug),
           html: RsvpThankYouEmail({
             firstName: firstName.trim(),

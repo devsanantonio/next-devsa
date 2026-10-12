@@ -4,7 +4,7 @@ import { getDb, COLLECTIONS, type DemoDayInquiry } from '@/lib/firebase-admin';
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeInput } from '@/lib/sanitize';
 import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
-import { FUNDER_CONTACT } from '@/lib/contact';
+import { ALERT_EMAIL } from '@/lib/contact';
 import { DEMO_DAY_INDUSTRIES, DEMO_DAY_INTEREST_VALUES } from '@/lib/demo-day';
 import { DemoDayInquiryEmail, getDemoDayInquirySubject } from '@/lib/emails/demo-day-inquiry';
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       try {
         await resend.emails.send({
           from: EMAIL_FROM,
-          to: FUNDER_CONTACT,
+          to: ALERT_EMAIL,
           replyTo: email,
           subject: getDemoDayInquirySubject({ interest, organization }),
           html: DemoDayInquiryEmail(inquiry),

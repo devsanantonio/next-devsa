@@ -1,121 +1,108 @@
+import {
+  emailShell,
+  eyebrow,
+  heading,
+  paragraph,
+  panel,
+  rows,
+  button,
+  strong,
+  esc,
+  firstNameOf,
+  EIN,
+  SITE,
+  C,
+} from "./layout"
+
 interface DonationThankYouEmailProps {
-  name: string;
-  amount: string;
+  name: string
+  /** Dollars, already formatted: "25.00". */
+  amount: string
+  /** When Stripe completed the payment. */
+  date: Date
+  /**
+   * Set when the gift was designated to a campaign (lib/campaigns.ts). The
+   * webhook resolves the key; this template only shows what it is given.
+   */
+  campaign?: { name: string; href: string; ifUnfunded: string }
 }
 
-export function DonationThankYouEmail({
-  name,
-  amount,
-}: DonationThankYouEmailProps) {
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thank You for Your Donation - DEVSA</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #000000;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #000000;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse;">
-          
-          <!-- Header with Logo -->
-          <tr>
-            <td align="center" style="padding-bottom: 32px;">
-              <div style="font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: -1px;">
-                <span style="color: #ef426f;">DEV</span><span style="color: #ffffff;">SA</span>
-              </div>
-              <p style="margin: 8px 0 0 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px;">
-                501(c)(3) Education Nonprofit
-              </p>
-            </td>
-          </tr>
+/**
+ * The donor's thank-you, and the written acknowledgment they keep.
+ *
+ * It carries what the IRS asks of an acknowledgment for a gift of $250 or
+ * more: the organization's name, the amount, the date, and a statement that
+ * no goods or services were given in return. Every gift gets it, whatever the
+ * size, so nobody has to ask for a receipt.
+ *
+ * A gift designated to Confluencia says so, and repeats the board-approved
+ * promise about what happens to it if the event is not funded — the donor
+ * read that promise on the page, and the email is the copy they keep.
+ *
+ * The copy follows the site's donation section: a gift keeps the community
+ * calendar and the directory open. It does not promise workshops or a group
+ * count the site does not state.
+ */
+export function DonationThankYouEmail({ name, amount, date, campaign }: DonationThankYouEmailProps): string {
+  const first = firstNameOf(name)
+  const when = date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/Chicago",
+  })
 
-          <!-- Main Content Card -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #1f1f1f 0%, #0f0f0f 100%); border-radius: 16px; border: 1px solid #2a2a2a; padding: 40px;">
-              
-              <!-- Greeting -->
-              <h1 style="margin: 0 0 24px 0; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.3;">
-                Thank you, ${name}! 🙏
-              </h1>
-              
-              <p style="margin: 0 0 24px 0; font-size: 16px; color: #d1d5db; line-height: 1.6;">
-                Your generous donation helps us keep building San Antonio's tech community — one workshop, meetup, and resource at a time.
-              </p>
+  const intro = campaign
+    ? paragraph(
+        `Your gift to ${strong(esc(campaign.name))} has arrived. It is set aside for Confluencia and will be spent on it, not on anything else.`
+      )
+    : paragraph(
+        `Your gift to DEVSA has arrived. It keeps the ${strong("community calendar")} and the ${strong("public directory")} open: the place San Antonio&rsquo;s builders, community groups and partners find each other.`
+      )
 
-              <!-- Donation Details Card -->
-              <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: rgba(239, 66, 111, 0.1); border-radius: 12px; border: 1px solid rgba(239, 66, 111, 0.2); margin-bottom: 24px;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px;">
-                      Your Donation
-                    </p>
-                    <h2 style="margin: 0 0 16px 0; font-size: 36px; font-weight: 700; color: #ef426f;">
-                      $${amount}
-                    </h2>
-                    <p style="margin: 0; font-size: 14px; color: #d1d5db; line-height: 1.6;">
-                      DEVSA is a registered 501(c)(3) education nonprofit. Your donation may be tax-deductible.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+  const promise = campaign
+    ? panel(paragraph(esc(campaign.ifUnfunded), { last: true }), {
+        label: "If it doesn't happen",
+        accent: C.pink,
+      })
+    : ""
 
-              <!-- What Your Donation Supports -->
-              <div style="margin-bottom: 24px;">
-                <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #ffffff;">
-                  Your support powers
-                </h3>
-                <table role="presentation" style="border-collapse: collapse; width: 100%;">
-                  <tr>
-                    <td style="padding: 8px 0; font-size: 14px; color: #d1d5db; line-height: 1.6;">
-                      <span style="color: #ef426f; font-weight: 600;">→</span> Free workshops and hands-on learning events
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-size: 14px; color: #d1d5db; line-height: 1.6;">
-                      <span style="color: #ef426f; font-weight: 600;">→</span> The shared community calendar for 20+ local groups
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-size: 14px; color: #d1d5db; line-height: 1.6;">
-                      <span style="color: #ef426f; font-weight: 600;">→</span> Resources for local builders, organizers, and learners
-                    </td>
-                  </tr>
-                </table>
-              </div>
+  const receipt = panel(
+    `${rows([
+      ["Amount", `$${esc(amount)}`],
+      ["Date", when],
+      ["Designated to", campaign ? esc(campaign.name) : "General support"],
+      ["Received by", `DEVSA, EIN ${EIN}`],
+    ])}
+    <p style="margin: 16px 0 0 0; font-size: 13px; color: ${C.body}; line-height: 1.6;">
+      DEVSA is a 501(c)(3) nonprofit. No goods or services were provided in exchange for this gift. Keep this email as your receipt.
+    </p>`,
+    { label: "Your receipt" }
+  )
 
-              <!-- CTA Button -->
-              <table role="presentation" style="border-collapse: collapse;">
-                <tr>
-                  <td style="border-radius: 12px; background-color: #ef426f;">
-                    <a href="https://www.devsa.community/buildingtogether" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">
-                      See What We're Building →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+  const cta = campaign
+    ? button(`${SITE}${campaign.href}`, `Read about ${esc(campaign.name)}`)
+    : button(`${SITE}/events`, "See what&rsquo;s on the calendar")
 
-          <!-- Footer -->
-          <tr>
-            <td align="center" style="padding-top: 32px;">
-              <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
-                Find your people. Build your future.
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #4b5563;">
-                © ${new Date().getFullYear()} DEVSA · <a href="https://www.devsa.community" style="color: #ef426f; text-decoration: none;">devsa.community</a>
-              </p>
-            </td>
-          </tr>
+  return emailShell({
+    title: "Thank you for your gift to DEVSA",
+    preheader: campaign
+      ? `Your $${esc(amount)} gift to ${esc(campaign.name)}, and your receipt.`
+      : `Your $${esc(amount)} gift to DEVSA, and your receipt.`,
+    body: `
+      ${eyebrow("Gift received")}
+      ${heading(`Thank you, ${first}.`)}
+      ${intro}
+      ${promise}
+      ${receipt}
+      ${paragraph("Questions about your gift? Reply to this email.")}
+      ${cta}
+    `,
+  })
+}
 
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+export function getDonationThankYouSubject(campaignName?: string): string {
+  return campaignName
+    ? `Thank you for your gift to ${campaignName} | DEVSA`
+    : "Thank you for your gift to DEVSA"
 }

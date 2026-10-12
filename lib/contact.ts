@@ -12,6 +12,15 @@
  */
 export const FUNDER_CONTACT = "jesse@devsanantonio.com"
 
+/**
+ * Where automated alerts go: Confluencia inquiries, Access Granted
+ * submissions. A Gmail inbox rather than the forwarder above, which on
+ * 2026-10-11 did not deliver Firebase's sign-in emails. An inquiry from a
+ * would-be funder is the last email that can be allowed to vanish that way.
+ * Never shown on the site.
+ */
+export const ALERT_EMAIL = "jesseovr@gmail.com"
+
 export function mailto(subject: string): string {
   return `mailto:${FUNDER_CONTACT}?subject=${encodeURIComponent(subject)}`
 }

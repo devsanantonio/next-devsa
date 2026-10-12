@@ -4,7 +4,7 @@ import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type VolunteerSignup } from '@/lib/firebase-admin';
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeInput } from '@/lib/sanitize';
-import { resend, EMAIL_FROM, isResendConfigured } from '@/lib/resend';
+import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import {
   AccessGrantedVolunteerEmail,
   getAccessGrantedVolunteerSubject,
@@ -145,6 +145,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: email,
+          replyTo: EMAIL_REPLY_TO,
           subject: confirmation.subject,
           html: confirmation.html,
         });
