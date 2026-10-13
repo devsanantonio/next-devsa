@@ -1,3 +1,4 @@
+import { countInWords } from "@/lib/count-words"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
@@ -99,7 +100,7 @@ import { DEMO_DAY_DEADLINE, DEMO_DAY_DESCRIPTOR, DEMO_DAY_PAVILION_YEAR } from "
 export function AboutHero() {
   return (
     <section
-      className="relative flex min-h-[70dvh] flex-col justify-center overflow-hidden bg-black lg:min-h-dvh"
+      className="relative flex min-h-[60dvh] flex-col justify-center overflow-hidden bg-black lg:min-h-dvh"
       data-bg-type="dark"
     >
       <Image
@@ -137,8 +138,8 @@ export function AboutHero() {
           <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/55">
             About DEVSA
           </p>
-          <h1 className="mt-5 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
-            <span className="block">A Discord Server in 2023.</span>
+          <h1 className="mt-5 font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
+            <span className="block">A Discord Server <span className="whitespace-nowrap">in 2023.</span></span>
             <span className="block">
               <span className="font-light italic text-white/55">
                 A 501(c)(3) in
@@ -146,10 +147,14 @@ export function AboutHero() {
               2024.
             </span>
           </h1>
-          <p className="mt-6 max-w-xl text-xl font-light leading-[1.45] text-white/70 md:text-2xl">
-            A volunteer-governed nonprofit that keeps San Antonio&apos;s tech
-            community groups on one calendar, in one public directory, and in
-            one room a few times a year.
+          <p className="mt-6 max-w-2xl text-pretty text-xl font-light leading-[1.45] text-white/70 md:text-2xl lg:max-w-[46rem]">
+            {/* Introduces the phrase the story below explains: civic
+                infrastructure, then what it is and who governs it.
+                text-pretty and the non-breaking space keep "board" from
+                landing alone on the last line at laptop and monitor widths. */}
+            Civic infrastructure for San Antonio&apos;s tech community: one
+            calendar, one public directory, and one room a few times a year,
+            governed by a volunteer&nbsp;board.
           </p>
         </div>
       </div>
@@ -180,11 +185,9 @@ export function AboutHero() {
  * Partners is the number that belongs beside the groups, because the two
  * together say how much of the city this reaches.
  *
- * The `min-h-[2.5em]` on the value is for the two-column mobile layout, where
- * "September 2023" wraps to two lines and "March 2024" does not, which would
- * otherwise leave the two labels in that row sitting at different heights. Two
- * lines of `leading-tight` is 2.5em, so reserving it makes every label land on
- * the same baseline. Dropped at md, where all four values fit on one line.
+ * On phones the two dates use short forms (see `short` below) so every value
+ * stays on one line at two columns, and the labels line up without reserving
+ * height.
  */
 export function FoundingFacts({
   communityCount,
@@ -193,9 +196,14 @@ export function FoundingFacts({
   communityCount?: number
   partnerCount?: number
 }) {
-  const facts = [
-    { value: "September 2023", label: "Started as a Discord server" },
-    { value: "March 2024", label: "Incorporated as a 501(c)(3)" },
+  // `short` is the phone form: at two columns "September 2023" wrapped while
+  // "March 2024" did not, and the space reserved to keep the labels level left
+  // a gap under every one-line value. Short forms keep every value to one line,
+  // so nothing needs reserving. "501(c)(3)" is held together, because it was
+  // breaking after "(c)".
+  const facts: { value: string; short?: string; label: React.ReactNode }[] = [
+    { value: "September 2023", short: "Sept 2023", label: "Started as a Discord server" },
+    { value: "March 2024", short: "Mar 2024", label: <>Incorporated as a <span className="whitespace-nowrap">501(c)(3)</span></> },
     {
       value: communityCount ? String(communityCount) : "Every",
       label: "Community groups on the calendar",
@@ -208,12 +216,19 @@ export function FoundingFacts({
 
   return (
     <section className="w-full bg-white" data-bg-type="light">
-      <div className="page-shell pt-16 md:pt-24">
+      <div className="page-shell pt-10 md:pt-24">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-10 border-y border-gray-200 py-10 md:grid-cols-4 md:gap-x-10">
           {facts.map((fact) => (
-            <div key={fact.label}>
-              <dt className="min-h-[2.5em] text-2xl font-black leading-tight tracking-[-0.02em] text-gray-900 md:min-h-0 md:text-3xl">
-                {fact.value}
+            <div key={fact.value}>
+              <dt className="text-2xl font-black leading-tight tracking-[-0.02em] text-gray-900 md:text-3xl">
+                {fact.short ? (
+                  <>
+                    <span className="md:hidden">{fact.short}</span>
+                    <span className="hidden md:inline">{fact.value}</span>
+                  </>
+                ) : (
+                  fact.value
+                )}
               </dt>
               <dd className="mt-3 text-sm leading-snug text-gray-500">
                 {fact.label}
@@ -226,19 +241,45 @@ export function FoundingFacts({
   )
 }
 
-/** The story, with the city as its subject. */
-export function OriginProse() {
+/**
+ * The story, with the city as its subject.
+ *
+ * It opens on the problem and on what DEVSA is, before how it started. The
+ * first paragraph used to be "The city had meetups…", which said the local
+ * half of this; the statement that replaced it adds the city-scale stake (a
+ * city that cannot show its builders to each other has a harder time keeping
+ * them) and names DEVSA as civic infrastructure, the phrase a funder reads
+ * as public good rather than as a product. Everything in it is checkable:
+ * San Antonio is the seventh-largest US city, the count comes from the live
+ * directory, and the four things listed all exist. No borrowed statistics.
+ *
+ * It stops short of "and the groups still run themselves": that line is the
+ * story's closing beat, further down, and saying it here would spend it.
+ */
+export function OriginProse({ communityCount }: { communityCount?: number }) {
+  const groups = communityCount ? `${countInWords(communityCount)} tech groups` : "The city's tech groups"
   return (
     <section className="w-full bg-white" data-bg-type="light">
       <div className="page-shell pb-16 pt-14 md:pb-24 md:pt-20">
         <div className="max-w-3xl space-y-6 text-lg leading-[1.7] text-gray-600 md:text-xl">
           <p>
-            The city had meetups. Python people and Linux people, designers and
-            security folks and game developers, each running their own nights in
-            their own rooms. What it did not have was anything connecting them —
-            no shared calendar, no way for one group to reach another&apos;s
-            people, and nothing that kept a conversation going after everyone
-            went home.
+            San Antonio is one of the largest cities in the country, and it has
+            never lacked people who build things. What it lacks is anything that
+            connects them. {groups} run their own meetups, on their own
+            calendars, for their own audiences, and most of them can&apos;t see
+            each other. A student finishing a program, a developer new to the
+            city, an engineer deciding whether to stay: none of them has one
+            place to find the people doing the work they want to do. People stay
+            where they&apos;ve found their people, and a city that can&apos;t
+            show its builders to each other has a harder time keeping them.
+          </p>
+          <p>
+            DEVSA is the{" "}
+            <strong className="font-semibold text-gray-900">civic infrastructure</strong>{" "}
+            for that first part: a shared calendar every group publishes to, a
+            public directory anyone can search, an open feed others can build
+            on, and a few rooms a year where all of it meets. A volunteer board
+            runs it as a 501(c)(3).
           </p>
           <p>
             DEVSA started in September 2023 as a Discord server, which is not

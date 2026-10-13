@@ -262,6 +262,18 @@ export function DemoDayWhy() {
         <h2 className="font-sans text-2xl font-black tracking-[-0.02em] text-white md:text-3xl">
           The room is already here
         </h2>
+        {/* The city-scale why, condensed from the problem statement that opens
+            /about, so a funder reads the reason before the track record. It
+            splits the problem in two: DEVSA's calendar and directory show the
+            builders to each other; Confluencia shows them to the industries
+            and investors who could keep them here. */}
+        <p className="mt-5 text-lg leading-[1.6] text-white/70 md:text-xl">
+          San Antonio has never lacked people who build things. What it lacks
+          is a way to show them to each other, and to the industries and
+          investors who could keep them here. People stay where they&apos;ve
+          found their people. DEVSA is the civic infrastructure for the first
+          part. <ConfluenciaName /> is for the second.
+        </p>
         <p className="mt-5 text-lg leading-[1.6] text-white/70 md:text-xl">
           Builders, community groups and partners already meet on DEVSA&apos;s
           calendar. This fall we ran The Rand for Startup + Tech Week: The Model,

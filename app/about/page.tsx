@@ -99,7 +99,7 @@ export default async function AboutPage() {
           communityCount={communities.length}
           partnerCount={partners.length}
         />
-        <OriginProse />
+        <OriginProse communityCount={communities.length} />
         <MeetTheTeam />
         <TheRecord />
         <DemoDayCampaign />

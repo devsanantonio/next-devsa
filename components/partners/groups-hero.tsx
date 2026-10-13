@@ -1,5 +1,6 @@
 "use client"
 
+import { countInWords } from "@/lib/count-words"
 import { motion } from "motion/react"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
@@ -31,7 +32,7 @@ import { ArrowUpRight } from "lucide-react"
  *
  * creativefutures.jpeg. A packed room — roughly eighteen people, daylight,
  * teal walls, somebody standing at the right. It is the only candidate that is
- * a room rather than a speaker, which is what "Twenty-Three Groups. No Shared
+ * a room rather than a speaker, which is what "Twenty-Five Groups. No Shared
  * Room." needs, and it is a different venue from every marquee frame and from
  * the /events band, so there is no vantage point left to collide with. It is
  * already 2048x1152, so it is used uncropped.
@@ -70,7 +71,18 @@ import { ArrowUpRight } from "lucide-react"
  * variant to stay unfetched on phones — see the note there.
  */
 
-export function GroupsHero() {
+export function GroupsHero({ communityCount }: { communityCount?: number }) {
+  // From the directory, like /about's story. This was hardcoded
+  // "Twenty-Three" and went stale when the count reached twenty-five.
+  // The number is held together so a phone never breaks it at its hyphen
+  // ("Twenty- / Five").
+  const groups = communityCount ? (
+    <>
+      <span className="whitespace-nowrap">{countInWords(communityCount, { title: true })}</span> Groups.
+    </>
+  ) : (
+    "The City's Groups."
+  )
   return (
     <section
       className="relative overflow-hidden bg-black min-h-dvh flex flex-col items-center justify-center"
@@ -171,15 +183,18 @@ export function GroupsHero() {
                 be: it needs no setup, and everything below it — the wall, the
                 mechanism, the ask — reads as the consequence. */}
             <h1 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
-              Twenty-Three Groups.{" "}
-              <span className="text-white/50 font-light italic">No Shared</span>{" "}
-              Room.
+              {groups}{" "}
+              {/* Held together so a phone breaks the headline into the pair
+                  it is, rather than "Groups. No / Shared Room." */}
+              <span className="whitespace-nowrap">
+                <span className="text-white/50 font-light italic">No Shared</span> Room.
+              </span>
             </h1>
           </div>
 
           <div className="space-y-8 max-w-3xl mt-8">
             <div className="space-y-6">
-              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
+              <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light text-pretty">
                 San Antonio never lacked tech communities. What it lacked was
                 anywhere they could see each other — groups meeting across the
                 city on their own calendars, to their own audiences, mostly

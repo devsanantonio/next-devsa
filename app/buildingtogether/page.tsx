@@ -142,7 +142,7 @@ export default async function GroupsPage({
         }}
       />
       <main className="min-h-screen bg-black">
-      <GroupsHero />
+      <GroupsHero communityCount={communities.length} />
       <LogoShowcase logos={logos} />
       {/* Between the gap and the ask. The hero states the problem and the
           limit; StayConnected asks the reader to act. The mechanism — and one
