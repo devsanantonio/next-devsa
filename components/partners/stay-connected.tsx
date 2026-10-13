@@ -42,7 +42,11 @@ export function StayConnected() {
   return (
     <section id="stay-connected" className="w-full bg-white py-16 sm:py-20 md:py-24" data-bg-type="light">
       <div className="page-shell">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
+        {/* grid-cols-1, not the implicit auto track: an auto track sizes to
+            its widest unbreakable child, which was the three calendar buttons
+            (~423px), and stretched this whole section past a phone's width so
+            the page scrolled sideways. */}
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
           <motion.div
             initial={{ y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -89,14 +93,17 @@ export function StayConnected() {
 
             {/* Not one link: Google, Apple and Outlook each subscribe through a
                 different URL, so the tile carries all three. */}
-            <div className="flex items-start gap-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+            <div className="flex flex-wrap items-start gap-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-900">
                 <CalendarPlus className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-base font-semibold text-gray-900">Add it to your calendar</span>
                 <span className="block text-sm text-gray-500">New events show up on their own</span>
-              <span className="mt-3 flex gap-2">
+              </span>
+              {/* Their own row, the card's full width on a phone, wrapping on
+                  the smallest screens; under the text from sm up. */}
+              <span className="flex basis-full flex-wrap gap-2 sm:-mt-1 sm:pl-[3.75rem]">
                 {SUBSCRIBE.map(({ Icon, ...s }) => (
                   <a
                     key={s.label}
@@ -104,13 +111,12 @@ export function StayConnected() {
                     target={s.label === "Apple" ? undefined : "_blank"}
                     rel={s.label === "Apple" ? undefined : "noopener noreferrer"}
                     aria-label={`Subscribe in ${s.label} Calendar`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-900 transition-colors hover:border-gray-300 hover:bg-gray-50 sm:flex-none"
+                    className="inline-flex min-w-[5.5rem] flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-900 transition-colors hover:border-gray-300 hover:bg-gray-50 sm:flex-none sm:py-1.5"
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     {s.label}
                   </a>
                 ))}
-              </span>
               </span>
             </div>
 

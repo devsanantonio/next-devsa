@@ -5,6 +5,7 @@ import { motion } from "motion/react"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
+import { MobileLogoTile } from "@/components/partners/mobile-logo-tile"
 import { Loader2, ArrowUpRight } from "lucide-react"
 
 type LogoType = "community" | "partner"
@@ -79,11 +80,6 @@ function asLogos(items: ApiLogo[], type: LogoItem["type"]): LogoItem[] {
   }))
 }
 
-function splitIntoRows<T>(items: T[], rows: number): T[][] {
-  const out: T[][] = Array.from({ length: rows }, () => [])
-  items.forEach((item, i) => out[i % rows].push(item))
-  return out
-}
 
 /* Desktop — a logo-forward tile, on the canvas (no card). Hover draws a
    brand-pink underline under the name and darkens it. */
@@ -128,57 +124,6 @@ function LogoGroup({ logos }: { logos: LogoItem[] }) {
   )
 }
 
-/* Mobile — a compact chip used inside the scrolling marquee */
-function MarqueeChip({ logo }: { logo: LogoItem }) {
-    return (
-    <Link href={`/buildingtogether/${logo.id}`} className="shrink-0">
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        <div className="relative h-6 w-6 shrink-0">
-          <Image
-            src={logoSrcOnLight(logo, logo.logo)}
-            alt={logo.name}
-            fill
-            unoptimized
-            sizes="24px"
-            className={`object-contain ${logoOnLight(logo)}`}
-          />
-        </div>
-        <span className="whitespace-nowrap text-xs font-medium text-gray-700">
-          {logo.name}
-        </span>
-      </div>
-    </Link>
-  )
-}
-
-/* Mobile — one seamlessly-looping marquee row */
-function MarqueeRow({
-  logos,
-  direction,
-  durationS,
-  paused,
-}: {
-  logos: LogoItem[]
-  direction: "left" | "right"
-  durationS: number
-  paused: boolean
-}) {
-  const doubled = useMemo(() => [...logos, ...logos], [logos])
-  return (
-    <div
-      className="flex w-max gap-2"
-      style={{
-        animation: `eco-marquee-${direction} ${durationS}s linear infinite`,
-        animationPlayState: paused ? "paused" : "running",
-      }}
-    >
-      {doubled.map((logo, i) => (
-        <MarqueeChip key={`${logo.id}-${i}`} logo={logo} />
-      ))}
-    </div>
-  )
-}
-
 /**
  * How many marks this wall shows, out of roughly forty.
  *
@@ -200,7 +145,6 @@ export function EcosystemShowcase() {
   const [communities, setCommunities] = useState<LogoItem[]>([])
   const [partnerLogos, setPartnerLogos] = useState<LogoItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [paused, setPaused] = useState(false)
 
   // Partners come from Firestore now, the same as communities. They used to be
   // a module-scope import from data/partners.ts, which is why a partner deleted
@@ -233,13 +177,13 @@ export function EcosystemShowcase() {
     () => partnerLogos.slice(0, TEASER_PARTNERS),
     [partnerLogos]
   )
-  // The mobile marquee draws from the same sample, so the page does not show
-  // eighteen marks on a laptop and forty on a phone.
-  const allLogos = useMemo(
-    () => [...shownCommunities, ...shownPartners],
+  // Phones get a shorter sample than the desktop grid's eighteen: four rows
+  // of three, groups then partners in the same order. The Building Together
+  // button under it is the way to see the rest.
+  const mobileLogos = useMemo(
+    () => [...shownCommunities.slice(0, 9), ...shownPartners.slice(0, 3)],
     [shownCommunities, shownPartners]
   )
-  const marqueeRows = useMemo(() => splitIntoRows(allLogos, 3), [allLogos])
 
   return (
     <section
@@ -247,16 +191,6 @@ export function EcosystemShowcase() {
       className="w-full bg-white py-12 md:py-20 relative overflow-x-clip"
       data-bg-type="light"
     >
-      <style>{`
-        @keyframes eco-marquee-left {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        @keyframes eco-marquee-right {
-          from { transform: translateX(-50%); }
-          to   { transform: translateX(0); }
-        }
-      `}</style>
 
       <div className="relative z-10 page-shell">
         <div className="lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-12 xl:gap-16">
@@ -330,28 +264,13 @@ export function EcosystemShowcase() {
                   <LogoGroup logos={shownPartners} />
                 </div>
 
-                {/* Mobile: full-bleed auto-scrolling marquee (pause on touch so links stay tappable) */}
-                <div
-                  className="md:hidden relative -mx-4"
-                  onTouchStart={() => setPaused(true)}
-                  onTouchEnd={() => setPaused(false)}
-                  onTouchCancel={() => setPaused(false)}
-                >
-                  <div className="space-y-2.5">
-                    {marqueeRows.map((row, i) => (
-                      <div key={i} className="overflow-hidden">
-                        <MarqueeRow
-                          logos={row}
-                          direction={i % 2 === 0 ? "left" : "right"}
-                          durationS={44 + i * 8}
-                          paused={paused}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {/* Edge fades */}
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-white to-transparent" />
-                  <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-white to-transparent" />
+                {/* Mobile: a still logo grid, the same tiles Building Together
+                    uses. It was an auto-scrolling marquee, which the copy above
+                    ("Tap any logo") contradicted. */}
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:hidden">
+                  {mobileLogos.map((logo) => (
+                    <MobileLogoTile key={`${logo.type}-${logo.id}`} logo={logo} />
+                  ))}
                 </div>
 
                 {/* Mobile/tablet: button closes out the section below the logos */}

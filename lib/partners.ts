@@ -1,5 +1,5 @@
 import { cache } from "react"
-import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { getDb, COLLECTIONS, byDisplayOrder } from "@/lib/firebase-admin"
 
 /**
  * Partners, read from Firestore — the only source now.
@@ -28,10 +28,19 @@ export interface Partner {
   video?: string
   /** Hover confetti on the homepage grid. Two partners set it. */
   isEasterEgg?: boolean
+  /** Position set by dragging in the admin; see byDisplayOrder. */
+  order?: number
 }
 
 /**
- * All partners, name-ordered.
+ * All partners, in the order set in the admin (drag to reorder), like
+ * listCommunities and /api/partners.
+ *
+ * This used to sort by name, which put "434 MEDIA" first on Building
+ * Together — a digit sorts before every letter — while the admin, the
+ * homepage and /api/partners all had it last. No Firestore orderBy: it would
+ * drop any partner never given an `order`; byDisplayOrder sorts in memory and
+ * puts those after the ordered ones, alphabetically.
  *
  * `cache()` dedupes within a single render pass, so a route that needs
  * partners for `generateMetadata` and again for the page body pays for one
@@ -45,23 +54,23 @@ export interface Partner {
  */
 export const listPartners = cache(async (): Promise<Partner[]> => {
   try {
-    const snapshot = await getDb()
-      .collection(COLLECTIONS.PARTNERS)
-      .orderBy("name")
-      .get()
+    const snapshot = await getDb().collection(COLLECTIONS.PARTNERS).get()
 
-    return snapshot.docs.map((doc) => {
-      const d = doc.data()
-      return {
-        id: doc.id,
-        name: d.name,
-        logo: d.logo,
-        description: d.description,
-        website: d.website ?? undefined,
-        video: d.video ?? undefined,
-        isEasterEgg: d.isEasterEgg ?? undefined,
-      }
-    })
+    return snapshot.docs
+      .map((doc) => {
+        const d = doc.data()
+        return {
+          id: doc.id,
+          name: d.name,
+          logo: d.logo,
+          description: d.description,
+          website: d.website ?? undefined,
+          video: d.video ?? undefined,
+          isEasterEgg: d.isEasterEgg ?? undefined,
+          order: typeof d.order === "number" ? d.order : undefined,
+        }
+      })
+      .sort(byDisplayOrder)
   } catch (error) {
     console.error("Partners fetch failed:", error)
     return []

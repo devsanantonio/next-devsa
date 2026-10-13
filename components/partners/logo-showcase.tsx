@@ -5,6 +5,7 @@ import { motion } from "motion/react"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
+import { MobileLogoTile } from "@/components/partners/mobile-logo-tile"
 
 type LogoType = "community" | "partner"
 
@@ -63,11 +64,6 @@ function isExtremeWordmark(logo: LogoItem) {
   return EXTREME_WORDMARK_IDS.includes(logo.id)
 }
 
-function splitIntoRows<T>(items: T[], rows: number): T[][] {
-  const out: T[][] = Array.from({ length: rows }, () => [])
-  items.forEach((item, i) => out[i % rows].push(item))
-  return out
-}
 
 /* Desktop — a logo-forward tile, on the canvas (no card). */
 function LogoTile({ logo }: { logo: LogoItem }) {
@@ -109,53 +105,45 @@ function LogoTile({ logo }: { logo: LogoItem }) {
   )
 }
 
-/* Mobile — a compact chip used inside the scrolling marquee */
-function MarqueeChip({ logo }: { logo: LogoItem }) {
-    return (
-    <Link href={`/buildingtogether/${logo.id}`} className="shrink-0">
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        <div className="relative h-6 w-6 shrink-0">
-          <Image
-            src={logoSrcOnLight(logo, logo.logo)}
-            alt={logo.name}
-            fill
-            unoptimized
-            sizes="24px"
-            className={`object-contain ${logoOnLight(logo)}`}
-          />
-        </div>
-        <span className="whitespace-nowrap text-xs font-medium text-gray-700">
-          {logo.name}
-        </span>
-      </div>
-    </Link>
-  )
-}
+// Four rows of three before "See all"; sm shows four across, so it rounds to
+// the same number of rows there.
+const COLLAPSED = 12
 
-/* Mobile — one seamlessly-looping marquee row */
-function MarqueeRow({
-  logos,
-  direction,
-  durationS,
-  paused,
-}: {
-  logos: LogoItem[]
-  direction: "left" | "right"
-  durationS: number
-  paused: boolean
-}) {
-  const doubled = useMemo(() => [...logos, ...logos], [logos])
+/**
+ * Mobile — one kind of entry (groups, or partners) as a grid of logos, with
+ * "See all" past four rows.
+ *
+ * This replaced three auto-scrolling marquee rows that mixed groups and
+ * partners: they showed scale, but the copy says "Open any logo", and a moving
+ * target is hard to tap. Three across on a phone (not four, where a 10:1
+ * wordmark like learnOPENtech shrinks to a sliver), four from sm.
+ */
+function MobileGroup({ label, items }: { label: string; items: LogoItem[] }) {
+  const [open, setOpen] = useState(false)
+  if (items.length === 0) return null
+  const shown = open ? items : items.slice(0, COLLAPSED)
   return (
-    <div
-      className="flex w-max gap-2"
-      style={{
-        animation: `bt-marquee-${direction} ${durationS}s linear infinite`,
-        animationPlayState: paused ? "paused" : "running",
-      }}
-    >
-      {doubled.map((logo, i) => (
-        <MarqueeChip key={`${logo.id}-${i}`} logo={logo} />
-      ))}
+    <div>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <p className="text-sm font-semibold text-gray-900">
+          {label} <span className="font-normal text-gray-500">· {items.length}</span>
+        </p>
+        {items.length > COLLAPSED && (
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            className="text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4"
+          >
+            {open ? "Show less" : "See all"}
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {shown.map((logo) => (
+          <MobileLogoTile key={`${logo.type}-${logo.id}`} logo={logo} />
+        ))}
+      </div>
     </div>
   )
 }
@@ -179,25 +167,13 @@ function MarqueeRow({
  * lib/communities.ts and lib/partners.ts, which read the same collections the
  * routes do.
  *
- * `paused` stays here because it is interaction, not data.
  */
 export function LogoShowcase({ logos }: { logos: LogoItem[] }) {
-  const [paused, setPaused] = useState(false)
-
-  const marqueeRows = useMemo(() => splitIntoRows(logos, 3), [logos])
+  const communities = useMemo(() => logos.filter((l) => l.type === "community"), [logos])
+  const partners = useMemo(() => logos.filter((l) => l.type === "partner"), [logos])
 
   return (
     <section id="groups" className="w-full bg-white scroll-mt-20" data-bg-type="light">
-      <style>{`
-        @keyframes bt-marquee-left {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        @keyframes bt-marquee-right {
-          from { transform: translateX(-50%); }
-          to   { transform: translateX(0); }
-        }
-      `}</style>
 
       <div className="page-shell py-16 sm:py-20 md:py-24">
         {/* Section intro */}
@@ -248,28 +224,11 @@ export function LogoShowcase({ logos }: { logos: LogoItem[] }) {
                 ))}
               </div>
 
-              {/* Mobile: full-bleed auto-scrolling marquee (pause on touch) */}
-              <div
-                className="md:hidden relative -mx-5"
-                onTouchStart={() => setPaused(true)}
-                onTouchEnd={() => setPaused(false)}
-                onTouchCancel={() => setPaused(false)}
-              >
-                <div className="space-y-2.5">
-                  {marqueeRows.map((row, i) => (
-                    <div key={i} className="overflow-hidden">
-                      <MarqueeRow
-                        logos={row}
-                        direction={i % 2 === 0 ? "left" : "right"}
-                        durationS={44 + i * 8}
-                        paused={paused}
-                      />
-                    </div>
-                  ))}
-                </div>
-                {/* Edge fades */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-white to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-white to-transparent" />
+              {/* Mobile: groups and partners as separate logo grids, each with
+                  See all. */}
+              <div className="space-y-7 md:hidden">
+                <MobileGroup label="Community groups" items={communities} />
+                <MobileGroup label="Partners" items={partners} />
               </div>
           </>
         </motion.div>
