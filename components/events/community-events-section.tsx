@@ -1,5 +1,6 @@
 "use client"
 
+import { GoogleCalendarIcon, AppleCalendarIcon, OutlookIcon } from "@/components/icons/calendar-icons"
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin, ArrowUpRight } from "lucide-react"
@@ -482,12 +483,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
+                  <GoogleCalendarIcon className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Google Calendar</p>
@@ -503,16 +499,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="3" width="20" height="19" rx="3" stroke="#FF3B30" strokeWidth="1.5"/>
-                    <path d="M2 8h20" stroke="#FF3B30" strokeWidth="1.5"/>
-                    <path d="M7 1v4M17 1v4" stroke="#FF3B30" strokeWidth="1.5" strokeLinecap="round"/>
-                    <rect x="6" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
-                    <rect x="10.5" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
-                    <rect x="15" y="11" width="3" height="3" rx="0.5" fill="#FF3B30"/>
-                    <rect x="6" y="16" width="3" height="3" rx="0.5" fill="#FF3B30"/>
-                    <rect x="10.5" y="16" width="3" height="3" rx="0.5" fill="#FF3B30"/>
-                  </svg>
+                  <AppleCalendarIcon className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Apple Calendar</p>
@@ -530,12 +517,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
-                    <path fill="#0078D4" d="M24 7.387v10.478c0 .23-.08.424-.238.576a.806.806 0 01-.588.234h-8.592v-8.35L16.135 12l1.58-1.675V7.387h5.11c.23 0 .424.078.588.234.159.152.238.346.238.576zM16.135 12l-1.553 1.675v-3.35L16.135 12z"/>
-                    <path fill="#0078D4" d="M17.715 5.062v2.325h-3.133V5.531a.469.469 0 01.14-.344.469.469 0 01.345-.14h2.648v.015zm0 5v7.613h5.11c.23 0 .424-.078.588-.234a.776.776 0 00.238-.576V7.387a.776.776 0 00-.238-.576.806.806 0 00-.588-.234h-5.11v3.485z"/>
-                    <path fill="#0078D4" d="M8.97 4.125c1.588 0 2.895.46 3.921 1.382 1.027.921 1.54 2.108 1.54 3.56 0 1.469-.52 2.67-1.558 3.601-1.04.932-2.34 1.398-3.903 1.398-1.573 0-2.877-.462-3.912-1.388C4.022 11.753 3.504 10.555 3.504 9.068c0-1.462.515-2.652 1.544-3.571C6.078 4.578 7.387 4.125 8.97 4.125zm.088 2.058c-.88 0-1.595.303-2.148.91-.552.605-.828 1.378-.828 2.319 0 .956.273 1.737.82 2.342.545.605 1.263.908 2.156.908.9 0 1.623-.3 2.17-.898.546-.598.82-1.383.82-2.352 0-.955-.27-1.734-.812-2.335-.541-.596-1.265-.894-2.178-.894z"/>
-                    <path fill="#0078D4" opacity=".5" d="M14.582 5.531v12.938a.469.469 0 01-.14.344.469.469 0 01-.345.14H1.148A.44.44 0 01.82 18.82a.494.494 0 01-.152-.362V5.531c0-.136.05-.252.152-.344a.44.44 0 01.328-.134h12.95a.469.469 0 01.344.14.469.469 0 01.14.344z"/>
-                  </svg>
+                  <OutlookIcon className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-gray-900 leading-[1.3]">Outlook</p>
