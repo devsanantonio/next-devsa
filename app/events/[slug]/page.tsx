@@ -45,6 +45,13 @@ async function getEventBySlug(slug: string) {
         description: data.description,
         url: data.url,
         communityId: data.communityId,
+        // For the share metadata, which names every host: partners co-host,
+        // and DEVSA's own events say so.
+        partnerId: data.partnerId,
+        isOfficial: data.isOfficial === true,
+        // The admin's own label, without the "DEVSA Community" default above,
+        // so a host-less event is never described as hosted by DEVSA.
+        storedCommunityName: data.communityName || null,
         organizerEmail: data.organizerEmail,
         source: data.source,
         status: data.status,
@@ -70,14 +77,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const event = await getEventBySlug(slug)
     
   if (event) {
-    const community = event.communityId ? await (async () => {
+    /*
+     * Every host, by name, first. A group sharing its own event from the
+     * calendar should see its name lead the preview, not DEVSA's: the title
+     * said "<event> | DEVSA" and the description ended on DEVSA's own pitch.
+     * Communities then partners, the order the card and the calendar use; the
+     * admin's denormalized communityName is the fallback. DEVSA's own events
+     * (isOfficial) name DEVSA.
+     */
+    const ids = (v?: string) => (v || "").split(",").map((x) => x.trim()).filter(Boolean)
+    const db = getDb()
+    const nameOf = async (collection: string, id: string) => {
       try {
-        const db = getDb()
-        const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(event.communityId).get()
-        if (doc.exists) return doc.data() as { name: string }
-      } catch {}
-      return null
-    })() : null
+        const doc = await db.collection(collection).doc(id).get()
+        return doc.exists ? ((doc.data() as { name?: string }).name ?? null) : null
+      } catch {
+        return null
+      }
+    }
+    const hostNames = (
+      await Promise.all([
+        ...ids(event.communityId).map((id) => nameOf(COLLECTIONS.COMMUNITIES, id)),
+        ...ids(event.partnerId).map((id) => nameOf(COLLECTIONS.PARTNERS, id)),
+      ])
+    ).filter((n): n is string => !!n)
+    if (!hostNames.length && event.storedCommunityName) hostNames.push(event.storedCommunityName)
+    const hosts = event.isOfficial
+      ? ["DEVSA", ...hostNames].join(" + ")
+      : hostNames.join(" + ") || "a San Antonio tech group"
+
     const eventDate = new Date(event.date).toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
@@ -85,15 +113,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       year: "numeric",
       timeZone: "America/Chicago",
     })
-    
-    // OG best practices: title under 60 chars, description 120-160 chars
-    const title = `${event.title} | DEVSA`
-    const description = `Join ${community?.name || 'the community'} on ${eventDate} in San Antonio. DEVSA is the bridge between the city's builders, tech groups and partners.`
-    
+
+    const description = `Hosted by ${hosts}. ${eventDate}${event.location ? ` at ${event.location}` : " in San Antonio"}. Listed on the DEVSA community calendar.`
+    // The browser tab and X card carry the host after the title; the root
+    // template still appends " | DEVSA" to the page <title>, as the site's name.
+    const titleWithHost = `${event.title} · ${hosts}`
+
     return {
-      // The root layout's template appends " | DEVSA"; `title` above keeps the
-      // suffix for the X card, which the template does not reach.
-      title: event.title,
+      title: titleWithHost,
       description,
       openGraph: {
         title: event.title,
@@ -105,14 +132,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             url: `${siteUrl}/api/og/event/${slug}`,
             width: 1200,
             height: 630,
-            alt: `${event.title} - ${community?.name || "DEVSA Community Event"}`,
+            alt: `${event.title}, hosted by ${hosts}`,
           },
         ],
         type: "website",
       },
       twitter: {
         card: "summary_large_image",
-        title,
+        title: titleWithHost,
         description,
         images: [`${siteUrl}/api/og/event/${slug}`],
       },

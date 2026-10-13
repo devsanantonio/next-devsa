@@ -17,13 +17,22 @@ export const LOGO_COLORS = {
   mark: "#eeeeee",
 } as const
 
+/**
+ * The DEVSA mark. `alt` draws the alternate cut, public/branding/devsa-alt-logo.svg:
+ * the same shapes with the three terminal bars in the mark's off-white
+ * instead of teal, pink and orange. One of the two cuts the brand rules allow;
+ * never a recolor beyond those.
+ */
 export function DevsaLogoMark({
   size = 40,
   bodyColor = LOGO_COLORS.body,
+  alt = false,
 }: {
   size?: number
   bodyColor?: string
+  alt?: boolean
 }) {
+  const bar = (color: string) => (alt ? LOGO_COLORS.mark : color)
   const width = Math.round(size * (LOGO_VIEWBOX_W / LOGO_VIEWBOX_H))
   return (
     <svg
@@ -38,9 +47,9 @@ export function DevsaLogoMark({
         d="M0,107.3h735.7v413.8c0,16.8-13.8,30.7-30.7,30.7H30.6c-16.9,0-30.6-13.8-30.6-30.7V107.3Z"
       />
       {/* Top "terminal" bars — teal · pink · orange */}
-      <path fill={LOGO_COLORS.teal} d="M235,0H30.6C13.8,0,0,13.8,0,30.6v61.3h235V0Z" />
-      <rect fill={LOGO_COLORS.pink} x="250.3" width="235" height="91.9" />
-      <path fill={LOGO_COLORS.orange} d="M705,0h-204.5v91.9h235.1V30.6c0-16.9-13.8-30.6-30.7-30.6h0Z" />
+      <path fill={bar(LOGO_COLORS.teal)} d="M235,0H30.6C13.8,0,0,13.8,0,30.6v61.3h235V0Z" />
+      <rect fill={bar(LOGO_COLORS.pink)} x="250.3" width="235" height="91.9" />
+      <path fill={bar(LOGO_COLORS.orange)} d="M705,0h-204.5v91.9h235.1V30.6c0-16.9-13.8-30.6-30.7-30.6h0Z" />
       {/* Inner "SA" mark */}
       <path
         fill={LOGO_COLORS.mark}

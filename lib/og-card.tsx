@@ -49,6 +49,8 @@ export function OgCard({
   theme = DEVSA,
   wordmark,
   footer,
+  header,
+  url = "devsa.community",
   /**
    * Conferences only. Oswald uppercase is the display face the Startup + Tech
    * Week activations use and what Access Granted's wordmark is specified in;
@@ -58,10 +60,20 @@ export function OgCard({
   meta,
 }: {
   title: string[]
-  hook: string
+  /** Optional: the event card puts its hosts in the header instead. */
+  hook?: string
   theme?: OgCardTheme
   wordmark?: React.ReactNode
-  footer: string
+  /** Optional: the event card shows only the address. */
+  footer?: React.ReactNode
+  /** The address on the right of the footer. Event cards point at /events. */
+  url?: string
+  /**
+   * Replaces the DEVSA mark in the top-left. The event card uses it for the
+   * hosts: a group sharing its own event from the calendar should read as the
+   * group's event, not DEVSA's. Every other card keeps the mark.
+   */
+  header?: React.ReactNode
   display?: boolean
   /**
    * Events only: when and where, given their own row instead of being folded
@@ -89,7 +101,7 @@ export function OgCard({
       }}
     >
       <div style={{ display: "flex" }}>
-        <DevsaLogoMark size={110} bodyColor={theme.logoBody} />
+        {header ?? <DevsaLogoMark size={110} bodyColor={theme.logoBody} />}
       </div>
 
       <div
@@ -136,6 +148,7 @@ export function OgCard({
           </div>
         ) : null}
 
+        {hook ? (
         <p
           style={{
             fontSize: 26,
@@ -149,6 +162,7 @@ export function OgCard({
         >
           {hook}
         </p>
+        ) : null}
       </div>
 
       <div
@@ -159,11 +173,11 @@ export function OgCard({
           width: "100%",
         }}
       >
-        <span style={{ color: theme.footMuted, fontSize: 17, fontWeight: 500 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 12, color: theme.footMuted, fontSize: 17, fontWeight: 500 }}>
           {footer}
         </span>
         <span style={{ color: theme.footMuted, fontSize: 17, fontWeight: 400 }}>
-          devsa.community
+          {url}
         </span>
       </div>
     </div>

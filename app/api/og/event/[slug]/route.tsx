@@ -3,6 +3,67 @@ import { NextRequest } from "next/server"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 import { loadBrandFonts } from "@/lib/og-fonts"
 import { OgCard } from "@/lib/og-card"
+import { DevsaLogoMark } from "@/lib/og-brand"
+import sharp from "sharp"
+
+const SITE = "https://www.devsa.community"
+
+type Host = { id: string; name: string; logo?: string; type: "community" | "partner" }
+
+
+/**
+ * A host's logo as a PNG data URI for a dark tile, or null.
+ *
+ * Every tile on this card is dark, so no logo sits in a white box on a dark
+ * card. The original file is used, not lib/logo-invert's light-ground
+ * variant, because the ground here is dark. A logo that is mostly dark ink
+ * would vanish on it, so for those (mean brightness under 65 — of the forty
+ * directory logos: 434 MEDIA, UTSA University College and Learn2AI) the
+ * near-black pixels are lifted to the DEVSA mark's off-white while every
+ * coloured pixel keeps its colour: UTSA's navy wordmark turns white and its
+ * orange stays, the way its own reversed logo reads. Lifting dark pixels in
+ * every logo was tried and washed out DEF CON, BSides, Texas Linux Fest and
+ * others whose dark detail is part of the design.
+ *
+ * Fetched here rather than handed to the renderer as a URL so one slow or
+ * missing file cannot fail the card, and converted through sharp because the
+ * renderer cannot draw WebP, which five of the directory's logos are.
+ */
+async function hostLogo(host: Host): Promise<string | null> {
+  if (!host.logo) return null
+  const url = host.logo.startsWith("/") ? `${SITE}${host.logo}` : host.logo
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) })
+    if (!res.ok) return null
+    const { data, info } = await sharp(Buffer.from(await res.arrayBuffer()), { density: 300 })
+      .resize(240, 240, { fit: "inside", withoutEnlargement: false })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+
+    const lumOf = (i: number) => 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]
+    // Mean brightness of the visible pixels, alpha-weighted, so a transparent
+    // background counts as neither colour.
+    let sum = 0
+    let weight = 0
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i + 3] / 255
+      if (a < 0.1) continue
+      sum += a * lumOf(i)
+      weight += a
+    }
+    if (weight > 0 && sum / weight < 65) {
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] >= 25 && lumOf(i) < 70) data[i] = data[i + 1] = data[i + 2] = 238
+      }
+    }
+
+    const png = await sharp(data, { raw: info }).png().toBuffer()
+    return `data:image/png;base64,${png.toString("base64")}`
+  } catch {
+    return null
+  }
+}
 
 export const runtime = "nodejs"
 
@@ -68,7 +129,9 @@ async function getEventBySlug(slug: string) {
           communityIds.map(async (id) => {
             try {
               const d = await db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()
-              return d.exists ? (d.data()?.name as string | undefined) : undefined
+              return d.exists
+                ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "community" } as Host)
+                : undefined
             } catch {
               return undefined
             }
@@ -78,7 +141,9 @@ async function getEventBySlug(slug: string) {
           partnerIds.map(async (id) => {
             try {
               const d = await db.collection(COLLECTIONS.PARTNERS).doc(id).get()
-              return d.exists ? (d.data()?.name as string | undefined) : undefined
+              return d.exists
+                ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "partner" } as Host)
+                : undefined
             } catch {
               return undefined
             }
@@ -86,10 +151,11 @@ async function getEventBySlug(slug: string) {
         ),
       ])
 
-      const hosts = [...communities, ...partners].filter(Boolean) as string[]
+      const hosts = [...communities, ...partners].filter((h): h is Host => !!h?.name)
       // data.communityName is the denormalized label the admin writes. It is
       // the fallback, not the source — it holds one name even for a collab.
-      if (!hosts.length && data.communityName) hosts.push(data.communityName)
+      if (!hosts.length && data.communityName)
+        hosts.push({ id: "", name: data.communityName, logo: data.communityLogo || undefined, type: "community" })
 
       return {
         title: data.title as string,
@@ -97,6 +163,8 @@ async function getEventBySlug(slug: string) {
         endTime: (data.endTime as string | undefined) ?? null,
         location: data.location as string | null,
         hosts,
+        // DEVSA's own events (see Event.isOfficial) keep the DEVSA mark.
+        official: data.isOfficial === true,
       }
     }
   } catch (error) {
@@ -116,7 +184,8 @@ async function getEventBySlug(slug: string) {
     date: dateStr ? `${dateStr}T00:00:00.000Z` : null,
     endTime: null as string | null,
     location: null,
-    hosts: [] as string[],
+    hosts: [] as Host[],
+    official: false,
   }
 }
 
@@ -168,17 +237,71 @@ export async function GET(
     }
   }
 
-  const hostLine = event.hosts.length
-    ? `Hosted by ${event.hosts.join(" + ")}`
-    : "On the DEVSA community calendar"
+  /*
+   * The hosts lead, not DEVSA.
+   *
+   * Groups sharing their own event from the calendar told us the card read as
+   * a DEVSA event: the DEVSA mark sat in the top-left where a brand goes, and
+   * the hosts were a grey line under the date. Now the hosts' logos and names
+   * take that corner, and DEVSA is only the address in the footer,
+   * devsa.community/events: the calendar the event is listed on, which is all
+   * DEVSA is to it. DEVSA's own events (isOfficial) and events with no host on
+   * record keep the mark.
+   */
+  const shown = event.official ? [] : event.hosts.slice(0, 3)
+  const logos = await Promise.all(shown.map(hostLogo))
+  const names = shown.map((h) => h.name).join(" + ")
+
+  const header = shown.length ? (
+    <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+      {shown.map((h, i) =>
+        logos[i] ? (
+          <div
+            key={h.name}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 112,
+              height: 112,
+              borderRadius: 22,
+              padding: 14,
+              // Always dark: no white boxes on a dark card. See hostLogo.
+              backgroundColor: "#1c1c1c",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logos[i]!} alt="" style={{ maxWidth: 84, maxHeight: 84, objectFit: "contain" }} />
+          </div>
+        ) : null
+      )}
+      <div style={{ display: "flex", flexDirection: "column", marginLeft: logos.some(Boolean) ? 4 : 0 }}>
+        <span style={{ fontSize: 18, fontWeight: 500, color: "#a3a3a3", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          Hosted by
+        </span>
+        <span style={{ fontSize: names.length > 48 ? 26 : 32, fontWeight: 700, color: "#ffffff", maxWidth: 760, lineHeight: 1.2 }}>
+          {names}
+        </span>
+      </div>
+    </div>
+  ) : undefined
 
   return new ImageResponse(
     (
       <OgCard
+        header={header}
         title={[event.title]}
+        // An official event co-hosted with groups still credits them.
+        hook={event.official && event.hosts.length ? `With ${event.hosts.map((h) => h.name).join(" + ")}` : undefined}
         meta={{ when: when || "Date to be announced", where: event.location || "San Antonio, TX" }}
-        hook={hostLine}
-        footer="On the DEVSA community calendar"
+        // The alt mark (monochrome) alone, bottom-left, where a credit sits,
+        // so it reads as a quiet sign-off rather than competing with the
+        // hosts' colour above. The calendar the
+        // event is listed on. No wording beside it (the logo rules keep the
+        // word DEVSA off any piece with the mark). Cards DEVSA leads already
+        // carry the mark at the top, so they do not repeat it here.
+        footer={shown.length ? <DevsaLogoMark size={34} alt /> : undefined}
+        url="devsa.community/events"
       />
     ),
     { width: 1200, height: 630, fonts }
