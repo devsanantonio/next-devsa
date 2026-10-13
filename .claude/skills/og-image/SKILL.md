@@ -40,7 +40,7 @@ export async function GET() {
 
 **Every element needs an explicit `display`.** Satori — the renderer behind `ImageResponse` — does not apply CSS defaults. A `<div>` with children and no `display: "flex"` renders nothing. This is the most common cause of a card that's mysteriously empty.
 
-**Fonts must be passed in, not requested.** `loadBrandFonts()` returns Geist Sans at weights 400/500/700/800; `loadBrandMonoFonts()` returns Geist Mono at 400/500/600. Both are read from `lib/og-fonts/*.ttf` via `import.meta.url` so Next traces them into the serverless bundle — don't rewrite those paths as string literals or the fonts vanish in production. Both loaders memoize per-instance.
+**Fonts must be passed in, not requested.** `loadBrandFonts()` returns Geist Sans at weights 400/500/700/800; `loadBrandMonoFonts()` returns Geist Mono at 400/500/600. Both are read from `lib/og-fonts/*.ttf` via `new URL("./og-fonts/<file>.ttf", import.meta.url)` so Next traces them into the serverless bundle. Keep one literal `new URL(...)` per file: a plain path string drops the file from the bundle, and a template (``new URL(`./og-fonts/${file}`, ...)``) is worse — Turbopack resolves it to a single asset for every call, so every card silently rendered in Geist Black at every weight, with Mono and Oswald falling back to it, until October 2026. Both loaders memoize per-instance.
 
 Only the loaded weights exist. `fontWeight: 600` on a Geist Sans card silently falls back — use 500 or 700, or add the TTF to the loader.
 
@@ -58,7 +58,7 @@ Accent pink is `#ef426f`. Body/muted greys in use: `#111827`, `#6b7280`, `#9ca3a
 
 ## Dynamic cards
 
-For per-record cards (`og/event/[slug]`, `og/buildingtogether/[slug]`), fetch the record inside the handler and always render something — a missing document should produce a generic branded card, not a 500. A broken share image is worse than a plain one.
+For per-record cards (`og/event/[slug]`, `og/buildingtogether/[slug]`), fetch the record inside the handler and always render something — a missing document should produce a generic branded card, not a 500. A broken share image is worse than a plain one. Generic means the page's own card, never one built from the URL: the event card used to title itself from the slug's words, which let any URL mint a DEVSA-branded image. A downloadable asset (`og/event/[slug]/social`) answers 404 instead.
 
 Remote images must be absolute URLs on hosts allow-listed in `next.config.ts`.
 
