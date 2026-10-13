@@ -607,7 +607,7 @@ function OpenCalendarBand({
       key: "publish",
       icon: Plus,
       title: "Organizers publish it",
-      body: "If you run a group here, you add your own events and they are live the moment you save. Nobody at DEVSA is in the middle of it, and nobody has to be asked.",
+      body: "If you run a group here, you add your own events and they are live the moment you save. Nobody at DEVSA is in the middle of it, and nobody has to be asked. Every event also gets a poster with your logo on it, sized for socials — save it from the event's Share button.",
       action: { label: "Add your event", href: "/signin" },
     },
     {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { Check, Download, ImageDown, Link2, Loader2, Share } from "lucide-react"
+import { Check, Download, Link2, Loader2, Send, Share } from "lucide-react"
 
 /**
  * Save or share an event's 1080x1350 graphic (/api/og/event/[slug]/social),
@@ -207,7 +207,10 @@ export function ShareImageMenu({
         className={`${trigger} ${buttonClassName}`}
         title="Save or share an image of this event"
       >
-        <ImageDown className={size === "md" ? "h-4 w-4" : "h-3.5 w-3.5"} aria-hidden />
+        {/* The platform share glyph (a box with an arrow out of it), which
+            reads as "share" on sight; the picture-with-a-down-arrow it
+            replaced read as "download a photo". */}
+        <Share className={size === "md" ? "h-4 w-4" : "h-3.5 w-3.5"} aria-hidden />
         {label}
       </button>
 
@@ -228,7 +231,7 @@ export function ShareImageMenu({
               </button>
               {canShareFiles && (
                 <button type="button" role="menuitem" onClick={share} disabled={!ready} className={item}>
-                  <Share className="h-4 w-4 text-gray-500" />
+                  <Send className="h-4 w-4 text-gray-500" />
                   Share…
                 </button>
               )}
