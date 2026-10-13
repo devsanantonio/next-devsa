@@ -7,9 +7,12 @@ export const runtime = "nodejs"
 /**
  * The homepage card.
  *
- * The hook names the problem rather than the product. "Every tech community
- * group, on one calendar" describes a feature; missing the meetup you wanted
- * is what actually happens to people, and it is why the calendar exists.
+ * The hook is the hero's own line: DEVSA as the bridge between the city's
+ * builders, tech groups and partners, then what that bridge is made of, in
+ * the words of the homepage's "Built to Serve" section. It used to pitch the
+ * calendar alone ("every group's events in one place, so you stop hearing
+ * about them the week after"), which is now the /events card's job, and it
+ * described DEVSA as a feature rather than as what the site says it is.
  */
 export async function GET() {
   const fonts = await loadBrandFonts()
@@ -17,7 +20,7 @@ export async function GET() {
     (
       <OgCard
         title={["Find your people.", "Build your future."]}
-        hook="Python, Linux, AI, security, game dev, design — every group&apos;s events in one place, so you stop hearing about them the week after."
+        hook="DEVSA is the bridge between San Antonio’s builders, tech groups and partners: one shared calendar and one public directory, open to every grassroots group in the city."
         footer="A 501(c)(3) nonprofit in San Antonio, Texas"
       />
     ),
