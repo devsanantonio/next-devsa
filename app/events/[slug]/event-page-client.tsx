@@ -68,6 +68,15 @@ interface EventPageClientProps {
   slug: string
 }
 
+/**
+ * A host as this page draws it. Partners carry `kind: "partner"` so the card
+ * shows their own description and links rather than treating a blank
+ * description as a one-off host, and an optional square `mark` for the small
+ * round slots, where a wide wordmark shrinks to nothing (Geekdom's full logo
+ * is a wordmark; its mark is the crown).
+ */
+type EventHost = TechCommunity & { kind?: "community" | "partner"; mark?: string }
+
 // DEVSA Discord - all community organizers are in this server
 const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
 
@@ -202,7 +211,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
-  const [allEventCommunities, setAllEventCommunities] = useState<TechCommunity[]>([])
+  const [allEventCommunities, setAllEventCommunities] = useState<EventHost[]>([])
 
   // Update current time every minute for live "Happening Now" detection
   useEffect(() => {
@@ -253,26 +262,41 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   useEffect(() => {
     if (!event) return
 
-    const partnerHosts: TechCommunity[] = (event.partners || [])
-      .filter((p) => p.name)
-      .map((p) => ({ id: p.id, name: p.name, logo: p.logo, description: '' }))
+    const eventPartners = (event.partners || []).filter((p) => p.name)
 
     const communityIds = (event.communityId || '')
       .split(',')
       .map((id: string) => id.trim())
       .filter(Boolean)
 
-    if (!communityIds.length) {
-      if (partnerHosts.length) setAllEventCommunities(partnerHosts)
-      return
-    }
-
     const fetchHosts = async () => {
       try {
-        const response = await fetch('/api/communities')
-        const communities: TechCommunity[] = response.ok
-          ? (await response.json()).communities || []
+        // Partners come back from /api/events as {id, name, logo} only, which
+        // is why a partner-hosted event used to show DEVSA's own blurb in the
+        // host card: an empty description read as a one-off host. The full
+        // records carry the description, the website and the square mark.
+        const [communityRes, partnerRes] = await Promise.all([
+          communityIds.length ? fetch('/api/communities') : Promise.resolve(null),
+          eventPartners.length ? fetch('/api/partners') : Promise.resolve(null),
+        ])
+        const communities: TechCommunity[] = communityRes?.ok
+          ? (await communityRes.json()).communities || []
           : []
+        const partnerRecords: { id: string; description?: string; website?: string; mark?: string; logo?: string }[] =
+          partnerRes?.ok ? (await partnerRes.json()).partners || [] : []
+
+        const partnerHosts: EventHost[] = eventPartners.map((p) => {
+          const full = partnerRecords.find((r) => r.id === p.id)
+          return {
+            id: p.id,
+            name: p.name,
+            logo: full?.logo || p.logo,
+            description: full?.description || '',
+            website: full?.website,
+            mark: full?.mark,
+            kind: 'partner',
+          }
+        })
 
         const matched = communityIds
           .map((id: string) => {
@@ -292,7 +316,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           })
           .filter(Boolean) as TechCommunity[]
 
-        const hosts = [...matched, ...partnerHosts]
+        const hosts: EventHost[] = [...matched, ...partnerHosts]
         if (hosts.length) setAllEventCommunities(hosts)
       } catch (error) {
         console.error("Error fetching event hosts:", error)
@@ -479,7 +503,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/[0.07] ring-2 ring-[#0a0a0a]"
                   >
                     <Image
-                      src={c.logo || "/devsa-gradient.svg"}
+                      src={c.mark || c.logo || "/devsa-gradient.svg"}
                       alt=""
                       fill
                       className="object-contain p-2"
@@ -814,17 +838,24 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 <span aria-hidden className="h-px flex-1 bg-gray-200" />
               </h2>
               {allEventCommunities.map((comm) => {
-                const isCustomEvent = !comm.description
+                const isPartner = comm.kind === 'partner'
+                // Only a one-off community typed into the admin gets DEVSA's
+                // own blurb. A partner with no description still gets its own
+                // name and links, never DEVSA's.
+                const isCustomEvent = !comm.description && !isPartner
+                // A partner without a square mark shows its full logo in a
+                // wide tile, so a wordmark is contained rather than cropped.
+                const wideLogo = isPartner && !comm.mark
                 return (
             <div key={comm.id} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center gap-4 mb-5">
-                <div className={`relative h-12 w-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${isCustomEvent ? '' : 'bg-gray-900 p-2'}`}>
+                <div className={`relative h-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${wideLogo ? 'w-32' : 'w-12'} ${isCustomEvent ? '' : 'bg-gray-900 p-2'}`}>
                   <Image
-                    src={comm.logo || '/devsa-gradient.svg'}
+                    src={comm.mark || comm.logo || '/devsa-gradient.svg'}
                     alt={comm.name}
                     fill
                     className={isCustomEvent ? 'object-cover' : 'object-contain p-1'}
-                    sizes="48px"
+                    sizes={wideLogo ? '128px' : '48px'}
                   />
                 </div>
                 <h3 className="text-xl font-bold tracking-[-0.01em] text-gray-900 sm:text-2xl">{isCustomEvent ? (<>Find your people.<br />Build your future.</>) : `About ${comm.name}`}</h3>
@@ -833,9 +864,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 <div className="mb-6">
                   <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.</p>
                 </div>
-              ) : (
+              ) : comm.description ? (
                 <p className="text-[15px] text-gray-600 leading-relaxed mb-6">{comm.description}</p>
-              )}
+              ) : null}
             
               {/* Community Links */}
               <div className="flex flex-wrap gap-2">
@@ -961,7 +992,11 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     GitHub
                   </a>
                 )}
-                {/* Always show Discord - link to DEVSA Discord where all organizers are */}
+                {/* Communities always get a Discord button, falling back to
+                    DEVSA's server where every organizer is. A partner only
+                    gets one if it has its own: DEVSA's Discord is not
+                    Geekdom's. */}
+                {(!isPartner || comm.discord) && (
                 <a
                   href={comm.discord || DEVSA_DISCORD}
                   target="_blank"
@@ -971,6 +1006,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   <DiscordIcon className="h-4 w-4" />
                   Discord
                 </a>
+                )}
               </div>
             </div>
                 )
