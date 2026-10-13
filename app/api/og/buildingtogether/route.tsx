@@ -15,9 +15,9 @@ export async function GET() {
   return new ImageResponse(
     (
       <OgCard
-        title={["The groups run", "themselves."]}
-        hook="Nobody hands their community over to DEVSA. We bring the room, the audience and the partners — you keep running it your way."
-        footer="Partners & communities"
+        title={["Bring the idea.", "We’ll bring the builders."]}
+        hook="San Antonio&apos;s tech groups and the partners behind them. Partner with DEVSA, host with a group, or sponsor the work."
+        footer="Get involved"
       />
     ),
     { width: 1200, height: 630, fonts }

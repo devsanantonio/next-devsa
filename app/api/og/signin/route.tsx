@@ -12,7 +12,7 @@ export async function GET() {
   return new ImageResponse(
     (
       <OgCard
-        title={["Publish to the", "city&apos;s calendar."]}
+        title={["Publish to the", "city’s calendar."]}
         hook="Put your group&apos;s events in front of every other group&apos;s members. Free, and you keep running your community your way."
         footer="Organizer access"
       />

@@ -13,7 +13,7 @@ export async function GET() {
     (
       <OgCard
         title={["A Discord server in 2023.", "A 501(c)(3) in 2024."]}
-        hook="It started because the city&apos;s builders had nowhere to find each other. It is now the calendar every one of those groups publishes to."
+        hook="Civic infrastructure for San Antonio&apos;s tech community: one calendar, one directory and a few rooms a year, governed by a volunteer board."
         footer="A 501(c)(3) nonprofit in San Antonio, Texas"
       />
     ),

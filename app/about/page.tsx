@@ -12,15 +12,17 @@ import { listPartners } from "@/lib/partners"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
+// Leads with what DEVSA is (the phrase /about's hero and story introduce),
+// then what a funder checks: nonprofit status, since when, and who runs it.
 const SHORT =
-  "DEVSA began as a Discord server in September 2023 and became a 501(c)(3) six months later. The story, the board, and what the organization actually runs."
+  "Civic infrastructure for San Antonio's tech community: one calendar, one directory and a few rooms a year. A 501(c)(3) since 2024: its story, board and record."
 
 export const metadata: Metadata = {
-  title: "About DEVSA — How It Started and Who Runs It",
+  title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
   description: SHORT,
   alternates: { canonical: "/about" },
   openGraph: {
-    title: "About DEVSA — How It Started and Who Runs It",
+    title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
     description: SHORT,
     url: `${siteUrl}/about`,
     siteName: "DEVSA",
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "About DEVSA — How It Started and Who Runs It",
+    title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
     description: SHORT,
     images: [`${siteUrl}/api/og/about`],
     creator: "@devsatx",

@@ -18,14 +18,13 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 
 export const metadata: Metadata = {
   title: "San Antonio Tech Communities & Partners",
-  description: "San Antonio's tech groups run themselves. DEVSA gives them one shared calendar, one public directory, and one room to meet partners in.",
+  description: "San Antonio's tech groups and the partners behind them, in one directory, and the ways in: partner with DEVSA, host with a group, sponsor or donate.",
   keywords: [
     "San Antonio tech communities",
     "tech groups San Antonio",
     "developer communities SA",
     "tech partners San Antonio",
     "Python community San Antonio",
-    "JavaScript community SA",
     "AI community San Antonio",
     "cybersecurity community SA",
     "game dev San Antonio",
@@ -36,13 +35,22 @@ export const metadata: Metadata = {
     "join tech community SA",
     "Alamo City developers",
     "South Texas tech community",
+    // For partners, sponsors, students and parents, who reach this page
+    // looking for a way in rather than a meetup.
+    "partner with DEVSA",
+    "sponsor a tech event San Antonio",
+    "tech partnership San Antonio",
+    "student tech groups San Antonio",
+    "UTSA tech student groups",
+    "cybersecurity groups San Antonio",
+    "civic tech San Antonio",
   ],
   alternates: {
     canonical: "/buildingtogether",
   },
   openGraph: {
     title: "San Antonio Tech Communities & Partners | DEVSA",
-    description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
+    description: "San Antonio's tech groups and the partners behind them, in one directory, and the ways in: partner with DEVSA, host with a group, sponsor or donate.",
     url: `${siteUrl}/buildingtogether`,
     siteName: "DEVSA",
     images: [
@@ -59,7 +67,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "San Antonio Tech Communities & Partners | DEVSA",
-    description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
+    description: "San Antonio's tech groups and the partners behind them, in one directory, and the ways in: partner with DEVSA, host with a group, sponsor or donate.",
     images: [`${siteUrl}/api/og/buildingtogether`],
     creator: "@devsatx",
     site: "@devsatx",
@@ -122,7 +130,7 @@ export default async function GroupsPage({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: "San Antonio Tech Communities & Partners",
-            description: "San Antonio's tech groups run themselves. DEVSA gives them a shared calendar, a public directory, and a room to meet partners in.",
+            description: "San Antonio's tech groups and the partners behind them, in one directory, and the ways in: partner with DEVSA, host with a group, sponsor or donate.",
             url: `${siteUrlValue}/buildingtogether`,
             isPartOf: {
               "@type": "WebSite",
