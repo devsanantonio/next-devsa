@@ -39,6 +39,8 @@ const rgba = (rgb: string, a: number) => rgb.replace("rgb(", "rgba(").replace(")
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const [event, fonts] = await Promise.all([getEventBySlug(slug), loadBrandFonts()])
+  // No poster for an event that is not published: see getEventBySlug.
+  if (!event.found) return new Response("Event not found", { status: 404 })
   const { date, time } = eventWhenParts(event)
   const { shown, logos, names, color } = await eventHosts(event)
   const withLogo = shown.map((h, i) => ({ name: h.name, logo: logos[i] })).filter((h) => h.logo)

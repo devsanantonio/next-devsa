@@ -186,27 +186,29 @@ export async function getEventBySlug(slug: string) {
         hosts,
         // DEVSA's own events (see Event.isOfficial) keep the DEVSA mark.
         official: data.isOfficial === true,
+        found: true,
       }
     }
   } catch (error) {
     console.error("OG: error fetching event", error)
   }
 
-  // Last resort: the slug carries a trailing yyyy-mm-dd.
-  const parts = slug.split("-")
-  const dateStr = parts.slice(-3).join("-")
-  const title = parts
-    .slice(0, -3)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ")
-
+  /*
+   * Not a published event: deleted, cancelled, a draft, or a slug nobody
+   * made. This used to invent one from the slug's words, so a cancelled
+   * event's link became a garbled card, and any URL at all produced a
+   * DEVSA-branded poster with whatever title it spelled out
+   * (/api/og/event/free-crypto-giveaway/social). Now it says so: the social
+   * graphic answers 404, and the link card falls back to the calendar's own.
+   */
   return {
-    title: title || "Community Event",
-    date: dateStr ? `${dateStr}T00:00:00.000Z` : null,
+    title: "",
+    date: null as string | null,
     endTime: null as string | null,
-    location: null,
+    location: null as string | null,
     hosts: [] as Host[],
     official: false,
+    found: false,
   }
 }
 

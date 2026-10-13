@@ -219,7 +219,7 @@ export function ShareImageMenu({
           ref={menu}
           role="menu"
           style={{ position: "fixed", left: pos.left, top: pos.top }}
-          className="z-[60] w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg"
+          className="z-60 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg"
         >
           {failed ? (
             <p className="px-3 py-2.5 text-sm text-gray-600">The image did not load. Try again in a moment.</p>

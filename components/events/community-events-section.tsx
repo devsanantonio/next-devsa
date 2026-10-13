@@ -626,7 +626,7 @@ function OpenCalendarBand({
           <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
             The Calendar Is Open
           </p>
-          <h2 className="mt-5 text-balance font-sans text-gray-900 leading-[1.0] text-3xl md:text-4xl lg:text-5xl font-black tracking-[-0.02em]">
+          <h2 className="mt-5 text-balance font-sans text-gray-900 leading-none text-3xl md:text-4xl lg:text-5xl font-black tracking-[-0.02em]">
             Yours to Subscribe,{" "}
             <span className="text-gray-600 font-light italic">Publish</span> and
             Embed.
@@ -1277,12 +1277,12 @@ export function CommunityEventsSection({
 
                  The line lives on this container rather than on each day, so
                  it runs through the gaps between them; the dots live on the
-                 days. Its left-[7px] is the center of a 14px dot sitting at
+                 days. Its left-1.75 (7px) is the center of a 14px dot sitting at
                  each section's left-0. */
               <div className="relative space-y-8">
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute bottom-2 left-[7px] top-2 w-px border-l border-dashed border-gray-200"
+                  className="pointer-events-none absolute bottom-2 left-1.75 top-2 w-px border-l border-dashed border-gray-200"
                 />
                 {eventsByDay.map((day) => {
                   const relative = relativeDayLabel(day.key, currentTime)
@@ -1302,7 +1302,7 @@ export function CommunityEventsSection({
                       {/* The dot, on the spine. */}
                       <span
                         aria-hidden
-                        className="absolute left-0 top-[5px] h-3.5 w-3.5 rounded-full border-2 border-white bg-gray-300 ring-1 ring-gray-200"
+                        className="absolute left-0 top-1.25 h-3.5 w-3.5 rounded-full border-2 border-white bg-gray-300 ring-1 ring-gray-200"
                       />
                       {opensStartupWeek && <StartupWeekBand />}
                       {/* The date, in two weights on one line.
@@ -1744,7 +1744,7 @@ export function CommunityEventsSection({
                                   {brand ? (
                                     <EventBrandLockup brand={brand} />
                                   ) : (
-                                    <h3 className="mt-1.5 text-lg font-bold leading-[1.25] tracking-[-0.01em] text-gray-900 transition-colors group-hover:text-gray-600 sm:text-xl">
+                                    <h3 className="mt-1.5 text-lg font-bold leading-tight tracking-[-0.01em] text-gray-900 transition-colors group-hover:text-gray-600 sm:text-xl">
                                       {event.title}
                                     </h3>
                                   )}

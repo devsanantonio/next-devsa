@@ -17,6 +17,21 @@ export async function GET(
 ) {
   const { slug } = await params
   const [event, fonts] = await Promise.all([getEventBySlug(slug), loadBrandFonts()])
+
+  // Not a published event (see getEventBySlug): the calendar's own card, not
+  // one built from whatever words the URL spells.
+  if (!event.found) {
+    return new ImageResponse(
+      (
+        <OgCard
+          title={["Every group.", "One calendar."]}
+          hook="San Antonio's tech community events, in one place."
+          url="devsa.community/events"
+        />
+      ),
+      { width: 1200, height: 630, fonts }
+    )
+  }
   const when = eventWhen(event)
 
   /*
