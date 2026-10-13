@@ -167,33 +167,42 @@ function NextUp() {
     }
   }, [])
 
-  if (!next) return null
-
-  const when = new Date(next.date).toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "America/Chicago",
-  })
+  // The slot is always rendered at a fixed one-line height, and the event
+  // fades into it. The hero's copy is vertically centered, so a line that
+  // appeared only after the fetch grew the block and nudged every line above
+  // it up by half a line on each load. With the space held from the first
+  // paint, nothing moves; with no upcoming event, the slot stays empty.
+  const when = next
+    ? new Date(next.date).toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "America/Chicago",
+      })
+    : ""
 
   return (
-    <Link
-      href={`/events/${next.slug}`}
-      className="group inline-flex max-w-full items-center gap-3 rounded-lg text-sm text-white/70 transition-colors hover:text-white"
-    >
-      <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
-        <span className="absolute inline-flex h-full w-full rounded-full bg-[#00b2a9] opacity-60 motion-safe:animate-ping" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00b2a9]" />
-      </span>
-      <span className="min-w-0 truncate">
-        <span className="font-medium text-white/85">Next up:</span>{" "}
-        <span className="text-white group-hover:underline underline-offset-4">{next.title}</span>
-        {next.communityName && <span> · {next.communityName}</span>}
-        <span> · {when}</span>
-      </span>
-    </Link>
+    <div className="h-5">
+      {next && (
+        <Link
+          href={`/events/${next.slug}`}
+          className="group inline-flex max-w-full items-center gap-3 rounded-lg text-sm leading-5 text-white/70 transition-colors hover:text-white motion-safe:animate-[fade-in_400ms_ease-out]"
+        >
+          <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+            <span className="absolute inline-flex h-full w-full rounded-full bg-[#00b2a9] opacity-60 motion-safe:animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00b2a9]" />
+          </span>
+          <span className="min-w-0 truncate">
+            <span className="font-medium text-white/85">Next up:</span>{" "}
+            <span className="text-white group-hover:underline underline-offset-4">{next.title}</span>
+            {next.communityName && <span> · {next.communityName}</span>}
+            <span> · {when}</span>
+          </span>
+        </Link>
+      )}
+    </div>
   )
 }
 
@@ -242,6 +251,10 @@ export function HeroBridge() {
         @keyframes hero-scroll-up {
           from { transform: translateY(0); }
           to   { transform: translateY(-50%); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
         @keyframes hero-scroll-down {
           from { transform: translateY(-50%); }
