@@ -100,23 +100,28 @@ import { DEMO_DAY_DEADLINE, DEMO_DAY_DESCRIPTOR, DEMO_DAY_PAVILION_YEAR } from "
 export function AboutHero() {
   return (
     <section
-      className="relative flex min-h-[60dvh] flex-col justify-center overflow-hidden bg-black lg:min-h-dvh"
+      className="relative flex flex-col justify-center overflow-hidden bg-black md:min-h-[60dvh] lg:min-h-dvh"
       data-bg-type="dark"
     >
+      {/* No photograph on phones: the copy runs the full width there, so the
+          room was only ever a dimmed texture behind the words, and the hero is
+          type on black at its own height instead of 60% of the screen. The
+          tiny phone entry in `sizes` keeps the priority preload from fetching
+          a full-width image that is never shown. */}
       <Image
         src="/photos/about-first-year-meetup.webp"
         alt=""
         aria-hidden
         fill
         priority
-        sizes="100vw"
-        className="object-cover object-center opacity-70"
+        sizes="(max-width: 767px) 16px, 100vw"
+        className="hidden object-cover object-center opacity-70 md:block"
       />
       {/* The ramp, matching the other two heroes: solid where the copy sits,
           open where the room shows. */}
       <div
         aria-hidden
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 hidden md:block"
         style={{
           background:
             "linear-gradient(to right, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.92) 36%, rgba(0,0,0,0.74) 54%, rgba(0,0,0,0.40) 72%, rgba(0,0,0,0.18) 100%)",
@@ -124,13 +129,13 @@ export function AboutHero() {
       />
       {/* Below lg the copy runs the full width, so the ramp alone leaves words
           over the lit part of the room. */}
-      <div aria-hidden className="absolute inset-0 z-10 bg-black/55 lg:hidden" />
+      <div aria-hidden className="absolute inset-0 z-10 hidden bg-black/55 md:block lg:hidden" />
       {/* The transition out of the hero, the same fade /buildingtogether uses
           so the photograph resolves to the ground below rather than stopping
           on an edge. */}
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 z-20 h-32 bg-linear-to-t from-black to-transparent"
+        className="absolute inset-x-0 bottom-0 z-20 hidden h-32 bg-linear-to-t from-black to-transparent md:block"
       />
 
       <div className="page-shell relative z-30 py-20 md:py-28">
