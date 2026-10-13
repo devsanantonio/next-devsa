@@ -1,4 +1,4 @@
-import { Big_Shoulders_Inline, Big_Shoulders_Stencil } from "next/font/google"
+import localFont from "next/font/local"
 import { DEMO_DAY_NAME } from "@/lib/demo-day"
 
 /**
@@ -18,16 +18,24 @@ import { DEMO_DAY_NAME } from "@/lib/demo-day"
  * names, so a literal "Big Shoulders Stencil" would only match for readers
  * who had it installed (see the design-system skill). Like Access Granted's
  * Oswald, it is this event's display face and nowhere else on the site.
+ *
+ * Self-hosted (./fonts, Latin subset, SIL Open Font License) rather than
+ * fetched through next/font/google. Google started serving these two
+ * families from URLs carrying a query string (`/l/font?kit=…&skey=…`), which
+ * Next 16.0.10's Google font loader rejects ("next/font/google queries have
+ * exactly one entry"), and production builds failed whenever Google handed
+ * out that form. Local files cannot change under the build.
  */
-const inline = Big_Shoulders_Inline({
-  subsets: ["latin"],
-  weight: ["900"],
+const inline = localFont({
+  src: [{ path: "./fonts/big-shoulders-inline-900.woff2", weight: "900", style: "normal" }],
   display: "swap",
 })
 
-const stencil = Big_Shoulders_Stencil({
-  subsets: ["latin"],
-  weight: ["800", "900"],
+const stencil = localFont({
+  src: [
+    { path: "./fonts/big-shoulders-stencil-800.woff2", weight: "800", style: "normal" },
+    { path: "./fonts/big-shoulders-stencil-900.woff2", weight: "900", style: "normal" },
+  ],
   display: "swap",
 })
 
