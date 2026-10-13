@@ -120,7 +120,7 @@ export function HowWeHelp() {
     <section className="w-full bg-neutral-950" data-bg-type="dark">
       <div className="page-shell py-20 md:py-28">
         {/* Building Together's own eyebrow, matching the hero above and
-            GetInvolved below: sans, text-sm md:text-base, 0.2em. The mono
+            StayConnected below: sans, text-sm md:text-base, 0.2em. The mono
             11px form this started as belongs to /events and the conference
             pages. white/50 clears 4.5:1 on this ground; /40 does not. */}
         <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">

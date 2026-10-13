@@ -1,6 +1,6 @@
 ---
 name: admin-features
-description: How the DEVSA admin dashboard works — the single-page tabbed shell, the event and community slide-out drawers, the organizer permission model, RSVP capture and CSV export, logo uploads, and the submission inboxes (speakers, volunteers, access requests, Confluencia). Use when working on app/admin/page.tsx, the admin API routes (/api/admin/*, /api/events, /api/communities, /api/partners, /api/rsvp, /api/newsletter, /api/upload), or the RichTextEditor.
+description: How the DEVSA admin dashboard works — the single-page tabbed shell, the event and community slide-out drawers, the organizer permission model, RSVP capture and CSV export, logo uploads, and the submission inboxes (speakers, volunteers, access requests, Confluencia, Get Involved). Use when working on app/admin/page.tsx, the admin API routes (/api/admin/*, /api/events, /api/communities, /api/partners, /api/rsvp, /api/newsletter, /api/upload), or the RichTextEditor.
 ---
 
 # Admin dashboard
@@ -33,6 +33,7 @@ Eleven, not the five an earlier version of this skill listed. `Tab` is a union n
 | `access` | Access Requests | `hasAdminAccess` |
 | `admins` | Manage Admins | `hasAdminAccess` |
 | `demoday` | Confluencia | `hasAdminAccess` |
+| `getinvolved` | Get Involved | `hasAdminAccess` |
 
 The active tab syncs to a `?tab=` query param. Organizers land on `communities`, everyone else on `events`.
 
@@ -60,7 +61,7 @@ If you add a tab, prefer extending `/api/admin/data` over a new route, unless th
 
 ## Firestore collections
 
-Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, never write string literals. The dashboard touches: `events`, `communities`, `partners`, `event_rsvps`, `newsletter_subscriptions`, `speaker_submissions`, `volunteer_signups`, `access_requests`, `approved_admins`, `demo_day_inquiries`.
+Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, never write string literals. The dashboard touches: `events`, `communities`, `partners`, `event_rsvps`, `newsletter_subscriptions`, `speaker_submissions`, `volunteer_signups`, `access_requests`, `approved_admins`, `demo_day_inquiries`, `get_involved_inquiries`.
 
 `getDb()` opens the **named** database `'devsa'`, not `(default)`. Any script you write against this data must pass `'devsa'` explicitly or it reads a different, near-empty database in the same project and reports zeros for everything.
 

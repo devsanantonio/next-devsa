@@ -38,6 +38,7 @@ export function AdminCombobox({
   buttonClassName,
   accent = "#ef426f",
   variant = "dark",
+  ariaLabelledby,
 }: {
   options: AdminComboboxOption[]
   value: string
@@ -47,6 +48,8 @@ export function AdminCombobox({
   buttonClassName?: string
   accent?: string
   variant?: "dark" | "light"
+  /** Id of a visible label, so the control is announced with its name. */
+  ariaLabelledby?: string
 }) {
   const isLight = variant === "light"
   const [open, setOpen] = useState(false)
@@ -119,6 +122,7 @@ export function AdminCombobox({
         onKeyDown={onKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-labelledby={ariaLabelledby}
         className={cn(
           "flex w-full items-center justify-between gap-2 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20",
           isLight

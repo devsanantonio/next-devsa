@@ -6,9 +6,11 @@ import {
 } from "@/components/partners/logo-showcase"
 import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
-import { GetInvolved } from "@/components/partners/get-involved"
+import { StayConnected } from "@/components/partners/stay-connected"
 import { HowWeHelp } from "@/components/partners/how-we-help"
 import { PartnerCta } from "@/components/partners/partner-cta"
+import { PartnerWays } from "@/components/partners/partner-ways"
+import { PARTNER_WAY_KEYS, type GetInvolvedPath } from "@/lib/get-involved"
 import { DonationCta } from "@/components/partners/donation-cta"
 import { toCampaignKey } from "@/lib/campaigns"
 
@@ -74,10 +76,15 @@ export const metadata: Metadata = {
 export default async function GroupsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ campaign?: string | string[] }>
+  searchParams: Promise<{ campaign?: string | string[]; path?: string; way?: string }>
 }) {
   // A campaign page links here with ?campaign=<key> so the gift is designated.
-  const campaign = toCampaignKey((await searchParams).campaign)
+  const params = await searchParams
+  const campaign = toCampaignKey(params.campaign)
+  // ?path= and ?way= open the Get Involved form with a choice made — from
+  // the footer, PartnerCta, or the old /get-involved URL that redirects here.
+  const giPath: GetInvolvedPath = params.path === "general" ? "general" : "partner"
+  const giWay = PARTNER_WAY_KEYS.includes(params.way ?? "") ? (params.way as string) : ""
 
   const [communities, partners] = await Promise.all([
     listCommunities(),
@@ -138,11 +145,12 @@ export default async function GroupsPage({
       <GroupsHero />
       <LogoShowcase logos={logos} />
       {/* Between the gap and the ask. The hero states the problem and the
-          limit; GetInvolved asks the reader to act. The mechanism — and one
+          limit; StayConnected asks the reader to act. The mechanism — and one
           instance of it having worked — belongs between them. */}
       <HowWeHelp />
-      <GetInvolved />
+      <StayConnected />
       <PartnerCta communityCount={communities.length} />
+      <PartnerWays initialPath={giPath} initialWay={giWay} />
       {/* MeetTheTeam moved to /about.
 
           It sat between the partner ask and the donation ask on a page arguing

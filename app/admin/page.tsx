@@ -53,6 +53,7 @@ import {
 import { getAuthInstance, getGoogleProvider } from "@/lib/firebase"
 import { RichTextEditor } from "@/components/rich-text-editor"
 import { demoDayInterestLabel } from "@/lib/demo-day"
+import { getInvolvedPathLabel, partnerWayLabel } from "@/lib/get-involved"
 import { isProtectedAdmin } from "@/lib/protected-admins"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
@@ -226,12 +227,28 @@ interface EventRSVP {
   submittedAt: string
 }
 
-type Tab = "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday"
+type Tab = "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
 /**
  * A Demo Day partner or sponsor inquiry, as /api/admin/demo-day-inquiries
  * returns it. Admin and super admin only — the route refuses everyone else.
  */
+/** A /get-involved submission as /api/admin/get-involved returns it. Admin only. */
+type GetInvolvedRow = {
+  id: string
+  path: string
+  way: string | null
+  name: string
+  email: string
+  organization: string | null
+  title: string | null
+  event: string | null
+  subject?: string | null
+  message: string
+  status: "new" | "contacted" | "closed"
+  submittedAt: string | null
+}
+
 type DemoDayInquiryRow = {
   id: string
   name: string
@@ -414,6 +431,7 @@ export default function AdminPage() {
   const [newsletterPage, setNewsletterPage] = useState(0)
   const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
   const [demoDayInquiries, setDemoDayInquiries] = useState<DemoDayInquiryRow[]>([])
+  const [getInvolved, setGetInvolved] = useState<GetInvolvedRow[]>([])
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
   const [editEventCustomCommunityName, setEditEventCustomCommunityName] = useState("")
@@ -461,7 +479,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday",
+      "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday", "getinvolved",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -642,6 +660,15 @@ export default function AdminPage() {
           }
         } catch {
           // Silently fail — the Demo Day tab will show empty
+        }
+        try {
+          const giRes = await adminFetch("/api/admin/get-involved")
+          if (giRes.ok) {
+            const giData = await giRes.json()
+            setGetInvolved(giData.inquiries || [])
+          }
+        } catch {
+          // Silently fail — the Get Involved tab will show empty
         }
       }
     } catch {
@@ -1060,6 +1087,44 @@ export default function AdminPage() {
       }
     } catch {
       setError("Failed to update inquiry")
+    }
+  }
+
+  const handleGetInvolvedStatus = async (inquiryId: string, status: GetInvolvedRow["status"]) => {
+    try {
+      const response = await adminFetch("/api/admin/get-involved", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiryId, status }),
+      })
+      if (response.ok) {
+        setGetInvolved(prev => prev.map(i => (i.id === inquiryId ? { ...i, status } : i)))
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to update inquiry")
+      }
+    } catch {
+      setError("Failed to update inquiry")
+    }
+  }
+
+  const handleDeleteGetInvolved = async (inquiryId: string) => {
+    if (!confirm("Delete this inquiry? This action cannot be undone.")) return
+    try {
+      const response = await adminFetch("/api/admin/get-involved", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiryId }),
+      })
+      if (response.ok) {
+        setGetInvolved(prev => prev.filter(i => i.id !== inquiryId))
+        setSuccessMessage("Inquiry deleted")
+      } else {
+        const data = await response.json()
+        setError(data.error || "Failed to delete inquiry")
+      }
+    } catch {
+      setError("Failed to delete inquiry")
     }
   }
 
@@ -1739,6 +1804,7 @@ export default function AdminPage() {
   // Derived nav + notification data for the sidebar shell
   const pendingAccessCount = accessRequests.filter((r) => r.status === "pending").length
   const newDemoDayCount = demoDayInquiries.filter((i) => i.status === "new").length
+  const newGetInvolvedCount = getInvolved.filter((i) => i.status === "new").length
 
   type NavItem = { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }
 
@@ -1796,6 +1862,7 @@ export default function AdminPage() {
     {
       label: "Inbox",
       items: [
+        { id: "getinvolved", label: "Get Involved", icon: Handshake, count: getInvolved.length, alert: newGetInvolvedCount },
         { id: "demoday", label: "Confluencia", icon: Megaphone, count: demoDayInquiries.length, alert: newDemoDayCount },
         { id: "access", label: "Access Requests", icon: Users, count: pendingAccessCount, alert: pendingAccessCount },
         speakersNav,
@@ -1816,11 +1883,15 @@ export default function AdminPage() {
     access: "Access Requests",
     admins: "Manage Admins",
     demoday: "Confluencia Inquiries",
+    getinvolved: "Get Involved",
   }
 
   const notifications: { id: Tab; label: string; icon: typeof Users }[] = [
     ...(pendingAccessCount > 0
       ? [{ id: "access" as Tab, label: `${pendingAccessCount} access request${pendingAccessCount > 1 ? "s" : ""} pending review`, icon: Users }]
+      : []),
+    ...(hasAdminAccess(adminRole) && newGetInvolvedCount > 0
+      ? [{ id: "getinvolved" as Tab, label: `${newGetInvolvedCount} new Get Involved inquir${newGetInvolvedCount > 1 ? "ies" : "y"}`, icon: Handshake }]
       : []),
     ...(hasAdminAccess(adminRole) && newDemoDayCount > 0
       ? [{ id: "demoday" as Tab, label: `${newDemoDayCount} new Confluencia inquir${newDemoDayCount > 1 ? "ies" : "y"}`, icon: Megaphone }]
@@ -5197,6 +5268,110 @@ export default function AdminPage() {
                         </Td>
                       </Tr>
                     ))}
+                  </tbody>
+                </DataTable>
+              )}
+            </div>
+          )}
+
+          {/* Get Involved - Admin Only. /get-involved submissions: partners,
+              sponsors and questions. Organizers never see it; the API refuses
+              them too. */}
+          {activeTab === "getinvolved" && hasAdminAccess(adminRole) && (
+            <div>
+              <TabHeader
+                title="Get Involved"
+                summary={`${newGetInvolvedCount} new · ${getInvolved.filter((i) => i.status === "contacted").length} contacted · ${getInvolved.filter((i) => i.status === "closed").length} closed`}
+                actions={
+                  <a
+                    href="/get-involved"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" /> View form
+                  </a>
+                }
+              />
+
+              {getInvolved.length === 0 ? (
+                <EmptyState>No inquiries yet.</EmptyState>
+              ) : (
+                <DataTable minWidth="min-w-[60rem]">
+                  <thead>
+                    <tr>
+                      <Th>From</Th>
+                      <Th>Wants to</Th>
+                      <Th>Message</Th>
+                      <Th>Received</Th>
+                      <Th>Status</Th>
+                      <Th align="right"><span className="sr-only">Actions</span></Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getInvolved.map((inq) => {
+                      const who = decodeEntities(inq.organization || inq.name)
+                      return (
+                        <Tr key={inq.id} highlight={inq.status === "new"}>
+                          <Td className="w-[15rem]">
+                            <PrimaryCell
+                              title={who}
+                              sub={
+                                <>
+                                  {inq.organization && (
+                                    <div>
+                                      {decodeEntities(inq.name)}
+                                      {inq.title ? `, ${decodeEntities(inq.title)}` : ""}
+                                    </div>
+                                  )}
+                                  <MailLink email={inq.email} />
+                                </>
+                              }
+                            />
+                          </Td>
+                          <Td>
+                            <div className="flex flex-col items-start gap-1.5">
+                              <Pill tone={inq.path === "partner" ? "pink" : inq.path === "sponsor" ? "amber" : "neutral"}>
+                                {getInvolvedPathLabel(inq.path)}
+                              </Pill>
+                              {inq.way && <span className="text-[13px] text-neutral-400">{partnerWayLabel(inq.way)}</span>}
+                              {inq.event && <span className="text-[13px] text-neutral-400">{decodeEntities(inq.event)}</span>}
+                              {inq.subject && <span className="text-[13px] text-neutral-400">{decodeEntities(inq.subject)}</span>}
+                            </div>
+                          </Td>
+                          <Td><LongText text={decodeEntities(inq.message)} /></Td>
+                          <Td><DateCell value={inq.submittedAt} time /></Td>
+                          <Td>
+                            <select
+                              value={inq.status}
+                              onChange={(e) => handleGetInvolvedStatus(inq.id, e.target.value as GetInvolvedRow["status"])}
+                              className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500"
+                              aria-label={`Status for ${who}`}
+                            >
+                              <option value="new">New</option>
+                              <option value="contacted">Contacted</option>
+                              <option value="closed">Closed</option>
+                            </select>
+                          </Td>
+                          <Td align="right">
+                            <RowActions>
+                              <a
+                                href={`mailto:${inq.email}?subject=${encodeURIComponent("Getting involved with DEVSA")}`}
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
+                              >
+                                <Mail className="h-4 w-4" /> Reply
+                              </a>
+                              <RowAction
+                                tone="danger"
+                                onClick={() => handleDeleteGetInvolved(inq.id)}
+                                aria-label={`Delete inquiry from ${who}`}
+                                icon={<Trash2 className="h-4 w-4" />}
+                              />
+                            </RowActions>
+                          </Td>
+                        </Tr>
+                      )
+                    })}
                   </tbody>
                 </DataTable>
               )}

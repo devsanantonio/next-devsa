@@ -187,7 +187,7 @@ export function LogoShowcase({ logos }: { logos: LogoItem[] }) {
   const marqueeRows = useMemo(() => splitIntoRows(logos, 3), [logos])
 
   return (
-    <section className="w-full bg-white" data-bg-type="light">
+    <section id="groups" className="w-full bg-white scroll-mt-20" data-bg-type="light">
       <style>{`
         @keyframes bt-marquee-left {
           from { transform: translateX(0); }

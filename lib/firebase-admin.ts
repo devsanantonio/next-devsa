@@ -107,6 +107,9 @@ export const COLLECTIONS = {
   // Partner and sponsor inquiries from /events/confluencia. Admin and super admin
   // only — organizers never see them, in the API or the dashboard.
   DEMO_DAY_INQUIRIES: 'demo_day_inquiries',
+  // Inquiries from /get-involved: partners, sponsors and general questions.
+  // Admin and super admin only, like Confluencia inquiries.
+  GET_INVOLVED_INQUIRIES: 'get_involved_inquiries',
   // The shop's order audit trail. The shop, Printify integration and its
   // reconcile cron were removed on 2026-10-12; nothing writes these now.
   // `orders` holds one document: a June 2026 hat that was never produced
@@ -193,6 +196,27 @@ export interface DemoDayInquiry {
   interest: string;
   /** One of DEMO_DAY_INDUSTRIES, 'Other', or null when not given. */
   industry: string | null;
+  message: string;
+  submittedAt: Date;
+  status: 'new' | 'contacted' | 'closed';
+}
+
+/** One submission of the /get-involved form. See lib/get-involved.ts. */
+export interface GetInvolvedInquiry {
+  /** 'partner' | 'sponsor' | 'general' */
+  path: string;
+  /** For a partner: one of PARTNER_WAYS' keys. Null on the other paths. */
+  way: string | null;
+  name: string;
+  email: string;
+  organization: string | null;
+  /** Their title or role. */
+  title: string | null;
+  /** For a sponsor: the event they have in mind, if any. No longer asked —
+   *  sponsoring moved to the donation form — but kept on older records. */
+  event: string | null;
+  /** For a question: what it is about, if they said. */
+  subject?: string | null;
   message: string;
   submittedAt: Date;
   status: 'new' | 'contacted' | 'closed';

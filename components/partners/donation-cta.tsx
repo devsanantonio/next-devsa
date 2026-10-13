@@ -198,17 +198,20 @@ export function DonationCta({ campaign }: { campaign?: CampaignKey } = {}) {
                     <ConferenceList />.
                   </p>
                   <p className="text-base md:text-lg text-white/70 leading-relaxed">
-                    That is the channel the{" "}
+                    That is the bridge the{" "}
                     <strong className="font-semibold text-white">
                       active builders
                     </strong>
-                    , the community groups and the partners all find each other on.
+                    , the community groups and the partners find each other on.
                     Giving keeps it open.
                   </p>
                 </>
               )}
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
-                As a 501(c)(3), your donation may be tax-deductible.
+                {/* Every donor now gets a receipt email carrying the EIN and the
+                    no-goods-or-services statement (lib/emails/donation-thank-you.ts),
+                    so this says what they will receive instead of hedging. */}
+                DEVSA is a 501(c)(3). You&apos;ll get a receipt by email for your records.
               </p>
             </div>
           </motion.div>
