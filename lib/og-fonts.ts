@@ -14,19 +14,26 @@ type OgFont = {
   style: "normal"
 }
 
+/*
+ * One literal `new URL("./og-fonts/<file>", import.meta.url)` per file, never
+ * a template. Turbopack resolves a URL built from `${file}` to a single asset
+ * for every call, so the loaders used to read Geist Black nine times over:
+ * every OG card on the site was set in Black at every weight, the Geist Mono
+ * cards fell back to it, and the Oswald conference titles were never Oswald.
+ * A literal is what lets the bundler trace each file to its own asset.
+ */
+const read = (url: URL) => readFile(fileURLToPath(url))
+
 let cached: OgFont[] | null = null
 
 export async function loadBrandFonts(): Promise<OgFont[]> {
   if (cached) return cached
 
-  const load = (file: string) =>
-    readFile(fileURLToPath(new URL(`./og-fonts/${file}`, import.meta.url)))
-
   const [regular, medium, bold, black] = await Promise.all([
-    load("Geist-Regular.ttf"),
-    load("Geist-Medium.ttf"),
-    load("Geist-Bold.ttf"),
-    load("Geist-Black.ttf"),
+    read(new URL("./og-fonts/Geist-Regular.ttf", import.meta.url)),
+    read(new URL("./og-fonts/Geist-Medium.ttf", import.meta.url)),
+    read(new URL("./og-fonts/Geist-Bold.ttf", import.meta.url)),
+    read(new URL("./og-fonts/Geist-Black.ttf", import.meta.url)),
   ])
 
   cached = [
@@ -45,13 +52,10 @@ let cachedMono: OgFont[] | null = null
 export async function loadBrandMonoFonts(): Promise<OgFont[]> {
   if (cachedMono) return cachedMono
 
-  const load = (file: string) =>
-    readFile(fileURLToPath(new URL(`./og-fonts/${file}`, import.meta.url)))
-
   const [regular, medium, semibold] = await Promise.all([
-    load("GeistMono-Regular.ttf"),
-    load("GeistMono-Medium.ttf"),
-    load("GeistMono-SemiBold.ttf"),
+    read(new URL("./og-fonts/GeistMono-Regular.ttf", import.meta.url)),
+    read(new URL("./og-fonts/GeistMono-Medium.ttf", import.meta.url)),
+    read(new URL("./og-fonts/GeistMono-SemiBold.ttf", import.meta.url)),
   ])
 
   cachedMono = [
@@ -80,13 +84,10 @@ let cachedDisplay: OgFont[] | null = null
 export async function loadDisplayFonts(): Promise<OgFont[]> {
   if (cachedDisplay) return cachedDisplay
 
-  const load = (file: string) =>
-    readFile(fileURLToPath(new URL(`./og-fonts/${file}`, import.meta.url)))
-
   const [brand, medium, bold] = await Promise.all([
     loadBrandFonts(),
-    load("Oswald-500.ttf"),
-    load("Oswald-700.ttf"),
+    read(new URL("./og-fonts/Oswald-500.ttf", import.meta.url)),
+    read(new URL("./og-fonts/Oswald-700.ttf", import.meta.url)),
   ])
 
   cachedDisplay = [

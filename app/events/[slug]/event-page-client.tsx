@@ -1,5 +1,6 @@
 "use client"
 import { DiscordIcon } from "@/components/icons/social-icons"
+import { ShareImageMenu } from "@/components/events/share-image-menu"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -790,6 +791,17 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               {/* Share buttons */}
               <div className="flex items-center gap-2 sm:ml-auto">
                 <span className="text-sm font-medium text-gray-500 mr-1">Share:</span>
+                {/* Save or share the 1080x1350 graphic. Prefetched here, since
+                    this page is about one event; see ShareImageMenu. */}
+                <ShareImageMenu
+                  slug={event.slug}
+                  title={event.title}
+                  text={shareText}
+                  url={shareUrl}
+                  size="md"
+                  label="Image"
+                  prefetch
+                />
                 <button
                   onClick={shareToX}
                   className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900"

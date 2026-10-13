@@ -10,6 +10,7 @@ import Link from "next/link"
 import { logoOnLight, logoOnDark } from "@/lib/logo-invert"
 import { getEventBrand } from "@/lib/event-brands"
 import { EventBrandLockup } from "@/components/events/event-brand-lockup"
+import { ShareImageMenu } from "@/components/events/share-image-menu"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
 import { FeaturedTxlf, TXLF_DAY_KEYS } from "@/components/events/featured-txlf"
 import {
@@ -1886,31 +1887,30 @@ export function CommunityEventsSection({
 
                                 </div>
 
-                              {/* The actions. A footer below xl, a rail at xl
-                                  and up.
+                              {/* The actions: two groups, kept apart.
 
-                                  flex-col-reverse so the rail leads with "View
-                                  Details" without moving it in the DOM, where
-                                  it belongs after the quieter add-to-calendar
-                                  controls — in column-reverse, justify-end
-                                  packs toward the top and the children stack
-                                  last-first, which is exactly the order wanted
-                                  on screen and the wrong one to hard-code into
-                                  the markup. */}
-                              <div className={`relative flex flex-wrap items-center justify-between gap-x-3 gap-y-4 border-t pt-4 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:items-stretch xl:justify-end xl:gap-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
-                                {/* Labeled, and visibly secondary.
+                                  Share used to sit inside the "Add to" row as
+                                  if it were a third calendar, and in the 224px
+                                  rail or on a phone it wrapped onto a line of
+                                  its own, under the label it did not belong
+                                  to. Now the calendar pair is one group and
+                                  Share sits with View Details as the card's
+                                  actions:
 
-                                    These were two unlabelled 36px icon squares
-                                    — a Google glyph and a calendar glyph — that
-                                    you had to hover to tell apart, sized and
-                                    weighted to compete with the actual primary
-                                    action beside them. Now they read as what
-                                    they are: "Add to · Google · .ics", quiet
-                                    text buttons under a shared label, with
-                                    "View Details" left as the only filled
-                                    control on the card. */}
-                                <div className="flex flex-wrap items-center gap-1.5 xl:w-full">
-                                  <span className={`mr-0.5 text-[12px] font-normal ${brand ? "text-white/45" : "text-gray-400"}`}>Add to</span>
+                                  - phone: "Add to · Google · .ics" on a line,
+                                    then Share beside a full-width View Details
+                                  - sm to xl: the calendar pair left, Share and
+                                    View Details right
+                                  - xl rail: View Details, Share under it at the
+                                    same width, the calendar pair last
+
+                                  flex-col-reverse puts the actions first in
+                                  the rail without moving them in the DOM,
+                                  where they belong after the quieter
+                                  add-to-calendar controls. */}
+                              <div className={`relative flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t pt-4 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:flex-nowrap xl:items-stretch xl:justify-end xl:gap-3 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`mr-0.5 text-[12px] font-normal ${brand ? "text-white/50" : "text-gray-500"}`}>Add to</span>
                                   <a
                                     href={buildCalendarLinks(event).googleUrl}
                                     target="_blank"
@@ -1934,23 +1934,41 @@ export function CommunityEventsSection({
                                     .ics
                                   </button>
                                 </div>
-                                {eventLink && (
-                                  <Link
-                                    href={eventLink}
-                                    {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                                    className={`inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-opacity sm:w-auto sm:py-2 xl:w-full xl:py-2.5 ${
-                                      brand ? "hover:opacity-90" : "bg-gray-900 text-white hover:bg-gray-800"
-                                    }`}
-                                    style={brand ? { backgroundColor: brand.accent, color: brand.onAccent } : undefined}
-                                  >
-                                    View Details
-                                    {leavesSite ? (
-                                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                                    ) : (
-                                      <span aria-hidden>&rarr;</span>
-                                    )}
-                                  </Link>
-                                )}
+                                <div className="flex w-full items-stretch gap-2 sm:w-auto xl:w-full xl:flex-col-reverse">
+                                  {/* Save or share the event's 1080x1350 graphic,
+                                      without opening the event first. Only for
+                                      events with a page here: the graphic is
+                                      built from the slug. */}
+                                  {event.slug && (
+                                    <ShareImageMenu
+                                      slug={event.slug}
+                                      title={event.title}
+                                      text={event.title}
+                                      url={`https://www.devsa.community/events/${event.slug}`}
+                                      tone={brand ? "dark" : "light"}
+                                      showCopyLink
+                                      className="shrink-0 xl:w-full"
+                                      buttonClassName="h-full justify-center px-3 text-[13px] xl:w-full xl:py-2"
+                                    />
+                                  )}
+                                  {eventLink && (
+                                    <Link
+                                      href={eventLink}
+                                      {...(leavesSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                                      className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-opacity sm:flex-none sm:py-2 xl:w-full xl:py-2.5 ${
+                                        brand ? "hover:opacity-90" : "bg-gray-900 text-white hover:bg-gray-800"
+                                      }`}
+                                      style={brand ? { backgroundColor: brand.accent, color: brand.onAccent } : undefined}
+                                    >
+                                      View Details
+                                      {leavesSite ? (
+                                        <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                                      ) : (
+                                        <span aria-hidden>&rarr;</span>
+                                      )}
+                                    </Link>
+                                  )}
+                                </div>
                               </div>
                               </div>
                             </article>
