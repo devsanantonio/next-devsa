@@ -1,6 +1,5 @@
 import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
-import { DEMO_DAY_DEADLINE, DEMO_DAY_INDUSTRIES, DEMO_DAY_NAME, DEMO_DAY_PATH } from "@/lib/demo-day"
 
 const SITE = "https://www.devsa.community"
 
@@ -24,7 +23,6 @@ const SITE = "https://www.devsa.community"
  */
 export async function buildLlmsText({ full }: { full: boolean }): Promise<string> {
   const [communities, partners] = await Promise.all([listCommunities(), listPartners()])
-  const industries = DEMO_DAY_INDUSTRIES.map((i) => i.name).join(", ")
   const groupCount = communities.length
 
   const sections: string[] = []
@@ -43,7 +41,6 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 - **The public directory** (${SITE}/buildingtogether): ${groupCount || "the city's"} community groups and ${partners.length || "the"} partners, each with its own page.
 - **Conferences built with the groups**: The Model, Access Granted (a security track), PySanAntonio (with Alamo Python and the PyTexas Foundation) and More Human Than Human (AI). In fall 2026 DEVSA ran sessions through ten groups for SA Startup + Tech Week.
 - **Partner pop-ups**: SheBuilds with Lovable, and Zero to Agent with Vercel.
-- **${DEMO_DAY_NAME}, a DEVSA Demo Day** (${SITE}${DEMO_DAY_PATH}): a planned annual event where one industry partner sets a brief, San Antonio's builders spend four weeks on it, and the work is shown to the partner and investors. It happens only if it is funded by ${DEMO_DAY_DEADLINE}; if not, gifts to it are refunded. Industries: ${industries}.
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory and the room.`)
 
@@ -59,7 +56,6 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 
 - Partner with DEVSA or ask a question: ${SITE}/buildingtogether#get-involved
 - Donate (a 501(c)(3); donors receive an emailed receipt): ${SITE}/buildingtogether#donate
-- Back or lead ${DEMO_DAY_NAME}: ${SITE}${DEMO_DAY_PATH}
 - Subscribe to the calendar: ${SITE}/events
 - Join the Discord: https://discord.gg/cvHHzThrEw`)
 
@@ -94,7 +90,6 @@ ${partners.map((p) => `- [${p.name}](${SITE}/buildingtogether/${p.id})${p.websit
 - [Community calendar](${SITE}/events)
 - [Groups and partners](${SITE}/buildingtogether)
 - [About, the board and the record](${SITE}/about)
-- [${DEMO_DAY_NAME}](${SITE}${DEMO_DAY_PATH})
 - [Code of conduct](${SITE}/code-of-conduct)
 
 The full version, with every group and partner: ${SITE}/llms-full.txt`)

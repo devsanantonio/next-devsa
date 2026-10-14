@@ -34,19 +34,17 @@ interface Campaign {
   goal?: { amount: string; covers: string }
 }
 
-export const CAMPAIGNS = {
-  "demo-day": {
-    name: "Confluencia",
-    summary:
-      "DEVSA's Demo Day: once a year, an industry partner brings the problem, San Antonio's builders spend four weeks on it, and the best of the work is shown to the partner and investors on a stage DEVSA owns",
-    href: "/events/confluencia",
-    // Approved by the DEVSA board (confirmed by Jesse, 2026-10-12). Changing
-    // what happens to designated gifts is the board's call, not a copy edit.
-    ifUnfunded:
-      "Confluencia only goes ahead if it is funded by January 31, 2027. If it is not, every gift made to it is refunded.",
-    // goal: unset until there is a venue quote. See DemoDayCampaign.
-  },
-} satisfies Record<string, Campaign>
+/*
+ * Empty for now. Confluencia was the first campaign, until 434 MEDIA took on
+ * activating it with DEVSA as a partner (2026-10-13). DEVSA still plans an
+ * event on its own stage; when it has a name, it goes here, with an
+ * ifUnfunded rule approved by the board, and gifts can be designated to it.
+ *
+ * With nothing listed, every `?campaign=` link resolves to a general gift.
+ */
+// Typed as a record rather than `satisfies` a literal: an empty literal makes
+// every key `never`. toCampaignKey still admits only keys present here.
+export const CAMPAIGNS: Record<string, Campaign> = {}
 
 export type CampaignKey = keyof typeof CAMPAIGNS
 

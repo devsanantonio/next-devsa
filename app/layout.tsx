@@ -126,7 +126,6 @@ export const metadata: Metadata = {
     "student tech groups San Antonio",
     "UTSA tech student groups",
     "partner with San Antonio developers",
-    "Confluencia demo day",
   ],
   authors: [{ name: "DEVSA Community" }],
   creator: "DEVSA",

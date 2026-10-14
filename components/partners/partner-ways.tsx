@@ -84,8 +84,9 @@ export function PartnerWays({
 
             {/* Giving has one door: the donation form directly below. Worded
                 as support, not sponsorship: the form makes a general gift and
-                cannot be designated to a single event (only to a campaign such
-                as Confluencia), so promising sponsorship here would mislead.
+                cannot be designated to a single event (only to a campaign
+                listed in lib/campaigns.ts), so promising sponsorship here
+                would mislead.
                 Anyone backing a specific event can say so through Partner with
                 DEVSA. */}
             <p className="mt-4 text-sm text-gray-600">

@@ -104,8 +104,11 @@ export const COLLECTIONS = {
   // 2026-10-12 along with its admin tab, and then the shop itself. Empty when
   // checked that day.
   MERCH_SUBMISSIONS: 'merch_submissions',
-  // Partner and sponsor inquiries from /events/confluencia. Admin and super admin
-  // only — organizers never see them, in the API or the dashboard.
+  // Partner and sponsor inquiries from the Confluencia page. The page and its
+  // form left the site on 2026-10-13 (434 MEDIA activates the event, with
+  // DEVSA as a partner), so nothing new arrives. The admin tab stays so the
+  // leads already here can be followed up or handed over. Admin and super
+  // admin only — organizers never see them, in the API or the dashboard.
   DEMO_DAY_INQUIRIES: 'demo_day_inquiries',
   // Inquiries from /get-involved: partners, sponsors and general questions.
   // Admin and super admin only, like Confluencia inquiries.

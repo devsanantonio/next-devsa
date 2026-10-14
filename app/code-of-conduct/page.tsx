@@ -48,7 +48,7 @@ export const metadata: Metadata = {
  * moderation, and sharing a report with a co-organizer or venue.
  *
  * One page, not links to GitHub: this audience includes students, partners,
- * investors and Confluencia's industry crowd, not only developers.
+ * investors and industry partners, not only developers.
  *
  * Laid out as one aligned column beside a sticky sidebar: the title, the four
  * rules, then every section as a uniform numbered accordion row, like a
@@ -60,8 +60,9 @@ export const metadata: Metadata = {
  * board adopted; only the presentation changed.
  *
  * Adopted by the board October 12, 2026. Linked from the footer (so every
- * page), the sitemap, the RSVP form on DEVSA's own events, and Confluencia's
- * terms and inquiry form.
+ * page), the sitemap and the RSVP form on DEVSA's own events. The scope
+ * clause still names Confluencia: that is the adopted text, and DEVSA co-runs
+ * it as 434 MEDIA's partner. Changing the clause is the board's call.
  */
 const p = "mt-4 text-base leading-[1.7] text-gray-600"
 const h3 = "mt-6 text-sm font-bold uppercase tracking-[0.12em] text-gray-900"

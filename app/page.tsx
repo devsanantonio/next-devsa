@@ -6,7 +6,6 @@ import { EcosystemShowcase } from "@/components/ecosystem-showcase"
 import { AboutDevsa } from "@/components/about-devsa"
 import { AudienceLanes } from "@/components/audience-lanes"
 import { DevsaConferences } from "@/components/devsa-conferences"
-import { ConfluenciaHomeBand } from "@/components/demo-day/home-band"
 
 export default function HomePage() {
   return (
@@ -31,10 +30,6 @@ export default function HomePage() {
             the logo wall has just given "activated with these groups" something
             to point at, and the conferences read as the service they are. */}
         <DevsaConferences />
-        {/* The fifth event DEVSA owns, directly after the four — the slim
-            campaign band, temporary until the January 31 funding deadline.
-            See components/demo-day/home-band.tsx for why it is slim. */}
-        <ConfluenciaHomeBand />
         <AudienceLanes />
         <HeroCommunities />
       </main>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import {
   AboutHero,
-  DemoDayCampaign,
   FoundingFacts,
   OriginProse,
   TheRecord,
@@ -104,7 +103,6 @@ export default async function AboutPage() {
         <OriginProse communityCount={communities.length} />
         <MeetTheTeam />
         <TheRecord />
-        <DemoDayCampaign />
       </main>
     </>
   )

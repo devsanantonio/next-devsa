@@ -41,9 +41,12 @@ const nextConfig: NextConfig = {
       // year would live at its own slug, not this one.
       { source: "/startup-week-2026", destination: "https://www.sasw.co/", permanent: true },
 
-      // Demo Day was renamed Confluencia (a DEVSA Demo Day) before launch.
-      // Permanent, so any link already shared lands on the new address.
-      { source: "/events/demo-day", destination: "/events/confluencia", permanent: true },
+      // Confluencia (first called Demo Day) left this site on 2026-10-13: 434
+      // MEDIA activates it, with DEVSA as a partner. Links already shared land
+      // on the calendar. DEVSA's own event on its own stage will get its own
+      // slug when it has a name; do not reuse these.
+      { source: "/events/confluencia", destination: "/events", permanent: true },
+      { source: "/events/demo-day", destination: "/events", permanent: true },
       // The shop was removed on 2026-10-12. Old product links and shares land
       // on the donation form, the nearest thing to what a shopper came to do.
       { source: "/shop", destination: "/buildingtogether#donate", permanent: true },

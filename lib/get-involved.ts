@@ -4,7 +4,7 @@
  * into it — so a way added here appears everywhere at once and the API never
  * accepts a value the form cannot send.
  *
- * Deliberately narrow. Confluencia inquiries, organizer access, and speaker
+ * Deliberately narrow. Organizer access, and speaker
  * and volunteer calls each already have their own form and inbox. Sponsoring
  * goes to the donation form (/buildingtogether#donate) rather than a third
  * path here — money has one door.

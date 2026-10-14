@@ -4,7 +4,7 @@ import { useState } from "react"
 
 /**
  * The admin portal's table system. Every list tab — Newsletter, Volunteers,
- * Access Requests, Manage Admins, Confluencia — is built from these pieces so
+ * Access Requests, Manage Admins, Confluencia inquiries — is built from these pieces so
  * they read as one product instead of five.
  *
  * Typography, smallest to largest:

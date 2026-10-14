@@ -1,14 +1,11 @@
-import { ConfluenciaName } from "@/components/demo-day/wordmark"
 import { getCampaign, type CampaignKey } from "@/lib/campaigns"
 
 /**
- * A campaign's name as a visitor should see it. Confluencia always appears as
- * its wordmark — on its own page, on /about, on Building Together and here in
- * the donation form — so the name looks the same wherever someone meets it.
- * Any future campaign without a mark of its own falls back to plain text.
+ * A campaign's name as a visitor should see it. Plain text today. A campaign
+ * with a wordmark of its own draws it here, so the name looks the same
+ * wherever someone meets it; Confluencia did until it left the site.
  */
 export function CampaignName({ campaign }: { campaign: CampaignKey }) {
-  if (campaign === "demo-day") return <ConfluenciaName />
   return <>{getCampaign(campaign).name}</>
 }
 

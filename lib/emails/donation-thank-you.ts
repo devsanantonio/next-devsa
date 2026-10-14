@@ -35,7 +35,7 @@ interface DonationThankYouEmailProps {
  * no goods or services were given in return. Every gift gets it, whatever the
  * size, so nobody has to ask for a receipt.
  *
- * A gift designated to Confluencia says so, and repeats the board-approved
+ * A gift designated to a campaign says so, and repeats the board-approved
  * promise about what happens to it if the event is not funded — the donor
  * read that promise on the page, and the email is the copy they keep.
  *
@@ -54,7 +54,7 @@ export function DonationThankYouEmail({ name, amount, date, campaign }: Donation
 
   const intro = campaign
     ? paragraph(
-        `Your gift to ${strong(esc(campaign.name))} has arrived. It is set aside for Confluencia and will be spent on it, not on anything else.`
+        `Your gift to ${strong(esc(campaign.name))} has arrived. It is set aside for ${esc(campaign.name)} and will be spent on it, not on anything else.`
       )
     : paragraph(
         `Your gift to DEVSA has arrived. It keeps the ${strong("community calendar")} and the ${strong("public directory")} open: the place San Antonio&rsquo;s builders, community groups and partners find each other.`
