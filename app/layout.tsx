@@ -244,6 +244,7 @@ export default async function RootLayout({
                 "https://twitter.com/devsatx",
                 "https://linkedin.com/company/devsa",
                 "https://instagram.com/devsatx",
+                "https://www.youtube.com/@devsatx",
                 "https://github.com/devsanantonio",
                 "https://discord.gg/cvHHzThrEw",
                 "https://www.facebook.com/p/DEVSA-61558461121201/",

@@ -280,9 +280,9 @@ export function OriginProse({ communityCount }: { communityCount?: number }) {
             DEVSA is the{" "}
             <strong className="font-semibold text-gray-900">civic infrastructure</strong>{" "}
             for that first part: a shared calendar every group publishes to, a
-            public directory anyone can search, an open feed others can build
-            on, and a few rooms a year where all of it meets. A volunteer board
-            runs it as a 501(c)(3).
+            public directory anyone can search, one channel to follow for the
+            groups that have none of their own, and a few rooms a year where
+            all of it meets. A volunteer board runs it as a 501(c)(3).
           </p>
           <p>
             DEVSA started in September 2023 as a Discord server, which is not

@@ -39,10 +39,11 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 
 - **The community calendar** (${SITE}/events): every tech meetup, workshop and conference in San Antonio in one place. Anyone can subscribe in Google, Apple or Outlook Calendar, follow the RSS/JSON feed, or embed it on their own site.
 - **The public directory** (${SITE}/buildingtogether): ${groupCount || "the city's"} community groups and ${partners.length || "the"} partners, each with its own page.
+- **One channel to follow**: DEVSA's LinkedIn (https://www.linkedin.com/company/devsa), Instagram (https://www.instagram.com/devsatx), X (https://x.com/devsatx) and YouTube (https://www.youtube.com/@devsatx), where events and conferences have been streamed live. They cover what is happening across the groups, including the ones that have no social accounts of their own.
 - **Conferences built with the groups**: The Model, Access Granted (a security track), PySanAntonio (with Alamo Python and the PyTexas Foundation) and More Human Than Human (AI). In fall 2026 DEVSA ran sessions through ten groups for SA Startup + Tech Week.
 - **Partner pop-ups**: SheBuilds with Lovable, and Zero to Agent with Vercel.
 
-The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory and the room.`)
+The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
 
   sections.push(`## Who it is for
 

@@ -464,7 +464,7 @@ export function BrandingKitPage() {
                   San Antonio is one of the largest cities in the country, and it has never lacked people who build things. What it lacks is anything that connects them. Its tech groups run their own meetups, on their own calendars, for their own audiences, and most of them can&apos;t see each other. A student finishing a program, a developer new to the city, an engineer deciding whether to stay: none of them has one place to find the people doing the work they want to do. People stay where they&apos;ve found their people, and a city that can&apos;t show its builders to each other has a harder time keeping them.
                 </p>
                 <p className="mt-2 text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is the civic infrastructure for that first part: a shared calendar every group publishes to, a public directory anyone can search, an open feed others can build on, and a few rooms a year where all of it meets. A volunteer board runs it as a 501(c)(3), and the groups that use it still run themselves.
+                  DEVSA is the civic infrastructure for that first part: a shared calendar every group publishes to, a public directory anyone can search, one channel to follow for the groups that have none of their own, and a few rooms a year where all of it meets. A volunteer board runs it as a 501(c)(3), and the groups that use it still run themselves.
                 </p>
               </div>
               <div>
