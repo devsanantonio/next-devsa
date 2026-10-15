@@ -60,18 +60,31 @@
      `--font-geist-sans` and `--font-geist-mono` below are the names next/font
      writes on <body> (see GeistSans.variable in app/layout.tsx), so pointing
      these at them inherits the real, hashed families. */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  /* The activations' display face, and the only thing that should ever be set
-     in it: Access Granted's wordmark. One `font-display` class in the repo,
-     on that h1. Everything else on every page is Geist. */
-  --font-display: var(--font-oswald);
   --font-geist-pixel-square: "Geist Pixel Square", monospace;
   --font-geist-pixel-grid: "Geist Pixel Grid", monospace;
   --font-geist-pixel-circle: "Geist Pixel Circle", monospace;
   --font-geist-pixel-triangle: "Geist Pixel Triangle", monospace;
   --font-geist-pixel-line: "Geist Pixel Line", monospace;
   }
+
+/* The three font keys live in an inline theme, and that is the second half of
+   the fix above. In a plain @theme block Tailwind emits `--font-mono:
+   var(--font-geist-mono)` on :root and the class reads `var(--font-mono)`. But
+   a var() resolves where it is declared, and next/font writes
+   --font-geist-mono on <body>, one level down, so at :root it did not exist
+   yet. --font-mono came out empty, and every `font-mono` on the site
+   inherited Geist Sans: the mono eyebrows on /events and the conference
+   pages, and the calendar's labels, all rendered in the wrong face. `inline`
+   writes the variable into the class itself — `.font-mono { font-family:
+   var(--font-geist-mono) }` — so it resolves on the element, below <body>. */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  /* The activations' display face, and the only thing that should ever be set
+     in it: Access Granted's wordmark. One `font-display` class in the repo,
+     on that h1. Everything else on every page is Geist. */
+  --font-display: var(--font-oswald);
+}
 
 body {
   font-family: var(--font-geist-sans);
