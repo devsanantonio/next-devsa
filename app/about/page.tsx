@@ -14,7 +14,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 // Leads with what DEVSA is (the phrase /about's hero and story introduce),
 // then what a funder checks: nonprofit status, since when, and who runs it.
 const SHORT =
-  "Civic infrastructure for San Antonio's tech community: one calendar, one directory and a few rooms a year. A 501(c)(3) since 2024: its story, board and record."
+  "Civic infrastructure for San Antonio tech: one calendar, one directory, one channel and a few rooms a year. A 501(c)(3) since 2024: its story, board and record."
 
 export const metadata: Metadata = {
   title: "About DEVSA — Civic Infrastructure for San Antonio Tech",

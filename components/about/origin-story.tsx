@@ -156,8 +156,8 @@ export function AboutHero() {
                 text-pretty and the non-breaking space keep "board" from
                 landing alone on the last line at laptop and monitor widths. */}
             Civic infrastructure for San Antonio&apos;s tech community: one
-            calendar, one public directory, and one room a few times a year,
-            governed by a volunteer&nbsp;board.
+            calendar, one public directory, one channel to follow, and one room
+            a few times a year, governed by a volunteer&nbsp;board.
           </p>
         </div>
       </div>

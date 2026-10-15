@@ -209,7 +209,7 @@ export default async function RootLayout({
               // description above stays builder-first; this is what a
               // search engine or an assistant files DEVSA under.
               description:
-                "DEVSA is civic infrastructure for San Antonio's tech community: the shared calendar, the public directory and the rooms where its builders find each other.",
+                "DEVSA is civic infrastructure for San Antonio's tech community: the shared calendar, the public directory, the channel to follow and the rooms where its builders find each other.",
               url: "https://www.devsa.community",
               logo: "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg",
               // Incorporated March 2024 (it started as a Discord server in

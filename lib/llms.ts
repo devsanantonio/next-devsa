@@ -29,7 +29,7 @@ export async function buildLlmsText({ full }: { full: boolean }): Promise<string
 
   sections.push(`# DEVSA
 
-> DEVSA is civic infrastructure for San Antonio's tech community: the shared calendar, the public directory and the rooms where its builders find each other. It is a 501(c)(3) nonprofit (EIN 99-2066455) governed by a volunteer board, based in San Antonio, Texas.`)
+> DEVSA is civic infrastructure for San Antonio's tech community: the shared calendar, the public directory, the channel to follow and the rooms where its builders find each other. It is a 501(c)(3) nonprofit (EIN 99-2066455) governed by a volunteer board, based in San Antonio, Texas.`)
 
   sections.push(`## The problem it addresses
 

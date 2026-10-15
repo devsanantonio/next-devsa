@@ -455,7 +455,7 @@ export function BrandingKitPage() {
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Short description</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is civic infrastructure for San Antonio&apos;s tech community: the shared calendar, the public directory and the rooms where its builders find each other.
+                  DEVSA is civic infrastructure for San Antonio&apos;s tech community: the shared calendar, the public directory, the channel to follow and the rooms where its builders find each other.
                 </p>
               </div>
               <div>
