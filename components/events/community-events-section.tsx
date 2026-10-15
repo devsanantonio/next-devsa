@@ -72,13 +72,24 @@ interface EventCalendarProps {
    * your filters". The picker was offering days it could not deliver.
    */
   events: Array<{ date: string }>
-  /** A `localDayKey`, not a Date — see the note on `eventDays`. */
+  /**
+   * Events that have ended. Their days get grey dots and stay clickable,
+   * because the list now shows a past day's events when one is picked — the
+   * reason past days were dropped from the grid (a click that filtered to
+   * nothing) no longer holds.
+   */
+  pastEvents: Array<{ date: string }>
+  /** Today's `localDayKey`, so the pinned TXLF days can turn past on time. */
+  today: string
+  /** A `localDayKey`, not a Date — see the note on `eventCounts`. */
   selectedDay: string | null
   onSelectDay: (day: string | null) => void
 }
 
 function EventCalendar({
   events,
+  pastEvents,
+  today,
   selectedDay,
   onSelectDay,
 }: EventCalendarProps) {
@@ -88,23 +99,37 @@ function EventCalendar({
   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay()
 
   /**
-   * Which days have events, keyed the way the list groups them.
+   * Which days have events, keyed the way the list groups them, and how many.
    *
    * `toDateString()` before, which resolves in the reader's own timezone while
    * the list groups in San Antonio's. For anyone outside Central those two
    * disagreed: a 7pm Thursday event is Friday in London, so the dot sat on
    * Friday and clicking it filtered against a list that had filed the event
    * under Thursday. Same bug as the detail page's, one surface further out.
+   *
+   * A count rather than a set since the grid took the spotlight videos' look:
+   * each event is a dot, so a busy day reads as busy before it is clicked.
    */
-  const eventDays = useMemo(() => {
-    const days = new Set<string>()
-    events.forEach((event) => days.add(localDayKey(event.date)))
+  const [eventCounts, pastCounts] = useMemo(() => {
+    const tally = (list: Array<{ date: string }>) => {
+      const counts = new Map<string, number>()
+      list.forEach((event) => {
+        const key = localDayKey(event.date)
+        counts.set(key, (counts.get(key) ?? 0) + 1)
+      })
+      return counts
+    }
+    const upcoming = tally(events)
+    const past = tally(pastEvents)
     // Texas Linux Fest is a pinned card rather than a Firestore record, so its
     // two days have to be added by hand or the grid renders them dead and
     // clicking them does nothing.
-    TXLF_DAY_KEYS.forEach((key: string) => days.add(key))
-    return days
-  }, [events])
+    TXLF_DAY_KEYS.forEach((key: string) => {
+      const into = key < today ? past : upcoming
+      into.set(key, (into.get(key) ?? 0) + 1)
+    })
+    return [upcoming, past]
+  }, [events, pastEvents, today])
 
   const goToPreviousMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
@@ -121,39 +146,53 @@ function EventCalendar({
       day
     )
     if (selectedDay === key) onSelectDay(null)
-    else if (eventDays.has(key)) onSelectDay(key)
+    else if (eventCounts.has(key) || pastCounts.has(key)) onSelectDay(key)
   }
 
   return (
+    // The month as the spotlight videos draw it: a dark card on the white page,
+    // a tile per day, a brand-coloured dot per event. The dots cycle teal, pink
+    // and orange as the videos do; the colour is not a category.
+    //
+    // Measured on the tile (#171717): day numbers at white/55 are 6.1:1, event
+    // days at white/90. The selected day is a pink tint with a pink ring, not
+    // solid pink — white on #ef426f is 3.7:1, under the 4.5:1 floor for text
+    // this small; on the tint it is 13.3:1.
+    //
     // Sticky lives on the rail wrapper below, not here — this used to declare
     // it too, which did nothing (the outer element already sticks) and hid
     // where the offset actually comes from.
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 leading-normal">
-          {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-        </h3>
+    <div className="rounded-2xl border border-neutral-800 bg-[#0a0a0a] p-4 sm:p-5">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-xl font-black leading-none tracking-[-0.03em] text-white">
+            {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          </h3>
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#00b2a9]">
+            devsa.community/events
+          </p>
+        </div>
         <div className="flex gap-0.5">
           <button
             onClick={goToPreviousMonth}
-            className="rounded-lg p-1.5 hover:bg-gray-100 transition-colors"
+            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-neutral-800 hover:text-white"
             aria-label="Previous month"
           >
-            <ChevronLeft className="h-4 w-4 text-gray-400" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="rounded-lg p-1.5 hover:bg-gray-100 transition-colors"
+            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-neutral-800 hover:text-white"
             aria-label="Next month"
           >
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">
-        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-          <div key={day} className="py-2">
+      <div className="mb-1.5 grid grid-cols-7 gap-1 text-center font-mono text-[10px] uppercase tracking-wider text-white/55">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          <div key={day} className="py-1">
             {day}
           </div>
         ))}
@@ -170,40 +209,63 @@ function EventCalendar({
             currentMonth.getMonth(),
             day
           )
-          const hasEvent = eventDays.has(key)
+          const upcoming = eventCounts.get(key) ?? 0
+          const past = pastCounts.get(key) ?? 0
+          const count = upcoming + past
+          const hasEvent = count > 0
           const isSelected = selectedDay === key
+          // Bright dots for what is still ahead, grey for what has ended, three at most.
+          const dots = [
+            ...Array.from({ length: upcoming }, (_, i) => ["bg-[#00b2a9]", "bg-[#ef426f]", "bg-[#ff8200]"][(day + i) % 3]),
+            ...Array.from({ length: past }, () => "bg-white/35"),
+          ].slice(0, 3)
 
           return (
             <button
               key={day}
               onClick={() => handleDateClick(day)}
               disabled={!hasEvent}
-              className={`aspect-square rounded-lg text-[13px] font-normal transition-all ${
+              aria-label={hasEvent ? `${day}, ${count} ${count === 1 ? "event" : "events"}${upcoming === 0 ? ", past" : ""}` : undefined}
+              aria-pressed={hasEvent ? isSelected : undefined}
+              className={`relative aspect-square rounded-lg p-1 text-left font-mono text-[11px] leading-none transition-colors ${
                 isSelected
-                  ? "bg-gray-900 text-white"
+                  ? "bg-[#ef426f]/25 text-white ring-2 ring-[#ef426f] ring-inset"
                   : hasEvent
-                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    : "text-gray-300"
-              } ${!hasEvent && "cursor-default"}`}
+                    ? "bg-neutral-900 text-white/90 hover:bg-neutral-800"
+                    : "cursor-default bg-neutral-900/60 text-white/55"
+              }`}
             >
               {day}
+              {hasEvent && (
+                <span className="absolute bottom-1 left-1 flex gap-0.5" aria-hidden>
+                  {dots.map((color, i) => (
+                    <span key={i} className={`h-1.5 w-1.5 rounded-full ${color}`} />
+                  ))}
+                </span>
+              )}
             </button>
           )
         })}
       </div>
-      
+
       {/* Legend */}
-      <div className="mt-4 pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-3 text-[11px] font-normal text-gray-400">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-gray-200" />
-            Has events
+      <div className="mt-4 flex items-center gap-4 border-t border-neutral-800 pt-3 font-mono text-[10px] uppercase tracking-wider text-white/55">
+        <span className="flex items-center gap-1.5">
+          <span className="flex gap-0.5" aria-hidden>
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00b2a9]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ef426f]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ff8200]" />
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-gray-900" />
-            Selected
-          </span>
-        </div>
+          Event
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-white/35" aria-hidden />
+          Past
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-[#ef426f]/25 ring-1 ring-[#ef426f]" aria-hidden />
+          Selected
+        </span>
       </div>
     </div>
   )
@@ -785,18 +847,32 @@ export function CommunityEventsSection({
    * have events", and letting a search term erase dots would take away the
    * one control that shows what else is on.
    */
-  const upcomingEvents = useMemo(() => {
-    // effectiveEndMs ignores a missing, invalid, or inverted end time, so a
-    // future event with bad end data is never hidden.
-    return allEvents
-      .filter((event) => currentTime.getTime() < effectiveEndMs(event))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [allEvents, currentTime])
+  const sortedEvents = useMemo(
+    () => [...allEvents].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    [allEvents]
+  )
+  // effectiveEndMs ignores a missing, invalid, or inverted end time, so a
+  // future event with bad end data is never hidden.
+  const upcomingEvents = useMemo(
+    () => sortedEvents.filter((event) => currentTime.getTime() < effectiveEndMs(event)),
+    [sortedEvents, currentTime]
+  )
+  /**
+   * Everything that has ended, for the picker's grey dots and for a past day
+   * once somebody picks one. The list still opens on upcoming events only:
+   * history appears when a past day is asked for, never by default.
+   */
+  const pastEvents = useMemo(
+    () => sortedEvents.filter((event) => currentTime.getTime() >= effectiveEndMs(event)),
+    [sortedEvents, currentTime]
+  )
+  const todayKey = localDayKey(currentTime)
 
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
 
-    return upcomingEvents
+    // A picked day shows everything on it, ended or not; otherwise upcoming only.
+    return (selectedDay ? sortedEvents : upcomingEvents)
       .filter((event) => {
         if (!normalizedSearch) return true
         /* Who is hosting, which is the most likely thing anybody types.
@@ -841,7 +917,7 @@ export function CommunityEventsSection({
         return haystack.includes(normalizedSearch)
       })
       .filter((event) => !selectedDay || localDayKey(event.date) === selectedDay)
-  }, [upcomingEvents, search, selectedDay, allCommunities])
+  }, [sortedEvents, upcomingEvents, search, selectedDay, allCommunities])
 
   /**
    * The same events, bucketed into the days they fall on.
@@ -1105,7 +1181,7 @@ export function CommunityEventsSection({
                 className="overflow-hidden"
               >
                 <div className="pt-4">
-                  <EventCalendar events={upcomingEvents} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
+                  <EventCalendar events={upcomingEvents} pastEvents={pastEvents} today={todayKey} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
                 </div>
               </motion.div>
             )}
@@ -1144,7 +1220,7 @@ export function CommunityEventsSection({
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <p className="text-[13px] font-normal text-gray-400">
-                  {isLoadingEvents ? '...' : `${filteredEvents.length} upcoming event${filteredEvents.length !== 1 ? 's' : ''}`}
+                  {isLoadingEvents ? '...' : `${filteredEvents.length} ${!selectedDay ? 'upcoming ' : selectedDay < todayKey ? 'past ' : ''}event${filteredEvents.length !== 1 ? 's' : ''}`}
                 </p>
                 {selectedDay && (
                   <button
@@ -1304,7 +1380,9 @@ export function CommunityEventsSection({
                         aria-hidden
                         className="absolute left-0 top-1.25 h-3.5 w-3.5 rounded-full border-2 border-white bg-gray-300 ring-1 ring-gray-200"
                       />
-                      {opensStartupWeek && <StartupWeekBand />}
+                      {/* Not above a past day: its CTA is "Register for the week",
+                          which a week that is over cannot honour. */}
+                      {opensStartupWeek && day.key >= todayKey && <StartupWeekBand />}
                       {/* The date, in two weights on one line.
 
                           It was "Tuesday, October 6" at 24px black, a pill, a
@@ -1328,6 +1406,11 @@ export function CommunityEventsSection({
                         id={`day-${day.key}`}
                         className="flex flex-wrap items-baseline gap-x-2.5 text-lg font-bold tracking-[-0.01em] text-gray-900 sm:text-xl"
                       >
+                        {day.key < todayKey && (
+                          <span className="self-center rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-widest text-gray-600">
+                            Past
+                          </span>
+                        )}
                         <span>{relative ?? formatDayShort(day.key)}</span>
                         <span className="text-base font-normal text-gray-400 sm:text-lg">
                           {formatWeekday(day.key)}
@@ -1456,7 +1539,7 @@ export function CommunityEventsSection({
                           const eventLink = event.detailsUrl || (event.slug ? `/events/${event.slug}` : event.url)
                           const leavesSite = Boolean(event.detailsUrl) || (!event.slug && Boolean(event.url))
                           const eventStatus = getEventStatus(event, currentTime)
-                          const isNextUp = day.key === eventsByDay[0]?.key && index === 0
+                          const isNextUp = day.key === eventsByDay[0]?.key && index === 0 && eventStatus === "upcoming"
 
                           /* Defined once, placed twice.
 
@@ -1728,6 +1811,10 @@ export function CommunityEventsSection({
                                         <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                                         Happening Now
                                       </span>
+                                    ) : eventStatus === "ended" ? (
+                                      <span className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest ${brand ? "border-white/25 text-white/70" : "border-gray-200 bg-gray-100 text-gray-600"}`}>
+                                        Ended
+                                      </span>
                                     ) : isNextUp && (
                                       <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gray-900 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest text-white">
                                         <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
@@ -1909,6 +1996,8 @@ export function CommunityEventsSection({
                                   where they belong after the quieter
                                   add-to-calendar controls. */}
                               <div className={`relative flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t pt-4 xl:mt-0 xl:w-56 xl:shrink-0 xl:flex-col-reverse xl:flex-nowrap xl:items-stretch xl:justify-end xl:gap-3 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6 ${brand ? "border-white/15" : "border-gray-100"}`}>
+                                {/* Nothing to add to a calendar once it is over. */}
+                                {eventStatus === "ended" ? <span /> : (
                                 <div className="flex items-center gap-1.5">
                                   <span className={`mr-0.5 text-[12px] font-normal ${brand ? "text-white/50" : "text-gray-500"}`}>Add to</span>
                                   <a
@@ -1934,6 +2023,7 @@ export function CommunityEventsSection({
                                     .ics
                                   </button>
                                 </div>
+                                )}
                                 <div className="flex w-full items-stretch gap-2 sm:w-auto xl:w-full xl:flex-col-reverse">
                                   {/* Save or share the event's 1080x1350 graphic,
                                       without opening the event first. Only for
@@ -1990,7 +2080,7 @@ export function CommunityEventsSection({
                 the page barely moved. Now that the list flows into the page,
                 this rail actually travels, so the offset has to be right. */}
             <div className="sticky top-20">
-              <EventCalendar events={upcomingEvents} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
+              <EventCalendar events={upcomingEvents} pastEvents={pastEvents} today={todayKey} selectedDay={selectedDay} onSelectDay={setSelectedDay} />
             </div>
           </div>
         </div>
