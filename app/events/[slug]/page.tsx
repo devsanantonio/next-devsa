@@ -115,7 +115,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       timeZone: "America/Chicago",
     })
 
-    const description = `Hosted by ${hosts}. ${eventDate}${event.location ? ` at ${event.location}` : " in San Antonio"}. Listed on the DEVSA community calendar.`
+    // A link-only event is not on the calendar, so its preview must not say it is.
+    const description = `Hosted by ${hosts}. ${eventDate}${event.location ? ` at ${event.location}` : " in San Antonio"}. ${
+      event.unlisted ? "A private event: this link is your invitation." : "Listed on the DEVSA community calendar."
+    }`
     // The browser tab and X card carry the host after the title; the root
     // template still appends " | DEVSA" to the page <title>, as the site's name.
     const titleWithHost = `${event.title} · ${hosts}`

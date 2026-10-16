@@ -163,10 +163,12 @@ export async function POST(request: NextRequest) {
     const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired } = body;
     const organizerEmail = await verifiedEmail(request);
 
-    // An event needs at least one host — a community, a partner, or both
-    if (!title || !date || !description || (!communityId && !partnerId) || !organizerEmail) {
+    // An event needs at least one host — a community, a partner, or DEVSA
+    // itself. An official DEVSA event is hosted by DEVSA, so it needs neither;
+    // requiring one made DEVSA pick a group to host its own roundtable.
+    if (!title || !date || !description || (!communityId && !partnerId && isOfficial !== true) || !organizerEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields — an event needs a title, date, description, and at least one host (community or partner)' },
+        { error: 'Missing required fields — an event needs a title, date, description, and a host (a community, a partner, or an official DEVSA event)' },
         { status: 400 }
       );
     }

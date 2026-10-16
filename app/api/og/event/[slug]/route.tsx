@@ -96,7 +96,7 @@ export async function GET(
         // word DEVSA off any piece with the mark). Cards DEVSA leads already
         // carry the mark at the top, so they do not repeat it here.
         footer={shown.length ? <DevsaLogoMark size={34} alt /> : undefined}
-        url="devsa.community/events"
+        url={event.unlisted ? "Private event" : "devsa.community/events"}
       />
     ),
     { width: 1200, height: 630, fonts }

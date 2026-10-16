@@ -74,6 +74,20 @@ interface EventPageClientProps {
  */
 type EventHost = TechCommunity & { kind?: "community" | "partner"; mark?: string }
 
+/**
+ * DEVSA as the host, for an official event with no community or partner on it
+ * — a roundtable DEVSA convenes on its own. Without this the page had no
+ * "Hosted by" row and no host card at all, as if nobody were running it.
+ */
+const DEVSA_HOST: EventHost = {
+  id: "devsa",
+  name: "DEVSA",
+  logo: "/branding/devsa-logo.svg",
+  description:
+    "DEVSA is the bridge between San Antonio's builders, tech groups and partners: one shared calendar, one public directory, one channel to follow, and a few rooms a year where all of it meets. A 501(c)(3), run by a volunteer board.",
+  website: "https://www.devsa.community/about",
+} as EventHost
+
 // DEVSA Discord - all community organizers are in this server
 const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
 
@@ -317,6 +331,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           .filter(Boolean) as TechCommunity[]
 
         const hosts: EventHost[] = [...matched, ...partnerHosts]
+        if (!hosts.length && event.isOfficial) hosts.push(DEVSA_HOST)
         if (hosts.length) setAllEventCommunities(hosts)
       } catch (error) {
         console.error("Error fetching event hosts:", error)

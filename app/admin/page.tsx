@@ -361,6 +361,8 @@ export default function AdminPage() {
   const [selectedRsvpEvent, setSelectedRsvpEvent] = useState<string>("all")
   const [selectedRsvpCommunity, setSelectedRsvpCommunity] = useState<string>("all")
   const [isExportingRsvps, setIsExportingRsvps] = useState(false)
+  // Which link-only event's link was just copied, for the badge's "Copied" state.
+  const [copiedEventSlug, setCopiedEventSlug] = useState<string | null>(null)
   
   // Profile state
   const [adminFirstName, setAdminFirstName] = useState<string>("")
@@ -3210,11 +3212,16 @@ export default function AdminPage() {
                           {event.unlisted && (
                             <button
                               type="button"
-                              onClick={() => navigator.clipboard.writeText(`https://www.devsa.community/events/${event.slug}`)}
-                              title="Copy the link to share with invitees"
+                              onClick={() => {
+                                navigator.clipboard.writeText(`https://www.devsa.community/events/${event.slug}`).then(() => {
+                                  setCopiedEventSlug(event.slug)
+                                  setTimeout(() => setCopiedEventSlug((s) => (s === event.slug ? null : s)), 2000)
+                                })
+                              }}
+                              title={`https://www.devsa.community/events/${event.slug}`}
                               className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 bg-[#00b2a9]/20 text-[#00b2a9] hover:bg-[#00b2a9]/30"
                             >
-                              Link only · copy link
+                              {copiedEventSlug === event.slug ? "Link copied" : "Link only · copy link"}
                             </button>
                           )}
                           {event.eventType && (

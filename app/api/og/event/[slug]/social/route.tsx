@@ -112,7 +112,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         {/* The sign-off: DEVSA's alt mark and where to find the calendar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {event.official ? <span /> : <DevsaLogoMark size={46} alt />}
-          <span style={{ fontSize: 28, fontWeight: 500, color: MUTED }}>devsa.community/events</span>
+          <span style={{ fontSize: 28, fontWeight: 500, color: MUTED }}>
+            {event.unlisted ? "Private event" : "devsa.community/events"}
+          </span>
         </div>
       </div>
     ),

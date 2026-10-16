@@ -186,6 +186,9 @@ export async function getEventBySlug(slug: string) {
         hosts,
         // DEVSA's own events (see Event.isOfficial) keep the DEVSA mark.
         official: data.isOfficial === true,
+        // Link only (lib/event-visibility.ts): the cards say "Private event"
+        // rather than send invitees to a calendar the event is not on.
+        unlisted: data.unlisted === true,
         found: true,
       }
     }
@@ -208,6 +211,7 @@ export async function getEventBySlug(slug: string) {
     location: null as string | null,
     hosts: [] as Host[],
     official: false,
+    unlisted: false,
     found: false,
   }
 }
