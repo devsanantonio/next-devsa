@@ -231,6 +231,10 @@ interface EventRSVP {
   submittedAt: string
 }
 
+/** A host field's ids: a collab stores several as one comma-separated string. */
+const hostIds = (stored?: string | null) =>
+  (stored || "").split(",").map((id) => id.trim()).filter(Boolean)
+
 type Tab = "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
 /**
@@ -5095,8 +5099,10 @@ export default function AdminPage() {
                     placeholder="All Events"
                     options={[
                       { value: 'all', label: 'All Events' },
+                      // Newest first, and a collab event counts for every group hosting it.
                       ...events
-                        .filter((e) => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || e.communityId === selectedRsvpCommunity))
+                        .filter((e) => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || hostIds(e.communityId).includes(selectedRsvpCommunity)))
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((e) => ({ value: e.id, label: e.title })),
                     ]}
                   />
@@ -5120,7 +5126,7 @@ export default function AdminPage() {
                 let filteredRsvps = rsvps
                 // Filter by community first
                 if (selectedRsvpCommunity !== 'all') {
-                  filteredRsvps = filteredRsvps.filter(r => r.communityId === selectedRsvpCommunity)
+                  filteredRsvps = filteredRsvps.filter(r => hostIds(r.communityId).includes(selectedRsvpCommunity))
                 }
                 // Then filter by event
                 if (selectedRsvpEvent !== 'all') {
@@ -5132,7 +5138,8 @@ export default function AdminPage() {
                 const optedIn = filteredRsvps.filter(r => r.joinNewsletter).length
                 const optInRate = totalRsvps > 0 ? Math.round((optedIn / totalRsvps) * 100) : 0
                 const eventCount = new Set(filteredRsvps.map(r => r.eventSlug)).size
-                const communityCount = new Set(filteredRsvps.map(r => r.communityId)).size
+                // Each group counted once, whether it hosted alone or in a collab.
+                const communityCount = new Set(filteredRsvps.flatMap(r => hostIds(r.communityId))).size
 
                 const tiles: { label: string; value: number; sub?: string }[] = [
                   { label: 'Total RSVPs', value: totalRsvps },
@@ -5146,16 +5153,35 @@ export default function AdminPage() {
                 const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
                   if (!acc[rsvp.eventSlug]) {
                     const event = events.find(e => e.id === rsvp.eventId)
-                    const community = communities.find(c => c.id === rsvp.communityId)
+                    /*
+                     * Every host, by name. This looked up one community by the
+                     * RSVP's communityId, which a collab stores as
+                     * "alamo-python,pytexas" and a partner- or DEVSA-hosted
+                     * event leaves empty, so all three showed "Unknown". The
+                     * event record is the source; the RSVP's copy is the fallback
+                     * for an event since deleted.
+                     */
+                    const groupNames = hostIds(event?.communityId ?? rsvp.communityId)
+                      // A partner typed in as a custom host (Tech Bloc on its own events) resolves too.
+                      .map(id => communities.find(c => c.id === id)?.name || partners.find(p => p.id === id)?.name || event?.communityName || id)
+                    const partnerNames = hostIds(event?.partnerId)
+                      .map(id => partners.find(p => p.id === id)?.name || id)
+                    const hostNames = [...(event?.isOfficial ? ['DEVSA'] : []), ...groupNames, ...partnerNames]
                     acc[rsvp.eventSlug] = {
                       eventTitle: event?.title || rsvp.eventSlug,
-                      communityName: community?.name || 'Unknown',
+                      communityName: hostNames.length ? hostNames.join(' + ') : 'Unknown',
+                      // For ordering: the event's own date (0 if the event is gone).
+                      sortAt: event?.date ? new Date(event.date).getTime() : 0,
                       rsvps: []
                     }
                   }
                   acc[rsvp.eventSlug].rsvps.push(rsvp)
                   return acc
-                }, {} as Record<string, { eventTitle: string; communityName: string; rsvps: EventRSVP[] }>)
+                }, {} as Record<string, { eventTitle: string; communityName: string; sortAt: number; rsvps: EventRSVP[] }>)
+
+                // An event that has since been deleted has no date; its latest RSVP stands in.
+                const orderAt = (g: { sortAt: number; rsvps: EventRSVP[] }) =>
+                  g.sortAt || Math.max(0, ...g.rsvps.map(r => new Date(r.submittedAt).getTime() || 0))
 
                 return (
                   <>
@@ -5182,7 +5208,8 @@ export default function AdminPage() {
                       </div>
                     ) : (
                     <div className="space-y-6">
-                    {Object.entries(groupedByEvent).map(([slug, { eventTitle, communityName, rsvps: eventRsvps }]) => (
+                    {/* Most recent event first. */}
+                    {Object.entries(groupedByEvent).sort(([, a], [, b]) => orderAt(b) - orderAt(a)).map(([slug, { eventTitle, communityName, rsvps: eventRsvps }]) => (
                       <div key={slug} className="rounded-xl border border-neutral-800 bg-neutral-800/30 overflow-hidden">
                         <div className="px-4 py-3 bg-neutral-800/50 border-b border-neutral-700 flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-3">

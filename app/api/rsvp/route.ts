@@ -213,9 +213,20 @@ export async function GET(request: NextRequest) {
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
 
-    // Build query based on role
-    let rsvpQuery;
-    
+    /*
+     * A collab event stores its hosts as one comma-separated communityId
+     * ("alamo-python,pytexas"), and every RSVP to it copies that string. An
+     * equality query never matched it, so a co-hosting group's organizer saw
+     * none of the RSVPs to their own event, and the admin's community filter
+     * dropped them too. A group now matches any RSVP it is one of the hosts of,
+     * checked in memory after the query.
+     */
+    const hostedBy = (stored: unknown, id: string) =>
+      String(stored || '').split(',').map((s) => s.trim()).includes(id);
+
+    let rsvpQuery: FirebaseFirestore.Query = db.collection(COLLECTIONS.EVENT_RSVPS);
+    let scopeCommunity: string | null = null;
+
     if (adminData.role === 'organizer') {
       // Organizers can only see RSVPs for their community
       if (!adminData.communityId) {
@@ -224,27 +235,21 @@ export async function GET(request: NextRequest) {
           { status: 403 }
         );
       }
-      rsvpQuery = db.collection(COLLECTIONS.EVENT_RSVPS)
-        .where('communityId', '==', adminData.communityId);
-    } else {
+      scopeCommunity = adminData.communityId;
+      if (eventId) rsvpQuery = rsvpQuery.where('eventId', '==', eventId);
+    } else if (eventId) {
       // Admins can see all or filter by eventId/communityId
-      if (eventId) {
-        rsvpQuery = db.collection(COLLECTIONS.EVENT_RSVPS)
-          .where('eventId', '==', eventId);
-      } else if (communityId) {
-        rsvpQuery = db.collection(COLLECTIONS.EVENT_RSVPS)
-          .where('communityId', '==', communityId);
-      } else {
-        rsvpQuery = db.collection(COLLECTIONS.EVENT_RSVPS);
-      }
-    }
-
-    // If organizer wants specific event, verify it's their community
-    if (adminData.role === 'organizer' && eventId) {
       rsvpQuery = rsvpQuery.where('eventId', '==', eventId);
+    } else if (communityId) {
+      scopeCommunity = communityId;
     }
 
-    const rsvpSnapshot = await rsvpQuery.get();
+    const snapshot = await rsvpQuery.get();
+    const rsvpSnapshot = {
+      docs: scopeCommunity
+        ? snapshot.docs.filter((doc) => hostedBy(doc.data().communityId, scopeCommunity!))
+        : snapshot.docs,
+    };
 
     const rsvps = rsvpSnapshot.docs.map(doc => ({
       id: doc.id,
