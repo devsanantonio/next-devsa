@@ -33,7 +33,9 @@ const LIGHT_PARTNER_IDS = ["youth-code-jam", "the-creative-futures"]
  */
 const LIGHT_COMMUNITY_NAMES = [
   "aws user group",
-  "alamo city locksport",
+  // Alamo City Locksport left this list on 2026-10-16: its white mark was
+  // replaced in the admin with a full-colour one, which invert turned into a
+  // photo negative on the light surfaces.
   "alamo python",
   "alamo tech collective",
   "datanauts",
