@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { isListed } from '@/lib/event-visibility';
 import {
   buildWeeklyDigestPayload,
   isEventsDiscordConfigured,
@@ -82,7 +83,9 @@ export async function GET(request: NextRequest) {
       .where('status', '==', 'published')
       .get();
 
+    // A link-only event is posted to nobody: the digest is a public channel.
     const events: DigestEvent[] = snapshot.docs
+      .filter((doc) => isListed(doc.data()))
       .map((doc) => {
         const data = doc.data();
         const communityIds = (data.communityId || '')

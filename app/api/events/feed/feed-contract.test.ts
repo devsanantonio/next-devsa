@@ -108,6 +108,40 @@ describe('events feed contract', () => {
     expect(xml).not.toContain('Past Event');
   });
 
+  it('leaves link-only events out of the feed', async () => {
+    buildDb({
+      communities: [createDoc('devsa', { name: 'DEVSA' })],
+      events: [
+        createDoc('listed-1', {
+          title: 'Open Meetup',
+          slug: 'open-meetup',
+          date: '2099-06-01T23:00:00.000Z',
+          description: 'Anyone can come to this one.',
+          communityId: 'devsa',
+          eventType: 'in-person',
+          createdAt: '2099-05-01T12:00:00.000Z',
+        }),
+        createDoc('unlisted-1', {
+          title: 'Organizer Roundtable',
+          slug: 'organizer-roundtable',
+          date: '2099-06-02T23:00:00.000Z',
+          description: 'Invite only.',
+          communityId: 'devsa',
+          eventType: 'in-person',
+          unlisted: true,
+          createdAt: '2099-05-01T12:00:00.000Z',
+        }),
+      ],
+    });
+
+    const { GET } = await import('./route');
+    const xml = await (await GET(new NextRequest('https://www.devsa.community/api/events/feed'))).text();
+
+    expect(xml).toContain('Open Meetup');
+    expect(xml).not.toContain('Organizer Roundtable');
+    expect(xml).not.toContain('organizer-roundtable');
+  });
+
   it('returns the past feed without RSVP-specific fields while preserving details links', async () => {
     buildDb({
       communities: [

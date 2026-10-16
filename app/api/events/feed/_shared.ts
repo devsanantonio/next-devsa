@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { isListed } from '@/lib/event-visibility';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 export const EVENT_TIMEZONE = 'America/Chicago';
@@ -120,7 +121,10 @@ async function fetchFeedEvents(requestedCommunityIds: string[]): Promise<FeedEve
     .where('status', '==', 'published')
     .get();
 
+  // Link-only events stay out of both feeds, and so out of every site and bot
+  // that consumes them.
   return snapshot.docs
+    .filter((doc) => isListed(doc.data()))
     .map((doc): FeedEvent => {
       const data = doc.data();
       const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);

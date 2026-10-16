@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { isListed } from "@/lib/event-visibility"
 import { listPartners } from "@/lib/partners"
 
 /**
@@ -72,7 +73,8 @@ async function eventRoutes(): Promise<MetadataRoute.Sitemap> {
   return snapshot.docs
     .map((doc) => doc.data())
     .filter((d) => {
-      if (!d.slug || !d.date) return false
+      // Link-only events are noindexed; listing them here would contradict that.
+      if (!d.slug || !d.date || !isListed(d)) return false
       const start = new Date(d.date).getTime()
       const rawEnd = d.endTime ? new Date(d.endTime).getTime() : NaN
       // Same guard the UI uses: ignore an end time that is missing or lands

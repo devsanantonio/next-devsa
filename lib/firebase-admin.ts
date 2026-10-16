@@ -358,6 +358,18 @@ export interface Event {
    */
   isOfficial?: boolean;
   /**
+   * Link only: reachable at its own URL, left off every list and feed. See
+   * lib/event-visibility.ts, which every listing surface goes through.
+   */
+  unlisted?: boolean;
+  /**
+   * One question of the organizer's own on the DEVSA RSVP form — Luma's custom
+   * registration question. Only means anything while rsvpEnabled; null when unset.
+   */
+  rsvpQuestion?: string | null;
+  /** Whether attendees must answer rsvpQuestion. */
+  rsvpQuestionRequired?: boolean;
+  /**
    * An activation with a design system of its own — see lib/event-brands.ts.
    *
    * Keyed by name rather than carrying colors, because these are identities
@@ -398,6 +410,9 @@ export interface EventRSVP {
   lastName: string;
   email: string;
   joinNewsletter: boolean;
+  /** The question as it read when this person answered, so a later edit cannot relabel old answers. */
+  question?: string;
+  answer?: string;
   submittedAt: Date;
 }
 

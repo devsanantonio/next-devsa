@@ -54,6 +54,9 @@ interface Event {
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
   externalRsvpUrl?: string | null
+  /** The organizer's own question on the RSVP form, if any. */
+  rsvpQuestion?: string | null
+  rsvpQuestionRequired?: boolean
   /** DEVSA's own event — the only events the code of conduct governs directly. */
   isOfficial?: boolean
 }
@@ -200,6 +203,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     firstName: '',
     lastName: '',
     email: '',
+    answer: '',
     joinNewsletter: false
   })
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
@@ -218,7 +222,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch('/api/events')
+        // Asks for this one event rather than the whole calendar: a link-only
+        // event is not in the public list, but answers to its own slug.
+        const response = await fetch(`/api/events?slug=${encodeURIComponent(slug)}`)
         if (response.ok) {
           const data = await response.json()
           const foundEvent = data.events?.find((e: Event) => e.slug === slug)
@@ -413,6 +419,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           firstName: rsvpForm.firstName,
           lastName: rsvpForm.lastName,
           email: rsvpForm.email,
+          answer: rsvpForm.answer,
           joinNewsletter: rsvpForm.joinNewsletter,
         })
       })
@@ -421,7 +428,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
       if (response.ok) {
         setRsvpSuccess(true)
-        setRsvpForm({ firstName: '', lastName: '', email: '', joinNewsletter: false })
+        setRsvpForm({ firstName: '', lastName: '', email: '', answer: '', joinNewsletter: false })
       } else {
         setRsvpError(data.error || 'Failed to submit RSVP')
       }
@@ -673,6 +680,26 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                         placeholder="your@email.com"
                       />
                     </div>
+                    {/* The organizer's own question, set in the admin. */}
+                    {event.rsvpQuestion && (
+                      <div>
+                        <label htmlFor="rsvpAnswer" className="block text-sm font-medium text-gray-700 mb-1">
+                          {event.rsvpQuestion}
+                          {!event.rsvpQuestionRequired && (
+                            <span className="ml-1.5 font-normal text-gray-500">(optional)</span>
+                          )}
+                        </label>
+                        <input
+                          type="text"
+                          id="rsvpAnswer"
+                          required={event.rsvpQuestionRequired === true}
+                          maxLength={500}
+                          value={rsvpForm.answer}
+                          onChange={(e) => setRsvpForm(prev => ({ ...prev, answer: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ef426f] focus:border-transparent"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"

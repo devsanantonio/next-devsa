@@ -14,9 +14,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, eventSlug, communityId, firstName, lastName, email, joinNewsletter } = body;
+    const { eventId, eventSlug, firstName, lastName, email, joinNewsletter, answer } = body;
+    /*
+     * communityId used to be required here, which meant an event hosted only by
+     * partners — or by DEVSA with a partner, and no community group — could
+     * never take an RSVP: every submission came back "Missing required fields".
+     * It is only used to scope an organizer's view of RSVPs, so it is optional.
+     */
+    const communityId = typeof body.communityId === 'string' ? body.communityId : '';
 
-    if (!eventId || !eventSlug || !communityId || !firstName || !lastName || !email) {
+    if (!eventId || !eventSlug || !firstName || !lastName || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -52,6 +59,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // The organizer's own question, if the event has one.
+    const question = typeof eventData.rsvpQuestion === 'string' ? eventData.rsvpQuestion.trim() : '';
+    const answerText = question && typeof answer === 'string' ? answer.trim().slice(0, 500) : '';
+    if (question && eventData.rsvpQuestionRequired === true && !answerText) {
+      return NextResponse.json(
+        { error: 'Please answer the question above' },
+        { status: 400 }
+      );
+    }
+
     // Check if already RSVP'd
     const existingRsvp = await db
       .collection(COLLECTIONS.EVENT_RSVPS)
@@ -76,6 +93,7 @@ export async function POST(request: NextRequest) {
       lastName: lastName.trim(),
       email: normalizedEmail,
       joinNewsletter: joinNewsletter || false,
+      ...(question ? { question, answer: answerText } : {}),
       submittedAt: new Date(),
     };
 
@@ -236,7 +254,13 @@ export async function GET(request: NextRequest) {
 
     // If CSV format requested, return CSV
     if (format === 'csv') {
-      const headers = ['First Name', 'Last Name', 'Email', 'Event', 'Joined Newsletter', 'Submitted At'];
+      const headers = ['First Name', 'Last Name', 'Email', 'Event', 'Joined Newsletter', 'Question', 'Answer', 'Submitted At'];
+      // Quotes doubled, and a leading = + - @ neutralized: an answer is free text
+      // from the public, and a spreadsheet would otherwise run it as a formula.
+      const cell = (v: unknown) => {
+        const text = String(v ?? '');
+        return `"${(/^[=+\-@]/.test(text) ? `'${text}` : text).replace(/"/g, '""')}"`;
+      };
       const csvRows = [headers.join(',')];
       
       for (const rsvp of rsvps) {
@@ -246,6 +270,8 @@ export async function GET(request: NextRequest) {
           `"${(rsvp as EventRSVP & { id: string }).email}"`,
           `"${(rsvp as EventRSVP & { id: string }).eventSlug}"`,
           (rsvp as EventRSVP & { id: string }).joinNewsletter ? 'Yes' : 'No',
+          cell((rsvp as EventRSVP & { id: string }).question),
+          cell((rsvp as EventRSVP & { id: string }).answer),
           `"${(rsvp as { submittedAt: string }).submittedAt}"`,
         ];
         csvRows.push(row.join(','));

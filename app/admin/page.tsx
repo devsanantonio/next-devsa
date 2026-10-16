@@ -36,7 +36,6 @@ import {
   Home,
   Download,
   Handshake,
-  Megaphone,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -181,7 +180,10 @@ interface CalendarEvent {
   eventType?: 'in-person' | 'hybrid' | 'virtual'
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
+  rsvpQuestion?: string | null
+  rsvpQuestionRequired?: boolean
   isOfficial?: boolean
+  unlisted?: boolean
   brand?: string
   detailsUrl?: string
 }
@@ -224,6 +226,8 @@ interface EventRSVP {
   lastName: string
   email: string
   joinNewsletter: boolean
+  question?: string
+  answer?: string
   submittedAt: string
 }
 
@@ -979,7 +983,10 @@ export default function AdminPage() {
       eventType: "in-person",
       rsvpEnabled: false,
       externalRsvpUrl: "",
+      rsvpQuestion: "",
+      rsvpQuestionRequired: false,
       isOfficial: false,
+      unlisted: false,
       brand: "",
       detailsUrl: "",
     })
@@ -1014,11 +1021,15 @@ export default function AdminPage() {
           description: editingEvent.description,
           status: editingEvent.status,
           eventType: editingEvent.eventType,
-          rsvpEnabled: editingEvent.rsvpEnabled,
+          rsvpEnabled: editingEvent.rsvpEnabled === true,
           externalRsvpUrl: editingEvent.externalRsvpUrl || null,
+          // The API clears both when the DEVSA form is off.
+          rsvpQuestion: editingEvent.rsvpQuestion || "",
+          rsvpQuestionRequired: editingEvent.rsvpQuestionRequired === true,
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
+          unlisted: editingEvent.unlisted === true,
           /* Both are meaningless on an event DEVSA did not convene, and their
              inputs only exist while the box is ticked. Deriving them from the
              flag here rather than trusting the field state means the record
@@ -1863,7 +1874,6 @@ export default function AdminPage() {
       label: "Inbox",
       items: [
         { id: "getinvolved", label: "Get Involved", icon: Handshake, count: getInvolved.length, alert: newGetInvolvedCount },
-        { id: "demoday", label: "Confluencia", icon: Megaphone, count: demoDayInquiries.length, alert: newDemoDayCount },
         { id: "access", label: "Access Requests", icon: Users, count: pendingAccessCount, alert: pendingAccessCount },
         speakersNav,
         volunteersNav,
@@ -1892,9 +1902,6 @@ export default function AdminPage() {
       : []),
     ...(hasAdminAccess(adminRole) && newGetInvolvedCount > 0
       ? [{ id: "getinvolved" as Tab, label: `${newGetInvolvedCount} new Get Involved inquir${newGetInvolvedCount > 1 ? "ies" : "y"}`, icon: Handshake }]
-      : []),
-    ...(hasAdminAccess(adminRole) && newDemoDayCount > 0
-      ? [{ id: "demoday" as Tab, label: `${newDemoDayCount} new Confluencia inquir${newDemoDayCount > 1 ? "ies" : "y"}`, icon: Megaphone }]
       : []),
   ]
   const notificationCount = notifications.length
@@ -3200,6 +3207,16 @@ export default function AdminPage() {
                               Static
                             </span>
                           )}
+                          {event.unlisted && (
+                            <button
+                              type="button"
+                              onClick={() => navigator.clipboard.writeText(`https://www.devsa.community/events/${event.slug}`)}
+                              title="Copy the link to share with invitees"
+                              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 bg-[#00b2a9]/20 text-[#00b2a9] hover:bg-[#00b2a9]/30"
+                            >
+                              Link only · copy link
+                            </button>
+                          )}
                           {event.eventType && (
                             <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${
                               event.eventType === 'in-person'
@@ -3872,6 +3889,39 @@ export default function AdminPage() {
                             RSVP form will appear on the event page. You can view and export RSVPs from your dashboard.
                           </p>
                         )}
+                        {/* One question of the organizer's own, on the DEVSA
+                            form only — Luma's custom registration question.
+                            Answers show in the RSVPs tab and the CSV. */}
+                        {editingEvent.rsvpEnabled && (
+                          <div className="ml-7 space-y-2">
+                            <label htmlFor="rsvpQuestion" className="block text-sm font-medium text-neutral-300">
+                              Your own question <span className="font-normal text-neutral-400">(optional)</span>
+                            </label>
+                            <input
+                              id="rsvpQuestion"
+                              type="text"
+                              maxLength={200}
+                              value={editingEvent.rsvpQuestion || ""}
+                              onChange={(e) => setEditingEvent({ ...editingEvent, rsvpQuestion: e.target.value })}
+                              placeholder="e.g. Which group or student organization do you lead?"
+                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            />
+                            {(editingEvent.rsvpQuestion || "").trim() && (
+                              <label className="flex items-center gap-2 text-sm text-neutral-300 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={editingEvent.rsvpQuestionRequired === true}
+                                  onChange={(e) => setEditingEvent({ ...editingEvent, rsvpQuestionRequired: e.target.checked })}
+                                  className="accent-[#ef426f]"
+                                />
+                                Attendees must answer it
+                              </label>
+                            )}
+                            <p className="text-xs text-neutral-400">
+                              Asked under name and email on the RSVP form. Answers appear in the RSVPs tab and the CSV export.
+                            </p>
+                          </div>
+                        )}
 
                         {/* External RSVP option */}
                         <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
@@ -3924,6 +3974,30 @@ export default function AdminPage() {
                           Draft events are only visible in the admin dashboard
                         </p>
                       </div>
+                      {/* Luma's "private": the page, RSVP and share poster work
+                          for anyone with the link, and every list leaves it out.
+                          See lib/event-visibility.ts for the surfaces. */}
+                      <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                        editingEvent.unlisted
+                          ? "border-[#00b2a9]/50 bg-[#00b2a9]/5"
+                          : "border-neutral-700 hover:border-neutral-600"
+                      }`}>
+                        <input
+                          type="checkbox"
+                          checked={editingEvent.unlisted === true}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, unlisted: e.target.checked })}
+                          className="mt-0.5 accent-[#00b2a9]"
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-white">Link only (private)</span>
+                          <p className="text-xs text-neutral-400 mt-1">
+                            Only people with the link can find it. Kept off the public calendar,
+                            the feeds and calendar subscriptions, the Discord digest, the
+                            group pages and search engines. RSVP still works. Not a password:
+                            anyone you forward the link to can open it.
+                          </p>
+                        </div>
+                      </label>
                       <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-neutral-800 bg-neutral-900/95 px-6 py-4 backdrop-blur">
                         <button
                           type="button"
@@ -5124,6 +5198,11 @@ export default function AdminPage() {
                               <tr className="border-b border-neutral-800">
                                 <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Name</th>
                                 <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                                {eventRsvps.some(r => r.question) && (
+                                  <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider" title={eventRsvps.find(r => r.question)?.question}>
+                                    {eventRsvps.find(r => r.question)?.question}
+                                  </th>
+                                )}
                                 <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Newsletter</th>
                                 <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Registered</th>
                                 {hasAdminAccess(adminRole) && (
@@ -5136,6 +5215,9 @@ export default function AdminPage() {
                                 <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
                                   <td className="py-2 px-4 text-sm font-semibold text-white whitespace-nowrap">{rsvp.firstName} {rsvp.lastName}</td>
                                   <td className="py-2 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">{rsvp.email}</td>
+                                  {eventRsvps.some(r => r.question) && (
+                                    <td className="py-2 px-4 text-sm text-neutral-300 max-w-xs">{rsvp.answer || <span className="text-neutral-400">—</span>}</td>
+                                  )}
                                   <td className="py-2 px-4 whitespace-nowrap">
                                     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
                                       rsvp.joinNewsletter

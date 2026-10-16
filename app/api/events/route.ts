@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
+import { isListed } from '@/lib/event-visibility';
 
 // Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
@@ -32,11 +33,43 @@ async function buildPartnerLookup(db: FirebaseFirestore.Firestore) {
   return lookup;
 }
 
+/**
+ * The RSVP form's custom question, normalized for storage. Cleared whenever the
+ * DEVSA form is off — a question with no form to ask it on would still show in
+ * the admin and the export.
+ */
+function rsvpQuestionFields(rsvpEnabled: unknown, question: unknown, required: unknown) {
+  const text = rsvpEnabled === true && typeof question === 'string' ? question.trim().slice(0, 200) : '';
+  return {
+    rsvpQuestion: text || null,
+    rsvpQuestionRequired: text ? required === true : false,
+  };
+}
+
 // Get all events
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
-    const includeAll = request.nextUrl.searchParams.get('includeAll') === 'true';
+    /*
+     * includeAll is the admin dashboard's read: drafts and link-only events
+     * included. It was honored for anyone who added it to the URL, which put
+     * every draft on the open internet and would have listed every link-only
+     * event too. It now needs a signed-in admin or organizer, as writes do.
+     */
+    let includeAll = false;
+    if (request.nextUrl.searchParams.get('includeAll') === 'true') {
+      const email = await verifiedEmail(request);
+      const admin = email
+        ? await db.collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get()
+        : null;
+      if (!admin || admin.empty) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      includeAll = true;
+    }
+    // One event by its slug: the event page's read. Link-only events answer
+    // here, because having the link is the whole of the permission.
+    const slug = request.nextUrl.searchParams.get('slug');
     
     // Build merged community lookup (static + Firestore)
     const communityLookup = await buildCommunityLookup(db);
@@ -47,6 +80,13 @@ export async function GET(request: NextRequest) {
     let eventsSnapshot;
     if (includeAll) {
       eventsSnapshot = await db.collection(COLLECTIONS.EVENTS).get();
+    } else if (slug) {
+      eventsSnapshot = await db
+        .collection(COLLECTIONS.EVENTS)
+        .where('slug', '==', slug)
+        .where('status', '==', 'published')
+        .limit(1)
+        .get();
     } else {
       eventsSnapshot = await db
         .collection(COLLECTIONS.EVENTS)
@@ -54,7 +94,12 @@ export async function GET(request: NextRequest) {
         .get();
     }
 
-    const firestoreEvents = eventsSnapshot.docs.map(doc => {
+    // The public list leaves link-only events out; see lib/event-visibility.ts.
+    const docs = includeAll || slug
+      ? eventsSnapshot.docs
+      : eventsSnapshot.docs.filter(doc => isListed(doc.data()));
+
+    const firestoreEvents = docs.map(doc => {
       const data = doc.data();
       // Support comma-separated communityIds for collaborative events
       const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);
@@ -115,7 +160,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired } = body;
     const organizerEmail = await verifiedEmail(request);
 
     // An event needs at least one host — a community, a partner, or both
@@ -178,6 +223,8 @@ export async function POST(request: NextRequest) {
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
       isOfficial: isOfficial || false,
+      unlisted: unlisted === true,
+      ...rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired),
       brand: brand || null,
       detailsUrl: detailsUrl || null,
       externalRsvpUrl: body.externalRsvpUrl || null,
@@ -207,7 +254,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired } = body;
     const organizerEmail = await verifiedEmail(request);
 
     if (!eventId || !organizerEmail) {
@@ -278,6 +325,8 @@ export async function PUT(request: NextRequest) {
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
+    if (typeof unlisted === 'boolean') updateData.unlisted = unlisted;
+    if (typeof rsvpEnabled === 'boolean') Object.assign(updateData, rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired));
     if (brand !== undefined) updateData.brand = brand || null;
     if (detailsUrl !== undefined) updateData.detailsUrl = detailsUrl || null;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;

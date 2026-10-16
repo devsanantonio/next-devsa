@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { isListed } from '@/lib/event-visibility';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 
@@ -63,7 +64,9 @@ export async function GET() {
       .get();
 
     const now = new Date();
+    // Link-only events never reach a subscriber's calendar.
     const events = snapshot.docs
+      .filter(doc => isListed(doc.data()))
       .map(doc => {
         const data = doc.data();
         const communityIds = (data.communityId || '').split(',').map((id: string) => id.trim()).filter(Boolean);

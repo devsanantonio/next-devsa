@@ -49,6 +49,7 @@ async function getEventBySlug(slug: string) {
         // and DEVSA's own events say so.
         partnerId: data.partnerId,
         isOfficial: data.isOfficial === true,
+        unlisted: data.unlisted === true,
         // The admin's own label, without the "DEVSA Community" default above,
         // so a host-less event is never described as hosted by DEVSA.
         storedCommunityName: data.communityName || null,
@@ -122,6 +123,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: titleWithHost,
       description,
+      // Link only: the page works for anyone holding the link, and asks search
+      // engines to leave it out. See lib/event-visibility.ts.
+      ...(event.unlisted ? { robots: { index: false, follow: false } } : {}),
       openGraph: {
         title: event.title,
         description,
@@ -303,7 +307,9 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <>
-      {event && (
+      {/* No rich result for a link-only event: it would advertise what the
+          noindex above is keeping out of search. */}
+      {event && !event.unlisted && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

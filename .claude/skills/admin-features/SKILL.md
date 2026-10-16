@@ -32,7 +32,7 @@ Eleven, not the five an earlier version of this skill listed. `Tab` is a union n
 | `volunteers` | Volunteers | all roles, scoped |
 | `access` | Access Requests | `hasAdminAccess` |
 | `admins` | Manage Admins | `hasAdminAccess` |
-| `demoday` | Confluencia (legacy: its page and form left the site 2026-10-13; holds earlier inquiries only) | `hasAdminAccess` |
+| `demoday` | Confluencia (legacy: its page and form left the site 2026-10-13; holds earlier inquiries only). Removed from the sidebar and the notifications on 2026-10-16; still reachable at `?tab=demoday` | `hasAdminAccess` |
 | `getinvolved` | Get Involved | `hasAdminAccess` |
 
 The active tab syncs to a `?tab=` query param. Organizers land on `communities`, everyone else on `events`.
@@ -84,6 +84,8 @@ Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, ne
 ## Event fields that gate each other
 
 The event drawer's fields, in order: Community (multi-select), Partners (optional co-hosts), **Official DEVSA event**, Event Title, Date, Start/End Time, Venue, Address, Event Format, Description, Registration, Status.
+
+Two later additions. **Registration** carries an optional custom question (`rsvpQuestion`, plus `rsvpQuestionRequired`) that only mounts while the devsa.community RSVP form is selected; the API clears both whenever `rsvpEnabled` is false, and each RSVP stores the question's wording with its `answer`. **Link only (private)** (`unlisted`) sits under Status; every listing surface filters through `isListed()` in `lib/event-visibility.ts`, so a new surface that lists events must call it too.
 
 `isOfficial` is the hinge. **Activation branding** (`brand`) and **External details link** (`detailsUrl`) only mount while it is ticked, because neither means anything on an event DEVSA merely listed. Unticking clears both, and the submit handler derives both from the flag rather than from field state, so a record cannot end up branded-but-unofficial. If you add another field that only applies to DEVSA's own events, put it inside that same conditional and clear it the same way.
 
