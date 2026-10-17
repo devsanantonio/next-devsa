@@ -51,6 +51,14 @@ const nextConfig: NextConfig = {
       // on the donation form, the nearest thing to what a shopper came to do.
       { source: "/shop", destination: "/buildingtogether#donate", permanent: true },
       { source: "/shop/:path*", destination: "/buildingtogether#donate", permanent: true },
+      // The Get Involved form's short link, on every spotlight end card and the
+      // YouTube channel. It was a page that called permanentRedirect(), which
+      // fires after streaming has begun and so lands as a client-side
+      // navigation: the URL arrived at #get-involved but the browser never
+      // scrolled to it, leaving people at the top of /buildingtogether. A real
+      // 308 lets the browser handle the fragment. ?path= and ?way= pass
+      // through, as the page used to carry them.
+      { source: "/get-involved", destination: "/buildingtogether#get-involved", permanent: true },
     ];
   },
 };

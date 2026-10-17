@@ -12,6 +12,7 @@ import { PartnerCta } from "@/components/partners/partner-cta"
 import { PartnerWays } from "@/components/partners/partner-ways"
 import { PARTNER_WAY_KEYS, type GetInvolvedPath } from "@/lib/get-involved"
 import { DonationCta } from "@/components/partners/donation-cta"
+import { ScrollToHash } from "@/components/scroll-to-hash"
 import { toCampaignKey } from "@/lib/campaigns"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -150,6 +151,9 @@ export default async function GroupsPage({
         }}
       />
       <main className="min-h-screen bg-black">
+      {/* #get-involved and #donate render after the browser has looked for
+          them; see the component. */}
+      <ScrollToHash />
       <GroupsHero communityCount={communities.length} />
       <LogoShowcase logos={logos} />
       {/* Between the gap and the ask. The hero states the problem and the
