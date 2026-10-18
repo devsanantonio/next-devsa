@@ -4,8 +4,9 @@
  * This file existed before with four webhooks in it: jobs, events, news and
  * YouTube. It went out whole when the bounty board and the digest crons were
  * removed in 63c9b61. Only the events half is back, so the jobs, news and
- * YouTube senders are deliberately not restored — nothing posts to Discord now
- * except the Monday calendar.
+ * YouTube senders are deliberately not restored. The only other thing that
+ * posts is the weekday prompts (/api/discord/prompts, lib/discord-prompts.ts),
+ * which carry their own webhooks.
  *
  * Fails soft. With no webhook configured `shareWeeklyDigestToDiscord` returns
  * without doing anything rather than throwing, so the site runs locally on a
