@@ -184,6 +184,8 @@ interface CalendarEvent {
   rsvpQuestionRequired?: boolean
   isOfficial?: boolean
   unlisted?: boolean
+  /** Addresses this event used before; its page redirects from them. */
+  slugHistory?: string[]
   brand?: string
   detailsUrl?: string
 }
@@ -230,6 +232,8 @@ interface EventRSVP {
   answer?: string
   submittedAt: string
 }
+
+import { defaultSlugPreview, invalidCustomSlug } from "@/lib/event-slug-shared"
 
 /** A host field's ids: a collab stores several as one comma-separated string. */
 const hostIds = (stored?: string | null) =>
@@ -1017,6 +1021,9 @@ export default function AdminPage() {
         body: JSON.stringify({
           ...(isCreate ? {} : { eventId: editingEvent.id }),
           title: editingEvent.title,
+          // The organizer's own address, if they set one; blank means the
+          // readable default. On an edit, an unchanged slug is ignored.
+          ...(editingEvent.slug?.trim() ? { slug: editingEvent.slug.trim().toLowerCase() } : {}),
           date: editingEvent.date,
           endTime: editingEvent.endTime,
           venue: editingEvent.venue || '',
@@ -2354,7 +2361,7 @@ export default function AdminPage() {
                         {communities.map(c => {
                           const count = newsletter.filter(sub => {
                             const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
-                            const ev = slug ? events.find(e => e.slug === slug) : null
+                            const ev = slug ? events.find(e => e.slug === slug || e.slugHistory?.includes(slug)) : null
                             return ev?.communityId === c.id
                           }).length
                           return (
@@ -2390,7 +2397,7 @@ export default function AdminPage() {
                           Uncategorized
                           <span className="ml-auto text-xs text-neutral-500">{newsletter.filter(sub => {
                             const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
-                            const ev = slug ? events.find(e => e.slug === slug) : null
+                            const ev = slug ? events.find(e => e.slug === slug || e.slugHistory?.includes(slug)) : null
                             return !ev && sub.source !== "luma-calendar"
                           }).length}</span>
                         </button>
@@ -2404,7 +2411,7 @@ export default function AdminPage() {
                 const q = newsletterSearch.trim().toLowerCase()
                 const describe = (sub: NewsletterSubscription) => {
                   const slug = sub.source?.startsWith('event-rsvp:') ? sub.source.replace('event-rsvp:', '') : null
-                  const event = slug ? events.find(e => e.slug === slug) : null
+                  const event = slug ? events.find(e => e.slug === slug || e.slugHistory?.includes(slug)) : null
                   const community = event ? communities.find(c => c.id === event.communityId) : null
                   const origin = event?.title || (sub.source === "luma-calendar" ? "Luma calendar subscriber" : sub.source || "Direct signup")
                   return { event, community, origin }
@@ -3721,6 +3728,56 @@ export default function AdminPage() {
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
+                      {/* The event's address. Blank on a new event means the
+                          readable default (lib/event-slug.ts), previewed in the
+                          placeholder. Changing an existing one keeps the old
+                          address redirecting. */}
+                      {(() => {
+                        const original = editingEvent.id ? events.find((e) => e.id === editingEvent.id)?.slug : undefined
+                        const typed = (editingEvent.slug || "").trim().toLowerCase()
+                        const preview = editingEvent.unlisted
+                          ? `${defaultSlugPreview(editingEvent.title, "")}-random-code`
+                          : defaultSlugPreview(editingEvent.title, editingEvent.date)
+                        const problem = typed && typed !== original ? invalidCustomSlug(typed) : null
+                        return (
+                          <div>
+                            <label htmlFor="eventSlug" className="block text-sm font-semibold text-neutral-300 mb-2">
+                              Event address {!editingEvent.id && <span className="font-normal text-neutral-400">(optional)</span>}
+                            </label>
+                            <div className="flex items-center rounded-xl border border-neutral-700 bg-neutral-800 focus-within:border-[#ef426f] focus-within:ring-2 focus-within:ring-[#ef426f]/20">
+                              <span className="pl-4 text-sm text-neutral-400 whitespace-nowrap">devsa.community/events/</span>
+                              <input
+                                id="eventSlug"
+                                type="text"
+                                maxLength={80}
+                                value={editingEvent.slug || ""}
+                                onChange={(e) => setEditingEvent({ ...editingEvent, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
+                                placeholder={editingEvent.id ? "" : preview}
+                                className="w-full min-w-0 bg-transparent py-3 pr-4 text-sm text-white placeholder:text-neutral-500 focus:outline-none"
+                              />
+                            </div>
+                            {problem ? (
+                              <p className="mt-2 text-xs text-red-400">{problem}</p>
+                            ) : editingEvent.id && typed && original && typed !== original ? (
+                              <p className="mt-2 text-xs text-amber-300">
+                                The old address, /events/{original}, will keep working and redirect here.
+                              </p>
+                            ) : editingEvent.unlisted && typed && typed !== original ? (
+                              <p className="mt-2 text-xs text-amber-300">
+                                A readable address on a link-only event is easy to guess. Leave it blank to keep a random code.
+                              </p>
+                            ) : (
+                              <p className="mt-2 text-xs text-neutral-400">
+                                {editingEvent.id
+                                  ? "Change it only if you need to; the old address will redirect."
+                                  : editingEvent.unlisted
+                                    ? "Leave blank: link-only events get a random code, so the address can't be guessed."
+                                    : "Leave blank for the address shown, or type your own, like organizer-roundtable."}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })()}
                       {/* Date and Time - using separate fields for accuracy */}
                       <div className="grid grid-cols-3 gap-3">
                         <div>
@@ -5137,7 +5194,8 @@ export default function AdminPage() {
                 const totalRsvps = filteredRsvps.length
                 const optedIn = filteredRsvps.filter(r => r.joinNewsletter).length
                 const optInRate = totalRsvps > 0 ? Math.round((optedIn / totalRsvps) * 100) : 0
-                const eventCount = new Set(filteredRsvps.map(r => r.eventSlug)).size
+                // By id: an event whose address changed keeps one count and one group.
+                const eventCount = new Set(filteredRsvps.map(r => r.eventId || r.eventSlug)).size
                 // Each group counted once, whether it hosted alone or in a collab.
                 const communityCount = new Set(filteredRsvps.flatMap(r => hostIds(r.communityId))).size
 
@@ -5151,7 +5209,8 @@ export default function AdminPage() {
 
                 // Group by event
                 const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
-                  if (!acc[rsvp.eventSlug]) {
+                  const key = rsvp.eventId || rsvp.eventSlug
+                  if (!acc[key]) {
                     const event = events.find(e => e.id === rsvp.eventId)
                     /*
                      * Every host, by name. This looked up one community by the
@@ -5167,7 +5226,7 @@ export default function AdminPage() {
                     const partnerNames = hostIds(event?.partnerId)
                       .map(id => partners.find(p => p.id === id)?.name || id)
                     const hostNames = [...(event?.isOfficial ? ['DEVSA'] : []), ...groupNames, ...partnerNames]
-                    acc[rsvp.eventSlug] = {
+                    acc[key] = {
                       eventTitle: event?.title || rsvp.eventSlug,
                       communityName: hostNames.length ? hostNames.join(' + ') : 'Unknown',
                       // For ordering: the event's own date (0 if the event is gone).
@@ -5175,7 +5234,7 @@ export default function AdminPage() {
                       rsvps: []
                     }
                   }
-                  acc[rsvp.eventSlug].rsvps.push(rsvp)
+                  acc[key].rsvps.push(rsvp)
                   return acc
                 }, {} as Record<string, { eventTitle: string; communityName: string; sortAt: number; rsvps: EventRSVP[] }>)
 

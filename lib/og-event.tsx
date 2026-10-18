@@ -127,12 +127,24 @@ async function hostLogo(host: Host): Promise<{ src: string; color: string | null
 export async function getEventBySlug(slug: string) {
   try {
     const db = getDb()
-    const snap = await db
+    let snap = await db
       .collection(COLLECTIONS.EVENTS)
       .where("slug", "==", slug)
       .where("status", "==", "published")
       .limit(1)
       .get()
+    // An address the event used to have (lib/event-slug.ts): a card shared
+    // before the address changed still draws.
+    // array-contains alone, status checked here: the pair would need a composite index.
+    if (snap.empty) {
+      const old = await db
+        .collection(COLLECTIONS.EVENTS)
+        .where("slugHistory", "array-contains", slug)
+        .limit(5)
+        .get()
+      const docs = old.docs.filter((d) => d.data().status === "published")
+      snap = { empty: docs.length === 0, docs } as unknown as typeof snap
+    }
 
     if (!snap.empty) {
       const data = snap.docs[0].data()

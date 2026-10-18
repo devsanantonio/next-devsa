@@ -362,6 +362,8 @@ export interface Event {
    * lib/event-visibility.ts, which every listing surface goes through.
    */
   unlisted?: boolean;
+  /** Addresses this event used before; the event page redirects from them. See lib/event-slug.ts. */
+  slugHistory?: string[];
   /**
    * One question of the organizer's own on the DEVSA RSVP form — Luma's custom
    * registration question. Only means anything while rsvpEnabled; null when unset.

@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { EventPageClient } from "./event-page-client"
 import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -11,12 +11,25 @@ async function getEventBySlug(slug: string) {
   // Query Firestore directly (avoids self-referencing fetch on Vercel)
   try {
     const db = getDb()
-    const snapshot = await db
+    let snapshot = await db
       .collection(COLLECTIONS.EVENTS)
       .where('slug', '==', slug)
       .where('status', '==', 'published')
       .limit(1)
       .get()
+    // An address the event used to have (lib/event-slug.ts). The page then
+    // redirects to the current one, so a link shared before the change works.
+    // array-contains alone, with status checked here: pairing it with the
+    // status filter would need a composite index this project does not have.
+    if (snapshot.empty) {
+      const old = await db
+        .collection(COLLECTIONS.EVENTS)
+        .where('slugHistory', 'array-contains', slug)
+        .limit(5)
+        .get()
+      const docs = old.docs.filter((d) => d.data().status === 'published')
+      snapshot = { empty: docs.length === 0, docs } as unknown as typeof snapshot
+    }
 
     if (!snapshot.empty) {
       const doc = snapshot.docs[0]
@@ -132,11 +145,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: event.title,
         description,
-        url: `${siteUrl}/events/${slug}`,
+        url: `${siteUrl}/events/${event.slug}`,
         siteName: "DEVSA",
         images: [
           {
-            url: `${siteUrl}/api/og/event/${slug}`,
+            url: `${siteUrl}/api/og/event/${event.slug}`,
             width: 1200,
             height: 630,
             alt: `${event.title}, hosted by ${hosts}`,
@@ -148,7 +161,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: "summary_large_image",
         title: titleWithHost,
         description,
-        images: [`${siteUrl}/api/og/event/${slug}`],
+        images: [`${siteUrl}/api/og/event/${event.slug}`],
       },
     }
   }
@@ -307,6 +320,8 @@ export default async function EventPage({ params }: PageProps) {
   // event URL stayed indexable forever. The record is already fetched here for
   // the metadata, so the check costs nothing.
   if (!event) notFound()
+  // Reached by an old address: send the reader to the current one.
+  if (event.slug !== slug) permanentRedirect(`/events/${event.slug}`)
 
   return (
     <>

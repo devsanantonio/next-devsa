@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
+import { FieldValue } from 'firebase-admin/firestore';
+import { defaultEventSlug, invalidCustomSlug, slugTaken } from '@/lib/event-slug';
 
 // Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
@@ -201,12 +203,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      + '-' + Date.now().toString(36);
+    // The address: the organizer's own if given, else a readable default.
+    // See lib/event-slug.ts.
+    let slug: string;
+    const customSlug = typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
+    if (customSlug) {
+      const problem = invalidCustomSlug(customSlug);
+      if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+      if (await slugTaken(db, customSlug)) {
+        return NextResponse.json({ error: `devsa.community/events/${customSlug} is already taken. Try another.` }, { status: 409 });
+      }
+      slug = customSlug;
+    } else {
+      slug = await defaultEventSlug(db, { title, date, unlisted: unlisted === true });
+    }
 
     const event: Event = {
       title,
@@ -336,6 +346,19 @@ export async function PUT(request: NextRequest) {
     if (typeof communityId === 'string') updateData.communityId = communityId;
     if (typeof communityName === 'string') updateData.communityName = communityName;
     if (typeof partnerId === 'string') updateData.partnerId = partnerId;
+
+    // A new address. The old one goes into slugHistory, which the event page
+    // redirects from, so links already shared keep working.
+    const newSlug = typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
+    if (newSlug && newSlug !== eventData?.slug) {
+      const problem = invalidCustomSlug(newSlug);
+      if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+      if (await slugTaken(db, newSlug, eventId)) {
+        return NextResponse.json({ error: `devsa.community/events/${newSlug} is already taken. Try another.` }, { status: 409 });
+      }
+      updateData.slug = newSlug;
+      if (eventData?.slug) updateData.slugHistory = FieldValue.arrayUnion(eventData.slug);
+    }
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
 
