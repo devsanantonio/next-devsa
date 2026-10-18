@@ -373,7 +373,7 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
             <div>
               <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mb-5">Stay Connected</h3>
               <ul className="space-y-3.5">
-                <li><Link href="https://discord.gg/cvHHzThrEw" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Discord</Link></li>
+                <li><Link href="/discord" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Discord</Link></li>
                 <li><Link href="https://linkedin.com/company/devsa" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">LinkedIn</Link></li>
                 <li><Link href="https://instagram.com/devsatx" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Instagram</Link></li>
                 <li><Link href="https://twitter.com/devsatx" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Twitter (X)</Link></li>

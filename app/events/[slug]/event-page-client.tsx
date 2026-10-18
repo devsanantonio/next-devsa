@@ -89,7 +89,7 @@ const DEVSA_HOST: EventHost = {
 } as EventHost
 
 // DEVSA Discord - all community organizers are in this server
-const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
+const DEVSA_DISCORD = "/discord"
 
 // Simple markdown renderer for event descriptions
 function renderMarkdown(text: string) {

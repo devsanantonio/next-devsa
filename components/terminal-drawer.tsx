@@ -145,7 +145,7 @@ export function TerminalDrawer({
                 </p>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <a
-                    href="https://discord.gg/cvHHzThrEw"
+                    href="/discord"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Discord"

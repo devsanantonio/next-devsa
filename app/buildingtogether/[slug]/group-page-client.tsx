@@ -27,7 +27,7 @@ import {
 } from "@/components/icons/social-icons"
 
 // DEVSA Discord - all community organizers are in this server
-const DEVSA_DISCORD = "https://discord.gg/cvHHzThrEw"
+const DEVSA_DISCORD = "/discord"
 
 // Social icons
 function MeetupIcon({ className }: { className?: string }) {

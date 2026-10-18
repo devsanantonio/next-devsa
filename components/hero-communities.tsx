@@ -124,7 +124,7 @@ export function HeroCommunities() {
                 </p>
                 <div className="flex items-center gap-3 lg:gap-4 flex-wrap">
                   <a
-                    href="https://discord.gg/cvHHzThrEw"
+                    href="/discord"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 transition-all duration-200 hover:bg-gray-100 hover:border-gray-200"

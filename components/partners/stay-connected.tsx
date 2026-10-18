@@ -20,7 +20,7 @@ const SUBSCRIBE = [
     href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(ICAL_URL)}&name=${encodeURIComponent("DEVSA Community Events")}`,
   },
 ]
-const DISCORD_URL = "https://discord.gg/cvHHzThrEw"
+const DISCORD_URL = "/discord"
 
 /**
  * Stay Connected: the section for one person on /buildingtogether.

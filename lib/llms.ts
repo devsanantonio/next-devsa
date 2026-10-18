@@ -58,7 +58,7 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 - Partner with DEVSA or ask a question: ${SITE}/buildingtogether#get-involved
 - Donate (a 501(c)(3); donors receive an emailed receipt): ${SITE}/buildingtogether#donate
 - Subscribe to the calendar: ${SITE}/events
-- Join the Discord: https://discord.gg/cvHHzThrEw`)
+- Join the Discord: ${SITE}/discord`)
 
   sections.push(`## Facts
 

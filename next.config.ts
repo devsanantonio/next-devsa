@@ -59,6 +59,12 @@ const nextConfig: NextConfig = {
       // 308 lets the browser handle the fragment. ?path= and ?way= pass
       // through, as the page used to carry them.
       { source: "/get-involved", destination: "/buildingtogether#get-involved", permanent: true },
+      // DEVSA's Discord, at an address people can remember and that outlives any
+      // one invite. The invite is Jesse's and never expires, but if it is ever
+      // replaced (or a vanity discord.gg/devsa arrives with more boosts), this is
+      // the only line that changes. Temporary on purpose: browsers cache a
+      // permanent redirect, which would pin them to the old invite.
+      { source: "/discord", destination: "https://discord.gg/cvHHzThrEw", permanent: false },
     ];
   },
 };
