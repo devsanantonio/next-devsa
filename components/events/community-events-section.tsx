@@ -759,6 +759,9 @@ export function CommunityEventsSection({
    * A slot rather than an import, because what is featured rotates — it was
    * PySanAntonio, it is Startup + Tech Week — and the calendar should not have
    * to know which. The page decides; this decides where.
+   *
+   * Expects a slim strip (about 70px), shown under Subscribe at every width.
+   * A full card here would push the calendar a screen down; see the band.
    */
   featured?: React.ReactNode
 }) {
@@ -1009,38 +1012,27 @@ export function CommunityEventsSection({
           The asset stays at /photos/events-hero.webp. It is a good frame and
           nothing else uses it; if a photograph is ever wanted back here, that
           is the one, and the scrim it needs is in this file's history. */}
-      {/* Takes the viewport from lg.
+      {/* One column at every width, with the featured event as a strip
+          under Subscribe.
 
-          A sliver of the list showing under the band read as an accident
-          rather than as an invitation to scroll, which is what a partial
-          reveal always reads as unless it is unmistakably deliberate.
+          It was two columns from lg — the statement on the left, the featured
+          card on the right — and the band took the viewport (min-h-dvh), on
+          the argument that headline, verticals, Subscribe and a 430px card
+          were a screenful of content. On a phone the same pair stacked and
+          split the first screen, neither winning; the strip fixed that, and
+          read better than the two-column layout on a laptop and a large
+          monitor too, so it is the only form now.
 
-          This would be the wrong call for a band that was only a statement —
-          on a page people open to find out what is on tonight, a screen of
-          promo before the first event is a real cost, and that is the argument
-          this band was built short to respect. What changed is what is in it:
-          the headline, the verticals, Subscribe and the featured event itself.
-          That is a screenful of content, so taking the screen is honest.
-
-          A minimum, not a height. Where the content already exceeds the
-          viewport — a laptop, a phone, any narrow window — it does nothing,
-          and justify-center keeps the pair centered in whatever it gets. */}
-      <div
-        className="relative flex flex-col justify-center bg-[#0a0a0a] lg:min-h-dvh"
-        data-bg-type="dark"
-      >
-        {/* Two columns from lg: the page's statement, and what is featured.
-
-            These were two stacked full-width bands — a photo band about 480px
-            tall and the featured event about 430 — so the page made two
-            promotional statements, roughly 900px of them, before showing a
-            single event. Each was defensible alone and together they delayed
-            the thing people came for.
-
-            Side by side it is one opening band instead of two, the featured
-            event reads as part of the masthead rather than as a second
-            interruption, and the calendar starts a screen earlier. */}
-        <div className="page-shell relative grid items-center gap-10 py-16 md:py-20 lg:grid-cols-[1fr_minmax(0,0.9fr)] lg:gap-12 lg:py-20 xl:gap-16">
+          Without the card the band is short, so it no longer claims the
+          screen. The worry that kept min-h-dvh — a sliver of the list under
+          the band reading as an accident — does not apply at this height: on
+          a MacBook Air the calendar takes the lower third of the first screen,
+          unmistakably a second section rather than a sliver. */}
+      <div className="relative bg-[#0a0a0a]" data-bg-type="dark">
+        {/* A little more room from 2xl, where a large monitor left the band
+            looking pressed: still short enough that the calendar shows below
+            it in the first screen. Laptops keep md:py-20. */}
+        <div className="page-shell relative py-16 md:py-20 2xl:py-28">
           <div>
           <div className="space-y-4">
             <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
@@ -1145,15 +1137,12 @@ export function CommunityEventsSection({
               </Link>
             </div>
 
-
+            {/* The featured slot, under Subscribe. Still a slot — the
+                calendar does not know what is in it, the page decides — and
+                capped so a strip does not stretch across a wide monitor. */}
+            {featured && <div className="max-w-xl pt-4">{featured}</div>}
           </div>
           </div>
-
-          {/* The featured slot, in the band rather than below it. Still a slot
-              — the calendar does not know what is in it, the page decides —
-              and still after the headline in the reading order, just beside it
-              rather than under. */}
-          {featured && <div className="min-w-0">{featured}</div>}
         </div>
       </div>
 

@@ -81,7 +81,8 @@ const TXLF = {
  * scrolling past November 6 and 7 sees one identical card twice and reads it
  * as a bug rather than as a two-day festival.
  */
-export function FeaturedTxlf({ day }: { day?: 1 | 2 } = {}) {
+export function FeaturedTxlf({ day, variant }: { day?: 1 | 2; variant?: "strip" } = {}) {
+  if (variant === "strip") return <FeaturedTxlfStrip />
   const inList = day !== undefined
   const label = inList ? `Day ${day} of 2` : "Featured Event"
   const dateLabel = inList
@@ -192,5 +193,60 @@ export function FeaturedTxlf({ day }: { day?: 1 | 2 } = {}) {
         </Link>
       </div>
     </section>
+  )
+}
+
+/**
+ * The featured-slot form: one tappable row, about 70px, under the calendar's
+ * Subscribe button at every width. The full card above is 430px; beside the
+ * headline it split a laptop's band in two, and stacked on a phone it took half
+ * the first screen. This keeps the event in view without competing. The full
+ * card still renders in the list, on the festival's two days.
+ *
+ * Same colors and the same "$ Featured Event" label, so it reads as the same
+ * thing at a smaller size. The whole strip is the link — a target this small
+ * should not make the reader find the hot spot. The partnership line is left
+ * to the full card and the list entries on November 6 and 7.
+ */
+function FeaturedTxlfStrip() {
+  return (
+    <Link
+      href={TXLF.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-4 rounded-2xl p-3 pr-4 transition-opacity duration-200 hover:opacity-90"
+      style={{ backgroundColor: TXLF_NAVY }}
+      data-bg-type="dark"
+    >
+      <Image
+        src="/txlf/badge.webp"
+        alt="Texas Linux Fest"
+        width={480}
+        height={480}
+        className="h-12 w-12 shrink-0"
+      />
+      <span className="min-w-0 flex-1">
+        <span
+          className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest"
+          style={{ color: TXLF_ORANGE }}
+        >
+          <span aria-hidden>$</span>
+          Featured Event
+        </span>
+        <span
+          className="mt-0.5 block truncate text-[15px] font-black tracking-[-0.01em]"
+          style={{ color: TXLF_PAPER }}
+        >
+          {TXLF.name}
+        </span>
+        <span className="block truncate text-[13px]" style={{ color: `${TXLF_PAPER}cc` }}>
+          Nov 6–7 · {TXLF.location}
+        </span>
+      </span>
+      <ArrowUpRight
+        className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        style={{ color: TXLF_ORANGE }}
+      />
+    </Link>
   )
 }

@@ -143,7 +143,7 @@ export default async function EventsPage() {
       <main className="min-h-screen bg-white text-gray-900">
         <CommunityEventsSection
           communityCount={communityCount}
-          featured={<FeaturedTxlf />}
+          featured={<FeaturedTxlf variant="strip" />}
         />
         {/* What DEVSA runs.
         
