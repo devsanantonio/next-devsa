@@ -6,6 +6,7 @@ import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 import Image from "next/image"
 import Link from "next/link"
 import { MobileLogoTile } from "@/components/partners/mobile-logo-tile"
+import { CommunityNetwork } from "@/components/community-network"
 import { Loader2, ArrowUpRight } from "lucide-react"
 
 type LogoType = "community" | "partner"
@@ -112,34 +113,28 @@ function LogoTile({ logo }: { logo: LogoItem }) {
   )
 }
 
-/* Desktop — a uniform grid of logo tiles */
-function LogoGroup({ logos }: { logos: LogoItem[] }) {
-  if (logos.length === 0) return null
-  return (
-    <div className="grid grid-cols-3 gap-x-4 gap-y-8 sm:grid-cols-4">
-      {logos.map((logo) => (
-        <LogoTile key={`${logo.type}-${logo.id}`} logo={logo} />
-      ))}
-    </div>
-  )
-}
-
 /**
- * How many marks this wall shows, out of roughly forty.
+ * The partners this section names, in this order.
  *
- * It used to render every community and every partner — the same complete set
- * /buildingtogether renders. Two full directories meant somebody could scroll
- * the whole wall here, press the button beneath it, and arrive at the same
- * forty logos under a different headline, which made the second page feel like
- * one that had failed to load anything new.
+ * It showed the first six partners in display order, a sample. Now it names
+ * the partnerships DEVSA most wants seen: PyTexas (PySanAntonio), BSides,
+ * Geekdom (where the events happen), learnOPENtech, Texas Linux Fest, Tech
+ * Bloc, Youth Code Jam and The Creative Futures.
  *
- * So this one is a sample and /buildingtogether is the index. The numbers are
- * chosen to fill the grid at every breakpoint — three, four and five columns
- * all divide cleanly enough to avoid a ragged last row — while leaving the
- * visit to the full list still worth making.
+ * Ids rather than records, and still read from /api/partners: a partner
+ * deleted in the admin drops out of this row on the next load, and the full
+ * list stays on Building Together.
  */
-const TEASER_COMMUNITIES = 12
-const TEASER_PARTNERS = 6
+const SPOTLIGHT_PARTNER_IDS = [
+  "pytexas",
+  "bsides",
+  "geekdom",
+  "learnopentech",
+  "txlf",
+  "tech-bloc",
+  "youth-code-jam",
+  "the-creative-futures",
+]
 
 export function EcosystemShowcase() {
   const [communities, setCommunities] = useState<LogoItem[]>([])
@@ -169,20 +164,12 @@ export function EcosystemShowcase() {
     fetchData()
   }, [])
 
-  const shownCommunities = useMemo(
-    () => communities.slice(0, TEASER_COMMUNITIES),
-    [communities]
-  )
-  const shownPartners = useMemo(
-    () => partnerLogos.slice(0, TEASER_PARTNERS),
+  const spotlightPartners = useMemo(
+    () =>
+      SPOTLIGHT_PARTNER_IDS.map((id) => partnerLogos.find((p) => p.id === id)).filter(
+        (p): p is LogoItem => !!p
+      ),
     [partnerLogos]
-  )
-  // Phones get a shorter sample than the desktop grid's eighteen: four rows
-  // of three, groups then partners in the same order. The Building Together
-  // button under it is the way to see the rest.
-  const mobileLogos = useMemo(
-    () => [...shownCommunities.slice(0, 9), ...shownPartners.slice(0, 3)],
-    [shownCommunities, shownPartners]
   )
 
   return (
@@ -203,7 +190,9 @@ export function EcosystemShowcase() {
             className="mb-10 md:mb-14 lg:mb-0 lg:order-1 lg:sticky lg:top-28 lg:self-start space-y-8"
           >
             <div className="space-y-4">
-              <p className="text-sm md:text-base font-semibold text-gray-400 uppercase tracking-[0.2em]">
+              {/* gray-500: gray-400 measured 2.5:1 on white, under the 4.5:1
+                  floor for text this size; gray-500 is 4.8:1. */}
+              <p className="text-sm md:text-base font-semibold text-gray-500 uppercase tracking-[0.2em]">
                 Who&apos;s Building Here
               </p>
               <h2 className="text-balance font-sans text-gray-900 leading-none text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.03em]">
@@ -225,9 +214,9 @@ export function EcosystemShowcase() {
                 .
               </p>
               <p className="text-base text-gray-500 leading-relaxed">
-                A sample of them below. Tap any logo for that group&apos;s
-                mission and upcoming events, or see every one of them on
-                Building Together.
+                Every community group on the calendar, connected, and the
+                partners DEVSA builds with. Tap any one for its mission and
+                upcoming events, or see them all on Building Together.
               </p>
             </div>
 
@@ -258,20 +247,35 @@ export function EcosystemShowcase() {
               </div>
             ) : (
               <>
-                {/* Tablet & desktop: uniform grids (communities, then partners) */}
-                <div className="hidden md:block space-y-8">
-                  <LogoGroup logos={shownCommunities} />
-                  <LogoGroup logos={shownPartners} />
+                {/* Every group, connected through DEVSA — the same drawing as
+                    the LinkedIn banner and the posters. It replaced a sample
+                    grid of twelve community logos; now all of them show, as
+                    one network, each linking to its page. Dark panel because
+                    the network is drawn for a black ground. */}
+                <div className="rounded-2xl bg-[#0a0a0a] p-3 sm:p-5" data-bg-type="dark">
+                  <CommunityNetwork communities={communities} className="w-full" />
                 </div>
 
-                {/* Mobile: a still logo grid, the same tiles Building Together
-                    uses. It was an auto-scrolling marquee, which the copy above
-                    ("Tap any logo") contradicted. */}
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:hidden">
-                  {mobileLogos.map((logo) => (
-                    <MobileLogoTile key={`${logo.type}-${logo.id}`} logo={logo} />
-                  ))}
-                </div>
+                {spotlightPartners.length > 0 && (
+                  <div className="mt-10">
+                    {/* gray-500 like the eyebrow above: 4.8:1 on white. */}
+                    <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+                      Partners DEVSA builds with
+                    </p>
+                    {/* Tablet & desktop: the section's logo tiles, four across */}
+                    <div className="mt-6 hidden md:grid grid-cols-4 gap-x-4 gap-y-8">
+                      {spotlightPartners.map((logo) => (
+                        <LogoTile key={logo.id} logo={logo} />
+                      ))}
+                    </div>
+                    {/* Mobile: the Building Together tiles, four across, two rows */}
+                    <div className="mt-5 grid grid-cols-4 gap-2 md:hidden">
+                      {spotlightPartners.map((logo) => (
+                        <MobileLogoTile key={logo.id} logo={logo} />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Mobile/tablet: button closes out the section below the logos */}
                 <div className="lg:hidden mt-10">
