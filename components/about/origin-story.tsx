@@ -152,12 +152,19 @@ export function AboutHero() {
           </h1>
           <p className="mt-6 max-w-2xl text-pretty text-xl font-light leading-[1.45] text-white/70 md:text-2xl lg:max-w-[46rem]">
             {/* Introduces the phrase the story below explains: civic
-                infrastructure, then what it is and who governs it.
+                infrastructure, then what it does, what it is and who governs
+                it. "Connects" carries the verb the homepage's bridge and
+                Building Together's "anywhere they could see each other" say
+                in their own words; without it, beside a partner that calls
+                itself an advocacy organization, "civic infrastructure" alone
+                can read as policy work, which a 501(c)(3) should not be
+                mistaken for.
                 text-pretty and the non-breaking space keep "board" from
                 landing alone on the last line at laptop and monitor widths. */}
-            Civic infrastructure for San Antonio&apos;s tech community: one
-            calendar, one public directory, one channel to follow, and one room
-            a few times a year, governed by a volunteer&nbsp;board.
+            Civic infrastructure that connects the people building San
+            Antonio tech: one calendar, one public directory, one channel to
+            follow, and one room a few times a year, governed by a
+            volunteer&nbsp;board.
           </p>
         </div>
       </div>
