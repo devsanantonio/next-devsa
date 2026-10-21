@@ -4,6 +4,7 @@ import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type Newsletter
 import { checkBotId } from 'botid/server';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-thank-you';
+import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
 
 // Submit an RSVP (public endpoint)
 export async function POST(request: NextRequest) {
@@ -131,15 +132,23 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Format event date
-        const eventDate = eventData?.date 
-          ? new Date(eventData.date).toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
+        // Format event date in San Antonio's time, and say so.
+        //
+        // This had no timeZone, so it formatted in the server's zone — UTC on
+        // Vercel — with no zone name. A 6 PM event arrived in the confirmation
+        // as "12:00 AM" the next day, which the Community Roundtable's
+        // registrants reasonably took as the real time. Every event on this
+        // site is in San Antonio; the feed uses the same zone.
+        const eventDate = eventData?.date
+          ? new Date(eventData.date).toLocaleString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
               day: 'numeric',
               hour: 'numeric',
-              minute: '2-digit'
+              minute: '2-digit',
+              timeZone: EVENT_TIMEZONE,
+              timeZoneName: 'short',
             })
           : 'TBD';
 
