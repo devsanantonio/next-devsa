@@ -1458,10 +1458,19 @@ export function CommunityEventsSection({
                              — underneath, which is what puts DEF CON under
                              Access Granted rather than beside it. */
                           const communityMarks = eventCommunities.filter((c) => c.logo)
-                          const collabMarks = brand
+                          const collabMarks = brand || (event.isOfficial && communityIds.length === 0 && allPartners.length === 0)
                             ? []
                             : [...communityMarks, ...allPartners]
                           const isCollab = collabMarks.length > 1
+                          /* DEVSA's own event: official, no group, no partner.
+                             DEVSA is the host here, not a convener, so its mark
+                             goes on the `By` line and the "With DEVSA" row
+                             below would credit it twice. Without this the card
+                             fell back to the record's "DEVSA Community" name and
+                             the gradient placeholder — the detail page already
+                             handled the case (DEVSA_HOST); the card did not. */
+                          const devsaHosts =
+                            !brand && Boolean(event.isOfficial) && communityIds.length === 0 && allPartners.length === 0
 
                           /* Kept for the single-mark case only: a lone partner
                              standing in as host still needs a light plate and
@@ -1487,7 +1496,7 @@ export function CommunityEventsSection({
                             ? event.isOfficial
                               ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }, ...brandCoHosts]
                               : brandCoHosts
-                            : event.isOfficial
+                            : event.isOfficial && !devsaHosts
                               ? [{ id: "devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg" }]
                               : []
                           /* The bolt rather than the horizontal lockup: the
@@ -1496,8 +1505,10 @@ export function CommunityEventsSection({
                              is the week's mark at a shape the slot can hold. */
                           const primaryLogo = brand
                             ? "/sastw/bolt.svg"
-                            : collabMarks[0]?.logo || event.communityLogo
-                          const primaryName = eventCommunities[0]?.name || event.communityId
+                            : devsaHosts
+                              ? "/branding/devsa-logo.svg"
+                              : collabMarks[0]?.logo || event.communityLogo
+                          const primaryName = devsaHosts ? "DEVSA" : eventCommunities[0]?.name || event.communityId
                           /* The label names everyone the stack shows, in the
                              same order, so the two halves of "whose event is
                              this" agree. It used to name only the communities,
@@ -1507,7 +1518,9 @@ export function CommunityEventsSection({
                              ones; three names is the practical ceiling anyway. */
                           const hostLabel = brand
                             ? "SA Startup + Tech Week"
-                            : collabMarks.length
+                            : devsaHosts
+                              ? "DEVSA"
+                              : collabMarks.length
                               ? collabMarks.map((m) => m.name).join(" + ")
                               : primaryName
                           /* One number for one question: how many
