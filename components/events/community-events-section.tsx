@@ -13,6 +13,7 @@ import { EventBrandLockup } from "@/components/events/event-brand-lockup"
 import { ShareImageMenu } from "@/components/events/share-image-menu"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
 import { FeaturedTxlf, TXLF_DAY_KEYS } from "@/components/events/featured-txlf"
+import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -49,17 +50,6 @@ interface FirestoreEvent {
   brand?: string
   detailsUrl?: string
   eventType?: 'in-person' | 'hybrid' | 'virtual'
-}
-
-// Strip markdown syntax for plain text preview in event cards
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '$1')     // **bold** → bold
-    .replace(/\*(.+?)\*/g, '$1')          // *italic* → italic
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
-    .replace(/^[-*]\s+/gm, '')            // - bullet → bullet
-    .replace(/\n+/g, ' ')                 // newlines → spaces
-    .trim()
 }
 
 interface EventCalendarProps {
@@ -1865,7 +1855,7 @@ export function CommunityEventsSection({
                                       long run for two clamped lines of 14px
                                       text. */}
                                   <p className={`mt-2.5 max-w-2xl text-sm font-light leading-[1.6] line-clamp-2 ${brand ? "text-white/65" : "text-gray-500"}`}>
-                                    {stripMarkdown(event.description)}
+                                    {eventDescriptionToPlainText(event.description, { singleLine: true })}
                                   </p>
 
                                   {/* Co-hosting partners.

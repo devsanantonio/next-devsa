@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { type TechCommunity } from "@/data/communities"
 
 import Image from "next/image"
+import { EventDescription } from "@/components/events/event-description"
 import { Calendar, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
 import {
   buildCalendarLinks,
@@ -90,115 +91,6 @@ const DEVSA_HOST: EventHost = {
 
 // DEVSA Discord - all community organizers are in this server
 const DEVSA_DISCORD = "/discord"
-
-// Simple markdown renderer for event descriptions
-function renderMarkdown(text: string) {
-  // Process the text line by line for proper markdown rendering
-  const lines = text.split('\n')
-  const elements: React.ReactNode[] = []
-  let listItems: string[] = []
-  let inList = false
-  
-  const processInlineMarkdown = (line: string, key: number): React.ReactNode => {
-    // Process inline markdown: bold, italic, links
-    const parts: React.ReactNode[] = []
-    let remaining = line
-    let partKey = 0
-    
-    // Match patterns: **bold**, *italic*, [text](url)
-    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|\[([^\]]+)\]\(([^)]+)\))/g
-    let lastIndex = 0
-    let match
-    
-    while ((match = regex.exec(line)) !== null) {
-      // Add text before match
-      if (match.index > lastIndex) {
-        parts.push(line.slice(lastIndex, match.index))
-      }
-      
-      if (match[2]) {
-        // Bold **text**
-        parts.push(<strong key={`${key}-${partKey++}`} className="font-semibold text-gray-800">{match[2]}</strong>)
-      } else if (match[3]) {
-        // Italic *text*
-        parts.push(<em key={`${key}-${partKey++}`} className="italic">{match[3]}</em>)
-      } else if (match[4] && match[5]) {
-        // Link [text](url)
-        parts.push(
-          <a 
-            key={`${key}-${partKey++}`} 
-            href={match[5]} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-[#ef426f] hover:text-[#d63760] underline underline-offset-2 font-medium"
-          >
-            {match[4]}
-          </a>
-        )
-      }
-      
-      lastIndex = match.index + match[0].length
-      remaining = line.slice(lastIndex)
-    }
-    
-    // Add remaining text
-    if (remaining && lastIndex < line.length) {
-      parts.push(line.slice(lastIndex))
-    }
-    
-    return parts.length > 0 ? parts : line
-  }
-  
-  const flushList = () => {
-    if (listItems.length > 0) {
-      elements.push(
-        <ul key={`list-${elements.length}`} className="list-disc list-inside space-y-1 my-3">
-          {listItems.map((item, i) => (
-            <li key={i} className="text-[15px] text-gray-600 leading-relaxed">
-              {processInlineMarkdown(item, i)}
-            </li>
-          ))}
-        </ul>
-      )
-      listItems = []
-    }
-    inList = false
-  }
-  
-  lines.forEach((line, index) => {
-    const trimmedLine = line.trim()
-    
-    // Check for list item
-    if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      inList = true
-      listItems.push(trimmedLine.slice(2))
-    } else {
-      // Flush any pending list
-      if (inList) {
-        flushList()
-      }
-      
-      // Handle empty lines
-      if (trimmedLine === '') {
-        if (elements.length > 0) {
-          elements.push(<br key={`br-${index}`} />)
-        }
-      } else {
-        // Regular paragraph
-        elements.push(
-          <p key={`p-${index}`} className="text-[15px] text-gray-600 leading-[1.75] mb-3 last:mb-0">
-            {processInlineMarkdown(trimmedLine, index)}
-          </p>
-        )
-      }
-    }
-  })
-  
-  // Flush any remaining list
-  flushList()
-  
-  return <div className="space-y-0">{elements}</div>
-}
 
 export function EventPageClient({ slug }: EventPageClientProps) {
   const router = useRouter()
@@ -633,7 +525,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 <span aria-hidden className="h-px flex-1 bg-gray-200" />
               </h2>
               <div className="prose prose-gray max-w-none prose-p:text-[17px] prose-p:leading-[1.75] prose-li:text-[17px]">
-                {renderMarkdown(event.description)}
+                <EventDescription text={event.description} />
               </div>
             </div>
 

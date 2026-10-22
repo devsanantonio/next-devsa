@@ -1,3 +1,5 @@
+import { eventDescriptionToPlainText } from "@/lib/event-markdown"
+
 /**
  * One source of truth for how a community-calendar event is read and rendered.
  *
@@ -217,7 +219,10 @@ export function buildCalendarLinks(event: CalendarEvent, siteUrl?: string) {
   const start = new Date(event.date)
   const end = new Date(effectiveEndMs(event))
 
-  const details = event.description + (event.url ? `\n\nMore info: ${event.url}` : "")
+  // Calendar notes are plain text: without this, attendees saw the organizer's
+  // ** and [text](url) in their calendar.
+  const details =
+    eventDescriptionToPlainText(event.description) + (event.url ? `\n\nMore info: ${event.url}` : "")
 
   const googleUrl =
     "https://calendar.google.com/calendar/render?action=TEMPLATE" +

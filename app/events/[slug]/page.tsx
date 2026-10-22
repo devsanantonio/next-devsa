@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { EventPageClient } from "./event-page-client"
 import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
+import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 import { notFound, permanentRedirect } from "next/navigation"
 
 interface PageProps {
@@ -247,13 +248,7 @@ function eventJsonLd(
     eventStatus: "https://schema.org/EventScheduled",
     // Plain text: the description is authored as markdown, and schema.org
     // expects prose, not syntax.
-    description: event.description
-      .replace(/\*\*(.+?)\*\*/g, "$1")
-      .replace(/\*(.+?)\*/g, "$1")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 500),
+    description: eventDescriptionToPlainText(event.description, { singleLine: true }).slice(0, 500),
     url,
     // Virtual events take a VirtualLocation; anything with a physical room gets
     // a Place with whatever address parts were actually recorded.

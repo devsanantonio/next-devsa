@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
+import { eventDescriptionToPlainText } from '@/lib/event-markdown';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 export const EVENT_TIMEZONE = 'America/Chicago';
@@ -189,7 +190,7 @@ function buildItemXml(event: FeedEvent, config: FeedConfig): string {
     timeZone: EVENT_TIMEZONE,
   });
 
-  const plainDescription = stripHtml(event.description);
+  const plainDescription = eventDescriptionToPlainText(stripHtml(event.description), { singleLine: true });
   const truncatedPlainDescription = plainDescription
     ? truncateAtWordBoundary(plainDescription, 300)
     : '';

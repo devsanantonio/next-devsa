@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
+import { eventDescriptionToPlainText } from '@/lib/event-markdown';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
 
@@ -96,9 +97,11 @@ export async function GET() {
         ? new Date(event.endTime)
         : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours
 
-      const description = event.url
-        ? `${event.description}\\n\\nMore info: ${event.url}`
-        : event.description;
+      // A real newline: escapeICalText turns it into the \n the format wants.
+      // This used to write the escape itself, which escapeICalText then
+      // escaped again, so calendars showed a literal "\n\n" before the link.
+      const plain = eventDescriptionToPlainText(event.description);
+      const description = event.url ? `${plain}\n\nMore info: ${event.url}` : plain;
 
       const lines = [
         'BEGIN:VEVENT',

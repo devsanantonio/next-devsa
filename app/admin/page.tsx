@@ -234,6 +234,7 @@ interface EventRSVP {
 }
 
 import { defaultSlugPreview, invalidCustomSlug } from "@/lib/event-slug-shared"
+import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 
 /** A host field's ids: a collab stores several as one comma-separated string. */
 const hostIds = (stored?: string | null) =>
@@ -3285,7 +3286,7 @@ export default function AdminPage() {
                             </>
                           )}
                         </div>
-                        <p className="text-neutral-400 text-sm mt-3 line-clamp-2">{event.description}</p>
+                        <p className="text-neutral-400 text-sm mt-3 line-clamp-2">{eventDescriptionToPlainText(event.description, { singleLine: true })}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {event.isStatic ? (
