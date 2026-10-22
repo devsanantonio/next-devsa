@@ -1577,6 +1577,9 @@ export function CommunityEventsSection({
                             : [{ id: primaryName, name: primaryName, logo: primaryLogo }]
                           ).map((m) => {
                             const isPartner = allPartners.some((pp) => pp.id === m.id)
+                            // No logo: the gradient fills the circle rather
+                            // than sitting inside it as a padded square.
+                            const placeholder = !m.logo || m.logo === "/devsa-gradient.svg"
                             return (
                               <span
                                 key={m.id}
@@ -1589,11 +1592,15 @@ export function CommunityEventsSection({
                                   alt=""
                                   fill
                                   unoptimized
-                                  className={`object-contain p-1 ${
-                                    isPartner
-                                      ? logoOnLight({ id: m.id, name: m.name, type: "partner" })
-                                      : ""
-                                  }`}
+                                  className={
+                                    placeholder
+                                      ? "object-cover"
+                                      : `object-contain p-1 ${
+                                          isPartner
+                                            ? logoOnLight({ id: m.id, name: m.name, type: "partner" })
+                                            : ""
+                                        }`
+                                  }
                                   sizes="24px"
                                 />
                               </span>

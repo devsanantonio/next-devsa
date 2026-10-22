@@ -73,7 +73,11 @@ interface EventPageClientProps {
  * round slots, where a wide wordmark shrinks to nothing (Geekdom's full logo
  * is a wordmark; its mark is the crown).
  */
-type EventHost = TechCommunity & { kind?: "community" | "partner"; mark?: string }
+/**
+ * `one-off` is a host typed into the admin rather than picked from the
+ * directory. It has a name and perhaps a logo, and nothing else to say.
+ */
+type EventHost = TechCommunity & { kind?: "community" | "partner" | "one-off"; mark?: string }
 
 /**
  * DEVSA as the host, for an official event with no community or partner on it
@@ -216,11 +220,12 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 name: event.communityName,
                 logo: event.communityLogo || '/devsa-gradient.svg',
                 description: '',
-              } as TechCommunity
+                kind: 'one-off',
+              } as EventHost
             }
             return null
           })
-          .filter(Boolean) as TechCommunity[]
+          .filter(Boolean) as EventHost[]
 
         const hosts: EventHost[] = [...matched, ...partnerHosts]
         if (!hosts.length && event.isOfficial) hosts.push(DEVSA_HOST)
@@ -232,6 +237,10 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
     fetchHosts()
   }, [event])
+
+  // The host cards: everyone in "Hosted by" except one-off hosts, which have
+  // nothing of their own to show. See the section itself.
+  const hostCards = allEventCommunities.filter((c) => c.kind !== "one-off")
 
   if (event === undefined) {
     return (
@@ -405,20 +414,27 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 aria-hidden
                 className={`flex shrink-0 ${allEventCommunities.length > 1 ? "-space-x-3" : ""}`}
               >
-                {allEventCommunities.map((c) => (
-                  <span
-                    key={c.id}
-                    className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/[0.07] ring-2 ring-[#0a0a0a]"
-                  >
-                    <Image
-                      src={c.mark || c.logo || "/devsa-gradient.svg"}
-                      alt=""
-                      fill
-                      className="object-contain p-2"
-                      sizes="48px"
-                    />
-                  </span>
-                ))}
+                {allEventCommunities.map((c) => {
+                  const src = c.mark || c.logo || "/devsa-gradient.svg"
+                  // A host with no logo (one typed into the admin) gets the
+                  // gradient. Padded and contained like a logo, it drew a
+                  // square of gradient inside the circle; it fills it instead.
+                  const placeholder = src === "/devsa-gradient.svg"
+                  return (
+                    <span
+                      key={c.id}
+                      className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/[0.07] ring-2 ring-[#0a0a0a]"
+                    >
+                      <Image
+                        src={src}
+                        alt=""
+                        fill
+                        className={placeholder ? "object-cover" : "object-contain p-2"}
+                        sizes="48px"
+                      />
+                    </span>
+                  )
+                })}
               </span>
               <p className="min-w-0 font-mono text-[11px] uppercase tracking-widest text-white/55">
                 Hosted by{" "}
@@ -770,40 +786,36 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               Headed by a mono label like the rest of the page, so the stack of
               cards reads as a section rather than as three more boxes after the
               description ends. */}
-          {allEventCommunities.length > 0 && (
+          {/* One-off hosts get no card. Theirs used to carry DEVSA's own
+              pitch ("Find your people. Build your future." and what DEVSA
+              does) under "The host", which read as DEVSA running an event it
+              only listed. They are still named in the "Hosted by" row above. */}
+          {hostCards.length > 0 && (
             <div className="mt-14 space-y-6">
               <h2 className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-gray-400">
-                {allEventCommunities.length > 1 ? "The hosts" : "The host"}
+                {hostCards.length > 1 ? "The hosts" : "The host"}
                 <span aria-hidden className="h-px flex-1 bg-gray-200" />
               </h2>
-              {allEventCommunities.map((comm) => {
+              {hostCards.map((comm) => {
                 const isPartner = comm.kind === 'partner'
-                // Only a one-off community typed into the admin gets DEVSA's
-                // own blurb. A partner with no description still gets its own
-                // name and links, never DEVSA's.
-                const isCustomEvent = !comm.description && !isPartner
                 // A partner without a square mark shows its full logo in a
                 // wide tile, so a wordmark is contained rather than cropped.
                 const wideLogo = isPartner && !comm.mark
                 return (
             <div key={comm.id} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center gap-4 mb-5">
-                <div className={`relative h-12 shrink-0 rounded-lg shadow-sm overflow-hidden ${wideLogo ? 'w-32' : 'w-12'} ${isCustomEvent ? '' : 'bg-gray-900 p-2'}`}>
+                <div className={`relative h-12 shrink-0 rounded-lg shadow-sm overflow-hidden bg-gray-900 p-2 ${wideLogo ? 'w-32' : 'w-12'}`}>
                   <Image
                     src={comm.mark || comm.logo || '/devsa-gradient.svg'}
                     alt={comm.name}
                     fill
-                    className={isCustomEvent ? 'object-cover' : 'object-contain p-1'}
+                    className="object-contain p-1"
                     sizes={wideLogo ? '128px' : '48px'}
                   />
                 </div>
-                <h3 className="text-xl font-bold tracking-[-0.01em] text-gray-900 sm:text-2xl">{isCustomEvent ? (<>Find your people.<br />Build your future.</>) : `About ${comm.name}`}</h3>
+                <h3 className="text-xl font-bold tracking-[-0.01em] text-gray-900 sm:text-2xl">About {comm.name}</h3>
               </div>
-              {isCustomEvent ? (
-                <div className="mb-6">
-                  <p className="text-base font-medium text-gray-600 leading-[1.8]">DEVSA gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.</p>
-                </div>
-              ) : comm.description ? (
+              {comm.description ? (
                 <p className="text-[15px] text-gray-600 leading-relaxed mb-6">{comm.description}</p>
               ) : null}
             
