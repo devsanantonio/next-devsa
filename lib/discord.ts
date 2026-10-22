@@ -15,6 +15,8 @@
  * having posted nothing.
  */
 
+import { eventDescriptionToPlainText } from './event-markdown';
+
 const DISCORD_EVENTS_WEBHOOK_URL = process.env.DISCORD_EVENTS_WEBHOOK_URL;
 
 const TZ = 'America/Chicago';
@@ -34,6 +36,10 @@ export interface DigestEvent {
   venue?: string;
   communityName?: string;
   eventType?: string;
+  /** The organizer's markdown. Only its first sentence is posted. */
+  description?: string;
+  /** The organizer's own line for the digest; wins over the first sentence. */
+  summary?: string;
 }
 
 /** Emerald, matching the "happening" state on the calendar. */
@@ -74,23 +80,60 @@ function weekOfLabel(): string {
   });
 }
 
+const TEASER_MAX = 120;
+
+/** Discord reads these as formatting; in a description's prose they are just characters. */
+function escapeDiscord(text: string): string {
+  return text.replace(/([\\*_~`|>])/g, '\\$1');
+}
+
 /**
- * One line per event, under a heading that already says which day it is.
+ * The description's first sentence, cut at 120 characters on a word.
+ *
+ * A title alone says little: "Talk Nerdy to Me" and "Spooky Hour" give no hint
+ * that one is a data networking night and the other a game dev social. The
+ * whole description was the other option, and it doesn't fit — Discord caps a
+ * field at 1,024 characters, and two ordinary descriptions on one day ran past
+ * it. A sentence ends at . ! or ? followed by a capital or the end, so
+ * "110 E Houston St. 3rd Floor" isn't cut at "St."
+ *
+ * The fallback, for events with no `summary`. First sentences are often
+ * warm-up, so the admin lets an organizer write the line themselves.
+ */
+export function eventTeaser(description: string | undefined): string {
+  const plain = eventDescriptionToPlainText(description || '', { singleLine: true });
+  if (!plain) return '';
+  const sentence = (plain.match(/^.+?[.!?](?=\s+["'“‘(]?[A-Z]|$)/)?.[0] ?? plain).trim();
+  if (sentence.length <= TEASER_MAX) return sentence;
+  return sentence.slice(0, TEASER_MAX).replace(/[\s,;:]+\S*$/, '') + '…';
+}
+
+/**
+ * Three lines per event, under a heading that already says which day it is:
+ * the time and title, then who and where, then the teaser.
  *
  * The timestamp is `:t` — just "5:30 PM". It used to be `:F`, which renders as
  * "Tuesday, September 8, 2026 5:30 PM" and repeated the weekday and the year on
  * every row. Discord still localises it, so a member reading from outside
  * Central sees their own clock.
+ *
+ * The host comes first on its line, in bold. It used to trail the venue in the
+ * same plain text — "Geekdom · AWS User Group" — and read as part of the
+ * address, when the group is what the digest is pointing people to.
  */
-function eventLine(event: DigestEvent, siteUrl: string): string {
+function eventLine(event: DigestEvent, siteUrl: string, withTeaser: boolean): string {
   const unixTs = Math.floor(new Date(event.date).getTime() / 1000);
   const emoji =
     event.eventType === 'virtual' ? '💻' : event.eventType === 'hybrid' ? '🔀' : '📍';
   const where = event.venue || event.location;
 
   let line = `${emoji} <t:${unixTs}:t> · **[${event.title}](${siteUrl}/events/${event.slug})**`;
-  const under = [where, event.communityName].filter(Boolean).join(' · ');
-  if (under) line += `\n ${under}`;
+  const under = [event.communityName && `**${event.communityName}**`, where]
+    .filter(Boolean)
+    .join(' · ');
+  if (under) line += `\n${under}`;
+  const teaser = withTeaser ? event.summary?.trim() || eventTeaser(event.description) : '';
+  if (teaser) line += `\n${escapeDiscord(teaser)}`;
   return line;
 }
 
@@ -98,6 +141,47 @@ interface DiscordEmbedField {
   name: string;
   value: string;
   inline?: boolean;
+}
+
+/** Day fields, filled in order until a field or the whole embed would overflow. */
+function packFields(events: DigestEvent[], siteUrl: string, withTeasers: boolean) {
+  // Group into days, preserving the caller's chronological order.
+  const byDay = new Map<string, DigestEvent[]>();
+  for (const event of events) {
+    const key = dayKeyFmt.format(new Date(event.date));
+    const bucket = byDay.get(key);
+    if (bucket) bucket.push(event);
+    else byDay.set(key, [event]);
+  }
+
+  const fields: DiscordEmbedField[] = [];
+  let budget = MAX_EMBED_TOTAL;
+  let shown = 0;
+
+  for (const [key, dayEvents] of byDay) {
+    if (fields.length >= MAX_FIELDS || budget <= 0) break;
+
+    // Noon avoids the date sliding either way when the clocks change.
+    const name = dayHeadingFmt.format(new Date(`${key}T12:00:00Z`));
+    const lines: string[] = [];
+    let used = 0;
+
+    for (const event of dayEvents) {
+      const line = eventLine(event, siteUrl, withTeasers);
+      const cost = line.length + 1;
+      if (used + cost > MAX_FIELD_VALUE || cost > budget) break;
+      lines.push(line);
+      used += cost;
+      budget -= cost;
+      shown += 1;
+    }
+
+    if (lines.length === 0) break;
+    budget -= name.length;
+    fields.push({ name, value: lines.join('\n'), inline: false });
+  }
+
+  return { fields, shown };
 }
 
 /**
@@ -131,41 +215,11 @@ export function buildWeeklyDigestPayload(events: DigestEvent[]) {
     };
   }
 
-  // Group into days, preserving the caller's chronological order.
-  const byDay = new Map<string, DigestEvent[]>();
-  for (const event of events) {
-    const key = dayKeyFmt.format(new Date(event.date));
-    const bucket = byDay.get(key);
-    if (bucket) bucket.push(event);
-    else byDay.set(key, [event]);
-  }
-
-  const fields: DiscordEmbedField[] = [];
-  let budget = MAX_EMBED_TOTAL;
-  let shown = 0;
-
-  for (const [key, dayEvents] of byDay) {
-    if (fields.length >= MAX_FIELDS || budget <= 0) break;
-
-    // Noon avoids the date sliding either way when the clocks change.
-    const name = dayHeadingFmt.format(new Date(`${key}T12:00:00Z`));
-    const lines: string[] = [];
-    let used = 0;
-
-    for (const event of dayEvents) {
-      const line = eventLine(event, siteUrl);
-      const cost = line.length + 1;
-      if (used + cost > MAX_FIELD_VALUE || cost > budget) break;
-      lines.push(line);
-      used += cost;
-      budget -= cost;
-      shown += 1;
-    }
-
-    if (lines.length === 0) break;
-    budget -= name.length;
-    fields.push({ name, value: lines.join('\n'), inline: false });
-  }
+  // Teasers go before events do. A week heavy enough that they would push an
+  // event off the message (Startup Week is that shape) posts without them.
+  let packed = packFields(events, siteUrl, true);
+  if (packed.shown < events.length) packed = packFields(events, siteUrl, false);
+  const { fields, shown } = packed;
 
   const dropped = events.length - shown;
   const description =

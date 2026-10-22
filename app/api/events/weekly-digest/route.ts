@@ -104,6 +104,8 @@ export async function GET(request: NextRequest) {
           venue: data.venue as string | undefined,
           communityName,
           eventType: data.eventType as string | undefined,
+          description: data.description as string | undefined,
+          summary: data.summary as string | undefined,
         };
       })
       .filter((event) => {

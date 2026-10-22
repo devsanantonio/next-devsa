@@ -83,7 +83,7 @@ Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, ne
 
 ## Event fields that gate each other
 
-The event drawer's fields, in order: Community (multi-select), Partners (optional co-hosts), **Official DEVSA event**, Event Title, Date, Start/End Time, Venue, Address, Event Format, Description, Registration, Status.
+The event drawer's fields, in order: Community (multi-select), Partners (optional co-hosts), **Official DEVSA event**, Event Title, Date, Start/End Time, Venue, Address, Event Format, Description, Summary, Registration, Status.
 
 Two later additions. **Registration** carries an optional custom question (`rsvpQuestion`, plus `rsvpQuestionRequired`) that only mounts while the devsa.community RSVP form is selected; the API clears both whenever `rsvpEnabled` is false, and each RSVP stores the question's wording with its `answer`. **Link only (private)** (`unlisted`) sits under Status; every listing surface filters through `isListed()` in `lib/event-visibility.ts`, so a new surface that lists events must call it too.
 
@@ -93,7 +93,13 @@ An event needs a title, a date, a description, an `organizerEmail`, and **at lea
 
 ## Rich text
 
-Event descriptions are HTML strings from `components/rich-text-editor.tsx`, a textarea with a floating toolbar that wraps selections in `<strong>`, `<ul><li>` and `<a href>`. Output is stored raw, so anything rendering it must go through `lib/sanitize.ts`.
+Event descriptions are **markdown**, not HTML. An earlier version of this skill said the editor wrapped selections in `<strong>` and `<ul><li>`; it has written `**bold**` and `- item` for as long as the current tree has existed.
+
+`components/rich-text-editor.tsx` is a textarea with a fixed toolbar (bold, italic, heading, bullets, numbered list, link; ⌘B / ⌘I / ⌘K) and a Write/Preview switch. Pasted bullet glyphs (`•`, `●`) are stored as `- `.
+
+**One parser, everywhere.** `lib/event-markdown.ts` reads the markdown once. `components/events/event-description.tsx` renders it — on the event page *and* in the editor's Preview, so what an organizer previews is what goes out. Anything that can't render markup (calendar cards, .ics and Google Calendar notes, the RSS feed, JSON-LD, the Discord digest, the admin list) goes through `eventDescriptionToPlainText`. A new surface that shows a description uses one of those two. Writing another regex stripper is how there came to be five, and how calendar invites carried literal `**` into people's calendars.
+
+**Summary** (`summary`, optional, 120 characters) sits under Description. It is the event's line in the Monday Discord digest; blank falls back to the description's first sentence (`eventTeaser` in `lib/discord.ts`). The API stores it as plain single-line text, `null` when empty.
 
 ## Uploads
 

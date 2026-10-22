@@ -157,12 +157,17 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+/** The digest's one-liner, normalized for storage: plain, single-line, 120 characters at most. */
+function summaryField(summary: unknown): string | null {
+  if (typeof summary !== 'string') return null;
+  return summary.replace(/\s+/g, ' ').trim().slice(0, 120) || null;
+}
 
 // Create a new event
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
     const organizerEmail = await verifiedEmail(request);
 
     // An event needs at least one host — a community, a partner, or DEVSA
@@ -227,6 +232,7 @@ export async function POST(request: NextRequest) {
       venue: venue || '',
       address: address || '',
       description,
+      summary: summaryField(summary),
       communityId: communityId || '',
       ...(communityName ? { communityName } : {}),
       ...(partnerId ? { partnerId } : {}),
@@ -266,7 +272,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
     const organizerEmail = await verifiedEmail(request);
 
     if (!eventId || !organizerEmail) {
@@ -334,6 +340,8 @@ export async function PUT(request: NextRequest) {
       }
     }
     if (description) updateData.description = description;
+    // A string, even an empty one, is an edit: clearing the field clears it.
+    if (typeof summary === 'string') updateData.summary = summaryField(summary);
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;

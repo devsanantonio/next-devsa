@@ -182,6 +182,7 @@ interface CalendarEvent {
   externalRsvpUrl?: string
   rsvpQuestion?: string | null
   rsvpQuestionRequired?: boolean
+  summary?: string | null
   isOfficial?: boolean
   unlisted?: boolean
   /** Addresses this event used before; its page redirects from them. */
@@ -996,6 +997,7 @@ export default function AdminPage() {
       externalRsvpUrl: "",
       rsvpQuestion: "",
       rsvpQuestionRequired: false,
+      summary: "",
       isOfficial: false,
       unlisted: false,
       brand: "",
@@ -1033,6 +1035,7 @@ export default function AdminPage() {
             ? `${editingEvent.venue}, ${editingEvent.address}`
             : editingEvent.venue || editingEvent.address || editingEvent.location,
           description: editingEvent.description,
+          summary: editingEvent.summary || "",
           status: editingEvent.status,
           eventType: editingEvent.eventType,
           rsvpEnabled: editingEvent.rsvpEnabled === true,
@@ -3917,9 +3920,30 @@ export default function AdminPage() {
                           rows={10}
                           value={editingEvent.description}
                           onChange={(value) => setEditingEvent({ ...editingEvent, description: value })}
-                          placeholder="Describe your event. Select text to format."
+                          placeholder="Describe your event."
                           darkMode={true}
                         />
+                      </div>
+                      {/* The Monday digest's line for this event. Blank falls
+                          back to the description's first sentence, which is
+                          often warm-up rather than what the event is. */}
+                      <div className="space-y-2">
+                        <label htmlFor="eventSummary" className="block text-sm font-semibold text-neutral-300">
+                          One-line summary <span className="font-normal text-neutral-400">(optional)</span>
+                        </label>
+                        <input
+                          id="eventSummary"
+                          type="text"
+                          maxLength={120}
+                          value={editingEvent.summary || ""}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, summary: e.target.value })}
+                          placeholder="e.g. A data networking night for analysts, engineers and the people who hire them."
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                        <p className="text-xs text-neutral-400">
+                          Shown under the title in the Monday post to the DEVSA Discord. Leave it blank to use the description&apos;s first sentence.
+                          <span className="float-right tabular-nums">{(editingEvent.summary || "").length}/120</span>
+                        </p>
                       </div>
                       {/* Registration */}
                       <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4 space-y-4">

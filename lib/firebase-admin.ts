@@ -372,6 +372,13 @@ export interface Event {
   /** Whether attendees must answer rsvpQuestion. */
   rsvpQuestionRequired?: boolean;
   /**
+   * One line, in the organizer's words, for the Monday Discord digest. When
+   * unset the digest uses the description's first sentence, which is often
+   * warm-up ("Looking to find a relaxing evening out?"). Plain text, at most
+   * 120 characters; null when unset.
+   */
+  summary?: string | null;
+  /**
    * An activation with a design system of its own — see lib/event-brands.ts.
    *
    * Keyed by name rather than carrying colors, because these are identities
