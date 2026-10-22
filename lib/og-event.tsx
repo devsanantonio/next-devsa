@@ -146,64 +146,8 @@ export async function getEventBySlug(slug: string) {
       snap = { empty: docs.length === 0, docs } as unknown as typeof snap
     }
 
-    if (!snap.empty) {
-      const data = snap.docs[0].data()
-      const ids = (field: string) =>
-        (data[field] || "")
-          .split(",")
-          .map((s: string) => s.trim())
-          .filter(Boolean)
-
-      const communityIds: string[] = ids("communityId")
-      const partnerIds: string[] = ids("partnerId")
-
-      const [communities, partners] = await Promise.all([
-        Promise.all(
-          communityIds.map(async (id) => {
-            try {
-              const d = await db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()
-              return d.exists
-                ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "community" } as Host)
-                : undefined
-            } catch {
-              return undefined
-            }
-          })
-        ),
-        Promise.all(
-          partnerIds.map(async (id) => {
-            try {
-              const d = await db.collection(COLLECTIONS.PARTNERS).doc(id).get()
-              return d.exists
-                ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "partner" } as Host)
-                : undefined
-            } catch {
-              return undefined
-            }
-          })
-        ),
-      ])
-
-      const hosts = [...communities, ...partners].filter((h): h is Host => !!h?.name)
-      // data.communityName is the denormalized label the admin writes. It is
-      // the fallback, not the source — it holds one name even for a collab.
-      if (!hosts.length && data.communityName)
-        hosts.push({ id: "", name: data.communityName, logo: data.communityLogo || undefined, type: "community" })
-
-      return {
-        title: data.title as string,
-        date: data.date as string | null,
-        endTime: (data.endTime as string | undefined) ?? null,
-        location: data.location as string | null,
-        hosts,
-        // DEVSA's own events (see Event.isOfficial) keep the DEVSA mark.
-        official: data.isOfficial === true,
-        // Link only (lib/event-visibility.ts): the cards say "Private event"
-        // rather than send invitees to a calendar the event is not on.
-        unlisted: data.unlisted === true,
-        found: true,
-      }
-    }
+    // Awaited, so a failure resolving its hosts is caught below.
+    if (!snap.empty) return await eventCardFromData(db, snap.docs[0].data())
   } catch (error) {
     console.error("OG: error fetching event", error)
   }
@@ -228,6 +172,69 @@ export async function getEventBySlug(slug: string) {
   }
 }
 
+
+/**
+ * An event record as the share images draw it: its hosts resolved to names
+ * and logos. Shared by getEventBySlug and the weekly graphic
+ * (/api/og/week/social), which reads a week of events at once.
+ */
+export async function eventCardFromData(db: ReturnType<typeof getDb>, data: FirebaseFirestore.DocumentData) {
+  const ids = (field: string) =>
+    (data[field] || "")
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+
+  const communityIds: string[] = ids("communityId")
+  const partnerIds: string[] = ids("partnerId")
+
+  const [communities, partners] = await Promise.all([
+    Promise.all(
+      communityIds.map(async (id) => {
+        try {
+          const d = await db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()
+          return d.exists
+            ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "community" } as Host)
+            : undefined
+        } catch {
+          return undefined
+        }
+      })
+    ),
+    Promise.all(
+      partnerIds.map(async (id) => {
+        try {
+          const d = await db.collection(COLLECTIONS.PARTNERS).doc(id).get()
+          return d.exists
+            ? ({ id, name: d.data()?.name as string, logo: d.data()?.logo as string | undefined, type: "partner" } as Host)
+            : undefined
+        } catch {
+          return undefined
+        }
+      })
+    ),
+  ])
+
+  const hosts = [...communities, ...partners].filter((h): h is Host => !!h?.name)
+  // data.communityName is the denormalized label the admin writes. It is
+  // the fallback, not the source — it holds one name even for a collab.
+  if (!hosts.length && data.communityName)
+    hosts.push({ id: "", name: data.communityName, logo: data.communityLogo || undefined, type: "community" })
+
+  return {
+    title: data.title as string,
+    date: data.date as string | null,
+    endTime: (data.endTime as string | undefined) ?? null,
+    location: data.location as string | null,
+    hosts,
+    // DEVSA's own events (see Event.isOfficial) keep the DEVSA mark.
+    official: data.isOfficial === true,
+    // Link only (lib/event-visibility.ts): the cards say "Private event"
+    // rather than send invitees to a calendar the event is not on.
+    unlisted: data.unlisted === true,
+    found: true,
+  }
+}
 
 export type EventCardData = Awaited<ReturnType<typeof getEventBySlug>>
 
