@@ -48,7 +48,18 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   // A black-and-white logo has no colour of its own, so it takes DEVSA pink.
   const glow = color ?? PINK_RGB
-  const max = withLogo.length >= 3 ? 220 : withLogo.length === 2 ? 300 : 400
+  /* Box per logo, wide enough for a wordmark and tall enough for a square mark.
+     A single logo was capped at 400px square, so a wide wordmark like DEF CON
+     Group's drew 400 by about 190 inside a hero roughly 940 by 700, which left
+     it looking small on a card that is about the group. objectFit keeps every
+     logo inside its box at its own shape: wide ones use the width, square ones
+     the height. */
+  const box =
+    withLogo.length >= 3
+      ? { w: 280, h: 240 }
+      : withLogo.length === 2
+        ? { w: 420, h: 320 }
+        : { w: 760, h: 440 }
   const len = event.title.length
   const titleSize = len <= 20 ? 96 : len <= 36 ? 84 : len <= 56 ? 70 : 58
   const eyebrow = !event.official ? `Hosted by ${names}` : coHosts ? `With ${coHosts}` : null
@@ -74,7 +85,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
           ) : withLogo.length ? (
             withLogo.map((h) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={h.name} src={h.logo!} alt="" style={{ maxWidth: max, maxHeight: max * 0.85, objectFit: "contain" }} />
+              <img key={h.name} src={h.logo!} alt="" style={{ maxWidth: box.w, maxHeight: box.h, objectFit: "contain" }} />
             ))
           ) : (
             <span style={{ fontSize: 72, fontWeight: 800, color: INK, letterSpacing: "-0.02em", textAlign: "center" }}>{names}</span>
