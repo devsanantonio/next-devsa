@@ -113,6 +113,9 @@ export const COLLECTIONS = {
   // Inquiries from /get-involved: partners, sponsors and general questions.
   // Admin and super admin only, like Confluencia inquiries.
   GET_INVOLVED_INQUIRIES: 'get_involved_inquiries',
+  // One document per calendar subscription code (lib/calendar-subscribe.ts),
+  // written by /api/events/calendar each time a calendar app polls it.
+  CALENDAR_SUBSCRIPTIONS: 'calendar_subscriptions',
   // The shop's order audit trail. The shop, Printify integration and its
   // reconcile cron were removed on 2026-10-12; nothing writes these now.
   // `orders` holds one document: a June 2026 hat that was never produced
@@ -461,4 +464,18 @@ export interface AIConferenceSponsor {
   tier: 'platinum' | 'gold' | 'silver' | 'bronze' | 'community';
   order?: number;
   createdAt: Date;
+}
+
+/**
+ * One calendar subscription, keyed by its random code (the document id).
+ * firstSeen and lastSeen are when its calendar app first and last polled the
+ * feed; a subscription polled across more than a day is a real one, not a
+ * single click or someone opening the link once.
+ */
+export interface CalendarSubscription {
+  firstSeen: Date;
+  lastSeen: Date;
+  fetches: number;
+  /** google | apple | outlook | other, from the poller's user-agent. */
+  client: 'google' | 'apple' | 'outlook' | 'other';
 }

@@ -5,6 +5,8 @@ import Link from "next/link"
 import { ArrowUpRight, CalendarDays, CalendarPlus } from "lucide-react"
 import { GoogleCalendarIcon, AppleCalendarIcon, OutlookIcon } from "@/components/icons/calendar-icons"
 import { DiscordIcon } from "@/components/icons/social-icons"
+import { track } from "@vercel/analytics"
+import { calendarSubscribeLinks, newSubscribeCode } from "@/lib/calendar-subscribe"
 
 const SITE = "https://www.devsa.community"
 // The same live feed the /events subscribe dialog uses: subscribed, a
@@ -12,14 +14,28 @@ const SITE = "https://www.devsa.community"
 const ICAL_URL = `${SITE}/api/events/calendar`
 const WEBCAL_URL = ICAL_URL.replace(/^https?:\/\//, "webcal://")
 const SUBSCRIBE = [
-  { label: "Google", Icon: GoogleCalendarIcon, href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(WEBCAL_URL)}` },
-  { label: "Apple", Icon: AppleCalendarIcon, href: WEBCAL_URL },
+  { label: "Google", key: "google", Icon: GoogleCalendarIcon, href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(WEBCAL_URL)}` },
+  { label: "Apple", key: "webcal", Icon: AppleCalendarIcon, href: WEBCAL_URL },
   {
     label: "Outlook",
+    key: "outlook",
     Icon: OutlookIcon,
     href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(ICAL_URL)}&name=${encodeURIComponent("DEVSA Community Events")}`,
   },
-]
+] as const
+
+/**
+ * Swap in a coded feed address at the moment of the click, so the subscription
+ * can be counted (lib/calendar-subscribe.ts). The rendered href stays the plain
+ * address: this section is server-rendered, and a random code in the markup
+ * would differ between the server and the browser. Changing href in onClick
+ * lands before the browser follows the link.
+ */
+function codeTheLink(e: React.MouseEvent<HTMLAnchorElement>, key: (typeof SUBSCRIBE)[number]["key"]) {
+  const links = calendarSubscribeLinks(SITE, newSubscribeCode())
+  e.currentTarget.href = links[key]
+  track("calendar_subscribe", { app: key === "webcal" ? "apple" : key, from: "buildingtogether" })
+}
 const DISCORD_URL = "/discord"
 
 /**
@@ -108,6 +124,7 @@ export function StayConnected() {
                   <a
                     key={s.label}
                     href={s.href}
+                    onClick={(e) => codeTheLink(e, s.key)}
                     target={s.label === "Apple" ? undefined : "_blank"}
                     rel={s.label === "Apple" ? undefined : "noopener noreferrer"}
                     aria-label={`Subscribe in ${s.label} Calendar`}

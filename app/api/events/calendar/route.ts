@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
-import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { NextRequest, NextResponse } from 'next/server';
+import { FieldValue } from 'firebase-admin/firestore';
+import { getDb, COLLECTIONS, type CalendarSubscription } from '@/lib/firebase-admin';
+import { SUBSCRIBE_CODE } from '@/lib/calendar-subscribe';
 import { isListed } from '@/lib/event-visibility';
 import { eventDescriptionToPlainText } from '@/lib/event-markdown';
 
@@ -43,9 +45,47 @@ function foldLine(line: string): string {
   return parts.join('\r\n');
 }
 
-export async function GET() {
+/** Which calendar app is polling, from its user-agent. Rough, and only used to split the count. */
+function calendarClient(ua: string): CalendarSubscription['client'] {
+  if (/google/i.test(ua)) return 'google';
+  if (/microsoft|outlook|office/i.test(ua)) return 'outlook';
+  if (/ios|mac ?os|darwin|dataaccessd|calendaragent|apple/i.test(ua)) return 'apple';
+  return 'other';
+}
+
+/**
+ * Note a poll of a coded subscription (lib/calendar-subscribe.ts).
+ *
+ * Fails soft: a Firestore hiccup must never cost a subscriber their calendar,
+ * so this is caught and logged. The feed is cached per URL for 15 minutes, and
+ * each code is its own URL, so this runs at most about four times an hour per
+ * subscription — far more often than calendar apps actually poll.
+ */
+async function recordSubscription(db: FirebaseFirestore.Firestore, code: string, ua: string) {
+  try {
+    const ref = db.collection(COLLECTIONS.CALENDAR_SUBSCRIPTIONS).doc(code);
+    const now = new Date();
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (snap.exists) {
+        tx.update(ref, { lastSeen: now, fetches: FieldValue.increment(1) });
+      } else {
+        tx.set(ref, { firstSeen: now, lastSeen: now, fetches: 1, client: calendarClient(ua) });
+      }
+    });
+  } catch (error) {
+    console.error('Calendar subscription record failed:', error);
+  }
+}
+
+export async function GET(request: NextRequest) {
   try {
     const db = getDb();
+
+    const code = request.nextUrl.searchParams.get('s');
+    if (code && SUBSCRIBE_CODE.test(code)) {
+      await recordSubscription(db, code, request.headers.get('user-agent') ?? '');
+    }
 
     // Build community lookup for display names
     const communityLookup = new Map<string, string>();

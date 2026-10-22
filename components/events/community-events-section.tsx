@@ -14,6 +14,8 @@ import { ShareImageMenu } from "@/components/events/share-image-menu"
 import { StartupWeekBand, isFirstStartupWeekDay } from "@/components/events/startup-week-band"
 import { FeaturedTxlf, TXLF_DAY_KEYS } from "@/components/events/featured-txlf"
 import { eventDescriptionToPlainText } from "@/lib/event-markdown"
+import { track } from "@vercel/analytics"
+import { calendarSubscribeLinks, newSubscribeCode } from "@/lib/calendar-subscribe"
 import {
   buildCalendarLinks,
   dayKeyFromParts,
@@ -293,7 +295,7 @@ interface MergedEvent {
 // surfaces disagree about whether an event had ended.
 
 const FEED_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/feed`
-const ICAL_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/calendar`
+const SITE_ORIGIN = () => (typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community')
 const FEED_SCHEMA_URL = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.devsa.community'}/api/events/feed/schema`
 
 function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -470,18 +472,24 @@ function RssFeedModal({ open, onClose }: { open: boolean; onClose: () => void })
 
 function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [copiedIcal, setCopiedIcal] = useState(false)
+  // One code per dialog, so each subscription made from it can be counted
+  // (lib/calendar-subscribe.ts). The links render only while the dialog is
+  // open, which is always in the browser, so server and client never compare.
+  const [code] = useState(newSubscribeCode)
+  const links = useMemo(() => calendarSubscribeLinks(SITE_ORIGIN(), code), [code])
 
   const copyIcalUrl = useCallback(() => {
-    navigator.clipboard.writeText(ICAL_URL).then(() => {
+    track('calendar_subscribe', { app: 'copy', from: 'events' })
+    navigator.clipboard.writeText(links.feed).then(() => {
       setCopiedIcal(true)
       setTimeout(() => setCopiedIcal(false), 2000)
     })
-  }, [])
+  }, [links.feed])
 
   // Direct subscribe URLs for each provider
-  const webcalUrl = ICAL_URL.replace(/^https?:\/\//, 'webcal://')
-  const googleSubscribeUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`
-  const outlookSubscribeUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(ICAL_URL)}&name=${encodeURIComponent('DEVSA Community Events')}`
+  const webcalUrl = links.webcal
+  const googleSubscribeUrl = links.google
+  const outlookSubscribeUrl = links.outlook
 
   return (
     <AnimatePresence>
@@ -531,6 +539,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
             <div className="mt-5 grid gap-3">
               <a
                 href={googleSubscribeUrl}
+                onClick={() => track('calendar_subscribe', { app: 'google', from: 'events' })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
@@ -549,6 +558,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
 
               <a
                 href={webcalUrl}
+                onClick={() => track('calendar_subscribe', { app: 'apple', from: 'events' })}
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-gray-100">
@@ -565,6 +575,7 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
 
               <a
                 href={outlookSubscribeUrl}
+                onClick={() => track('calendar_subscribe', { app: 'outlook', from: 'events' })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"

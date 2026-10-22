@@ -516,6 +516,23 @@ export default function AdminPage() {
     }
   }, [activeTab, isAuthenticated])
 
+  // Calendar subscribers, shown on the Events tab. Best-effort: the number is
+  // context for organizers, so a failure leaves it blank rather than erroring.
+  const [calendarSubs, setCalendarSubs] = useState<{ active: number; byClient: Record<string, number> } | null>(null)
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== "events") return
+    let live = true
+    adminFetch("/api/admin/calendar-subscribers")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (live && d && typeof d.active === "number") setCalendarSubs({ active: d.active, byClient: d.byClient ?? {} })
+      })
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [activeTab, isAuthenticated])
+
   // Close the event drawer on Escape
   useEffect(() => {
     if (!showEditEvent) return
@@ -3185,7 +3202,23 @@ export default function AdminPage() {
           {activeTab === "events" && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold tracking-tight text-white">Calendar Events</h2>
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-white">Calendar Events</h2>
+                  {calendarSubs && (
+                    <p
+                      className="mt-1 text-sm text-neutral-400"
+                      title="Calendar apps that have kept polling the feed for over 12 hours, seen in the last 30 days. Counts subscriptions made since tracking began on 2026-10-22."
+                    >
+                      <span className="font-semibold text-white">{calendarSubs.active}</span>{" "}
+                      {calendarSubs.active === 1 ? "person has" : "people have"} the calendar in their own app
+                      {calendarSubs.active > 0 && (
+                        <span className="text-neutral-500">
+                          {" "}· Google {calendarSubs.byClient.google ?? 0} · Apple {calendarSubs.byClient.apple ?? 0} · Outlook {calendarSubs.byClient.outlook ?? 0}
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
                 <button
                   onClick={handleOpenCreateEvent}
                   className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
