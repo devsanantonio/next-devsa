@@ -294,6 +294,7 @@ ${items}
   return new NextResponse(rss, {
     headers: {
       'Content-Type': 'application/rss+xml; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
     },
   });
