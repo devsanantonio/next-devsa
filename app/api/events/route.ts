@@ -124,9 +124,13 @@ export async function GET(request: NextRequest) {
           return { id, name: p?.name || id, logo: p?.logo || '' };
         })
         .filter((p: { logo: string }) => p.logo);
+      // The organizer's email is for the admin. Spread into the public list, it
+      // put every organizer's address on the open internet, on every event.
+      const fields = { ...data };
+      if (!includeAll) delete fields.organizerEmail;
       return {
         id: doc.id,
-        ...data,
+        ...fields,
         // Headline host: communities if any, else co-hosting partners, else the generic default
         communityName: communityNames || partnerNames || 'DEVSA Community',
         communityLogo: primaryCommunity?.logo || '',

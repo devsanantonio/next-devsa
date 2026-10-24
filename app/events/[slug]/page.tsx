@@ -67,7 +67,6 @@ async function getEventBySlug(slug: string) {
         // The admin's own label, without the "DEVSA Community" default above,
         // so a host-less event is never described as hosted by DEVSA.
         storedCommunityName: data.communityName || null,
-        organizerEmail: data.organizerEmail,
         source: data.source,
         status: data.status,
         eventType: data.eventType,
