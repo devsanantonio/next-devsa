@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react"
 import Image from "next/image"
-import { Handshake, Mail, ArrowUpRight } from "lucide-react"
+import { Handshake, Heart, ArrowUpRight } from "lucide-react"
 
 /**
  * The worked example this block never had.
@@ -214,12 +214,17 @@ export function PartnerCta({ communityCount }: { communityCount?: number }) {
                   Partner With Us
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
+                {/* This was labeled "Sponsor an Event" and went to #donate, so
+                    a would-be event sponsor was sent to make a general gift,
+                    which cannot be designated to an event. It now says what it
+                    does. Sponsoring an event is a partnership conversation, and
+                    Partner With Us starts it. */}
                 <a
                   href="#donate"
                   className="group inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/6 px-6 py-3.5 text-sm font-medium text-white transition-all hover:border-white/20 hover:bg-white/10 md:text-base"
                 >
-                  <Mail className="h-4 w-4" />
-                  Sponsor an Event
+                  <Heart className="h-4 w-4" />
+                  Support the Work
                 </a>
               </div>
 
