@@ -1,6 +1,6 @@
 # DEVSA — San Antonio Tech Community Hub
 
-DEVSA is the central platform connecting San Antonio's tech community. We bridge the gap between passionate builders, local partners, and the growing tech ecosystem.
+DEVSA connects the people building San Antonio tech: the active learners and builders, the city's tech community groups, and the partners who back the work. This is the source of [devsa.community](https://www.devsa.community): one calendar, one public directory, and the pages for the rooms DEVSA puts on.
 
 🌐 **Live Site:** [www.devsa.community](https://www.devsa.community)
 
@@ -8,7 +8,7 @@ DEVSA is the central platform connecting San Antonio's tech community. We bridge
 
 DEVSA started with a simple question: *"Where is the tech community in San Antonio?"*
 
-We found 20+ tech-focused organizations scattered across the city, not collaborating and living in their own bubbles. So we built DEVSA to bring them together—a platform where you can discover tech communities that match your interests and where these groups can collaborate, share resources, and grow stronger together.
+The groups were always here. They ran in separate orbits, with no shared calendar and no single place for a newcomer to find them. In April 2024 there were about ten we could find; today there are 25, on one calendar, alongside the partners who back them.
 
 ## Tech Stack
 
@@ -20,8 +20,7 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 - **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google OAuth + email/password
 - **Email:** [Resend](https://resend.com/)
 - **Bot protection:** [Vercel BotID](https://vercel.com/docs/botid)
-- **Payments:** [Stripe](https://stripe.com/)
-- **Merch fulfillment:** [Printify](https://printify.com/)
+- **Donations:** [Stripe](https://stripe.com/)
 - **Storage:** [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
 - **Deployment:** Vercel
 
@@ -31,7 +30,7 @@ We found 20+ tech-focused organizations scattered across the city, not collabora
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 20.9+
 - [pnpm](https://pnpm.io/)
 - A Firebase project with Firestore and Authentication enabled
 - A [Resend](https://resend.com/) account
@@ -81,10 +80,7 @@ Event listings aggregated across member communities, with RSVP capture, calendar
 A record, not an offer. The room Geekdom hosted closed on 19 September 2026; the page was rewritten in past tense and unlinked from the nav, and its "ping an admin" form and live Discord presence check were removed with it. What is left is the volunteer wall and the thanks to Geekdom, which is why the URL still exists.
 
 ### Partners + Communities (`/buildingtogether`)
-Discover 20+ local tech communities and partner organizations.
-
-### Shop (`/shop`)
-DEVSA merch, checked out through Stripe and fulfilled by Printify.
+The 25 community groups and the partners who back the work, with a page for each.
 
 ### Admin Dashboard (`/admin`)
 Protected dashboard for community organizers — manage events, communities, and admin users. Requires approved admin access recorded in Firestore.
@@ -105,7 +101,7 @@ pnpm test:feed  # Vitest: events feed contract test
 
 ## Contributing
 
-We welcome contributions from the San Antonio tech community.
+We welcome contributions from the San Antonio tech community, and first-time contributors especially. Start with an issue labeled [`good first issue`](https://github.com/devsanantonio/next-devsa/labels/good%20first%20issue), and read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 1. **Fork** the repository on GitHub and clone your fork
 2. **Branch:** `git checkout -b feature/your-feature-name`
@@ -117,13 +113,19 @@ We welcome contributions from the San Antonio tech community.
 
 ### Adding a community or partner
 
-Both are managed through the Admin Dashboard, but the static fallback lives in [data/communities.ts](data/communities.ts) and [data/partners.ts](data/partners.ts). Add your entry there too, matching the shape of the existing records — the fallback is what renders if Firestore is unreachable.
+Both live in Firestore and are managed through the Admin Dashboard. There is no static copy to update: see "How the codebase is organized" above for why that copy was removed. If you run a San Antonio tech group and want it listed, ask in the [Discord](https://www.devsa.community/discord).
+
+---
+
+## License
+
+The code is [MIT](LICENSE). The DEVSA name and logos, and the photographs, community and partner logos in [public/](public/), are not covered by it. See [LICENSE](LICENSE).
 
 ---
 
 ## Connect With Us
 
-- 💬 [Discord](https://discord.gg/cvHHzThrEw)
+- 💬 [Discord](https://www.devsa.community/discord)
 - 🔗 [LinkedIn](https://www.linkedin.com/company/devsa)
 - 📸 [Instagram](https://www.instagram.com/devsatx/)
 - 🐦 [X (Twitter)](https://x.com/devsatx)

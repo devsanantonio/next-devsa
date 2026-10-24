@@ -199,7 +199,7 @@ export function buildWeeklyDigestPayload(events: DigestEvent[]) {
     title: `Week of ${weekOfLabel()}`,
     url: `${siteUrl}/events`,
     color: EMBED_COLOR,
-    footer: { text: 'One calendar for every community · devsa.community/events' },
+    footer: { text: 'One calendar for every community · devsa.community/events · Build on it: github.com/devsanantonio' },
     timestamp: new Date().toISOString(),
   };
 

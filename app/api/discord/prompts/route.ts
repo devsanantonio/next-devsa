@@ -39,7 +39,7 @@ function buildPayload(dayKey: string) {
     return {
       channel: 'build-and-tell' as const,
       body: {
-        content: `${label('🛠️', 'BUILD-AND-TELL FRIDAY')}\n### ${prompt.text}\n-# Reply below with a screenshot, a link or a demo.`,
+        content: `${label('🛠️', 'BUILD-AND-TELL FRIDAY')}\n### ${prompt.text}\n-# Reply below with a screenshot, a link or a demo. Open source? Add it to the [showcase](<https://github.com/devsanantonio/devsa-sessions/blob/main/SHOWCASE.md>).`,
         allowed_mentions,
       },
     };
