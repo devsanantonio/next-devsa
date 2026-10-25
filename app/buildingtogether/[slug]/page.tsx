@@ -60,6 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title,
       description,
+      alternates: { canonical: `/buildingtogether/${slug}` },
       openGraph: {
         title: community.name,
         description,
@@ -93,6 +94,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title,
       description,
+      alternates: { canonical: `/buildingtogether/${slug}` },
       openGraph: {
         title: partner.name,
         description,

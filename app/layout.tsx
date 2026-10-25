@@ -136,9 +136,13 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: "/",
-  },
+  /* No canonical here. A canonical set in the root layout is inherited by
+     every page that doesn't set its own, and this one said "/": every event
+     page, every group and partner page, and /branding told search engines
+     they were the homepage, so none of them could be indexed in their own
+     right. Each page names its own canonical instead; the homepage, which is
+     a client component and can't export metadata, needs none, because a page
+     with no canonical is taken as canonical at its own address. */
   openGraph: {
     title: "DEVSA — San Antonio Tech Meetups, Workshops and Conferences",
     description: SITE_DESCRIPTION,

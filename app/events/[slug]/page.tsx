@@ -142,6 +142,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       // Link only: the page works for anyone holding the link, and asks search
       // engines to leave it out. See lib/event-visibility.ts.
       ...(event.unlisted ? { robots: { index: false, follow: false } } : {}),
+      alternates: { canonical: `/events/${event.slug}` },
       openGraph: {
         title: event.title,
         description,
