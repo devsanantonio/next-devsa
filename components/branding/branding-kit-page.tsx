@@ -2,19 +2,72 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
+import { conferences } from "@/data/conferences"
+import { ConferenceMark } from "@/components/events/conference-mark"
 
 const ORIGINAL_LOGO_SVG = "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
 const ORIGINAL_LOGO_PNG = "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.png"
 const ALT_LOGO_SVG = "/branding/devsa-alt-logo.svg"
 const ALT_LOGO_PNG = "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-altlogo.png"
 
+/* The logo's three colors. Amber and cyan used to be listed here and appear in
+   two files each; cyan is More Human Than Human's glitch, so it belongs to that
+   conference's identity, not DEVSA's. */
 const brandColors = [
   { name: "Rose", hex: "#ef426f", usage: "Primary accent, CTAs, links" },
-  { name: "Amber", hex: "#fbbf24", usage: "Hover states, highlights" },
-  { name: "Teal", hex: "#00b2a9", usage: "Status indicators, accents" },
-  { name: "Orange", hex: "#ff8200", usage: "Terminal dots, warm accents" },
-  { name: "Cyan", hex: "#00f2ff", usage: "Glitch effects, tech aesthetic" },
+  { name: "Teal", hex: "#00b2a9", usage: "Accents, status" },
+  { name: "Orange", hex: "#ff8200", usage: "Warm accents" },
 ]
+
+/* Each conference's rules, from its own components. Keep them in step with
+   components/brand/, components/pysa/ and the Access Granted hero. */
+const CONFERENCE_RULES: Record<string, string[]> = {
+  "the-model": [
+    "Geist Mono throughout, and labels open with //",
+    "The wordmark is a half-finished selection: \"The\" plain, \"Model\" highlighted in lavender #C0B4FC. Never highlight the whole name, and never use a display weight",
+  ],
+  "access-granted": [
+    "Geist Mono bold uppercase: ACCESS in terminal green #00ff66, GRANTED in white, then a block cursor",
+    "The padlock is its symbol. Oswald appears only on its page headline",
+  ],
+  pysanantonio: [
+    "The wordmark is drawn art (Amador). Use the files in /pysa; never retype it",
+    "Never pixelate or restyle the mascot, and PyTexas keeps its blue and gold",
+  ],
+  "more-human-than-human": [
+    "Two lines in Geist Black uppercase: MORE HUMAN in near-white, THAN HUMAN in amber #ff9900",
+    "The glitch effect and its cyan belong to this conference",
+  ],
+}
+
+/* Each conference's wordmark as files. The Model, Access Granted and More Human
+   are set as live text on the site, so the files in public/branding/conferences/
+   are outlines of exactly that lettering, built from the values in
+   components/brand/the-model.tsx, components/brand/more-human.tsx,
+   components/events/event-brand-lockup.tsx and lib/event-brands.ts. Change one
+   of those and re-export its file. PySanAntonio's wordmark is drawn art and
+   ships as-is. All four are made for black, where the brands live; PySA also
+   has a version for light backgrounds. */
+const CONFERENCE_DOWNLOADS: Record<string, { label: string; href: string }[]> = {
+  "the-model": [
+    { label: "SVG", href: "/branding/conferences/the-model-wordmark.svg" },
+    { label: "PNG", href: "/branding/conferences/the-model-wordmark.png" },
+  ],
+  "access-granted": [
+    { label: "SVG", href: "/branding/conferences/access-granted-wordmark.svg" },
+    { label: "PNG", href: "/branding/conferences/access-granted-wordmark.png" },
+  ],
+  pysanantonio: [
+    { label: "SVG", href: "/pysa/wordmark.svg" },
+    { label: "PNG", href: "/pysa/wordmark.png" },
+    { label: "SVG for light backgrounds", href: "/pysa/wordmark-dark.svg" },
+  ],
+  "more-human-than-human": [
+    { label: "SVG", href: "/branding/conferences/more-human-than-human-wordmark.svg" },
+    { label: "PNG", href: "/branding/conferences/more-human-than-human-wordmark.png" },
+  ],
+}
 
 const neutralColors = [
   { name: "White", hex: "#ffffff", usage: "Primary text on dark" },
@@ -202,14 +255,15 @@ export function BrandingKitPage() {
         <div className="border border-neutral-800/50 rounded-2xl p-8 bg-neutral-900/30">
           <h2 className="text-xl font-semibold text-white mb-4">About DEVSA</h2>
           <p className="text-neutral-400 text-sm leading-relaxed mb-3">
-            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> nonprofit that gives San Antonio&apos;s tech groups one shared
-            calendar, one public directory, and one room to meet partners in. The groups run themselves.
+            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> nonprofit that connects the people building San Antonio
+            tech: one calendar, one public directory, one channel to follow, and one room a few times a year,
+            governed by a volunteer board. The groups that use it still run themselves.
           </p>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Our tagline: <span className="text-white font-medium">&quot;Find Your People. Build Your Future.&quot;</span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Tech Community", "Nonprofit", "San Antonio", "Education", "Events", "Conferences"].map((tag) => (
+            {["Tech Community", "Nonprofit", "San Antonio", "Conferences", "Community Calendar", "Open Source"].map((tag) => (
               <span key={tag} className="px-3 py-1 text-xs text-neutral-400 bg-white/5 border border-neutral-800/50 rounded-full">
                 {tag}
               </span>
@@ -222,7 +276,7 @@ export function BrandingKitPage() {
       <section className="max-w-5xl mx-auto px-6 md:px-8 pb-16">
         <h2 className="text-2xl font-bold text-white mb-2">Logos</h2>
         <p className="text-neutral-500 text-sm mb-8">
-          Download the DEVSA logo in SVG or PNG format. Use the original on dark backgrounds and the alternative for terminal-style contexts.
+          Download the DEVSA logo in SVG or PNG format. These are the only two versions: the full-color logo, and the alt logo with its bars in off-white.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -266,29 +320,114 @@ export function BrandingKitPage() {
           <ul className="text-xs text-neutral-400 space-y-2 leading-relaxed">
             <li className="flex items-start gap-2">
               <span className="text-emerald-400 mt-0.5">✓</span>
-              Use the logo on dark backgrounds for best contrast
+              Use one of the two versions above, as downloaded
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-400 mt-0.5">✓</span>
-              Maintain clear space equal to the logo height around all sides
+              On black, the logo&apos;s body blends into the background and the bars and SA stand on their own. That&apos;s intended
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-400 mt-0.5">✓</span>
-              Use SVG format whenever possible for crisp rendering
+              Keep clear space equal to the logo&apos;s height on all sides, and use SVG whenever you can
             </li>
             <li className="flex items-start gap-2">
               <span className="text-red-400 mt-0.5">✗</span>
-              Do not stretch, skew, or rotate the logo
+              Don&apos;t set the word &quot;DEVSA&quot; beside the logo. The mark already says DEVSA
             </li>
             <li className="flex items-start gap-2">
               <span className="text-red-400 mt-0.5">✗</span>
-              Do not change the logo colors or add effects
+              Don&apos;t recolor or invert it, and don&apos;t stretch, skew, rotate or add effects
             </li>
             <li className="flex items-start gap-2">
               <span className="text-red-400 mt-0.5">✗</span>
-              Do not place the logo on busy or low-contrast backgrounds
+              Don&apos;t place it on busy or low-contrast backgrounds
             </li>
           </ul>
+        </div>
+      </section>
+
+      {/* Conferences and programs.
+
+          Each conference already has its identity, set on its own page. The
+          marks here come from ConferenceMark, the same component /events and
+          the homepage render, so this page shows exactly what those pages show
+          and cannot drift from them. The rules under each are the ones written
+          into that conference's own components, which nobody outside the code
+          could otherwise see. All four are DEVSA's: Access Granted and The
+          Model ran at SA Startup + Tech Week, and borrow its Oswald display
+          face on share cards, but they are DEVSA conferences. */}
+      <section className="max-w-5xl mx-auto px-6 md:px-8 pb-16">
+        <h2 className="text-2xl font-bold text-white mb-2">Conferences &amp; Programs</h2>
+        <p className="text-neutral-500 text-sm mb-8">
+          DEVSA&apos;s conferences each have their own identity. Use these files rather than retyping the names: the wordmarks are made for black backgrounds, where the conferences live.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {conferences.map((conference) => (
+            <div key={conference.key} className="border border-neutral-800/50 rounded-2xl overflow-hidden">
+              <div className="bg-neutral-900 px-6 py-8 border-b border-neutral-800/50 min-h-32 flex items-center">
+                <ConferenceMark conference={conference} size="card" />
+              </div>
+              <div className="p-6 bg-neutral-900/30">
+                <ul className="text-xs text-neutral-400 space-y-2 leading-relaxed mb-4">
+                  {(CONFERENCE_RULES[conference.key] ?? []).map((rule) => (
+                    <li key={rule} className="flex items-start gap-2">
+                      <span className="text-neutral-500 mt-0.5">—</span>
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link
+                    href={conference.href ?? "/events"}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-[#ef426f] transition-colors"
+                  >
+                    {conference.name}
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                  {(CONFERENCE_DOWNLOADS[conference.key] ?? []).map(({ label, href }) => (
+                    <a key={href} href={href} download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                      {label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* localhost:210 is a program, not a conference: DEVSA's open-data repo. */}
+          <div className="border border-neutral-800/50 rounded-2xl overflow-hidden">
+            <div className="bg-neutral-900 px-6 py-8 border-b border-neutral-800/50 min-h-32 flex items-center">
+              <img src="/branding/localhost/localhost-210-wordmark-dark.svg" alt="localhost:210" className="h-8 w-auto" />
+            </div>
+            <div className="p-6 bg-neutral-900/30">
+              <ul className="text-xs text-neutral-400 space-y-2 leading-relaxed mb-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  Geist Mono SemiBold. The :210, San Antonio&apos;s area code, is always orange #ff8200
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  &quot;A DEVSA project,&quot; never &quot;data from DEVSA.&quot; The data is the City&apos;s, Bexar County&apos;s and VIA&apos;s
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href="https://github.com/devsanantonio/localhost"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-[#ef426f] transition-colors"
+                >
+                  localhost on GitHub
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+                <a href="/branding/localhost/localhost-210-lockup-dark.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Lockup SVG (dark)
+                </a>
+                <a href="/branding/localhost/localhost-210-lockup-light.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Lockup SVG (light)
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -344,14 +483,14 @@ export function BrandingKitPage() {
           {/* Geist Sans */}
           <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Primary</p>
-            <p className="text-3xl font-bold text-white mb-1 font-geist-sans">Geist Sans</p>
+            <p className="text-3xl font-bold text-white mb-1 font-sans">Geist Sans</p>
             <p className="text-neutral-500 text-xs mb-5">
               Used for headings, body text, and UI elements
             </p>
             <div className="space-y-3 border-t border-neutral-800/50 pt-5">
               <div className="flex items-baseline justify-between">
-                <span className="text-white text-2xl font-bold tracking-tight">Headlines — Bold</span>
-                <span className="text-[10px] text-neutral-600 font-mono">700</span>
+                <span className="text-white text-2xl font-black tracking-[-0.02em]">Headings — Black</span>
+                <span className="text-[10px] text-neutral-600 font-mono">900</span>
               </div>
               <div className="flex items-baseline justify-between">
                 <span className="text-white text-lg font-medium">Subheadings — Medium</span>
@@ -362,7 +501,7 @@ export function BrandingKitPage() {
                 <span className="text-[10px] text-neutral-600 font-mono">400</span>
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-neutral-500 text-sm font-light">Captions — Light</span>
+                <span className="text-white/50 text-sm font-light italic">Muted clause — Light italic</span>
                 <span className="text-[10px] text-neutral-600 font-mono">300</span>
               </div>
             </div>
@@ -371,45 +510,50 @@ export function BrandingKitPage() {
           {/* Geist Mono */}
           <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Secondary</p>
-            <p className="text-3xl font-bold text-white mb-1 font-geist-mono">Geist Mono</p>
+            <p className="text-3xl font-bold text-white mb-1 font-mono">Geist Mono</p>
             <p className="text-neutral-500 text-xs mb-5">
-              Used for code, data, and technical content
+              Used for code, data, and the labels on event and conference pages
             </p>
             <div className="space-y-3 border-t border-neutral-800/50 pt-5">
-              <p className="text-white text-sm font-geist-mono">
+              <p className="text-white text-sm font-mono">
                 ABCDEFGHIJKLMNOPQRSTUVWXYZ
               </p>
-              <p className="text-white text-sm font-geist-mono">
+              <p className="text-white text-sm font-mono">
                 abcdefghijklmnopqrstuvwxyz
               </p>
-              <p className="text-white text-sm font-geist-mono">
+              <p className="text-white text-sm font-mono">
                 0123456789 !@#$%^&amp;*()
               </p>
-              <p className="text-neutral-500 text-xs font-geist-mono mt-4">
+              <p className="text-neutral-500 text-xs font-mono mt-4">
                 {`const devsa = { community: "San Antonio" }`}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Type Scale */}
+        {/* Type scale: the design system's, not a generic ladder. See
+            .claude/skills/design-system/SKILL.md. */}
         <div className="mt-8 border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
-          <h3 className="text-sm font-medium text-white mb-5">Type Scale</h3>
-          <div className="space-y-4">
-            {[
-              { size: "text-4xl", label: "Display", weight: "font-bold", tracking: "tracking-tight" },
-              { size: "text-2xl", label: "Heading 1", weight: "font-bold", tracking: "tracking-tight" },
-              { size: "text-xl", label: "Heading 2", weight: "font-semibold", tracking: "" },
-              { size: "text-lg", label: "Heading 3", weight: "font-medium", tracking: "" },
-              { size: "text-base", label: "Body", weight: "font-normal", tracking: "" },
-              { size: "text-sm", label: "Small", weight: "font-normal", tracking: "" },
-              { size: "text-xs", label: "Caption", weight: "font-normal", tracking: "tracking-wide" },
-            ].map(({ size, label, weight, tracking }) => (
-              <div key={label} className="flex items-baseline gap-4">
-                <span className="text-[10px] text-neutral-600 font-mono w-16 shrink-0 text-right">{label}</span>
-                <span className={`${size} ${weight} ${tracking} text-white`}>Find Your People. Build Your Future.</span>
-              </div>
-            ))}
+          <h3 className="text-sm font-medium text-white mb-5">Headings and eyebrows</h3>
+          <p className="text-[10px] text-neutral-600 font-mono mb-2">SECTION HEADING</p>
+          <p className="text-balance font-sans leading-[0.95] font-black tracking-[-0.02em] text-white text-4xl md:text-5xl">
+            Find Your People.{" "}
+            <span className="font-light italic text-white/50">Build Your Future.</span>
+          </p>
+          <p className="text-xs text-neutral-500 mt-3 mb-8">
+            Black, tight, with the second clause in light italic. On marketing pages it runs up to text-7xl.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-[10px] text-neutral-600 font-mono mb-2">EYEBROW · MARKETING PAGES</p>
+              <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-white/50">Building Together</p>
+              <p className="text-xs text-neutral-500 mt-2">Sans, for the homepage and Building Together.</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-neutral-600 font-mono mb-2">EYEBROW · EVENT AND CONFERENCE PAGES</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">Community Calendar</p>
+              <p className="text-xs text-neutral-500 mt-2">Mono, for /events and the conferences. Never mix the two.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -446,7 +590,7 @@ export function BrandingKitPage() {
                     everybody else. */}
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Mission</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is the 501(c)(3) that gives San Antonio&apos;s tech groups one shared calendar, one public directory, and one room to meet partners in. The groups run themselves.
+                  DEVSA connects the people building San Antonio tech: one calendar, one public directory, one channel to follow, and one room a few times a year, governed by a volunteer board.
                 </p>
               </div>
               {/* For grant forms and outreach. The same words as the problem
@@ -470,7 +614,7 @@ export function BrandingKitPage() {
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Value Proposition</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  Every tech meetup, workshop and conference in San Antonio in one calendar — Python, Linux, .NET, AI, agents, game dev, UX, design, data, security, AWS, Google.
+                  The rooms where San Antonio&apos;s builders find each other: DEVSA&apos;s conferences and the meetups of 25 community groups, from Python and Linux to AI, security, game dev and UX. One calendar makes every room easy to find, and nothing on it is a sales pitch.
                 </p>
               </div>
             </div>
@@ -480,6 +624,7 @@ export function BrandingKitPage() {
             <h3 className="text-sm font-medium text-white mb-4">Brand Voice</h3>
             <div className="space-y-3">
               {[
+                { trait: "Plain and honest", desc: "Say the modest fact, and let the real one land. No sales pitch" },
                 { trait: "Welcoming", desc: "Inclusive and approachable — everyone belongs" },
                 { trait: "Technical", desc: "We speak developer — but keep it accessible" },
                 { trait: "Community-first", desc: "People and connections over products" },
@@ -502,9 +647,9 @@ export function BrandingKitPage() {
             <div>
               <p className="text-xs text-emerald-400 uppercase tracking-wider mb-2">Do</p>
               <ul className="text-sm text-neutral-400 space-y-2">
-                <li>&quot;Join us for a hands-on workshop this Saturday&quot;</li>
-                <li>&quot;Connect with builders across San Antonio&quot;</li>
-                <li>&quot;9 tech communities, one city, endless possibilities&quot;</li>
+                <li>&quot;The next Alamo Python meetup is on the calendar&quot;</li>
+                <li>&quot;25 tech groups, one calendar&quot;</li>
+                <li>&quot;Find the room for what you&apos;re into&quot;</li>
               </ul>
             </div>
             <div>
@@ -513,6 +658,7 @@ export function BrandingKitPage() {
                 <li>&quot;Leverage synergies in the innovation ecosystem&quot;</li>
                 <li>&quot;We are the premier technology organization&quot;</li>
                 <li>&quot;Disrupting the future of tech in Texas&quot;</li>
+                <li>&quot;Join us at…&quot; for an event DEVSA lists but doesn&apos;t host</li>
               </ul>
             </div>
           </div>
@@ -530,18 +676,18 @@ export function BrandingKitPage() {
           {/* Terminal Aesthetic */}
           <div className="border border-neutral-800/50 rounded-2xl overflow-hidden">
             <div className="bg-neutral-900 p-4 border-b border-neutral-800/50">
-              <div className="flex items-center gap-1.5 mb-3">
-                <div className="w-2.5 h-2.5 bg-[#00b2a9] rounded-full" />
-                <div className="w-2.5 h-2.5 bg-[#ef426f] rounded-full" />
-                <div className="w-2.5 h-2.5 bg-[#ff8200] rounded-full" />
+              <div className="flex items-center gap-1 mb-3">
+                <div className="w-8 h-1.5 bg-[#00b2a9] rounded-sm" />
+                <div className="w-8 h-1.5 bg-[#ef426f] rounded-sm" />
+                <div className="w-8 h-1.5 bg-[#ff8200] rounded-sm" />
               </div>
-              <p className="text-xs font-geist-mono text-neutral-500">
+              <p className="text-xs font-mono text-neutral-500">
                 <span className="text-[#00b2a9]">$</span> devsa --community
               </p>
             </div>
             <div className="p-4 bg-neutral-900/50">
               <p className="text-sm font-medium text-white mb-1">Terminal Aesthetic</p>
-              <p className="text-xs text-neutral-500">Three-dot navigation inspired by terminal window controls. Teal, rose, and orange dots as signature elements.</p>
+              <p className="text-xs text-neutral-500">The logo is a terminal window. Its three bars and its &gt; prompt carry into prompts and labels across the site.</p>
             </div>
           </div>
 
@@ -556,26 +702,21 @@ export function BrandingKitPage() {
             </div>
             <div className="p-4 bg-neutral-900/50">
               <p className="text-sm font-medium text-white mb-1">Dark-First Design</p>
-              <p className="text-xs text-neutral-500">Neutral 950 base with subtle surface layers. Glass-morphism accents with backdrop blur and transparency.</p>
+              <p className="text-xs text-neutral-500">Neutral 950 pages, neutral 900 cards and quiet borders. Color comes from the logo&apos;s accents, used sparingly.</p>
             </div>
           </div>
 
-          {/* Vibrant Interactions */}
+          {/* Readable contrast: the measured floor from the design system. */}
           <div className="border border-neutral-800/50 rounded-2xl overflow-hidden">
-            <div className="bg-neutral-900 p-4 border-b border-neutral-800/50 flex items-center justify-center h-18">
-              <div className="flex gap-1">
-                {["#ef426f", "#fbbf24", "#00b2a9", "#ff8200", "#00f2ff"].map((color) => (
-                  <div
-                    key={color}
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
+            <div className="bg-neutral-900 p-4 border-b border-neutral-800/50 flex items-center justify-center gap-3 h-18">
+              <span className="text-sm text-white">100</span>
+              <span className="text-sm text-white/70">70</span>
+              <span className="text-sm text-white/50">50</span>
+              <span className="text-sm text-white/30 line-through">30</span>
             </div>
             <div className="p-4 bg-neutral-900/50">
-              <p className="text-sm font-medium text-white mb-1">Vibrant Interactions</p>
-              <p className="text-xs text-neutral-500">Confetti effects, hover animations, and glitch aesthetics create an energetic, developer-focused experience.</p>
+              <p className="text-sm font-medium text-white mb-1">Readable Contrast</p>
+              <p className="text-xs text-neutral-500">White text never drops below 50% opacity on dark backgrounds, the measured minimum for accessible contrast. Fainter is for dividers, never words.</p>
             </div>
           </div>
         </div>
