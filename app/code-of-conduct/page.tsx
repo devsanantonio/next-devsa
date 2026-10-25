@@ -27,6 +27,23 @@ export const metadata: Metadata = {
     url: `${siteUrl}/code-of-conduct`,
     siteName: "DEVSA",
     type: "website",
+    images: [
+      {
+        url: `${siteUrl}/api/og/code-of-conduct`,
+        width: 1200,
+        height: 630,
+        alt: "DEVSA Code of Conduct: one standard, in every room",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DEVSA Code of Conduct",
+    description: DESCRIPTION,
+    images: [`${siteUrl}/api/og/code-of-conduct`],
+    creator: "@devsatx",
+    site: "@devsatx",
   },
 }
 
@@ -34,7 +51,7 @@ export const metadata: Metadata = {
  * DEVSA's code of conduct.
  *
  * Adapted from PyTexas's (github.com/pytexas/code-of-conduct, MIT), so that
- * PySanAntonio — which DEVSA co-runs with the PyTexas Foundation — holds
+ * PySanAntonio — which DEVSA runs, with the PyTexas Foundation as a partner — holds
  * attendees to one standard rather than two. Same shape as theirs: a short
  * version up front, then the community code (Contributor Covenant 2.1) and the
  * in-person code (PyCon / Django lineage). Three things go further than
@@ -434,8 +451,8 @@ export default function CodeOfConductPage() {
                 <a href="https://github.com/pytexas/code-of-conduct" className={a} target="_blank" rel="noopener noreferrer">
                   PyTexas Code of Conduct
                 </a>{" "}
-                (MIT License, © 2023 PyTexas), so PySanAntonio, which DEVSA co-runs with the PyTexas
-                Foundation, holds everyone to one standard. Its community standards and consequences
+                (MIT License, © 2023 PyTexas), so PySanAntonio, which DEVSA runs with the PyTexas
+                Foundation as a partner, holds everyone to one standard. Its community standards and consequences
                 come from the{" "}
                 <a href="https://www.contributor-covenant.org/version/2/1/code_of_conduct/" className={a} target="_blank" rel="noopener noreferrer">
                   Contributor Covenant 2.1
