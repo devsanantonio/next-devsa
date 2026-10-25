@@ -37,10 +37,10 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 
   sections.push(`## What DEVSA runs
 
-- **The community calendar** (${SITE}/events): every tech meetup, workshop and conference in San Antonio in one place. Anyone can subscribe in Google, Apple or Outlook Calendar, follow the RSS/JSON feed, or embed it on their own site.
+- **DEVSA's own conferences**: The Model (${SITE}/events/the-model), Access Granted, a hands-on security room (${SITE}/events/access-granted), PySanAntonio, DEVSA-run with Alamo Python and the PyTexas Foundation as partners (${SITE}/events/pysanantonio), and More Human Than Human, on AI (${SITE}/events/morehumanthanhuman). The Model and Access Granted ran at SA Startup + Tech Week, where in fall 2026 DEVSA also ran sessions through ten groups.
+- **The community calendar** (${SITE}/events): the meetups, workshops and conferences of San Antonio's tech groups in one place, which is how people find the rooms. Nothing on it is a sales pitch. Anyone can subscribe in Google, Apple or Outlook Calendar, follow the RSS feed, or embed it on their own site.
 - **The public directory** (${SITE}/buildingtogether): ${groupCount || "the city's"} community groups and ${partners.length || "the"} partners, each with its own page.
 - **One channel to follow**: DEVSA's LinkedIn (https://www.linkedin.com/company/devsa), Instagram (https://www.instagram.com/devsatx), X (https://x.com/devsatx) and YouTube (https://www.youtube.com/@devsatx), where events and conferences have been streamed live. They cover what is happening across the groups, including the ones that have no social accounts of their own.
-- **Conferences built with the groups**: The Model, Access Granted (a security track), PySanAntonio (with Alamo Python and the PyTexas Foundation) and More Human Than Human (AI). In fall 2026 DEVSA ran sessions through ten groups for SA Startup + Tech Week.
 - **Partner pop-ups**: SheBuilds with Lovable, and Zero to Agent with Vercel.
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
@@ -59,6 +59,16 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 - Donate (a 501(c)(3); donors receive an emailed receipt): ${SITE}/buildingtogether#donate
 - Subscribe to the calendar: ${SITE}/events
 - Join the Discord: ${SITE}/discord`)
+
+  // For developers asking how to build on DEVSA's calendar or on the city's data.
+  sections.push(`## Open source and open data
+
+DEVSA's code and docs are public at https://github.com/devsanantonio:
+
+- **community-calendar-api** (https://github.com/devsanantonio/community-calendar-api): how to read the community calendar's public RSS feed and iCalendar subscription, with examples and every group id.
+- **localhost** (https://github.com/devsanantonio/localhost), presented as localhost:210: a starting point for building with San Antonio's open data from the City of San Antonio, Bexar County and VIA Metropolitan Transit. The data belongs to those agencies; DEVSA isn't affiliated with them.
+- **devsa-sessions** (https://github.com/devsanantonio/devsa-sessions): live build sessions from the DEVSA Discord, and the Build-and-tell Friday showcase.
+- **next-devsa** (https://github.com/devsanantonio/next-devsa): the source of devsa.community, open to contributors.`)
 
   sections.push(`## Facts
 
@@ -84,7 +94,8 @@ ${partners.map((p) => `- [${p.name}](${SITE}/buildingtogether/${p.id})${p.websit
 
 - Calendar subscription (iCal): ${SITE}/api/events/calendar
 - Event feed: ${SITE}/api/events/feed (field reference: ${SITE}/api/events/feed/schema)
-- Embeddable calendar: ${SITE}/events/embed`)
+- Embeddable calendar: ${SITE}/events/embed
+- How to use all three, with examples: https://github.com/devsanantonio/community-calendar-api`)
   } else {
     sections.push(`## Key pages
 
@@ -92,6 +103,8 @@ ${partners.map((p) => `- [${p.name}](${SITE}/buildingtogether/${p.id})${p.websit
 - [Groups and partners](${SITE}/buildingtogether)
 - [About, the board and the record](${SITE}/about)
 - [Code of conduct](${SITE}/code-of-conduct)
+- [Branding kit: logos, colors and conference wordmarks](${SITE}/branding)
+- Conferences: [The Model](${SITE}/events/the-model), [Access Granted](${SITE}/events/access-granted), [PySanAntonio](${SITE}/events/pysanantonio), [More Human Than Human](${SITE}/events/morehumanthanhuman)
 
 The full version, with every group and partner: ${SITE}/llms-full.txt`)
   }
