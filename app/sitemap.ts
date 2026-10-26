@@ -52,6 +52,7 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/events/pysanantonio/2025`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/events/zero-to-agent`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/branding`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
+    { url: `${baseUrl}/localhost`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
   ]
 }
 

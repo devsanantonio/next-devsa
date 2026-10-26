@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       // path-for-path, so old indexed URLs must resolve instead of 404ing.
       { source: "/mission", destination: "/buildingtogether", permanent: true },
 
+      // localhost:210's short link, for slides, stickers and QR codes. The :210
+      // in the mark is San Antonio's area code.
+      { source: "/210", destination: "/localhost", permanent: true },
+
       // SA Startup + Tech Week runs its own site, so DEVSA no longer hosts a
       // landing page or call for speakers for it. Permanent (308) — a future
       // year would live at its own slug, not this one.
