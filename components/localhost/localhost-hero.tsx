@@ -221,7 +221,7 @@ export function LocalhostHero() {
               ))}{" "}
               publish their data free, no key required.{" "}
               <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s starter kit for it: code
-              for each source, and three things built with it, below.
+              for each source, and below, three small experiments to see what&apos;s in there.
             </p>
             {/* The first five minutes, shown rather than described: no sign-up, no keys, one file. */}
             <div className="mt-6 max-w-xl overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]">

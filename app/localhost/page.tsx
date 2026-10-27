@@ -59,9 +59,9 @@ const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] track
 const link = "font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
 const REPO = "https://github.com/devsanantonio/localhost"
 
-/** Where to take a starter. Each section above already links its starter; these say what to make with one. */
+/** Questions to start from, one per starter. Each section above already links its starter; these are curiosity, not products. */
 const IDEAS = [
-  { slug: "via-next-bus", source: "VIA Metropolitan Transit", title: "A departure board", body: "The next buses from the stop outside a library, a coworking lobby or a dorm, on a screen by the door. via-next-bus already answers the question; give it a face." },
+  { slug: "via-next-bus", source: "VIA Metropolitan Transit", title: "What's outside your door?", body: "When does the next bus leave the stop nearest you? via-next-bus answers it in a few lines; see where the question takes you." },
   { slug: "permits-near-you", source: "City of San Antonio", title: "The wait", body: "Four25 San Pedro waited 785 days from filing to permit. Which kinds of work wait longest, and where? Chart filing-to-permit by type or council district." },
   { slug: "acequias", source: "Bexar County", title: "Your walk, in 1720", body: "Which acequias did your route to work cross, and when did they go dry? Put them under today's streets and see which ones the streets still follow." },
 ]
@@ -193,7 +193,7 @@ export default function LocalhostPage() {
             Each starter is one Python file that asks one source a real question, and runs in under a minute. The repo
             has five, from the 1897 city directory to 311 by district, and{" "}
             <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a> covers everything the three publish,
-            and their terms. Three places to take one:
+            and their terms. Three questions to start from:
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
             {IDEAS.map((idea) => (
