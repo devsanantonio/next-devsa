@@ -204,7 +204,7 @@ export default function LocalhostPage() {
               >
                 <p className={eyebrow}>Idea · {idea.source}</p>
                 <p className="flex-1 text-white/80">
-                  <span className="font-semibold text-white">{idea.title}.</span> {idea.body}
+                  <span className="font-semibold text-white">{/[.?!]$/.test(idea.title) ? idea.title : `${idea.title}.`}</span> {idea.body}
                 </p>
                 <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 group-hover:text-white">
                   Start from starters/{idea.slug} <ArrowUpRight className="h-3.5 w-3.5" />
