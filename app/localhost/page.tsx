@@ -59,11 +59,13 @@ const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] track
 const link = "font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
 const REPO = "https://github.com/devsanantonio/localhost"
 
-const STARTERS = [
-  { slug: "acequias", source: "Bexar County", title: "Acequias", body: "Which Spanish irrigation ditches ran near any point, when each was dug and when it went dry, and a map of all of them with a year slider." },
-  { slug: "permits-near-you", source: "City of San Antonio", title: "Permits near you", body: "Every building permit around a point since 2025, biggest first, with how long each took to issue. One SQL query." },
-  { slug: "via-next-bus", source: "VIA", title: "VIA next bus", body: "Type part of a stop's name and get its next departures, from the published schedule." },
+/** Where to take a starter. Each section above already links its starter; these say what to make with one. */
+const IDEAS = [
+  { slug: "via-next-bus", source: "VIA Metropolitan Transit", title: "A departure board", body: "The next buses from the stop outside a library, a coworking lobby or a dorm, on a screen by the door. via-next-bus already answers the question; give it a face." },
+  { slug: "permits-near-you", source: "City of San Antonio", title: "The wait", body: "Four25 San Pedro waited 785 days from filing to permit. Which kinds of work wait longest, and where? Chart filing-to-permit by type or council district." },
+  { slug: "acequias", source: "Bexar County", title: "Your walk, in 1720", body: "Which acequias did your route to work cross, and when did they go dry? Put them under today's streets and see which ones the streets still follow." },
 ]
+const ISSUES = `${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`
 
 /** One card per section: what else the source publishes, and the starter that gets you into it. */
 function BuildYourOwn({ starter, label, children }: { starter: string; label: string; children: React.ReactNode }) {
@@ -90,7 +92,7 @@ export default function LocalhostPage() {
 
       <section id="bexar-county" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>01 · Bexar County open data</p>
+          <p className={eyebrow}>Bexar County open data</p>
           <h2 className={h2}>
             Follow the water.{" "}
             <span className="font-light italic text-white/50">San Antonio, 1718 to today.</span>
@@ -98,7 +100,8 @@ export default function LocalhostPage() {
           <p className="mt-5 max-w-2xl text-white/70">
             Before San Antonio had streets it had acequias, irrigation ditches dug from the river and San Pedro Creek.
             Bexar County has mapped every one, with the year it was dug and the year it went dry, along with the fields
-            and land grants they fed. Scroll, and three centuries pass over downtown: each ditch appears in the year the
+            and land grants they fed, in maps it made for San Antonio&apos;s 300th anniversary. They&apos;re published in
+            its map services rather than on its open-data portal, which starts at 1896. Scroll, and three centuries pass over downtown: each ditch appears in the year the
             County dates it and fades in the year it was abandoned.
           </p>
           <div className="mt-10">
@@ -121,7 +124,7 @@ export default function LocalhostPage() {
 
       <section id="city" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>02 · City of San Antonio open data</p>
+          <p className={eyebrow}>City of San Antonio open data</p>
           <h2 className={h2}>
             Watch downtown get built.{" "}
             <span className="font-light italic text-white/50">Every permit since January 2025.</span>
@@ -152,7 +155,7 @@ export default function LocalhostPage() {
 
       <section id="via" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>03 · VIA open data</p>
+          <p className={eyebrow}>VIA Metropolitan Transit open data</p>
           <h2 className={h2}>
             Outrun the 4.{" "}
             <span className="font-light italic text-white/50">On VIA&apos;s real schedule.</span>
@@ -187,30 +190,33 @@ export default function LocalhostPage() {
             <span className="font-light italic text-white/50">The data is open, and so is the code.</span>
           </h2>
           <p className="mt-5 max-w-2xl text-white/70">
-            Each starter is one Python file that asks one source a real question. These three match the pieces above;
-            the repo has more, from the 1897 city directory to 311 by district. Run one, change the question, and add
-            what you make to the repo&apos;s showcase. <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a>{" "}
-            covers everything the three publish, and their terms.
+            Each starter is one Python file that asks one source a real question, and runs in under a minute. The repo
+            has five, from the 1897 city directory to 311 by district, and{" "}
+            <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a> covers everything the three publish,
+            and their terms. Three places to take one:
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-            {STARTERS.map((st) => (
+            {IDEAS.map((idea) => (
               <a
-                key={st.slug}
-                href={`${REPO}/tree/main/starters/${st.slug}`}
+                key={idea.slug}
+                href={`${REPO}/tree/main/starters/${idea.slug}`}
                 className="group flex h-full flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-6 transition-all duration-200 hover:border-neutral-700 hover:bg-neutral-900/70"
               >
-                <p className={eyebrow}>{st.source}</p>
+                <p className={eyebrow}>Idea · {idea.source}</p>
                 <p className="flex-1 text-white/80">
-                  <span className="font-semibold text-white">{st.title}.</span> {st.body}
+                  <span className="font-semibold text-white">{idea.title}.</span> {idea.body}
                 </p>
                 <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 group-hover:text-white">
-                  starters/{st.slug} <ArrowUpRight className="h-3.5 w-3.5" />
+                  Start from starters/{idea.slug} <ArrowUpRight className="h-3.5 w-3.5" />
                 </p>
               </a>
             ))}
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
-            <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100">
+            <a href={ISSUES} className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100">
+              Pick up a good first issue <ArrowUpRight className="h-4 w-4" />
+            </a>
+            <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10">
               Add yours to the showcase <ArrowUpRight className="h-4 w-4" />
             </a>
             <a href="/discord" className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10">

@@ -29,18 +29,25 @@ const SQL_API = "https://data.sanantonio.gov/api/3/action/datastore_search_sql"
 const RESOURCE = "c21106f9-3ef5-4f3a-8604-f992b4db7512"
 const PINK = "#ef426f"
 const NOT_BUILDING = ["Garage Sale", "Tree Affidavit Permit", "Tree Permit", "On Premise Sign", "Across the Street Banner", "Temporary Weekend Sign", "Feather Sign", "Avenue Sign", "Event Sign", "Inflatable Sign", "Off Premise Billboard", "Billboard Demolition"]
-/** The window: about 3.7 km square, Main Plaza a little south of center. */
-const SPAN = 3700, CENTER: [number, number] = [-150, 330]
+/** The window: about 3.7 km square, from San Pedro Creek to VelocityTX, Main Plaza a little south and west of center. */
+const SPAN = 3700, CENTER: [number, number] = [100, 330]
 /** How long a full play-through takes, in seconds. */
 const PLAY_SECONDS = 24
 
+/**
+ * Places the DEVSA crowd knows downtown. LaunchSA is inside the Central Library; Texas Public Radio is at
+ * 321 W Commerce; VelocityTX is the bioscience campus at the old Merchant's Ice building. VelocityTX and the
+ * convention center are placed where the City's own permits put them, the other two by OpenStreetMap.
+ */
 const PRESETS = [
   { name: "Geekdom", lon: -98.49337, lat: 29.42637 },
-  { name: "Central at Commerce", lon: -98.476653, lat: 29.421628 },
-  { name: "425 San Pedro", lon: -98.497599, lat: 29.437365 },
-  { name: "River Authority campus", lon: -98.497598, lat: 29.416258 },
-  { name: "Alamo Plaza", lon: -98.48684, lat: 29.42489 },
+  { name: "LaunchSA", lon: -98.49283, lat: 29.43238 },
+  { name: "Texas Public Radio", lon: -98.49652, lat: 29.42525 },
+  { name: "VelocityTX", lon: -98.476962, lat: 29.425681 },
+  { name: "Henry B. González Convention Center", lon: -98.482753, lat: 29.421226 },
 ]
+/** How far around a spot to look, each way: a building and its neighbors, not just one lot. */
+const RADIUS = 120
 
 /** Dot size and ink by kind: new, other building work, trades, demolition. */
 const KIND_STYLE = [
@@ -162,6 +169,8 @@ export function WatchItGetBuilt() {
     if (!canvas || !data) return
     const build = () => {
       const W = canvas.clientWidth, H = canvas.clientHeight
+      // Mid-resize (a device toggle in dev tools, a collapsing layout) the canvas can be 0 wide for a frame; skip it.
+      if (!W || !H) return
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const off = document.createElement("canvas")
       off.width = W
@@ -215,6 +224,7 @@ export function WatchItGetBuilt() {
     const canvas = canvasRef.current
     if (!canvas || !data || !streetsRef.current) return
     const W = canvas.clientWidth, H = canvas.clientHeight
+    if (!W || !H) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     if (canvas.width !== W * dpr) {
       canvas.width = W * dpr
@@ -243,7 +253,7 @@ export function WatchItGetBuilt() {
     if (point) {
       const px = W / 2 + ((point.lon - data.origin[0]) * kx - CENTER[0]) * s, py = H / 2 - ((point.lat - data.origin[1]) * 111_320 - CENTER[1]) * s
       ctx.beginPath()
-      ctx.arc(px, py, Math.max(8, 40 * s), 0, Math.PI * 2)
+      ctx.arc(px, py, Math.max(8, RADIUS * s), 0, Math.PI * 2)
       ctx.strokeStyle = "rgba(255,255,255,0.7)"
       ctx.setLineDash([4, 4])
       ctx.lineWidth = 1.2
@@ -266,8 +276,7 @@ export function WatchItGetBuilt() {
     setPoint({ lon, lat, label })
     setLoading(true)
     setError(null)
-    // About 40 m each way.
-    const dx = 40 / kx, dy = 40 / 111_320
+    const dx = RADIUS / kx, dy = RADIUS / 111_320
     const sql = `SELECT "PERMIT TYPE","WORK TYPE","PROJECT NAME","ADDRESS","DATE SUBMITTED","DATE ISSUED","DECLARED VALUATION","AREA (SF)"
 FROM "${RESOURCE}"
 WHERE "X_COORD" <> '' AND "Y_COORD" <> ''
@@ -459,7 +468,7 @@ ORDER BY "DATE ISSUED" DESC`
                         <span className="font-semibold">
                           {answer.total} {answer.total === 1 ? "permit" : "permits"}
                         </span>{" "}
-                        <span className="text-white/60">within about 40 m</span>
+                        <span className="text-white/60">within about {RADIUS} m</span>
                       </p>
                       <ul className="mt-3 space-y-3">
                         {answer.rows.slice(0, 5).map((r, i) => (
@@ -504,7 +513,7 @@ ORDER BY "DATE ISSUED" DESC`
               <span className="text-[#ef426f]">GET</span> …/datastore_search_sql?sql={"\n"}
               {"  "}SELECT &quot;PERMIT TYPE&quot;, &quot;DATE ISSUED&quot;, …{"\n"}
               {"  "}FROM &quot;{RESOURCE.slice(0, 8)}…&quot;{"\n"}
-              {"  "}WHERE X_COORD, Y_COORD within 40 m of{"\n"}
+              {"  "}WHERE X_COORD, Y_COORD within {RADIUS} m of{"\n"}
               {"  "}{point?.lon.toFixed(5)}, {point?.lat.toFixed(5)}
             </pre>
             <p className="border-t border-neutral-800 px-4 py-2 text-xs text-white/50">

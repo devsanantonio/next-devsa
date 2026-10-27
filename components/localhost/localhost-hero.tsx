@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, Check, Copy } from "lucide-react"
 
 /**
  * The /localhost hero: text on the left, the city on the right.
@@ -31,16 +31,24 @@ type Hero = {
 const COLORS = ["#00b2a9", "#ef426f", "#ff8200"]
 /** How many dots of each layer to draw: enough to read as the city, few enough to animate smoothly. */
 const PER_LAYER = [4500, 4500, 6098]
-/** The page is long; these jump to each source's piece. */
+/** The County starter: it prints which acequias ran near Geekdom, then writes a map. */
+const QUICKSTART = "git clone https://github.com/devsanantonio/localhost\ncd localhost/starters/acequias\npython3 main.py"
+/** The three sources, named in the hero's first line; each name jumps to its piece. */
 const SECTIONS = [
-  { href: "#bexar-county", label: "01 Water" },
-  { href: "#city", label: "02 Permits" },
-  { href: "#via", label: "03 Bus" },
+  { href: "#bexar-county", label: "Bexar County" },
+  { href: "#city", label: "the City of San Antonio" },
+  { href: "#via", label: "VIA Metropolitan Transit" },
 ]
 
 export function LocalhostHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [data, setData] = useState<Hero | null>(null)
+  const [copied, setCopied] = useState(false)
+  async function copyQuickstart() {
+    await navigator.clipboard.writeText(QUICKSTART)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   useEffect(() => {
     fetch("/localhost/hero.json").then((r) => r.json()).then(setData).catch(() => {})
@@ -186,8 +194,8 @@ export function LocalhostHero() {
   return (
     <section className="relative" data-bg-type="dark">
       <div className="page-shell pt-28 pb-16 md:pt-32">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
-          <div>
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
+          <div className="min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
             <img
               src="/branding/localhost/localhost-210-wordmark-dark.svg"
@@ -198,46 +206,62 @@ export function LocalhostHero() {
               Every developer has a localhost.{" "}
               <span className="font-light italic text-white/50">This one is San Antonio.</span>
             </h1>
-            {/* The hook is for developers: the city's data is an API they can use today. Every
-                claim is checkable: all three sources are free and none needs a key. The dot
-                types double as the map's legend. */}
+            {/* One paragraph: the hook (checkable: all three are free, none needs a key) and what the
+                project is. The wordmark and the headline already carry the port-and-area-code joke, the
+                quickstart below says "clone it". */}
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
-              <span className="font-semibold text-white">San Antonio has an API.</span> Three, actually: Bexar County, the
-              City and VIA publish their data in the open, free, no key required. Every dot here is one record:{" "}
-              <span className="text-[#00b2a9]">a building from 1896</span>,{" "}
-              <span className="text-[#ef426f]">a permit from this year</span>,{" "}
-              <span className="text-[#ff8200]">a bus stop</span>.
+              <span className="font-semibold text-white">San Antonio has an API.</span> Three, actually:{" "}
+              {SECTIONS.map((s, i) => (
+                <span key={s.href}>
+                  {i === 2 ? " and " : i === 1 ? ", " : ""}
+                  <a href={s.href} className="text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white">
+                    {s.label}
+                  </a>
+                </span>
+              ))}{" "}
+              publish their data free, no key required.{" "}
+              <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s starter kit for it: code
+              for each source, and three things built with it, below.
             </p>
-            {/* What the project is, said once and early: the rest of the page assumes it. */}
-            <p className="mt-4 max-w-xl leading-relaxed text-white/70">
-              <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s open-data project, named for
-              the port every developer knows and San Antonio&apos;s area code: starter code for each source, a guide to
-              what they publish, and the three pieces below, built with them. Fork it and build something.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            {/* The first five minutes, shown rather than described: no sign-up, no keys, one file. */}
+            <div className="mt-6 max-w-xl overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]">
+              <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">No sign-up, no keys, Python 3.9+</p>
+                <button
+                  type="button"
+                  onClick={copyQuickstart}
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 hover:text-white"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <pre className="overflow-x-auto px-4 py-3 font-mono text-[12px] leading-relaxed text-white/80">
+                {QUICKSTART.split("\n").map((line) => (
+                  <span key={line} className="block">
+                    <span className="select-none text-[#ff8200]">$ </span>
+                    {line}
+                  </span>
+                ))}
+              </pre>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
                 href="https://github.com/devsanantonio/localhost"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
               >
                 Get the starters <ArrowUpRight className="h-4 w-4" />
               </a>
-              {SECTIONS.map((s) => (
-                <a
-                  key={s.href}
-                  href={s.href}
-                  className="rounded-lg border border-neutral-800 px-3.5 py-3 font-mono text-[11px] uppercase tracking-widest text-white/70 transition-colors hover:border-neutral-600 hover:text-white"
-                >
-                  {s.label}
-                </a>
-              ))}
             </div>
           </div>
-          <canvas
-            ref={canvasRef}
-            className="block aspect-square w-full touch-none lg:aspect-[1/0.95]"
-            role="img"
-            aria-label="San Antonio drawn in dots: buildings from 1896, construction permits since 2025 and bus stops, from the city's open data"
-          />
+          <figure className="min-w-0">
+            <canvas
+              ref={canvasRef}
+              className="block aspect-square w-full touch-none lg:aspect-[1/0.95]"
+              role="img"
+              aria-label="San Antonio drawn in dots: buildings from 1896, construction permits since 2025 and bus stops, from the city's open data"
+            />
+          </figure>
         </div>
 
       </div>

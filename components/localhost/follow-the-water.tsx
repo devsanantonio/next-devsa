@@ -184,6 +184,8 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
 
     const draw = () => {
       const W = canvas.clientWidth, H = canvas.clientHeight
+      // Mid-resize (a device toggle in dev tools, a collapsing layout) the canvas can be 0 wide for a frame; skip it.
+      if (!W || !H) return
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       if (canvas.width !== Math.round(W * dpr)) {
         canvas.width = Math.round(W * dpr)
@@ -410,7 +412,7 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
         </ul>
       </div>
 
-      <div className="lg:order-1">
+      <div className="min-w-0 lg:order-1">
         {steps.map((s, i) => (
           <div
             key={s.eyebrow}
@@ -420,7 +422,7 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
             data-step={i}
             className="flex min-h-[70vh] items-center py-8 first:min-h-[50vh]"
           >
-            <div className={`rounded-2xl border bg-neutral-900 p-6 transition-colors duration-300 ${active === i ? "border-neutral-600" : "border-neutral-800"}`}>
+            <div className={`w-full min-w-0 rounded-2xl border bg-neutral-900 p-6 transition-colors duration-300 ${active === i ? "border-neutral-600" : "border-neutral-800"}`}>
               <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">{s.eyebrow}</p>
               <h3 className="mt-2 text-xl font-bold leading-snug text-white md:text-2xl">{s.title}</h3>
               <p className="mt-3 leading-relaxed text-white/75">{s.body}</p>
