@@ -379,6 +379,19 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
                 <li><Link href="https://twitter.com/devsatx" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Twitter (X)</Link></li>
                 <li><Link href="https://github.com/devsanantonio" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">GitHub</Link></li>
               </ul>
+
+              {/* Stacked under Stay Connected the way Conferences stacks under Site
+                  Navigation: a second heading in an existing column, so the grid is
+                  untouched, and this column, the shorter of the two, comes level with
+                  the first. These pages are DEVSA's own but sit outside the navbar's
+                  three destinations. Nothing else on the site linked to either: /tv
+                  (DEVSA programming on TVSA) and /localhost (small experiments with
+                  the city's open data) were reachable only by URL and the sitemap. */}
+              <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mt-8 mb-5">More from DEVSA</h3>
+              <ul className="space-y-3.5">
+                <li><Link href="/tv" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">DEVSA TV</Link></li>
+                <li><Link href="/localhost" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">localhost:210</Link></li>
+              </ul>
             </div>
 
             {/* Last on purpose: the column order is the arc the homepage
