@@ -100,13 +100,17 @@ export function TvHero() {
         <span className="flex-1 bg-[#ff8200]" />
       </div>
 
-      <div className="page-shell relative grid items-center gap-12 py-20 md:py-28 lg:min-h-dvh lg:grid-cols-[1.25fr_1fr] lg:gap-16">
+      {/* From lg up the whole column has to fit one screen, under the 48px navbar: on a
+          13" MacBook Air (about 1470x830 in the browser) it ran ~1,070px and cut the
+          schedule off. So the padding is lighter there, the gaps tighter, and the
+          headline is sized by the screen's height, capped at its old size. */}
+      <div className="page-shell relative grid items-center gap-12 py-20 md:py-28 lg:min-h-dvh lg:grid-cols-[1.25fr_1fr] lg:gap-16 lg:pt-20 lg:pb-10">
         <div className="max-w-3xl">
           <p className="font-mono text-[11px] uppercase tracking-widest text-white/60">Coming this December</p>
-          <h1 className="mt-5 text-balance font-sans text-5xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-6xl xl:text-7xl">
+          <h1 className="mt-5 text-balance font-sans text-5xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-6xl lg:mt-4 lg:text-[min(4.5rem,7.6vh)]">
             DEVSA is coming to <span className="font-light italic text-white/55">your</span> TV.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70 md:text-xl">
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70 md:text-xl lg:mt-5">
             <strong className="font-semibold text-white">From the meetup room to your living room.</strong> DEVSA
             programming on{" "}
             {/* Logo and comma kept together, so the comma never starts a line on a phone. */}
@@ -124,7 +128,7 @@ export function TvHero() {
           </p>
 
           {/* Where to watch: TVSA's public access channel on each provider. */}
-          <ul className="mt-8 grid max-w-xl grid-cols-3 gap-3" aria-label="Where to watch">
+          <ul className="mt-8 grid max-w-xl grid-cols-3 gap-3 lg:mt-6" aria-label="Where to watch">
             {CHANNELS.map((c) => (
               <li key={c.provider} className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                 {/* A fixed-height row, so the numbers line up whatever each logo's shape. */}
@@ -142,7 +146,7 @@ export function TvHero() {
           </p>
 
           {/* The schedule, honestly: the month is set, the slots aren't. */}
-          <div className="mt-8 max-w-xl rounded-xl border border-white/10 bg-black/40 p-5 font-mono text-sm">
+          <div className="mt-8 max-w-xl rounded-xl border border-white/10 bg-black/40 p-5 font-mono text-sm lg:mt-5 lg:p-4">
             <p className="text-white">
               <span className="text-[#00b2a9]">&gt;</span> devsa-tv --schedule
             </p>
@@ -161,7 +165,7 @@ export function TvHero() {
             </dl>
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-6">
             <a
               href="https://www.youtube.com/@devsatx"
               target="_blank"
