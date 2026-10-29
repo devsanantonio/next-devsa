@@ -58,6 +58,9 @@ interface Event {
   /** The organizer's own question on the RSVP form, if any. */
   rsvpQuestion?: string | null
   rsvpQuestionRequired?: boolean
+  /** Seats, when the organizer set a limit, and how many are left (sent only on this page's read). */
+  capacity?: number | null
+  spotsLeft?: number
   /** DEVSA's own event — the only events the code of conduct governs directly. */
   isOfficial?: boolean
 }
@@ -118,6 +121,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   })
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
+  const [rsvpWaitlisted, setRsvpWaitlisted] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
   const [allEventCommunities, setAllEventCommunities] = useState<EventHost[]>([])
 
@@ -344,6 +348,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
 
       if (response.ok) {
         setRsvpSuccess(true)
+        setRsvpWaitlisted(data.waitlisted === true)
         setRsvpForm({ firstName: '', lastName: '', email: '', answer: '', joinNewsletter: false })
       } else {
         setRsvpError(data.error || 'Failed to submit RSVP')
@@ -554,11 +559,32 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
                       <Check className="h-6 w-6 text-green-600" />
                     </div>
-                    <p className="text-lg font-semibold text-gray-900 mb-2">You&apos;re all set!</p>
-                    <p className="text-sm text-gray-600">Thanks for RSVPing. We&apos;ll see you there!</p>
+                    {rsvpWaitlisted ? (
+                      <>
+                        <p className="text-lg font-semibold text-gray-900 mb-2">You&apos;re on the waitlist</p>
+                        <p className="text-sm text-gray-600">The event is full. If a spot opens, the organizers will move you up and email you.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-lg font-semibold text-gray-900 mb-2">You&apos;re all set!</p>
+                        <p className="text-sm text-gray-600">Thanks for RSVPing. We&apos;ll see you there!</p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <form onSubmit={handleRsvpSubmit} className="space-y-4">
+                    {/* A capped event says where it stands before anyone fills the form in. */}
+                    {event.capacity ? (
+                      event.spotsLeft === 0 ? (
+                        <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          This event is full. Join the waitlist and you&apos;ll get an email if a spot opens.
+                        </p>
+                      ) : typeof event.spotsLeft === "number" && event.spotsLeft <= 10 ? (
+                        <p className="text-sm font-medium text-gray-700">
+                          {event.spotsLeft} {event.spotsLeft === 1 ? "spot" : "spots"} left
+                        </p>
+                      ) : null
+                    ) : null}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -659,6 +685,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Submitting...
                         </>
+                      ) : event.capacity && event.spotsLeft === 0 ? (
+                        'Join the waitlist'
                       ) : (
                         'Submit RSVP'
                       )}

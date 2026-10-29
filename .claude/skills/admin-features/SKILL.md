@@ -93,6 +93,24 @@ Two later additions. **Registration** carries an optional custom question (`rsvp
 
 An event needs a title, a date, a description, an `organizerEmail`, and **at least one host** — a `communityId` or a `partnerId`. Location is not required, despite the form presenting Venue and Address prominently.
 
+## Tabs in their own files
+
+The page is being split up as it's worked on, not all at once. Already out of `app/admin/page.tsx`, each owning its own state and handlers: `components/admin/rsvps-tab.tsx` (RSVPs, check-in, waitlist, CSV, the message dialog), `admins-tab.tsx` (Manage Admins and its drawer), `activity-tab.tsx`, `newsletter-composer.tsx` (the Newsletter tab's drawer), `group-health.tsx` (the admin Overview's table), and `group-picker.tsx` (shared by your profile and Manage Admins). When you work on a tab still inside the page, move it out the same way: the page keeps data that other tabs read (`rsvps`, `events`, `admins`) and passes it down, and the tab takes `adminFetch`, `onError`, `onSuccess` and `onChanged` callbacks.
+
+**Activity** (admins only) lists `activity_log` with Restore on deletes; see CLAUDE.md. **Manage Admins** sets an admin's "Groups they run" (`organizerOf`) as well as each admin's own profile can. A blank last sign-in reads "Not since Oct 12": nothing was recorded before Firebase sign-in arrived on 2026-10-12.
+
+## Co-hosts, capacity, the door, and messages
+
+**A group "hosts" an event by membership, never equality.** A collaboration stores `communityId: "alamo-python,pytexas"` (and co-hosting partners in `partnerId`). Use `isHostedBy()` from `lib/event-hosts.ts` for every "is this my group's event?" check. Until 2026-10 the events API compared with `===`, so a co-hosted event was missing from both organizers' Events tabs and refused both their edits. Organizers add co-host groups from the event drawer's **Hosts** field; an edit must leave their own group among the hosts. `includeAll` sends an organizer only their own group's drafts and link-only events, plus everyone's published, listed ones.
+
+**Capacity** (`capacity`, only while the DEVSA RSVP form is on): past it, `POST /api/rsvp` saves the RSVP with `waitlisted: true`, counted and written in one transaction, and sends the waitlist email. Attendees can't cancel their own RSVP, so nothing frees a seat automatically: organizers **Move up** from the RSVPs tab (`PATCH /api/rsvp`, `action: 'promote'`), which sends the confirmation saying a spot opened. The waitlist gets change and cancellation notices but not reminders or messages. The event page's slug read returns `spotsLeft`.
+
+**Check-in**: the RSVPs tab's "Came" box (`PATCH /api/rsvp`, `action: 'checkin'`, stamps `checkedInAt`). Turnout shows on the event's RSVP header and the organizer Overview.
+
+**Message attendees** (`POST /api/events/notify`, `kind: 'message'`): the organizers' own note to the people going, from DEVSA with the sender as reply-to. Open from three days before to seven days after, two per event, logged in the event's `messages`. The rule is `lib/event-messages.ts`, shared by the route and the button. Pass plain text into the email templates; they escape it. `sanitizeInput` HTML-encodes, so using both double-escapes.
+
+**Duplicate** on an event opens the create drawer filled from it: four weeks later at the same time, a fresh address, as a draft. **Add an organizer** (the handoff route) adds a co-organizer, or the next lead with "Step down".
+
 ## Rich text
 
 Event descriptions are **markdown**, not HTML. An earlier version of this skill said the editor wrapped selections in `<strong>` and `<ul><li>`; it has written `**bold**` and `- item` for as long as the current tree has existed.

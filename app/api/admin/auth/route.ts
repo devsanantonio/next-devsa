@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, type ApprovedAdmin, type AccessRequest } from '@/lib/firebase-admin';
 import { isProtectedAdmin } from '@/lib/protected-admins';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
@@ -93,6 +94,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, role, communityId } = body;
     const approverEmail = await verifiedEmail(request);
+    // The groups an admin also runs, set by another admin from Manage Admins. Only
+    // real groups are kept, and only for admin roles: an organizer has one group.
+    const wantsGroups = Array.isArray(body.organizerOf) && role !== 'organizer';
 
     if (!email || !role || !approverEmail) {
       return NextResponse.json(
@@ -142,13 +146,36 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .get();
 
+    let organizerOf: string[] | null = null;
+    if (wantsGroups) {
+      const ids = [...new Set((body.organizerOf as unknown[]).filter((id): id is string => typeof id === 'string' && id.length > 0))].slice(0, 10);
+      const found = await Promise.all(ids.map((id) => db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()));
+      organizerOf = ids.filter((_, i) => found[i].exists);
+    }
+
     if (!existingQuery.empty) {
       // Update existing
+      const was = existingQuery.docs[0].data() as ApprovedAdmin;
       await existingQuery.docs[0].ref.update({
         role,
-        communityId,
+        communityId: communityId ?? null,
+        ...(role === 'organizer' ? { organizerOf: null } : organizerOf ? { organizerOf } : {}),
         approvedAt: new Date(),
         approvedBy: approverEmail,
+      });
+      await logActivity({
+        actor: approverEmail.toLowerCase(),
+        action: 'updated',
+        kind: 'admin',
+        targetId: existingQuery.docs[0].id,
+        label: normalizedEmail,
+        changes: {
+          ...(was.role !== role ? { role: [was.role, role] as [string, string] } : {}),
+          ...((was.communityId ?? '') !== (communityId ?? '') ? { communityId: [was.communityId || '—', communityId || '—'] as [string, string] } : {}),
+          ...(organizerOf && JSON.stringify(was.organizerOf ?? []) !== JSON.stringify(organizerOf)
+            ? { organizerOf: [(was.organizerOf ?? []).join(', ') || '—', organizerOf.join(', ') || '—'] as [string, string] }
+            : {}),
+        },
       });
       return NextResponse.json({
         success: true,
@@ -163,9 +190,11 @@ export async function POST(request: NextRequest) {
       approvedBy: approverEmail,
       role,
       ...(communityId && { communityId }),
+      ...(organizerOf && organizerOf.length ? { organizerOf } : {}),
     };
 
-    await db.collection(COLLECTIONS.APPROVED_ADMINS).add(approvedAdmin);
+    const added = await db.collection(COLLECTIONS.APPROVED_ADMINS).add(approvedAdmin);
+    await logActivity({ actor: approverEmail.toLowerCase(), action: 'approved', kind: 'admin', targetId: added.id, label: normalizedEmail, detail: role + (communityId ? ` · ${communityId}` : '') });
 
     // Update access request status if exists and get user info for email
     const accessRequestQuery = await db
@@ -278,7 +307,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const removed = adminQuery.docs[0].data();
     await adminQuery.docs[0].ref.delete();
+    await logActivity({ actor: approverEmail.toLowerCase(), action: 'removed', kind: 'admin', targetId: adminQuery.docs[0].id, label: normalizedEmail, detail: removed.role + (removed.communityId ? ` · ${removed.communityId}` : '') });
 
     return NextResponse.json({
       success: true,

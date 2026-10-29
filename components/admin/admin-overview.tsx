@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import type React from "react"
 import { ArrowRight, Check, ExternalLink, Plus, X } from "lucide-react"
+import { GroupHealth, type HealthRsvp } from "@/components/admin/group-health"
 import { Pill } from "@/components/admin/data-table"
 import type { DirectoryEntry } from "@/components/admin/community-directory"
 
@@ -23,7 +24,7 @@ import type { DirectoryEntry } from "@/components/admin/community-directory"
  * Everything here is data the role already receives; this view adds no access.
  */
 
-export type OverviewTab = "events" | "rsvps" | "communities" | "speakers" | "access" | "getinvolved" | "admins"
+export type OverviewTab = "events" | "rsvps" | "communities" | "speakers" | "access" | "getinvolved" | "admins" | "activity"
 
 export interface OverviewEvent {
   id: string
@@ -36,6 +37,17 @@ export interface OverviewEvent {
   unlisted?: boolean
   rsvpEnabled?: boolean
   externalRsvpUrl?: string
+  capacity?: number | null
+}
+
+/** One line of the change log, as /api/admin/activity returns it. */
+export interface RecentChange {
+  id: string
+  at: string | null
+  actor: string
+  action: string
+  kind: string
+  label: string
 }
 
 export interface OverviewCommunity {
@@ -72,6 +84,18 @@ interface DigestPreview {
 const ids = (stored?: string | null) => (stored || "").split(",").map((s) => s.trim()).filter(Boolean)
 const hostsOf = (e: OverviewEvent) => [...ids(e.communityId), ...ids(e.partnerId)]
 const DAY = 1000 * 60 * 60 * 24
+
+/**
+ * Drafts still worth publishing, and drafts dated in the past, which never will
+ * be: those are clutter to delete or reschedule. A helper, so render stays free
+ * of Date.now().
+ */
+function splitDrafts(events: OverviewEvent[]) {
+  const now = Date.now()
+  const drafts = events.filter((e) => e.status === "draft")
+  const stale = drafts.filter((e) => new Date(e.date).getTime() < now - DAY)
+  return { live: drafts.filter((e) => !stale.includes(e)), stale }
+}
 
 /** Upcoming, soonest first, from `now` up to `days` out. Plain function: no clock reads during render. */
 function upcoming(events: OverviewEvent[], days: number, keep: (e: OverviewEvent) => boolean) {
@@ -136,8 +160,23 @@ function Action({ onClick, children, primary }: { onClick: () => void; children:
   )
 }
 
-/** `rsvps` is left out where the role can't see the count (an organizer, on another group's event). */
-function EventLine({ e, rsvps, hostNames }: { e: OverviewEvent; rsvps?: number; hostNames?: string }) {
+/** Events already started, newest first. A helper, so render stays free of Date.now(). */
+function recentPast(events: OverviewEvent[], keep: (e: OverviewEvent) => boolean) {
+  const now = Date.now()
+  return events
+    .filter((e) => keep(e) && new Date(e.date).getTime() < now)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+}
+
+/**
+ * `rsvps` is left out where the role can't see the count (an organizer, on
+ * another group's event). With a capacity, the count reads against it, and a
+ * full event or a waitlist is flagged: that's when someone should be moving
+ * people up, or asking for a bigger room.
+ */
+function EventLine({ e, rsvps, waiting = 0, hostNames }: { e: OverviewEvent; rsvps?: number; waiting?: number; hostNames?: string }) {
+  const going = rsvps === undefined ? undefined : rsvps - waiting
+  const full = !!e.capacity && going !== undefined && going >= e.capacity
   return (
     <li className="grid grid-cols-[8.5rem_1fr_auto] items-baseline gap-3 border-t border-neutral-800 py-2.5 first:border-t-0">
       <span className="text-xs tabular-nums text-neutral-400">{when(e.date)}</span>
@@ -147,8 +186,18 @@ function EventLine({ e, rsvps, hostNames }: { e: OverviewEvent; rsvps?: number; 
         </a>
         {hostNames && <span className="block truncate text-xs text-neutral-400">{hostNames}</span>}
       </span>
-      <span className="whitespace-nowrap text-xs text-neutral-300">
-        {rsvps === undefined ? "" : e.rsvpEnabled ? `${rsvps} RSVP${rsvps === 1 ? "" : "s"}` : e.externalRsvpUrl ? "RSVP off-site" : ""}
+      <span className="flex flex-wrap items-center justify-end gap-1.5 whitespace-nowrap text-xs text-neutral-300">
+        {going === undefined
+          ? ""
+          : e.rsvpEnabled
+            ? e.capacity
+              ? `${going} / ${e.capacity}`
+              : `${going} RSVP${going === 1 ? "" : "s"}`
+            : e.externalRsvpUrl
+              ? "RSVP off-site"
+              : ""}
+        {full && <Pill tone="amber">Full</Pill>}
+        {waiting > 0 && <Pill tone="amber">{waiting} waiting</Pill>}
       </span>
     </li>
   )
@@ -172,12 +221,21 @@ export function AdminOverview(props: {
   communities: OverviewCommunity[]
   events: OverviewEvent[]
   rsvpCountByEvent: Record<string, number>
+  turnoutByEvent: Record<string, { going: number; came: number }>
+  /** Every RSVP the role can see; the admin Overview's group health reads it. */
+  rsvps: HealthRsvp[]
   directory: DirectoryEntry[]
   admins: OverviewAdmin[]
   pending: { access: number; speakers: number; getInvolved: number }
   youEmail: string
   youListed: boolean
   loadDigest: () => Promise<DigestPreview | null>
+  /** The latest few entries of the change log (admins only). */
+  loadActivity: () => Promise<RecentChange[] | null>
+  /** Manage Admins, with the add form already open. */
+  addOrganizer: () => void
+  /** A person's name for an email, when someone in the portal has that address. */
+  nameFor: (email: string) => string
   go: (tab: OverviewTab) => void
   addEvent: () => void
   addCommunity: () => void
@@ -209,15 +267,21 @@ function AdminView(p: ViewProps) {
     }
   }, [loadDigest])
 
-  const drafts = p.events.filter((e) => e.status === "draft")
+  const [recent, setRecent] = useState<RecentChange[] | null | "error">(null)
+  const { loadActivity } = p
+  useEffect(() => {
+    let cancelled = false
+    loadActivity()
+      .then((r) => !cancelled && setRecent(r ?? "error"))
+      .catch(() => !cancelled && setRecent("error"))
+    return () => {
+      cancelled = true
+    }
+  }, [loadActivity])
+
+  const drafts = splitDrafts(p.events)
   const week = upcoming(p.events, 7, (e) => e.status !== "draft")
-  const organizers = p.admins.filter((a) => a.role === "organizer")
-  // An admin who runs a group of their own staffs it as surely as an organizer does.
-  const staffed = new Set([...organizers.flatMap((a) => ids(a.communityId)), ...p.admins.flatMap((a) => a.organizerOf ?? [])])
-  const unstaffed = p.communities.filter((c) => !staffed.has(c.id))
-  const notSeen = organizers.filter((a) => !a.lastLoginAt)
-  const unlisted = organizers.filter((a) => !a.inDirectory)
-  const students = p.directory.filter((d) => d.gradTerm)
+  const waitingOn = (e: OverviewEvent) => (p.rsvpCountByEvent[e.id] ?? 0) - (p.turnoutByEvent[e.id]?.going ?? 0)
 
   return (
     <div className="space-y-4">
@@ -225,7 +289,12 @@ function AdminView(p: ViewProps) {
         <Stat label="Access requests" value={p.pending.access} note="Waiting for approval" onClick={() => p.go("access")} />
         <Stat label="Speakers to review" value={p.pending.speakers} note="Submissions not yet decided" onClick={() => p.go("speakers")} />
         <Stat label="Get Involved" value={p.pending.getInvolved} note="New, not yet answered" onClick={() => p.go("getinvolved")} />
-        <Stat label="Drafts" value={drafts.length} note="Events not published" onClick={() => p.go("events")} />
+        <Stat
+          label="Drafts"
+          value={drafts.live.length}
+          note={drafts.stale.length ? `Not published · ${drafts.stale.length} more dated in the past` : "Events not published"}
+          onClick={() => p.go("events")}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -233,7 +302,12 @@ function AdminView(p: ViewProps) {
           {week.length === 0 ? (
             <p className="text-sm text-neutral-400">Nothing in the next seven days.</p>
           ) : (
-            <ul>{week.map((e) => <EventLine key={e.id} e={e} rsvps={p.rsvpCountByEvent[e.id] ?? 0} hostNames={p.hostNames(e)} />)}</ul>
+            <ul>{week.map((e) => <EventLine key={e.id} e={e} rsvps={p.rsvpCountByEvent[e.id] ?? 0} waiting={waitingOn(e)} hostNames={p.hostNames(e)} />)}</ul>
+          )}
+          {drafts.stale.length > 0 && (
+            <p className="mt-3 text-sm text-amber-300">
+              Stale drafts, dated in the past: {drafts.stale.map((d) => d.title || "Untitled").join(", ")}. Delete or reschedule them.
+            </p>
           )}
         </Tile>
 
@@ -241,48 +315,37 @@ function AdminView(p: ViewProps) {
           <div className="space-y-2">
             <Action primary onClick={p.addEvent}><Plus className="h-4 w-4" /> Add an event</Action>
             <Action onClick={p.addCommunity}><Plus className="h-4 w-4" /> Add a community</Action>
-            <Action onClick={() => p.go("admins")}><Plus className="h-4 w-4" /> Add an organizer</Action>
+            <Action onClick={p.addOrganizer}><Plus className="h-4 w-4" /> Add an organizer</Action>
             <Action onClick={p.editProfile}>{p.youListed ? "Edit your profile" : "Add yourself to the directory"}</Action>
           </div>
         </Tile>
 
-        <Tile label="Groups and organizers" className="lg:col-span-2" action={<TileLink onClick={() => p.go("communities")}>Directory</TileLink>}>
-          <ul className="divide-y divide-neutral-800 text-sm">
-            <li className="flex items-baseline justify-between gap-3 py-2">
-              <span className="text-white">
-                <span className="font-semibold tabular-nums">{unstaffed.length}</span> of {p.communities.length} groups have no organizer
-              </span>
-              <TileLink onClick={() => p.go("admins")}>Add one</TileLink>
-            </li>
-            {unstaffed.length > 0 && (
-              <li className="py-2 text-xs leading-relaxed text-neutral-400">
-                {unstaffed.slice(0, 8).map((c) => c.name).join(" · ")}
-                {unstaffed.length > 8 && ` · and ${unstaffed.length - 8} more`}
-              </li>
-            )}
-            <li className="flex items-baseline justify-between gap-3 py-2">
-              <span className="text-white">
-                <span className="font-semibold tabular-nums">{notSeen.length}</span> {notSeen.length === 1 ? "organizer hasn't" : "organizers haven't"} been seen signing in
-              </span>
-              <TileLink onClick={() => p.go("admins")}>Manage Admins</TileLink>
-            </li>
-            <li className="flex items-baseline justify-between gap-3 py-2">
-              <span className="text-white">
-                <span className="font-semibold tabular-nums">{unlisted.length}</span> {unlisted.length === 1 ? "organizer isn't" : "organizers aren't"} in the directory yet
-              </span>
-            </li>
-            {students.length > 0 && (
-              <li className="py-2">
-                <span className="text-white">Student leads and when they graduate</span>
-                <span className="mt-1 block text-xs leading-relaxed text-neutral-400">
-                  {students.map((s) => `${s.name} (${s.communityId ? p.communities.find((c) => c.id === s.communityId)?.name ?? s.communityId : "DEVSA"}) · ${s.gradTerm}`).join(" · ")}
-                </span>
-              </li>
-            )}
-          </ul>
-          <p className="mt-3 text-xs text-neutral-400">
-            &ldquo;Not seen&rdquo; means no sign-in since login tracking began, not necessarily never.
-          </p>
+        <Tile label="Recent changes" className="lg:col-span-2" action={<TileLink onClick={() => p.go("activity")}>Activity</TileLink>}>
+          {recent === null ? (
+            <p className="text-sm text-neutral-400">Reading the log…</p>
+          ) : recent === "error" ? (
+            <p className="text-sm text-neutral-400">Couldn&apos;t read the change log.</p>
+          ) : recent.length === 0 ? (
+            <p className="text-sm text-neutral-400">Nothing logged yet. Changes appear here as people make them.</p>
+          ) : (
+            <ul>
+              {recent.map((r) => {
+                const gone = r.action === "deleted" || r.action === "removed"
+                return (
+                  <li key={r.id} className="grid grid-cols-[8.5rem_1fr] items-baseline gap-3 border-t border-neutral-800 py-2.5 first:border-t-0">
+                    <span className="text-xs tabular-nums text-neutral-400">{r.at ? when(r.at) : ""}</span>
+                    <span className="min-w-0 text-sm">
+                      <span className={`font-medium ${gone ? "text-red-300" : "text-white"}`}>
+                        {r.action[0].toUpperCase() + r.action.slice(1)} {r.kind === "community" ? "group" : r.kind}
+                      </span>{" "}
+                      <span className="text-neutral-300">{r.label}</span>
+                      <span className="block truncate text-xs text-neutral-400">by {p.nameFor(r.actor)}</span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
         </Tile>
 
         <Tile label="Monday's Discord digest">
@@ -316,6 +379,10 @@ function AdminView(p: ViewProps) {
             </div>
           )}
         </Tile>
+
+        <Tile label="Group health" className="lg:col-span-3" action={<TileLink onClick={() => p.go("communities")}>Directory</TileLink>}>
+          <GroupHealth communities={p.communities} events={p.events} rsvps={p.rsvps} admins={p.admins} directory={p.directory} />
+        </Tile>
       </div>
     </div>
   )
@@ -332,6 +399,12 @@ function OrganizerView(p: ViewProps & { nameOf: (id: string) => string }) {
   const drafts = p.events.filter((e) => ours(e) && e.status === "draft")
   const around = upcoming(p.events, 30, (e) => !ours(e) && p.listed(e)).slice(0, 6)
   const organizers = p.directory.filter((d) => !!mine && d.groups.includes(mine))
+  // Their last few events that took RSVPs here, newest first, and how many of those going came.
+  const past = recentPast(p.events, (e) => ours(e) && !!p.turnoutByEvent[e.id]?.going).slice(0, 4)
+  const counted = past.filter((e) => p.turnoutByEvent[e.id].came > 0)
+  const showRate = counted.length
+    ? Math.round((100 * counted.reduce((n, e) => n + p.turnoutByEvent[e.id].came, 0)) / counted.reduce((n, e) => n + p.turnoutByEvent[e.id].going, 0))
+    : null
   const channels = [group.website, group.discord, group.meetup, group.luma, group.linkedin, group.instagram].filter(Boolean).length
   const fixGroup = <TileLink onClick={p.editGroup}>Edit</TileLink>
 
@@ -392,6 +465,34 @@ function OrganizerView(p: ViewProps & { nameOf: (id: string) => string }) {
           )}
           {!p.youListed && (
             <button onClick={p.editProfile} className="mt-3 text-sm font-medium text-[#ff7a9c] hover:text-white">Add yourself →</button>
+          )}
+        </Tile>
+
+        <Tile label="Turnout" className="lg:col-span-3" action={<TileLink onClick={() => p.go("rsvps")}>RSVPs</TileLink>}>
+          {past.length === 0 ? (
+            <p className="text-sm text-neutral-400">After your next event with RSVPs here, tick who came in the RSVPs tab and turnout shows up here.</p>
+          ) : (
+            <>
+              <p className="mb-2 text-sm text-neutral-400">
+                {showRate === null
+                  ? "Tick \u201ccame\u201d at the door in the RSVPs tab to see who actually shows up."
+                  : `${showRate}% of the people who RSVP'd came, across the events you checked people in at.`}
+              </p>
+              <ul>
+                {past.map((e) => {
+                  const t = p.turnoutByEvent[e.id]
+                  return (
+                    <li key={e.id} className="grid grid-cols-[8.5rem_1fr_auto] items-baseline gap-3 border-t border-neutral-800 py-2.5 first:border-t-0">
+                      <span className="text-xs tabular-nums text-neutral-400">{when(e.date)}</span>
+                      <span className="min-w-0 truncate text-sm font-medium text-white">{e.title}</span>
+                      <span className="whitespace-nowrap text-xs text-neutral-300">
+                        {t.came > 0 ? `${t.came} of ${t.going} came` : `${t.going} RSVP${t.going === 1 ? "" : "s"} · not checked in`}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
           )}
         </Tile>
 

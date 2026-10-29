@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
 
     for (const doc of events) {
       const event = doc.data();
-      const due = (await attendeesOf(doc.id)).filter((a) => !a.remindedAt);
+      // The waitlist isn't reminded: it has no seat to come to.
+      const due = (await attendeesOf(doc.id)).filter((a) => !a.remindedAt && !a.waitlisted);
       if (dry || due.length === 0) {
         report.push({ title: event.title, due: due.length, sent: 0 });
         continue;

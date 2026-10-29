@@ -71,6 +71,19 @@ The Stripe webhook also sent donation thank-you emails. That handler now lives a
 
 `PRINTIFY_TOKEN` and `PRINTIFY_SHOP_ID` are dead in Vercel. `STRIPE_WEBHOOK_SECRET` is not — the donation webhook uses it.
 
+## The newsletter sends from the admin
+
+The composer (`components/admin/newsletter-composer.tsx`) lets an admin write, preview the real email, send themselves a test, then send to every active subscriber in `newsletter_subscriptions`. **Its button is held back** from the Newsletter tab until the two variables below are set; a comment in `app/admin/page.tsx` says how to put it back. Firestore stays the only list. Every send carries a postal address and a signed one-click unsubscribe link (CAN-SPAM; `lib/newsletter.ts`), so sending is **locked until two Vercel env vars are set**:
+
+- `NEWSLETTER_SECRET` — signs unsubscribe links. Any long random string. Changing it breaks links already sent.
+- `NEWSLETTER_POSTAL_ADDRESS` — DEVSA's mailing address for the footer. A PO box is fine.
+
+Unsubscribe lands on `/newsletter/unsubscribe`, which asks for a click rather than acting on load (mail scanners open every link). Mail apps' one-click unsubscribe POSTs to `/api/newsletter/unsubscribe` directly, so that route deliberately has no BotID. Sends are logged in `newsletter_sends`.
+
+## Every admin change is logged, and deletes can be undone
+
+`lib/activity-log.ts` writes `activity_log` from every route that changes what people see: events, groups, partners, admin access, access requests, RSVP deletes, newsletter sends. A delete keeps the record it removed, and the **Activity** tab (admins only) restores it under its old id. A new write route should call `logActivity` after its write succeeds.
+
 ## Firestore uses a NAMED database
 
 `getDb()` opens `getFirestore(app, 'devsa')`. There is also a `(default)` database in the same project holding an unrelated app's data — `crm_*`, `blog_posts`, a 4-document `events` collection.

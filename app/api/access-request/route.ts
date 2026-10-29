@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity } from '@/lib/activity-log';
 import { checkBotId } from 'botid/server';
 import { getDb, COLLECTIONS, type AccessRequest } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
@@ -211,6 +212,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     await requestRef.delete();
+    await logActivity({
+      actor: adminEmail.toLowerCase(),
+      action: 'declined',
+      kind: 'access',
+      targetId: requestRef.id,
+      label: (requestDoc.data() as AccessRequest).email,
+      detail: notify ? 'told by email' : 'not emailed',
+    });
 
     return NextResponse.json({
       success: true,

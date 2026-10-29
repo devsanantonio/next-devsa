@@ -1,10 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
-import { RsvpThankYouEmail, getRsvpThankYouSubject } from '@/lib/emails/rsvp-thank-you';
+import { RsvpThankYouEmail, getRsvpThankYouSubject, RsvpWaitlistEmail, getRsvpWaitlistSubject } from '@/lib/emails/rsvp-thank-you';
 import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
+import { isHostedBy } from '@/lib/event-hosts';
+
+/**
+ * The email for one RSVP: the confirmation, the waitlist notice, or the
+ * confirmation that a waitlisted person was moved up. Failures are logged and
+ * swallowed; an email outage must never cost someone their RSVP.
+ */
+async function sendRsvpEmail(
+  db: FirebaseFirestore.Firestore,
+  rsvp: { firstName: string; lastName: string; email: string; eventSlug: string; communityId?: string },
+  eventData: FirebaseFirestore.DocumentData | undefined,
+  kind: 'confirmed' | 'waitlisted' | 'promoted'
+) {
+  if (!isResendConfigured() || !resend) return;
+  try {
+    let communityName = 'DEVSA Community';
+    if (rsvp.communityId) {
+      const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(rsvp.communityId.split(',')[0].trim()).get();
+      if (communityDoc.exists) {
+        communityName = communityDoc.data()?.name || communityName;
+      }
+    }
+
+    // Format event date in San Antonio's time, and say so.
+    //
+    // This had no timeZone, so it formatted in the server's zone — UTC on
+    // Vercel — with no zone name. A 6 PM event arrived in the confirmation
+    // as "12:00 AM" the next day, which the Community Roundtable's
+    // registrants reasonably took as the real time. Every event on this
+    // site is in San Antonio; the feed uses the same zone.
+    const eventDate = eventData?.date
+      ? new Date(eventData.date).toLocaleString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZone: EVENT_TIMEZONE,
+          timeZoneName: 'short',
+        })
+      : 'TBD';
+
+    const title = eventData?.title || rsvp.eventSlug;
+    const props = {
+      firstName: rsvp.firstName,
+      lastName: rsvp.lastName,
+      eventTitle: title,
+      eventDate,
+      eventLocation: eventData?.location || 'TBD',
+      communityName,
+      eventUrl: `https://www.devsa.community/events/${rsvp.eventSlug}`,
+    };
+
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: rsvp.email,
+      replyTo: EMAIL_REPLY_TO,
+      subject: kind === 'waitlisted' ? getRsvpWaitlistSubject(title) : getRsvpThankYouSubject(title, kind === 'promoted'),
+      html: kind === 'waitlisted' ? RsvpWaitlistEmail(props) : RsvpThankYouEmail({ ...props, fromWaitlist: kind === 'promoted' }),
+    });
+  } catch (emailError) {
+    console.error('Failed to send RSVP email:', emailError);
+  }
+}
 
 // Submit an RSVP (public endpoint)
 export async function POST(request: NextRequest) {
@@ -85,7 +151,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create RSVP
     const rsvp: EventRSVP = {
       eventId,
       eventSlug,
@@ -98,7 +163,19 @@ export async function POST(request: NextRequest) {
       submittedAt: new Date(),
     };
 
-    await db.collection(COLLECTIONS.EVENT_RSVPS).add(rsvp);
+    // Past capacity, the RSVP is kept on the waitlist. Counted and written in one
+    // transaction, so two people taking the last seat at once can't both get it.
+    const capacity = typeof eventData.capacity === 'number' && eventData.capacity > 0 ? eventData.capacity : null;
+    const ref = db.collection(COLLECTIONS.EVENT_RSVPS).doc();
+    const waitlisted = await db.runTransaction(async (tx) => {
+      let full = false;
+      if (capacity) {
+        const taken = await tx.get(db.collection(COLLECTIONS.EVENT_RSVPS).where('eventId', '==', eventId));
+        full = taken.docs.filter((d) => d.data().waitlisted !== true).length >= capacity;
+      }
+      tx.create(ref, full ? { ...rsvp, waitlisted: true } : rsvp);
+      return full;
+    });
 
     // If user opted in to newsletter, add them
     if (joinNewsletter) {
@@ -120,65 +197,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send thank you email
-    if (isResendConfigured() && resend) {
-      try {
-        // Get community name
-        let communityName = 'DEVSA Community';
-        if (communityId) {
-          const communityDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(communityId).get();
-          if (communityDoc.exists) {
-            communityName = communityDoc.data()?.name || communityName;
-          }
-        }
-
-        // Format event date in San Antonio's time, and say so.
-        //
-        // This had no timeZone, so it formatted in the server's zone — UTC on
-        // Vercel — with no zone name. A 6 PM event arrived in the confirmation
-        // as "12:00 AM" the next day, which the Community Roundtable's
-        // registrants reasonably took as the real time. Every event on this
-        // site is in San Antonio; the feed uses the same zone.
-        const eventDate = eventData?.date
-          ? new Date(eventData.date).toLocaleString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-              timeZone: EVENT_TIMEZONE,
-              timeZoneName: 'short',
-            })
-          : 'TBD';
-
-        const eventLocation = eventData?.location || 'TBD';
-        const eventUrl = `https://www.devsa.community/events/${eventSlug}`;
-
-        await resend.emails.send({
-          from: EMAIL_FROM,
-          to: normalizedEmail,
-          replyTo: EMAIL_REPLY_TO,
-          subject: getRsvpThankYouSubject(eventData?.title || eventSlug),
-          html: RsvpThankYouEmail({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            eventTitle: eventData?.title || eventSlug,
-            eventDate,
-            eventLocation,
-            communityName,
-            eventUrl,
-          }),
-        });
-      } catch (emailError) {
-        // Log but don't fail the RSVP
-        console.error('Failed to send RSVP confirmation email:', emailError);
-      }
-    }
+    await sendRsvpEmail(db, rsvp, eventData, waitlisted ? 'waitlisted' : 'confirmed');
 
     return NextResponse.json({
       success: true,
-      message: 'RSVP submitted successfully',
+      waitlisted,
+      message: waitlisted ? "You're on the waitlist" : 'RSVP submitted successfully',
     });
   } catch (error) {
     console.error('RSVP submission error:', error);
@@ -260,15 +284,18 @@ export async function GET(request: NextRequest) {
         : snapshot.docs,
     };
 
+    const iso = (v: unknown): string | null => (v as { toDate?: () => Date })?.toDate?.()?.toISOString() ?? (typeof v === "string" ? v : null);
     const rsvps = rsvpSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-      submittedAt: (doc.data().submittedAt as { toDate?: () => Date })?.toDate?.()?.toISOString() || doc.data().submittedAt,
+      submittedAt: iso(doc.data().submittedAt),
+      checkedInAt: iso(doc.data().checkedInAt),
+      promotedAt: iso(doc.data().promotedAt),
     }));
 
     // If CSV format requested, return CSV
     if (format === 'csv') {
-      const headers = ['First Name', 'Last Name', 'Email', 'Event', 'Joined Newsletter', 'Question', 'Answer', 'Submitted At'];
+      const headers = ['First Name', 'Last Name', 'Email', 'Event', 'Joined Newsletter', 'Question', 'Answer', 'Submitted At', 'Status', 'Checked In'];
       // Quotes doubled, and a leading = + - @ neutralized: an answer is free text
       // from the public, and a spreadsheet would otherwise run it as a formula.
       const cell = (v: unknown) => {
@@ -278,15 +305,18 @@ export async function GET(request: NextRequest) {
       const csvRows = [headers.join(',')];
       
       for (const rsvp of rsvps) {
+        const r = rsvp as unknown as Omit<EventRSVP, 'submittedAt' | 'checkedInAt'> & { submittedAt: string | null; checkedInAt: string | null };
         const row = [
-          `"${(rsvp as EventRSVP & { id: string }).firstName}"`,
-          `"${(rsvp as EventRSVP & { id: string }).lastName}"`,
-          `"${(rsvp as EventRSVP & { id: string }).email}"`,
-          `"${(rsvp as EventRSVP & { id: string }).eventSlug}"`,
-          (rsvp as EventRSVP & { id: string }).joinNewsletter ? 'Yes' : 'No',
-          cell((rsvp as EventRSVP & { id: string }).question),
-          cell((rsvp as EventRSVP & { id: string }).answer),
-          `"${(rsvp as { submittedAt: string }).submittedAt}"`,
+          `"${r.firstName}"`,
+          `"${r.lastName}"`,
+          `"${r.email}"`,
+          `"${r.eventSlug}"`,
+          r.joinNewsletter ? 'Yes' : 'No',
+          cell(r.question),
+          cell(r.answer),
+          `"${r.submittedAt}"`,
+          r.waitlisted ? 'Waitlist' : 'Going',
+          r.checkedInAt ? 'Yes' : 'No',
         ];
         csvRows.push(row.join(','));
       }
@@ -350,8 +380,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete the RSVP
-    await db.collection(COLLECTIONS.EVENT_RSVPS).doc(rsvpId).delete();
+    // Delete the RSVP, keeping it in the activity log so it can be restored.
+    const rsvpRef = db.collection(COLLECTIONS.EVENT_RSVPS).doc(rsvpId);
+    const gone = (await rsvpRef.get()).data();
+    await rsvpRef.delete();
+    if (gone) {
+      await logActivity({
+        actor: adminEmail.toLowerCase(),
+        action: 'deleted',
+        kind: 'rsvp',
+        targetId: rsvpId,
+        label: `${gone.firstName} ${gone.lastName} · ${gone.eventSlug}`,
+        snapshot: gone,
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -363,5 +405,57 @@ export async function DELETE(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * PATCH — the door and the waitlist, for an admin or any organizer of a group
+ * hosting the event:
+ *
+ *   { rsvpId, action: 'checkin', value: true | false }   tick or untick "came"
+ *   { rsvpId, action: 'promote' }                         move off the waitlist, and email them
+ *
+ * Promoting may go past capacity: the cap is what the form enforces, and an
+ * organizer who knows a seat is free is the better judge.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const email = await verifiedEmail(request);
+    if (!email) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
+    const { rsvpId, action, value } = await request.json().catch(() => ({}));
+    if (!rsvpId || (action !== 'checkin' && action !== 'promote')) {
+      return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
+    }
+
+    const db = getDb();
+    const adminQuery = await db.collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get();
+    if (adminQuery.empty) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    const admin = adminQuery.docs[0].data() as ApprovedAdmin;
+
+    const rsvpRef = db.collection(COLLECTIONS.EVENT_RSVPS).doc(rsvpId);
+    const rsvpDoc = await rsvpRef.get();
+    if (!rsvpDoc.exists) return NextResponse.json({ error: 'RSVP not found' }, { status: 404 });
+    const rsvp = rsvpDoc.data() as EventRSVP;
+    const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(rsvp.eventId).get();
+    const eventData = eventDoc.data();
+
+    const isAdmin = admin.role === 'admin' || admin.role === 'superadmin';
+    if (!isAdmin && !isHostedBy(eventData ?? { communityId: rsvp.communityId }, admin.communityId)) {
+      return NextResponse.json({ error: 'Unauthorized - not your event' }, { status: 403 });
+    }
+
+    if (action === 'checkin') {
+      const checkedInAt = value === false ? null : new Date();
+      await rsvpRef.update({ checkedInAt });
+      return NextResponse.json({ success: true, checkedInAt: checkedInAt?.toISOString() ?? null });
+    }
+
+    if (rsvp.waitlisted !== true) return NextResponse.json({ error: 'Already going' }, { status: 409 });
+    await rsvpRef.update({ waitlisted: false, promotedAt: new Date() });
+    await sendRsvpEmail(db, rsvp, eventData, 'promoted');
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('RSVP update error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -13,6 +13,8 @@ import {
   UserCheck, 
   Loader2, 
   Check,
+  Copy,
+  History,
   CheckCircle,
   XCircle,
   Shield,
@@ -56,7 +58,6 @@ import { getAuthInstance, getGoogleProvider } from "@/lib/firebase"
 import { RichTextEditor } from "@/components/rich-text-editor"
 import { demoDayInterestLabel } from "@/lib/demo-day"
 import { getInvolvedPathLabel, partnerWayLabel } from "@/lib/get-involved"
-import { isProtectedAdmin } from "@/lib/protected-admins"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
 import {
@@ -77,7 +78,12 @@ import {
 } from "@/components/admin/data-table"
 import { useDragOrder } from "@/lib/hooks/use-drag-order"
 import { AdminOverview, type OverviewTab } from "@/components/admin/admin-overview"
+import { ActivityTab } from "@/components/admin/activity-tab"
+import { RsvpsTab } from "@/components/admin/rsvps-tab"
+import { AdminsTab } from "@/components/admin/admins-tab"
+import { GroupPicker } from "@/components/admin/group-picker"
 import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
+import { isHostedBy } from "@/lib/event-hosts"
 import {
   Avatar,
   DirectoryRow,
@@ -203,6 +209,9 @@ interface CalendarEvent {
   externalRsvpUrl?: string
   rsvpQuestion?: string | null
   rsvpQuestionRequired?: boolean
+  /** Seats on the DEVSA RSVP form; past it, sign-ups join a waitlist. Null: no limit. */
+  capacity?: number | null
+  messages?: { at: string; by: string; subject: string; sent: number }[]
   summary?: string | null
   isOfficial?: boolean
   unlisted?: boolean
@@ -256,16 +265,16 @@ interface EventRSVP {
   question?: string
   answer?: string
   submittedAt: string
+  /** Signed up after the event was full; moved up by an organizer. */
+  waitlisted?: boolean
+  /** Ticked "came" at the door. */
+  checkedInAt?: string | null
 }
 
 import { defaultSlugPreview, invalidCustomSlug } from "@/lib/event-slug-shared"
 import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 
-/** A host field's ids: a collab stores several as one comma-separated string. */
-const hostIds = (stored?: string | null) =>
-  (stored || "").split(",").map((id) => id.trim()).filter(Boolean)
-
-type Tab = "overview" | "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
+type Tab = "overview" | "activity" | "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
 /**
  * A Demo Day partner or sponsor inquiry, as /api/admin/demo-day-inquiries
@@ -347,20 +356,6 @@ const getCommunityName = (communityId: string | undefined, communityList?: Commu
   const community = communityList.find(c => c.id === communityId)
   return community?.name || communityId
 }
-
-/**
- * Manage Admins order: most recent sign-in first, so whoever has drifted away
- * collects at the bottom, where you look before removing access. Never signed
- * in goes last, newest approval first, so a person approved yesterday sits
- * above someone approved months ago who never came. Sign-ins were first
- * recorded 2026-10-12; anyone not back since reads as never.
- */
-const sortAdminsBySignIn = (list: Admin[]) =>
-  [...list].sort(
-    (a, b) =>
-      String(b.lastLoginAt ?? "").localeCompare(String(a.lastLoginAt ?? "")) ||
-      String(b.approvedAt ?? "").localeCompare(String(a.approvedAt ?? ""))
-  )
 
 const viewStorageKey = (email: string) => `devsa-admin-view:${email.toLowerCase()}`
 
@@ -444,9 +439,6 @@ export default function AdminPage() {
   const [communities, setCommunities] = useState<Community[]>([])
   const [communitiesSource, setCommunitiesSource] = useState<string>("static")
   const [rsvps, setRsvps] = useState<EventRSVP[]>([])
-  const [selectedRsvpEvent, setSelectedRsvpEvent] = useState<string>("all")
-  const [selectedRsvpCommunity, setSelectedRsvpCommunity] = useState<string>("all")
-  const [isExportingRsvps, setIsExportingRsvps] = useState(false)
   // Which link-only event's link was just copied, for the badge's "Copied" state.
   const [copiedEventSlug, setCopiedEventSlug] = useState<string | null>(null)
   
@@ -472,7 +464,6 @@ export default function AdminPage() {
   const [handoffError, setHandoffError] = useState<string | null>(null)
   
   // Modal state
-  const [showAddAdmin, setShowAddAdmin] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   /**
    * Closes the account menu on any click outside it, or Escape. A fixed
@@ -546,6 +537,7 @@ export default function AdminPage() {
   }
   const [showNotifications, setShowNotifications] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState(false)
   const [showArchivedEvents, setShowArchivedEvents] = useState(false)
   const [showEventPartnerDropdown, setShowEventPartnerDropdown] = useState(false)
   const [showEditCommunity, setShowEditCommunity] = useState(false)
@@ -555,17 +547,12 @@ export default function AdminPage() {
   const [isDeletingSpeaker, setIsDeletingSpeaker] = useState<string | null>(null)
   const [isDeletingVolunteer, setIsDeletingVolunteer] = useState<string | null>(null)
   const [isDeletingNewsletter, setIsDeletingNewsletter] = useState<string | null>(null)
-  const [isDeletingRsvp, setIsDeletingRsvp] = useState<string | null>(null)
   const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
   const [isApprovingAccess, setIsApprovingAccess] = useState<string | null>(null)
   const [isMigrating, setIsMigrating] = useState(false)
   const [isSavingCommunity, setIsSavingCommunity] = useState(false)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [useFileUpload, setUseFileUpload] = useState(true)
-  const [newAdminEmail, setNewAdminEmail] = useState("")
-  const [newAdminRole, setNewAdminRole] = useState<"admin" | "organizer">("organizer")
-  const [newAdminCommunity, setNewAdminCommunity] = useState("")
-  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
   const [showCreateCommunity, setShowCreateCommunity] = useState(false)
   const [newCommunity, setNewCommunity] = useState<Omit<Community, 'isStatic'>>({
     id: "",
@@ -652,7 +639,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "overview", "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday", "getinvolved",
+      "overview", "activity", "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday", "getinvolved",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -802,14 +789,39 @@ export default function AdminPage() {
 
   // The Overview's inputs. The digest preview is admin-only server-side; the loader is
   // stable so the Overview fetches it once, not on every render.
+  /** The Overview's "Recent changes": the last five log entries. Admins only, like the log. */
+  const loadActivity = useCallback(async () => {
+    const res = await adminFetch("/api/admin/activity?limit=5")
+    return res.ok ? (await res.json()).entries : null
+  }, [])
+  /** Set by the Overview's "Add an organizer", so Manage Admins opens with its add form. */
+  const [openAddAdmin, setOpenAddAdmin] = useState(false)
+
   const loadDigest = useCallback(async () => {
     const res = await adminFetch("/api/admin/digest-preview")
     return res.ok ? res.json() : null
   }, [])
+  /** A person's name for an email when their admin record has one; the email otherwise. */
+  const nameForEmail = (email: string) => {
+    const a = admins.find((x) => x.email.toLowerCase() === email.toLowerCase())
+    return a && (a.firstName || a.lastName) ? [a.firstName, a.lastName].filter(Boolean).join(" ") : email
+  }
+
   const rsvpCountByEvent = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const r of rsvps) counts[r.eventId] = (counts[r.eventId] ?? 0) + 1
     return counts
+  }, [rsvps])
+  /** Going and checked in, per event: the Overview's turnout. The waitlist isn't counted. */
+  const turnoutByEvent = useMemo(() => {
+    const t: Record<string, { going: number; came: number }> = {}
+    for (const r of rsvps) {
+      if (r.waitlisted) continue
+      const row = (t[r.eventId] ??= { going: 0, came: 0 })
+      row.going++
+      if (r.checkedInAt) row.came++
+    }
+    return t
   }, [rsvps])
 
   /** The profile drawer opens on what's saved; ticking into the directory is the default for someone not yet in it. */
@@ -1026,7 +1038,8 @@ export default function AdminPage() {
         setCalendar(allEvents)
         
         if (userRole === "organizer" && userCommunityId) {
-          setEvents(allEvents.filter((event: CalendarEvent) => event.communityId === userCommunityId))
+          // Membership, not equality: a co-hosted event belongs to every host's list.
+          setEvents(allEvents.filter((event: CalendarEvent) => isHostedBy(event, userCommunityId)))
         } else {
           setEvents(allEvents)
         }
@@ -1132,35 +1145,6 @@ export default function AdminPage() {
     a.click()
     document.body.removeChild(a)
     window.URL.revokeObjectURL(url)
-  }
-
-  const handleExportRsvps = async (eventId?: string) => {
-    setIsExportingRsvps(true)
-    try {
-      let url = `/api/rsvp?adminEmail=${encodeURIComponent(adminEmail)}&format=csv`
-      if (eventId && eventId !== 'all') {
-        url += `&eventId=${eventId}`
-      }
-      
-      const response = await adminFetch(url)
-      if (response.ok) {
-        const blob = await response.blob()
-        const downloadUrl = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = downloadUrl
-        a.download = `rsvps-${eventId || 'all'}-${new Date().toISOString().split('T')[0]}.csv`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(downloadUrl)
-      } else {
-        setError("Failed to export RSVPs")
-      }
-    } catch {
-      setError("Failed to export RSVPs")
-    } finally {
-      setIsExportingRsvps(false)
-    }
   }
 
   // Emails a one-tap sign-in link. Sent whether or not the address is
@@ -1293,66 +1277,6 @@ export default function AdminPage() {
     }
   }
 
-  const handleAddAdmin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const response = await adminFetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: editingAdmin ? editingAdmin.email : newAdminEmail,
-          role: newAdminRole,
-          communityId: newAdminCommunity || undefined,
-          approverEmail: adminEmail,
-        }),
-      })
-
-      if (response.ok) {
-        setShowAddAdmin(false)
-        setEditingAdmin(null)
-        setNewAdminEmail("")
-        setNewAdminRole("organizer")
-        setNewAdminCommunity("")
-        await fetchData(adminEmail)
-      } else {
-        const data = await response.json()
-        setError(data.error || "Failed to save admin")
-      }
-    } catch {
-      setError("Failed to save admin")
-    }
-  }
-
-  const handleEditAdmin = (admin: Admin) => {
-    setEditingAdmin(admin)
-    setNewAdminEmail(admin.email)
-    setNewAdminRole(admin.role === "superadmin" ? "admin" : admin.role as "admin" | "organizer")
-    setNewAdminCommunity(admin.communityId || "")
-    setShowAddAdmin(true)
-  }
-
-  const handleRemoveAdmin = async (email: string) => {
-    if (!confirm(`Remove admin access for ${email}?`)) return
-    
-    try {
-      const response = await adminFetch("/api/admin/auth", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          approverEmail: adminEmail,
-        }),
-      })
-
-      if (response.ok) {
-        await fetchData(adminEmail)
-      }
-    } catch {
-      setError("Failed to remove admin")
-    }
-  }
-
   const handleEditEvent = (event: CalendarEvent) => {
     // For backward compatibility: if venue/address are empty but location exists, 
     // try to split the location into venue and address
@@ -1368,6 +1292,7 @@ export default function AdminPage() {
       }
     }
     setEditingEvent(updatedEvent)
+    setIsDuplicating(false)
     setShowEditEvent(true)
     // Reset custom community state - check if event's community IDs are all known
     const communityIds = (updatedEvent.communityId || '').split(',').filter(Boolean)
@@ -1381,6 +1306,31 @@ export default function AdminPage() {
       setEditEventCustomCommunityName("")
     }
     setShowEditEventCommunityDropdown(false)
+  }
+
+  /**
+   * Duplicate: the create drawer, filled from an existing event. Most groups
+   * meet monthly in the same room with the same blurb, so only the date should
+   * need changing. It lands four weeks on at the same time (rolled forward by
+   * weeks until it's in the future), gets its own address, and starts as a
+   * draft, so a copy can't go public with last month's details by accident.
+   */
+  const handleDuplicateEvent = (event: CalendarEvent) => {
+    const week = 7 * 24 * 60 * 60 * 1000
+    const start = new Date(event.date).getTime()
+    let shift = 4 * week
+    while (start + shift < Date.now()) shift += week
+    const end = event.endTime ? new Date(event.endTime).getTime() : NaN
+    handleEditEvent({
+      ...event,
+      id: "",
+      slug: "",
+      slugHistory: undefined,
+      date: new Date(start + shift).toISOString(),
+      endTime: Number.isNaN(end) ? event.endTime : new Date(end + shift).toISOString(),
+      status: "draft",
+    })
+    setIsDuplicating(true)
   }
 
   // Open the drawer in "create" mode — a blank event with sensible defaults.
@@ -1418,6 +1368,7 @@ export default function AdminPage() {
     setEditEventCustomCommunityName("")
     setShowEditEventCommunityDropdown(false)
     setShowEventPartnerDropdown(false)
+    setIsDuplicating(false)
     setShowEditEvent(true)
   }
 
@@ -1458,6 +1409,7 @@ export default function AdminPage() {
           // The API clears both when the DEVSA form is off.
           rsvpQuestion: editingEvent.rsvpQuestion || "",
           rsvpQuestionRequired: editingEvent.rsvpQuestionRequired === true,
+          capacity: editingEvent.capacity ?? null,
           communityId: editingEvent.communityId,
           partnerId: editingEvent.partnerId || "",
           isOfficial: editingEvent.isOfficial || false,
@@ -1704,34 +1656,6 @@ export default function AdminPage() {
       setError("Failed to delete volunteer signup")
     } finally {
       setIsDeletingVolunteer(null)
-    }
-  }
-
-  const handleDeleteRsvp = async (rsvpId: string) => {
-    if (!confirm("Are you sure you want to delete this RSVP?")) return
-    
-    setIsDeletingRsvp(rsvpId)
-    try {
-      const response = await adminFetch("/api/rsvp", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rsvpId,
-          adminEmail,
-        }),
-      })
-
-      if (response.ok) {
-        setRsvps(prev => prev.filter(r => r.id !== rsvpId))
-        setSuccessMessage("RSVP deleted")
-      } else {
-        const data = await response.json()
-        setError(data.error || "Failed to delete RSVP")
-      }
-    } catch {
-      setError("Failed to delete RSVP")
-    } finally {
-      setIsDeletingRsvp(null)
     }
   }
 
@@ -2378,10 +2302,6 @@ export default function AdminPage() {
       items: [myCommunityNav, { id: "partners", label: "Partners", icon: Handshake, count: partners.length }],
     },
     {
-      label: "Audience",
-      items: [{ id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.filter((s) => s.status === "active").length }],
-    },
-    {
       label: "Inbox",
       items: [
         { id: "getinvolved", label: "Get Involved", icon: Handshake, count: getInvolved.length, alert: newGetInvolvedCount },
@@ -2390,11 +2310,23 @@ export default function AdminPage() {
         volunteersNav,
       ],
     },
-    { label: "Team", items: [{ id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length }] },
+    {
+      label: "Team",
+      items: [
+        { id: "admins", label: "Manage Admins", icon: UserCheck, count: admins.length },
+        { id: "activity", label: "Activity", icon: History },
+      ],
+    },
+    // Last while the newsletter can't send yet (two Vercel settings missing; see CLAUDE.md).
+    {
+      label: "Audience",
+      items: [{ id: "newsletter", label: "Newsletter", icon: Mail, count: newsletter.filter((s) => s.status === "active").length }],
+    },
   ]
 
   const tabTitles: Record<Tab, string> = {
     overview: "Overview",
+    activity: "Activity",
     events: "Events",
     rsvps: "RSVPs",
     communities: adminRole === "organizer" ? "My Community" : "Communities",
@@ -2831,6 +2763,12 @@ export default function AdminPage() {
                   </>
                 }
               />
+              {/*
+                "Write a newsletter" is held back until sending is set up (NEWSLETTER_SECRET and
+                NEWSLETTER_POSTAL_ADDRESS in Vercel; see CLAUDE.md). The composer is ready in
+                components/admin/newsletter-composer.tsx: put back a header button that opens it
+                in a SlideDrawer, with its adminFetch and an onSent that shows the result.
+              */}
               <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="relative flex-1 sm:min-w-56">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
@@ -3545,172 +3483,26 @@ export default function AdminPage() {
           )}
 
           {/* Admins Tab - Admin Only */}
+          {/* Activity: the change log, with Restore on deletes. Admins only, like the API. */}
+          {activeTab === "activity" && hasAdminAccess(adminRole) && (
+            <ActivityTab
+              adminFetch={adminFetch}
+              nameFor={(email) => (nameForEmail(email) === email ? null : nameForEmail(email))}
+              onRestored={() => fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)}
+            />
+          )}
+
           {activeTab === "admins" && hasAdminAccess(adminRole) && (
-            <div>
-              <TabHeader
-                title="Manage Admins"
-                summary={`${admins.filter((a) => a.role !== "organizer").length} admins · ${admins.filter((a) => a.role === "organizer").length} organizers`}
-                actions={
-                  <button
-                    onClick={() => setShowAddAdmin(true)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Admin
-                  </button>
-                }
-              />
-
-              {admins.length === 0 ? (
-                <EmptyState>No approved admins yet.</EmptyState>
-              ) : (
-                <DataTable>
-                  <thead>
-                    <tr>
-                      <Th>Person</Th>
-                      <Th>Role</Th>
-                      <Th>Community</Th>
-                      <Th>Approved</Th>
-                      <Th>Last sign-in</Th>
-                      <Th align="right"><span className="sr-only">Actions</span></Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortAdminsBySignIn(admins).map((admin) => (
-                      <Tr key={admin.id}>
-                        <Td>
-                          <PrimaryCell
-                            title={admin.email}
-                            sub={isProtectedAdmin(admin.email) ? "Site owner · can't be removed" : admin.email === adminEmail ? "You" : undefined}
-                          />
-                        </Td>
-                        <Td>
-                          <Pill tone={admin.role === "superadmin" ? "amber" : admin.role === "admin" ? "violet" : "blue"}>
-                            {admin.role === "superadmin" ? "Super admin" : admin.role === "admin" ? "Admin" : "Organizer"}
-                          </Pill>
-                        </Td>
-                        <Td>{admin.communityId ? getCommunityName(admin.communityId) : <span className="text-neutral-400">All</span>}</Td>
-                        <Td><DateCell value={admin.approvedAt} /></Td>
-                        {/* Date and time, not just the date: "did they log in
-                            today" is the question this column answers. */}
-                        <Td><DateCell value={admin.lastLoginAt} time /></Td>
-                        <Td align="right">
-                          {/* Not for the protected super admins, and you can't remove yourself. */}
-                          <RowActions>
-                            {!isProtectedAdmin(admin.email) && (
-                              <RowAction onClick={() => handleEditAdmin(admin)} icon={<Edit className="h-4 w-4" />}>
-                                Edit
-                              </RowAction>
-                            )}
-                            {admin.email !== adminEmail && !isProtectedAdmin(admin.email) && (
-                              <RowAction tone="danger" onClick={() => handleRemoveAdmin(admin.email)} icon={<Trash2 className="h-4 w-4" />}>
-                                Remove
-                              </RowAction>
-                            )}
-                          </RowActions>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </tbody>
-                </DataTable>
-              )}
-
-              {/* Add/Edit Admin Drawer */}
-              <SlideDrawer
-                open={showAddAdmin}
-                onClose={() => {
-                  setShowAddAdmin(false)
-                  setEditingAdmin(null)
-                  setNewAdminEmail("")
-                  setNewAdminRole("organizer")
-                  setNewAdminCommunity("")
-                }}
-                title={editingAdmin ? "Edit Admin" : "Add New Admin"}
-              >
-                    <form onSubmit={handleAddAdmin} className="space-y-5">
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={newAdminEmail}
-                          onChange={(e) => setNewAdminEmail(e.target.value)}
-                          placeholder="user@example.com"
-                          disabled={!!editingAdmin}
-                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                        />
-                        {editingAdmin && (
-                          <p className="mt-2 text-xs text-neutral-500">Email cannot be changed</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                          Role
-                        </label>
-                        <select
-                          value={newAdminRole}
-                          onChange={(e) => {
-                            setNewAdminRole(e.target.value as "admin" | "organizer")
-                            // Clear community when switching to admin role
-                            if (e.target.value === "admin") {
-                              setNewAdminCommunity("")
-                            }
-                          }}
-                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        >
-                          <option value="organizer">Organizer (can only manage their community&apos;s events)</option>
-                          <option value="admin">Admin (full access to all features)</option>
-                        </select>
-                      </div>
-                      {newAdminRole === "organizer" && (
-                        <div>
-                          <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                            Assigned Community *
-                          </label>
-                          <select
-                            required={newAdminRole === "organizer"}
-                            value={newAdminCommunity}
-                            onChange={(e) => setNewAdminCommunity(e.target.value)}
-                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                          >
-                            <option value="">Select a community</option>
-                            {communities.map((community) => (
-                              <option key={community.id} value={community.id}>
-                                {community.name}
-                              </option>
-                            ))}
-                          </select>
-                          <p className="mt-2 text-xs text-neutral-500">
-                            Organizers can only create and manage events for their assigned community
-                          </p>
-                        </div>
-                      )}
-                      <div className="flex gap-3 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowAddAdmin(false)
-                            setEditingAdmin(null)
-                            setNewAdminEmail("")
-                            setNewAdminRole("organizer")
-                            setNewAdminCommunity("")
-                          }}
-                          className="flex-1 rounded-xl border border-neutral-700 px-4 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-800 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="flex-1 rounded-xl bg-[#ef426f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
-                        >
-                          {editingAdmin ? "Save Changes" : "Add Admin"}
-                        </button>
-                      </div>
-                    </form>
-              </SlideDrawer>
-            </div>
+            <AdminsTab
+              admins={admins}
+              autoOpen={openAddAdmin}
+              onAutoOpened={() => setOpenAddAdmin(false)}
+              communities={communities}
+              myEmail={adminEmail}
+              adminFetch={adminFetch}
+              onChanged={() => fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)}
+              onError={setError}
+            />
           )}
 
           {/* Events Tab */}
@@ -3851,6 +3643,14 @@ export default function AdminPage() {
                               Edit
                             </button>
                             <button
+                              onClick={() => handleDuplicateEvent(event)}
+                              title="A copy four weeks later, as a draft"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-700/60 px-4 py-2 text-sm font-semibold text-neutral-200 hover:bg-neutral-700 transition-colors"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Duplicate
+                            </button>
+                            <button
                               onClick={() => handleDeleteEvent(event.id)}
                               disabled={isDeleting === event.id}
                               className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
@@ -3924,7 +3724,7 @@ export default function AdminPage() {
                     <div className="flex items-start justify-between gap-4 border-b border-neutral-800 px-6 py-5">
                       <div>
                         <h3 className="text-base font-semibold tracking-tight text-white">
-                          {editingEvent.id ? "Edit Event" : "Create Event"}
+                          {editingEvent.id ? "Edit Event" : isDuplicating ? "Duplicate Event" : "Create Event"}
                         </h3>
                         <p className="mt-0.5 text-xs text-neutral-500">
                           {editingEvent.id
@@ -3942,15 +3742,57 @@ export default function AdminPage() {
                       </button>
                     </div>
                     <form onSubmit={handleUpdateEvent} className="flex-1 space-y-5 overflow-y-auto px-6 pt-5">
-                      {/* Organizer: community is locked to their assignment */}
-                      {adminRole === "organizer" && (
-                        <div>
-                          <label className="block text-sm font-semibold text-neutral-300 mb-2">Community</label>
-                          <div className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white">
-                            {communities.find(c => c.id === editingEvent.communityId)?.name || "No community assigned"}
+                      {/*
+                        Organizer: their own group is always a host and can't be removed;
+                        they can add or drop co-host groups. Co-hosts' organizers can edit
+                        the event too (lib/event-hosts.ts), so this is how a collaboration
+                        found in the directory becomes one event both groups run.
+                      */}
+                      {adminRole === "organizer" && (() => {
+                        const hostIds = (editingEvent.communityId || "").split(",").map((s) => s.trim()).filter(Boolean)
+                        const setHosts = (ids: string[]) => setEditingEvent({ ...editingEvent, communityId: ids.join(",") })
+                        const addable = communities.filter((c) => !hostIds.includes(c.id)).sort((a, b) => a.name.localeCompare(b.name))
+                        return (
+                          <div>
+                            <label htmlFor="event-cohost" className="block text-sm font-semibold text-neutral-300 mb-2">Hosts</label>
+                            <div className="mb-2 flex flex-wrap gap-2">
+                              {hostIds.map((id) => {
+                                const name = communities.find((c) => c.id === id)?.name || id
+                                const own = id === adminCommunityId
+                                return (
+                                  <span key={id} className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-sm text-white">
+                                    {name}
+                                    {own ? (
+                                      <span className="text-xs text-neutral-400">your group</span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => setHosts(hostIds.filter((h) => h !== id))}
+                                        aria-label={`Remove ${name} as a co-host`}
+                                        className="rounded p-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white"
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </button>
+                                    )}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                            <select
+                              id="event-cohost"
+                              value=""
+                              onChange={(e) => e.target.value && setHosts([...hostIds, e.target.value])}
+                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            >
+                              <option value="">Add a co-host group…</option>
+                              {addable.map((c) => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
+                            <p className="mt-1.5 text-xs text-neutral-400">Co-hosts&apos; organizers can edit this event too, and it shows on both groups&apos; pages.</p>
                           </div>
-                        </div>
-                      )}
+                        )
+                      })()}
                       {/* Community selector - admin/superadmin only */}
                       {hasAdminAccess(adminRole) && (
                         <div>
@@ -4558,6 +4400,25 @@ export default function AdminPage() {
                             <p className="text-xs text-neutral-400">
                               Asked under name and email on the RSVP form. Answers appear in the RSVPs tab and the CSV export.
                             </p>
+                            <label htmlFor="rsvpCapacity" className="block pt-2 text-sm font-semibold text-neutral-300">
+                              Capacity <span className="font-normal text-neutral-400">(optional)</span>
+                            </label>
+                            <input
+                              id="rsvpCapacity"
+                              type="number"
+                              min={1}
+                              inputMode="numeric"
+                              value={editingEvent.capacity ?? ""}
+                              onChange={(e) => {
+                                const n = parseInt(e.target.value, 10)
+                                setEditingEvent({ ...editingEvent, capacity: Number.isFinite(n) && n > 0 ? n : null })
+                              }}
+                              placeholder="No limit"
+                              className="w-40 rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            />
+                            <p className="text-xs text-neutral-400">
+                              Once it&apos;s full, new sign-ups join a waitlist. Move people up from the RSVPs tab; each one gets an email saying they&apos;re in.
+                            </p>
                           </div>
                         )}
 
@@ -4673,6 +4534,8 @@ export default function AdminPage() {
               communities={communities}
               events={calendar}
               rsvpCountByEvent={rsvpCountByEvent}
+              turnoutByEvent={turnoutByEvent}
+              rsvps={rsvps}
               directory={directory}
               admins={admins}
               pending={{
@@ -4683,6 +4546,12 @@ export default function AdminPage() {
               youEmail={dirProfile.contactEmail || adminEmail}
               youListed={dirProfile.inDirectory}
               loadDigest={loadDigest}
+              loadActivity={loadActivity}
+              nameFor={nameForEmail}
+              addOrganizer={() => {
+                setOpenAddAdmin(true)
+                setActiveTab("admins")
+              }}
               go={(tab: OverviewTab) => setActiveTab(tab)}
               addEvent={() => {
                 setActiveTab("events")
@@ -4888,7 +4757,7 @@ export default function AdminPage() {
                                 }}
                                 className="rounded-lg border border-neutral-600 px-3 py-2 text-sm font-semibold text-neutral-200 hover:bg-neutral-700/60 transition-colors"
                               >
-                                Hand off to a new lead
+                                Add an organizer
                               </button>
                             )}
                           </div>
@@ -5823,233 +5692,19 @@ export default function AdminPage() {
 
           {/* RSVPs Tab */}
           {activeTab === "rsvps" && (
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <h2 className="text-xl font-bold tracking-tight text-white">Event RSVPs</h2>
-                <div className="flex flex-wrap items-center gap-3">
-                  {/* Community filter — admins/superadmins only (organizers own a single group) */}
-                  {hasAdminAccess(adminRole) && (
-                    <AdminCombobox
-                      className="w-52"
-                      value={selectedRsvpCommunity}
-                      onChange={(v) => {
-                        setSelectedRsvpCommunity(v)
-                        setSelectedRsvpEvent('all')
-                      }}
-                      options={[
-                        { value: 'all', label: 'All Communities' },
-                        ...communities.map((c) => ({ value: c.id, label: c.name })),
-                      ]}
-                    />
-                  )}
-
-                  {/* Event filter */}
-                  <AdminCombobox
-                    className="w-60"
-                    value={selectedRsvpEvent}
-                    onChange={setSelectedRsvpEvent}
-                    placeholder="All Events"
-                    options={[
-                      { value: 'all', label: 'All Events' },
-                      // Newest first, and a collab event counts for every group hosting it.
-                      ...events
-                        .filter((e) => e.rsvpEnabled && (selectedRsvpCommunity === 'all' || hostIds(e.communityId).includes(selectedRsvpCommunity)))
-                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .map((e) => ({ value: e.id, label: e.title })),
-                    ]}
-                  />
-
-                  <button
-                    onClick={() => handleExportRsvps(selectedRsvpEvent)}
-                    disabled={isExportingRsvps || rsvps.length === 0}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50"
-                  >
-                    {isExportingRsvps ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Download className="h-4 w-4" />
-                    )}
-                    Export CSV
-                  </button>
-                </div>
-              </div>
-
-              {(() => {
-                let filteredRsvps = rsvps
-                // Filter by community first
-                if (selectedRsvpCommunity !== 'all') {
-                  filteredRsvps = filteredRsvps.filter(r => hostIds(r.communityId).includes(selectedRsvpCommunity))
-                }
-                // Then filter by event
-                if (selectedRsvpEvent !== 'all') {
-                  filteredRsvps = filteredRsvps.filter(r => r.eventId === selectedRsvpEvent)
-                }
-                
-                // Summary metrics for the KPI row (reflect the active filters)
-                const totalRsvps = filteredRsvps.length
-                const optedIn = filteredRsvps.filter(r => r.joinNewsletter).length
-                const optInRate = totalRsvps > 0 ? Math.round((optedIn / totalRsvps) * 100) : 0
-                // By id: an event whose address changed keeps one count and one group.
-                const eventCount = new Set(filteredRsvps.map(r => r.eventId || r.eventSlug)).size
-                // Each group counted once, whether it hosted alone or in a collab.
-                const communityCount = new Set(filteredRsvps.flatMap(r => hostIds(r.communityId))).size
-
-                const tiles: { label: string; value: number; sub?: string }[] = [
-                  { label: 'Total RSVPs', value: totalRsvps },
-                  { label: 'Events', value: eventCount },
-                  { label: 'Newsletter opt-ins', value: optedIn, sub: `${optInRate}%` },
-                  // Communities only matters when more than one group is in view
-                  ...(hasAdminAccess(adminRole) ? [{ label: 'Communities', value: communityCount }] : []),
-                ]
-
-                // Group by event
-                const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
-                  const key = rsvp.eventId || rsvp.eventSlug
-                  if (!acc[key]) {
-                    const event = events.find(e => e.id === rsvp.eventId)
-                    /*
-                     * Every host, by name. This looked up one community by the
-                     * RSVP's communityId, which a collab stores as
-                     * "alamo-python,pytexas" and a partner- or DEVSA-hosted
-                     * event leaves empty, so all three showed "Unknown". The
-                     * event record is the source; the RSVP's copy is the fallback
-                     * for an event since deleted.
-                     */
-                    const groupNames = hostIds(event?.communityId ?? rsvp.communityId)
-                      // A partner typed in as a custom host (Tech Bloc on its own events) resolves too.
-                      .map(id => communities.find(c => c.id === id)?.name || partners.find(p => p.id === id)?.name || event?.communityName || id)
-                    const partnerNames = hostIds(event?.partnerId)
-                      .map(id => partners.find(p => p.id === id)?.name || id)
-                    const hostNames = [...(event?.isOfficial ? ['DEVSA'] : []), ...groupNames, ...partnerNames]
-                    acc[key] = {
-                      eventTitle: event?.title || rsvp.eventSlug,
-                      communityName: hostNames.length ? hostNames.join(' + ') : 'Unknown',
-                      // For ordering: the event's own date (0 if the event is gone).
-                      sortAt: event?.date ? new Date(event.date).getTime() : 0,
-                      rsvps: []
-                    }
-                  }
-                  acc[key].rsvps.push(rsvp)
-                  return acc
-                }, {} as Record<string, { eventTitle: string; communityName: string; sortAt: number; rsvps: EventRSVP[] }>)
-
-                // An event that has since been deleted has no date; its latest RSVP stands in.
-                const orderAt = (g: { sortAt: number; rsvps: EventRSVP[] }) =>
-                  g.sortAt || Math.max(0, ...g.rsvps.map(r => new Date(r.submittedAt).getTime() || 0))
-
-                return (
-                  <>
-                    {/* Summary tiles */}
-                    <div className={`mb-6 grid grid-cols-2 gap-3 ${hasAdminAccess(adminRole) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-                      {tiles.map((t) => (
-                        <div key={t.label} className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t.label}</p>
-                          <p className="mt-1 flex items-baseline gap-1.5">
-                            <span className="text-2xl font-semibold tabular-nums text-white">{t.value}</span>
-                            {t.sub && <span className="text-sm font-medium text-neutral-500">{t.sub}</span>}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {totalRsvps === 0 ? (
-                      <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 py-12 text-center">
-                        <Users className="mx-auto mb-3 h-6 w-6 text-neutral-600" />
-                        <p className="text-sm text-neutral-400">No RSVPs yet</p>
-                        <p className="mt-1 text-xs text-neutral-600">
-                          Enable RSVP on an event to start collecting registrations.
-                        </p>
-                      </div>
-                    ) : (
-                    <div className="space-y-6">
-                    {/* Most recent event first. */}
-                    {Object.entries(groupedByEvent).sort(([, a], [, b]) => orderAt(b) - orderAt(a)).map(([slug, { eventTitle, communityName, rsvps: eventRsvps }]) => (
-                      <div key={slug} className="rounded-xl border border-neutral-800 bg-neutral-800/30 overflow-hidden">
-                        <div className="px-4 py-3 bg-neutral-800/50 border-b border-neutral-700 flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-semibold text-white">{eventTitle}</h3>
-                            {/* Community badge only helps super admins viewing multiple groups */}
-                            {hasAdminAccess(adminRole) && (
-                              <span className="inline-flex items-center rounded-full bg-[#ef426f]/20 px-2.5 py-0.5 text-xs font-medium text-[#ef426f]">
-                                {communityName}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-sm text-neutral-400">
-                            {eventRsvps.length} RSVPs
-                            <span className="text-neutral-600"> · {eventRsvps.filter(r => r.joinNewsletter).length} opted in</span>
-                          </span>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full min-w-175">
-                            <thead>
-                              <tr className="border-b border-neutral-800">
-                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Name</th>
-                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
-                                {eventRsvps.some(r => r.question) && (
-                                  <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider" title={eventRsvps.find(r => r.question)?.question}>
-                                    {eventRsvps.find(r => r.question)?.question}
-                                  </th>
-                                )}
-                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Newsletter</th>
-                                <th className="text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Registered</th>
-                                {hasAdminAccess(adminRole) && (
-                                  <th className="text-right py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                                )}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-800/50">
-                              {/* Latest registration first, to the second; the API returns them unordered. */}
-                              {[...eventRsvps]
-                                .sort((a, b) => (new Date(b.submittedAt).getTime() || 0) - (new Date(a.submittedAt).getTime() || 0))
-                                .map((rsvp) => (
-                                <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
-                                  <td className="py-2 px-4 text-sm font-semibold text-white whitespace-nowrap">{rsvp.firstName} {rsvp.lastName}</td>
-                                  <td className="py-2 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">{rsvp.email}</td>
-                                  {eventRsvps.some(r => r.question) && (
-                                    <td className="py-2 px-4 text-sm text-neutral-300 max-w-xs">{rsvp.answer || <span className="text-neutral-400">—</span>}</td>
-                                  )}
-                                  <td className="py-2 px-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                                      rsvp.joinNewsletter
-                                        ? "bg-green-500/20 text-green-400"
-                                        : "bg-neutral-500/20 text-neutral-400"
-                                    }`}>
-                                      {rsvp.joinNewsletter ? "Opted In" : "No"}
-                                    </span>
-                                  </td>
-                                  <td className="py-2 px-4 text-sm font-medium text-neutral-500 whitespace-nowrap">
-                                    {new Date(rsvp.submittedAt).toLocaleDateString()}
-                                  </td>
-                                  {hasAdminAccess(adminRole) && (
-                                    <td className="py-2 px-4 text-right whitespace-nowrap">
-                                      <button
-                                        onClick={() => handleDeleteRsvp(rsvp.id)}
-                                        disabled={isDeletingRsvp === rsvp.id}
-                                        className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-                                      >
-                                        {isDeletingRsvp === rsvp.id ? (
-                                          <Loader2 className="h-3 w-3 animate-spin" />
-                                        ) : (
-                                          <Trash2 className="h-3 w-3" />
-                                        )}
-                                        Delete
-                                      </button>
-                                    </td>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    ))}
-                    </div>
-                    )}
-                  </>
-                )
-              })()}
-            </div>
+            <RsvpsTab
+              rsvps={rsvps}
+              setRsvps={setRsvps}
+              events={events}
+              communities={communities}
+              partners={partners}
+              isAdmin={hasAdminAccess(adminRole)}
+              viewCommunityId={adminRole === "organizer" ? adminCommunityId : null}
+              adminFetch={adminFetch}
+              onError={setError}
+              onSuccess={setSuccessMessage}
+              onChanged={() => fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)}
+            />
           )}
 
           {/* Demo Day Inquiries - Admin Only. The tab is hidden from organizers
@@ -6427,36 +6082,12 @@ export default function AdminPage() {
                   <p className="mb-2 text-xs text-neutral-400">
                     Each one adds an organizer view to your account menu, and lists you with that group in the directory.
                   </p>
-                  <div className="max-h-56 overflow-y-auto rounded-xl border border-neutral-700 bg-neutral-800/50 p-2">
-                    {[...communities]
-                      .sort((a, b) => {
-                        const on = (c: Community) => (c.id === accountCommunityId || profileDraft.organizerOf.includes(c.id) ? 0 : 1)
-                        return on(a) - on(b) || a.name.localeCompare(b.name)
-                      })
-                      .map((c) => {
-                        const assigned = c.id === accountCommunityId
-                        return (
-                          <label key={c.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-neutral-200 hover:bg-neutral-700/40">
-                            <input
-                              type="checkbox"
-                              checked={assigned || profileDraft.organizerOf.includes(c.id)}
-                              disabled={assigned}
-                              onChange={(e) =>
-                                setProfileDraft({
-                                  ...profileDraft,
-                                  organizerOf: e.target.checked
-                                    ? [...profileDraft.organizerOf, c.id]
-                                    : profileDraft.organizerOf.filter((id) => id !== c.id),
-                                })
-                              }
-                              className="h-4 w-4 accent-[#ef426f]"
-                            />
-                            <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                            {assigned && <span className="text-xs text-neutral-400">Assigned</span>}
-                          </label>
-                        )
-                      })}
-                  </div>
+                  <GroupPicker
+                    communities={communities}
+                    selected={profileDraft.organizerOf}
+                    onChange={(organizerOf) => setProfileDraft({ ...profileDraft, organizerOf })}
+                    assigned={accountCommunityId}
+                  />
                 </fieldset>
               )}
               <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
@@ -6480,22 +6111,26 @@ export default function AdminPage() {
             </form>
           </SlideDrawer>
 
-          {/* Hand off: invite the next lead of the organizer's own group, optionally stepping down. */}
+          {/*
+            Add an organizer to the organizer's own group: a co-organizer, or, with
+            "Step down", the next lead. One route (/api/admin/handoff) does both; it
+            was labelled only as a handoff, which hid the more common use.
+          */}
           <SlideDrawer
             open={showHandoff}
             onClose={() => setShowHandoff(false)}
-            title="Hand off to a new lead"
+            title="Add an organizer"
             subtitle={getCommunityNameFromState(adminCommunityId || undefined)}
             widthClass="max-w-xl"
           >
             <form onSubmit={submitHandoff} className="space-y-5">
               <p className="text-sm leading-relaxed text-neutral-300">
-                The next lead gets organizer access to {getCommunityNameFromState(adminCommunityId || undefined)}, and an email saying so.
-                They sign in with that address and can add themselves to the directory.
+                They get organizer access to {getCommunityNameFromState(adminCommunityId || undefined)}, the same as yours, and an email saying so.
+                They sign in with that address and can add themselves to the directory. Leaving the group? Tick &ldquo;Step down&rdquo; to hand it on.
               </p>
               <div>
                 <label htmlFor="handoff-email" className="block text-sm font-semibold text-neutral-300 mb-2">Their email</label>
-                <input id="handoff-email" type="email" required value={handoffEmail} onChange={(e) => setHandoffEmail(e.target.value)} placeholder="next.lead@example.edu" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+                <input id="handoff-email" type="email" required value={handoffEmail} onChange={(e) => setHandoffEmail(e.target.value)} placeholder="co.organizer@example.com" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
               </div>
               <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
                 <input type="checkbox" checked={handoffStepDown} onChange={(e) => setHandoffStepDown(e.target.checked)} className="mt-1 h-4 w-4 accent-[#ef426f]" />

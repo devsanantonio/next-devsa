@@ -55,13 +55,21 @@ export interface Attendee {
   firstName: string;
   email: string;
   remindedAt?: unknown;
+  /** Still on the waitlist: told about changes and cancellations, but not reminded or messaged. */
+  waitlisted: boolean;
 }
 
 export async function attendeesOf(eventId: string): Promise<Attendee[]> {
   const snap = await getDb().collection(COLLECTIONS.EVENT_RSVPS).where('eventId', '==', eventId).get();
   const seen = new Set<string>();
   return snap.docs
-    .map((d) => ({ ref: d.ref, firstName: d.data().firstName || '', email: String(d.data().email || '').toLowerCase(), remindedAt: d.data().remindedAt }))
+    .map((d) => ({
+      ref: d.ref,
+      firstName: d.data().firstName || '',
+      email: String(d.data().email || '').toLowerCase(),
+      remindedAt: d.data().remindedAt,
+      waitlisted: d.data().waitlisted === true,
+    }))
     .filter((a) => a.email && !seen.has(a.email) && (seen.add(a.email), true));
 }
 
@@ -71,7 +79,8 @@ export async function attendeesOf(eventId: string): Promise<Attendee[]> {
  */
 export async function sendToAttendees(
   attendees: Attendee[],
-  build: (a: Attendee) => { subject: string; html: string }
+  build: (a: Attendee) => { subject: string; html: string },
+  replyTo: string = EMAIL_REPLY_TO
 ): Promise<{ sent: Attendee[]; configured: boolean }> {
   if (!isResendConfigured() || !resend) return { sent: [], configured: false };
   const sent: Attendee[] = [];
@@ -79,7 +88,7 @@ export async function sendToAttendees(
     const chunk = attendees.slice(i, i + 100);
     try {
       const { error } = await resend.batch.send(
-        chunk.map((a) => ({ from: EMAIL_FROM, to: a.email, replyTo: EMAIL_REPLY_TO, ...build(a) }))
+        chunk.map((a) => ({ from: EMAIL_FROM, to: a.email, replyTo, ...build(a) }))
       );
       if (error) throw error;
       sent.push(...chunk);

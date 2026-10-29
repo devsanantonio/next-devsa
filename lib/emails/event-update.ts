@@ -87,3 +87,49 @@ export function EventCancelledEmail({
 export function getEventCancelledSubject(eventTitle: string): string {
   return `Cancelled: "${eventTitle}" | DEVSA`
 }
+
+/**
+ * A message from the organizers to the people going: slides, a parking note,
+ * the recording. Sent from DEVSA with the organizer as reply-to and their name
+ * on it, so a reply reaches a person. Limited by /api/events/notify to two per
+ * event, from three days before it to seven days after.
+ */
+export function EventMessageEmail({
+  firstName,
+  eventTitle,
+  hostName,
+  senderName,
+  subject,
+  message,
+  eventUrl,
+}: {
+  firstName: string
+  eventTitle: string
+  hostName: string
+  senderName: string
+  subject: string
+  message: string
+  eventUrl: string
+}): string {
+  const paragraphs = message
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => paragraph(esc(p).replace(/\n/g, "<br />")))
+    .join("")
+  return emailShell({
+    title: esc(subject),
+    preheader: `From ${esc(senderName)} about ${esc(eventTitle)}.`,
+    body: `
+      ${eyebrow(esc(eventTitle))}
+      ${heading(esc(subject))}
+      ${paragraph(`Hi ${firstNameOf(firstName)},`)}
+      ${paragraphs}
+      ${paragraph(`${esc(senderName)}<br /><span style="opacity: 0.7;">${esc(hostName)}</span>`)}
+      ${paragraph("You&rsquo;re getting this because you RSVP&rsquo;d. Reply to reach the organizers directly.")}
+      ${button(eventUrl, "View the event")}
+    `,
+  })
+}
+
+export const getEventMessageSubject = (subject: string, eventTitle: string) => `${subject} | ${eventTitle}`

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, type ApprovedAdmin, type PastLead } from '@/lib/firebase-admin';
 import { isProtectedAdmin } from '@/lib/protected-admins';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       await db.collection(COLLECTIONS.APPROVED_ADMINS).add(record);
       created = true;
     }
+    await logActivity({ actor: me, action: 'approved', kind: 'admin', targetId: successor, label: successor, detail: `organizer · ${caller.communityId}, added by a fellow organizer` });
 
     // Stepping down: on the group's record first, then the access goes.
     if (stepDown) {
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
       };
       await communityRef.update({ pastLeads: FieldValue.arrayUnion(lead), updatedAt: new Date() });
       await callerQuery.docs[0].ref.delete();
+      await logActivity({ actor: me, action: 'removed', kind: 'admin', targetId: callerQuery.docs[0].id, label: me, detail: `stepped down from ${caller.communityId}` });
     }
 
     // The welcome email is a courtesy; the access is already granted if it fails.

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isHostedBy } from '@/lib/event-hosts';
+import { logActivity, diffFields } from '@/lib/activity-log';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
@@ -48,6 +50,13 @@ function rsvpQuestionFields(rsvpEnabled: unknown, question: unknown, required: u
   };
 }
 
+/** A whole number of seats, or null for no limit. Only kept while the DEVSA RSVP form is on. */
+function capacityField(rsvpEnabled: unknown, capacity: unknown): number | null {
+  if (rsvpEnabled !== true) return null;
+  const n = typeof capacity === 'number' ? capacity : typeof capacity === 'string' ? Number(capacity) : NaN;
+  return Number.isInteger(n) && n > 0 && n <= 100000 ? n : null;
+}
+
 // Get all events
 export async function GET(request: NextRequest) {
   try {
@@ -59,6 +68,10 @@ export async function GET(request: NextRequest) {
      * event too. It now needs a signed-in admin or organizer, as writes do.
      */
     let includeAll = false;
+    // An organizer's includeAll is their own group's drafts and link-only events,
+    // plus everyone's published, listed ones: another group's unannounced plans
+    // are not theirs to read, and a link-only event is private to its link.
+    let draftsOnlyFor: string | null = null;
     if (request.nextUrl.searchParams.get('includeAll') === 'true') {
       const email = await verifiedEmail(request);
       const admin = email
@@ -68,6 +81,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       includeAll = true;
+      const viewer = admin.docs[0].data();
+      if (viewer.role === 'organizer') draftsOnlyFor = viewer.communityId || '';
     }
     // One event by its slug: the event page's read. Link-only events answer
     // here, because having the link is the whole of the permission.
@@ -97,9 +112,15 @@ export async function GET(request: NextRequest) {
     }
 
     // The public list leaves link-only events out; see lib/event-visibility.ts.
-    const docs = includeAll || slug
-      ? eventsSnapshot.docs
-      : eventsSnapshot.docs.filter(doc => isListed(doc.data()));
+    const docs = includeAll
+      ? eventsSnapshot.docs.filter((doc) => {
+          if (draftsOnlyFor === null) return true;
+          const e = doc.data();
+          return (e.status === 'published' && isListed(e)) || isHostedBy(e, draftsOnlyFor);
+        })
+      : slug
+        ? eventsSnapshot.docs
+        : eventsSnapshot.docs.filter(doc => isListed(doc.data()));
 
     const firestoreEvents = docs.map(doc => {
       const data = doc.data();
@@ -151,6 +172,20 @@ export async function GET(request: NextRequest) {
       const dateB = new Date(b.date).getTime();
       return dateA - dateB;
     });
+
+    // The event page's read of a capped event says how many seats are left, so the
+    // form can say "Join the waitlist" before anyone fills it in. Waitlisted
+    // RSVPs don't hold a seat.
+    if (slug && firestoreEvents.length === 1 && firestoreEvents[0].rsvpEnabled && firestoreEvents[0].capacity) {
+      const e = firestoreEvents[0];
+      const rsvps = db.collection(COLLECTIONS.EVENT_RSVPS).where('eventId', '==', e.id);
+      const [all, waiting] = await Promise.all([
+        rsvps.count().get(),
+        rsvps.where('waitlisted', '==', true).count().get(),
+      ]);
+      const taken = all.data().count - waiting.data().count;
+      return NextResponse.json({ events: [{ ...e, spotsLeft: Math.max(0, e.capacity! - taken) }] });
+    }
 
     return NextResponse.json({ events: firestoreEvents });
   } catch (error) {
@@ -205,9 +240,9 @@ export async function POST(request: NextRequest) {
     const adminData = adminQuery.docs[0].data();
 
     // If organizer role, check community access
-    if (adminData.role === 'organizer' && adminData.communityId !== communityId) {
+    if (adminData.role === 'organizer' && !isHostedBy({ communityId, partnerId }, adminData.communityId)) {
       return NextResponse.json(
-        { error: 'Unauthorized - you can only create events for your community' },
+        { error: 'Unauthorized - you can only create events your community hosts' },
         { status: 403 }
       );
     }
@@ -247,6 +282,7 @@ export async function POST(request: NextRequest) {
       isOfficial: isOfficial || false,
       unlisted: unlisted === true,
       ...rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired),
+      capacity: capacityField(rsvpEnabled, body.capacity),
       brand: brand || null,
       detailsUrl: detailsUrl || null,
       externalRsvpUrl: body.externalRsvpUrl || null,
@@ -256,6 +292,7 @@ export async function POST(request: NextRequest) {
     };
 
     const docRef = await db.collection(COLLECTIONS.EVENTS).add(event);
+    await logActivity({ actor: organizerEmail.toLowerCase(), action: 'created', kind: 'event', targetId: docRef.id, label: title });
 
     return NextResponse.json({
       success: true,
@@ -315,11 +352,19 @@ export async function PUT(request: NextRequest) {
     const eventData = eventDoc.data();
 
     // If organizer role, check community access
-    if (adminData.role === 'organizer' && adminData.communityId !== eventData?.communityId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - you can only edit events for your community' },
-        { status: 403 }
-      );
+    // Any co-host's organizer may edit, and the edit must leave their group among the hosts:
+    // an organizer can't hand an event to groups they don't run.
+    if (adminData.role === 'organizer') {
+      const after = {
+        communityId: typeof communityId === 'string' ? communityId : eventData?.communityId,
+        partnerId: typeof partnerId === 'string' ? partnerId : eventData?.partnerId,
+      };
+      if (!isHostedBy(eventData ?? {}, adminData.communityId) || !isHostedBy(after, adminData.communityId)) {
+        return NextResponse.json(
+          { error: 'Unauthorized - you can only edit events your community hosts' },
+          { status: 403 }
+        );
+      }
     }
 
     // Build update object with only provided fields
@@ -351,6 +396,9 @@ export async function PUT(request: NextRequest) {
     if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
     if (typeof unlisted === 'boolean') updateData.unlisted = unlisted;
     if (typeof rsvpEnabled === 'boolean') Object.assign(updateData, rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired));
+    if (typeof rsvpEnabled === 'boolean' || body.capacity !== undefined) {
+      updateData.capacity = capacityField(typeof rsvpEnabled === 'boolean' ? rsvpEnabled : eventData?.rsvpEnabled, body.capacity);
+    }
     if (brand !== undefined) updateData.brand = brand || null;
     if (detailsUrl !== undefined) updateData.detailsUrl = detailsUrl || null;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
@@ -373,6 +421,14 @@ export async function PUT(request: NextRequest) {
     }
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).update(updateData);
+    await logActivity({
+      actor: organizerEmail.toLowerCase(),
+      action: 'updated',
+      kind: 'event',
+      targetId: eventId,
+      label: (updateData.title as string) || eventData?.title || eventId,
+      changes: diffFields(eventData, updateData),
+    });
 
     // If publishing a draft, mark as not yet shared so the daily digest picks it up
     const wasPublished = eventData?.status === 'published';
@@ -439,14 +495,16 @@ export async function DELETE(request: NextRequest) {
     const eventData = eventDoc.data();
 
     // If organizer role, check community access
-    if (adminData.role === 'organizer' && adminData.communityId !== eventData?.communityId) {
+    if (adminData.role === 'organizer' && !isHostedBy(eventData ?? {}, adminData.communityId)) {
       return NextResponse.json(
-        { error: 'Unauthorized - you can only delete events for your community' },
+        { error: 'Unauthorized - you can only delete events your community hosts' },
         { status: 403 }
       );
     }
 
     await db.collection(COLLECTIONS.EVENTS).doc(eventId).delete();
+    // The whole record, so the Activity tab can put it back.
+    await logActivity({ actor: organizerEmail.toLowerCase(), action: 'deleted', kind: 'event', targetId: eventId, label: eventData?.title || eventId, snapshot: eventData ?? null });
 
     return NextResponse.json({
       success: true,

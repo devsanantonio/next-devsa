@@ -123,6 +123,12 @@ export const COLLECTIONS = {
   // and canceled in Printify. Kept as the record of that.
   FAILED_ORDERS: 'failed_orders',
   ORDERS: 'orders',
+  // Who created, changed or deleted what in the admin, newest read first. A
+  // delete keeps the record it removed, so it can be restored from the
+  // Activity tab. Written by lib/activity-log.ts; admins and super admins read it.
+  ACTIVITY_LOG: 'activity_log',
+  // One document per newsletter sent from the admin: who, when, subject, counts.
+  NEWSLETTER_SENDS: 'newsletter_sends',
 } as const;
 
 /**
@@ -404,6 +410,14 @@ export interface Event {
   /** Whether attendees must answer rsvpQuestion. */
   rsvpQuestionRequired?: boolean;
   /**
+   * The room's limit for the DEVSA RSVP form. Past it, sign-ups join a waitlist
+   * and an organizer moves people up by hand (attendees can't cancel their own
+   * RSVP, so nothing would free a spot automatically). Null: no limit.
+   */
+  capacity?: number | null;
+  /** "Message attendees" sends, newest last. At most two per event; see /api/events/notify. */
+  messages?: { at: Date; by: string; subject: string; sent: number }[];
+  /**
    * One line, in the organizer's words, for the Monday Discord digest. When
    * unset the digest uses the description's first sentence, which is often
    * warm-up ("Looking to find a relaxing evening out?"). Plain text, at most
@@ -455,6 +469,11 @@ export interface EventRSVP {
   question?: string;
   answer?: string;
   submittedAt: Date;
+  /** Signed up after the event was full. Not counted, not reminded, until an organizer moves them up. */
+  waitlisted?: boolean;
+  promotedAt?: Date | null;
+  /** Ticked at the door; what turnout is counted from. */
+  checkedInAt?: Date | null;
 }
 
 // AI Conference types

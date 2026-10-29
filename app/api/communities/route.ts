@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity, diffFields } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
 import { cleanText } from '@/lib/organizer-directory';
 
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
 
     // Use the ID as the document ID for easy lookup
     await db.collection(COLLECTIONS.COMMUNITIES).doc(id).set(community);
+    await logActivity({ actor: adminEmail.toLowerCase(), action: 'created', kind: 'community', targetId: id, label: name || id });
 
     return NextResponse.json({
       success: true,
@@ -196,6 +198,14 @@ export async function PUT(request: NextRequest) {
     }
 
     await communityRef.update(updates);
+    await logActivity({
+      actor: adminEmail.toLowerCase(),
+      action: 'updated',
+      kind: 'community',
+      targetId: id,
+      label: (updates.name as string) || communityDoc.data()?.name || id,
+      changes: diffFields(communityDoc.data(), updates),
+    });
 
     return NextResponse.json({
       success: true,
@@ -259,6 +269,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await communityRef.delete();
+    await logActivity({ actor: adminEmail.toLowerCase(), action: 'deleted', kind: 'community', targetId: id, label: communityDoc.data()?.name || id, snapshot: communityDoc.data() ?? null });
 
     return NextResponse.json({
       success: true,

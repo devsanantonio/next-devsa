@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
+import { logActivity, diffFields } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Partner, type ApprovedAdmin } from '@/lib/firebase-admin';
 
 // Only admins/superadmins may create, edit, or delete partners.
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
     };
 
     await db.collection(COLLECTIONS.PARTNERS).doc(id).set(partner);
+    await logActivity({ actor: adminEmail.toLowerCase(), action: 'created', kind: 'partner', targetId: id, label: name || id });
 
     return NextResponse.json({ success: true, message: 'Partner created successfully', partner });
   } catch (error) {
@@ -112,15 +114,26 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Partner not found' }, { status: 404 });
     }
 
-    const updates: Partial<Partner> = { updatedAt: new Date() };
+    const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (name !== undefined) updates.name = name;
     if (logo !== undefined) updates.logo = logo;
     if (description !== undefined) updates.description = description;
-    if (website !== undefined) updates.website = website || undefined;
-    if (video !== undefined) updates.video = video || undefined;
+    // A cleared link is stored as null. It was `|| undefined`, which Firestore rejects,
+    // so clearing a partner's website or video failed the whole save — the bug
+    // communities had until 2026-10.
+    if (website !== undefined) updates.website = website || null;
+    if (video !== undefined) updates.video = video || null;
     if (typeof isEasterEgg === 'boolean') updates.isEasterEgg = isEasterEgg;
 
     await partnerRef.update(updates);
+    await logActivity({
+      actor: adminEmail.toLowerCase(),
+      action: 'updated',
+      kind: 'partner',
+      targetId: id,
+      label: (updates.name as string) || partnerDoc.data()?.name || id,
+      changes: diffFields(partnerDoc.data(), updates),
+    });
 
     return NextResponse.json({ success: true, message: 'Partner updated successfully' });
   } catch (error) {
@@ -151,6 +164,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await partnerRef.delete();
+    await logActivity({ actor: adminEmail.toLowerCase(), action: 'deleted', kind: 'partner', targetId: id, label: partnerDoc.data()?.name || id, snapshot: partnerDoc.data() ?? null });
 
     return NextResponse.json({ success: true, message: 'Partner deleted successfully' });
   } catch (error) {
