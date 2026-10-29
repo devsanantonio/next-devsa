@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 /**
@@ -6,12 +7,17 @@ import Link from "next/link"
  * public access channel, starting with Christmas editions in December 2026.
  *
  * What it can and can't say yet. TVSA approved the programming on 2026-10-29;
- * the credit wording ("airing on TVSA" rather than any "DEVSA × TVSA" that
- * reads as a co-production) and use of TVSA's logo are being confirmed with
- * them, so the page names TVSA in plain text and shows no TVSA mark. Air dates
- * and times aren't set: the schedule says so rather than guessing. Channel
- * numbers are TVSA's own (sa.gov, the Public row). TVSA hands DEVSA the
- * recordings, so every episode also goes up on DEVSA's YouTube.
+ * the credit wording ("on TVSA" rather than any "DEVSA × TVSA" that reads as a
+ * co-production) and use of TVSA's logo are being confirmed with them. This
+ * preview shows TVSA's "Public" logo and the three providers' logos on Jesse's
+ * call; if TVSA or a provider says no, swap the image back for the name. Air
+ * dates and times aren't set: the schedule says so rather than guessing.
+ * Channel numbers are TVSA's own (sa.gov, the Public row). TVSA hands DEVSA
+ * the recordings, so every episode also goes up on DEVSA's YouTube.
+ *
+ * The logos in public/tv/ are versions for a dark ground: TVSA's white card
+ * removed and "PUBLIC" lightened, and each provider's dark lettering turned
+ * off-white, brand colors kept.
  *
  * The mark is the DEVSA mark redrawn as a clapperboard ("SA" becomes "TV"),
  * set on #161616 because its near-black body disappears on pure black, and
@@ -19,10 +25,11 @@ import Link from "next/link"
  * reduced motion leaves it open and still.
  */
 
+// Each logo sized by eye so the three read at the same weight.
 const CHANNELS = [
-  { provider: "Spectrum", number: "20", color: "#00b2a9" },
-  { provider: "Grande", number: "19", color: "#ef426f" },
-  { provider: "AT&T", number: "99", color: "#ff8200" },
+  { provider: "Spectrum", logo: "/tv/spectrum-dark.svg", w: 104, h: 26, number: "20", color: "#00b2a9" },
+  { provider: "Grande", logo: "/tv/grande-dark.svg", w: 112, h: 38, number: "19", color: "#ef426f" },
+  { provider: "AT&T", logo: "/tv/att-dark.svg", w: 86, h: 35, number: "99", color: "#ff8200" },
 ]
 
 function ClapperMark() {
@@ -100,16 +107,30 @@ export function TvHero() {
             DEVSA is coming to <span className="font-light italic text-white/55">your</span> TV.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70 md:text-xl">
-            <strong className="font-semibold text-white">From the meetup room to your living room.</strong> Christmas
-            editions on TVSA, San Antonio&apos;s public access channel, featuring the groups, speakers and builders
-            DEVSA connects.
+            <strong className="font-semibold text-white">From the meetup room to your living room.</strong> DEVSA
+            programming on{" "}
+            {/* Logo and comma kept together, so the comma never starts a line on a phone. */}
+            <span className="whitespace-nowrap">
+              <Image
+                src="/tv/tvsa-dark.png"
+                alt="TVSA"
+                width={845}
+                height={365}
+                className="ml-1 inline-block h-[1.85em] w-auto -translate-y-[0.1em] align-middle"
+              />
+              ,
+            </span>{" "}
+            San Antonio&apos;s public access channel, featuring the groups, speakers and builders DEVSA connects.
           </p>
 
           {/* Where to watch: TVSA's public access channel on each provider. */}
           <ul className="mt-8 grid max-w-xl grid-cols-3 gap-3" aria-label="Where to watch">
             {CHANNELS.map((c) => (
               <li key={c.provider} className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                <span className="block text-sm font-medium text-white/70">{c.provider}</span>
+                {/* A fixed-height row, so the numbers line up whatever each logo's shape. */}
+                <span className="flex h-10 items-center">
+                  <Image src={c.logo} alt={c.provider} width={c.w} height={c.h} className="w-auto max-w-full object-contain object-left" style={{ height: c.h }} />
+                </span>
                 <span className="block text-3xl font-black tabular-nums text-white md:text-4xl">{c.number}</span>
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-1" style={{ background: c.color }} />
               </li>
@@ -159,7 +180,9 @@ export function TvHero() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-sm lg:max-w-md">
+        {/* Supporting the headline, not competing with it: at max-w-md the mark stood as
+            tall as the whole column of copy. */}
+        <div className="mx-auto w-full max-w-[240px] sm:max-w-[280px] lg:max-w-[340px]">
           <ClapperMark />
         </div>
       </div>
