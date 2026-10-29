@@ -33,7 +33,7 @@ const COLORS = ["#00b2a9", "#ef426f", "#ff8200"]
 const PER_LAYER = [4500, 4500, 6098]
 /** The County starter: it prints which acequias ran near Geekdom, then writes a map. */
 const QUICKSTART = "git clone https://github.com/devsanantonio/localhost\ncd localhost/starters/acequias\npython3 main.py"
-/** The three sources, named in the hero's first line; each name jumps to its piece. */
+/** The three sources with a piece below, named in the hero's first line; each name jumps to its piece. */
 const SECTIONS = [
   { href: "#bexar-county", label: "Bexar County" },
   { href: "#city", label: "the City of San Antonio" },
@@ -206,11 +206,18 @@ export function LocalhostHero() {
               Every developer has a localhost.{" "}
               <span className="font-light italic text-white/50">This one is San Antonio.</span>
             </h1>
-            {/* One paragraph: the hook (checkable: all three are free, none needs a key) and what the
-                project is. The wordmark and the headline already carry the port-and-area-code joke, the
+            {/* One paragraph: the hook (checkable: seven agencies, all free, none needs a key), the
+                problem (they're scattered), and what the project is. "Seven of them" jumps to the list in
+                the Build section; the three with a piece below are named last, as the experiments' sources. The wordmark and the headline already carry the port-and-area-code joke, the
                 quickstart below says "clone it". */}
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
-              <span className="font-semibold text-white">San Antonio has an API.</span> Three, actually:{" "}
+              <span className="font-semibold text-white">San Antonio has an API.</span>{" "}
+              <a href="#publishers" className="font-semibold text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white">
+                Seven of them.
+              </a>{" "}
+              Free, no key required, and spread across as many websites, so almost nobody finds them all.{" "}
+              <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s starter kit for every one,
+              and below, three small experiments with{" "}
               {SECTIONS.map((s, i) => (
                 <span key={s.href}>
                   {i === 2 ? " and " : i === 1 ? ", " : ""}
@@ -219,9 +226,7 @@ export function LocalhostHero() {
                   </a>
                 </span>
               ))}{" "}
-              publish their data free, no key required.{" "}
-              <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s starter kit for it: code
-              for each source, and below, three small experiments to see what&apos;s in there.
+              to see what&apos;s in there.
             </p>
             {/* The first five minutes, shown rather than described: no sign-up, no keys, one file. */}
             <div className="mt-6 max-w-xl overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]">

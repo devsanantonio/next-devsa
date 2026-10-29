@@ -67,7 +67,7 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 DEVSA's code and docs are public at https://github.com/devsanantonio:
 
 - **community-calendar-api** (https://github.com/devsanantonio/community-calendar-api): how to read the community calendar's public RSS feed and iCalendar subscription, with examples and every group id.
-- **localhost** (https://github.com/devsanantonio/localhost), presented as localhost:210: a starting point for building with San Antonio's open data from the City of San Antonio, Bexar County and VIA Metropolitan Transit. The data belongs to those agencies; DEVSA isn't affiliated with them.
+- **localhost** (https://github.com/devsanantonio/localhost), presented as localhost:210: a starting point for building with San Antonio's open data from seven public agencies: the City of San Antonio, Bexar County and VIA Metropolitan Transit, plus the San Antonio River Authority, the Alamo Area MPO, Opportunity Home San Antonio and the Edwards Aquifer Authority (and USGS's live river gauges). Its peek starter searches all of them at once. The data belongs to those agencies; DEVSA isn't affiliated with them.
 - **devsa-sessions** (https://github.com/devsanantonio/devsa-sessions): live build sessions from the DEVSA Discord, and the Build-and-tell Friday showcase.
 - **next-devsa** (https://github.com/devsanantonio/next-devsa): the source of devsa.community, open to contributors.`)
 

@@ -15,7 +15,10 @@ import { Check, Copy } from "lucide-react"
  * Every date and line is the County's: its Tricentennial layers, packed by
  * scripts/build-water.py into public/localhost/water.json, with the 1896
  * Sanborn map from sanborn.json on top (same origin, Main Plaza, in meters).
- * The last step queries the County's live acequia layer and shows the request.
+ * The last step queries the County's live acequia layer and shows the request,
+ * and ends on the water as it is now: San Pedro Creek's live level from the
+ * USGS gauge at Furnish, read in the browser (USGS allows it, no key). If the
+ * gauge doesn't answer, the sentence simply isn't there.
  *
  * Grantees are named: settlers of the 1700s, many of them Canary Islanders.
  */
@@ -37,6 +40,9 @@ type Step = { year: number; center: [number, number]; span: number; eyebrow: str
 const API = "https://services1.arcgis.com/8onVmslF2KXErTHT/arcgis/rest/services"
 const GEEKDOM: [number, number] = [14, 199]
 const GEEKDOM_LONLAT = [-98.49337, 29.42637]
+/** USGS 08178500, San Pedro Creek at Furnish: gage height (00065) and flow (00060), every 15 minutes.
+ * Gage height is the water surface against the gauge's own fixed zero, not the creek's depth. */
+const CREEK_GAUGE = "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=08178500&parameterCd=00065,00060"
 const COLORS = { river: "#6fa8e0", acequia: "#00b2a9", field: "#e8c562", city: "#c9c9c9", block: "#262626", here: "#ff8200" }
 
 /** Where along a path the first `f` of its length ends: the ditches draw themselves as they're dug. */
@@ -91,11 +97,24 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
   const [tip, setTip] = useState<{ x: number; y: number; lot: Lot } | null>(null)
   const [live, setLive] = useState<{ loading: boolean; rows: { name: string; dug: number; dry: number }[] | null; error: boolean }>({ loading: false, rows: null, error: false })
   const [copied, setCopied] = useState(false)
+  const [creek, setCreek] = useState<{ feet: number; cfs: number } | null>(null)
   const view = useRef({ cx: -300, cy: 1500, span: 6500, year: 1700 })
 
   useEffect(() => {
     fetch("/localhost/water.json").then((r) => r.json()).then(setWater).catch(() => {})
     fetch("/localhost/sanborn.json").then((r) => r.json()).then(setSanborn).catch(() => {})
+    fetch(CREEK_GAUGE)
+      .then((r) => r.json())
+      .then((d) => {
+        const latest = (code: string) => {
+          const series = d.value.timeSeries.find((t: { variable: { variableCode: { value: string }[] } }) => t.variable.variableCode[0].value === code)
+          return Number(series?.values[0].value.at(-1)?.value)
+        }
+        const feet = latest("00065")
+        const cfs = latest("00060")
+        if (Number.isFinite(feet) && Number.isFinite(cfs) && feet > -999 && cfs >= 0) setCreek({ feet, cfs })
+      })
+      .catch(() => {})
   }, [])
 
   const close = useMemo(() => (water ? nearest(water, GEEKDOM) : null), [water])
@@ -149,6 +168,12 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
           The {close.a.name}, dug in {close.a.dug}, ran about {Math.round(close.d / 10) * 10} m from Houston and Soledad, the corner
           where Geekdom is now. It went dry in {close.a.dry}. DEVSA has brought {today.events} meetups from {today.groups.length} tech
           groups to this corner.
+          {creek && (
+            <>
+              {" "}And the creek still runs: right now San Pedro Creek reads {creek.feet.toFixed(1)} ft on the federal
+              gauge at Furnish, carrying {Math.round(creek.cfs)} cubic feet of water a second.
+            </>
+          )}
         </>
       ) : null,
     },

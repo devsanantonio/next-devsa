@@ -13,7 +13,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 
 const TITLE = "localhost:210 — Build With San Antonio's Open Data"
 const DESCRIPTION =
-  "San Antonio has an API. Follow the water through three centuries of downtown, watch the City permit what's being built, and race a real VIA bus up San Pedro. Built on Bexar County, City of San Antonio and VIA open data. A DEVSA project."
+  "San Antonio has an API. Follow the water through three centuries of downtown, watch the City permit what's being built, and race a real VIA bus up San Pedro. Built on open data from Bexar County, the City of San Antonio, VIA and four more San Antonio agencies. A DEVSA project."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -47,6 +47,10 @@ export const metadata: Metadata = {
  * on the published schedule. The City's is "Watch downtown get built", every
  * building permit issued downtown since January 2025, in the order it was issued.
  *
+ * Seven agencies publish San Antonio's open data, not three: the Build section
+ * lists all of them (#publishers), and the repo's peek starter reads any of them.
+ * Four have no piece here; they're how the question cards reach past the three.
+ *
  * "Today" comes from the calendar snapshot in public/localhost/community.json
  * (scripts/build-community.py). Geekdom is a DEVSA partner and the room: DEVSA
  * brings the groups, the groups run their meetups.
@@ -59,11 +63,23 @@ const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] track
 const link = "font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
 const REPO = "https://github.com/devsanantonio/localhost"
 
-/** Questions to start from, one per starter. Each section above already links its starter; these are curiosity, not products. */
+/** Questions to start from. Each section above already links its own starter; two of these reach past the
+    three pieces to the publishers below, through peek. Curiosity, not products. */
 const IDEAS = [
-  { slug: "via-next-bus", source: "VIA Metropolitan Transit", title: "What's outside your door?", body: "When does the next bus leave the stop nearest you? via-next-bus answers it in a few lines; see where the question takes you." },
+  { slug: "peek", source: "City of San Antonio · Alamo Area MPO", title: "Where the money goes", body: "The City's 370 bond projects each carry a budget, what's been spent and whether they're on schedule; the MPO's 68 funded road and transit projects run through 2030. Put them on one map: which districts' projects run behind?" },
+  { slug: "peek", source: "Alamo Area MPO · USGS", title: "When it rains", body: "The MPO scored 6,372 road segments for how much of each floods, from a 5-year storm to a 500-year one. Which roads on your commute go under first, and what's the creek doing right now?" },
   { slug: "permits-near-you", source: "City of San Antonio", title: "The wait", body: "Four25 San Pedro waited 785 days from filing to permit. Which kinds of work wait longest, and where? Chart filing-to-permit by type or council district." },
-  { slug: "acequias", source: "Bexar County", title: "Your walk, in 1720", body: "Which acequias did your route to work cross, and when did they go dry? Put them under today's streets and see which ones the streets still follow." },
+]
+
+/** Who publishes San Antonio's open data. The first three have a piece above; the rest are why the hero says seven. */
+const PUBLISHERS = [
+  { name: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", has: "Census geography, every district map, and San Antonio in 1718 and 1896." },
+  { name: "City of San Antonio", href: "https://data.sanantonio.gov", has: "Permits, 311, bond projects, streets and drainage: about 170 datasets." },
+  { name: "VIA Metropolitan Transit", href: "https://www.viainfo.net/developers-resources/", has: "Every route, stop and scheduled trip, and where the buses are now." },
+  { name: "San Antonio River Authority", href: "https://sariverauthority-sara-tx.opendata.arcgis.com", has: "The river and its creeks: watersheds, floodplains, water quality, the Mission Reach." },
+  { name: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", has: "The region's funded road and transit projects, flood-exposed roads and bike stress." },
+  { name: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, has: "Housing communities by council district, and low water crossings." },
+  { name: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", has: "The aquifer under the city: its daily level, springflow and drought stage." },
 ]
 const ISSUES = `${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`
 
@@ -111,13 +127,15 @@ export default function LocalhostPage() {
             The County publishes more than 300 map layers: the acequias, missions and land grants of the 1700s, cattle
             drives and railroads, 15,349 buildings from 1896, 4,200 places from 1897, and every district map from Congress
             to your voter precinct. The starter tells you which acequias ran near any point, and maps them all with a
-            year slider.
+            year slider. For the water as it is now, the San Antonio River Authority publishes the creeks and their
+            floodplains, and USGS the live gauges.
           </BuildYourOwn>
           <p className="mt-6 text-xs leading-relaxed text-white/50">
             Data: Bexar County Information Technology GIS (Tricentennial historical layers: river, acequias, labores, land
             grants, missions and presidio; 1896 Sanborn maps). Today: the DEVSA community calendar, as of{" "}
             {new Date(`${community.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
-            Grantees are named as the County records them. A DEVSA project, not affiliated with Bexar County.
+            Grantees are named as the County records them. Live creek level: U.S. Geological Survey, gauge 08178500. A
+            DEVSA project, not affiliated with Bexar County or USGS.
           </p>
         </div>
       </section>
@@ -141,7 +159,8 @@ export default function LocalhostPage() {
           <BuildYourOwn starter="permits-near-you" label="Permits near you">
             Every permit citywide, with its type, dates, declared value and square footage, and next to it 311 service
             calls, fire inspections, street and sidewalk projects and low-water crossings. The starter sends the same SQL
-            as the map above for any point you give it, and says how long each permit took.
+            as the map above for any point you give it, and says how long each permit took. Past the City line, the
+            Alamo Area MPO publishes the region&apos;s 68 funded road and transit projects through 2030.
           </BuildYourOwn>
           <p className="mt-6 text-xs leading-relaxed text-white/50">
             Data: City of San Antonio Open Data, CC BY 4.0 (permits issued, through{" "}
@@ -172,7 +191,8 @@ export default function LocalhostPage() {
           <BuildYourOwn starter="via-next-bus" label="VIA next bus">
             6,098 stops, 88 routes and every scheduled trip through January 10, 2027, in GTFS, the format every transit
             app reads, plus where the buses are right now as GTFS-realtime. The starter tells you when the next bus leaves
-            any stop.
+            any stop. The Alamo Area MPO adds the other ways to get around: bike lanes, and how stressful each road is to
+            ride.
           </BuildYourOwn>
           <p className="mt-6 text-xs leading-relaxed text-white/50">
             Data provided by VIA Metropolitan Transit: the published GTFS schedule, version {via.feed.version.split("_")[0]}.
@@ -191,14 +211,38 @@ export default function LocalhostPage() {
           </h2>
           <p className="mt-5 max-w-2xl text-white/70">
             Each starter is one Python file that asks one source a real question, and runs in under a minute. The repo
-            has five, from the 1897 city directory to 311 by district, and{" "}
-            <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a> covers everything the three publish,
-            and their terms. Three questions to start from:
+            has six, from the 1897 city directory to 311 by district, and{" "}
+            <a href={`${REPO}/tree/main/starters/peek`} className={link}>peek</a> reads any of the seven: search them all
+            for a word, then see any layer&apos;s fields and first rows.{" "}
+            <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a> covers what each publishes, and their
+            terms.
           </p>
-          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+
+          {/* Who publishes what. Most of these don't link to each other, which is the point of listing them. */}
+          <div id="publishers" className="mt-10 scroll-mt-24 rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+            <p className={eyebrow}>Who publishes what</p>
+            <ul className="mt-5 grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-2">
+              {PUBLISHERS.map((p) => (
+                <li key={p.name} className="text-sm leading-relaxed">
+                  <a href={p.href} className={link}>{p.name}</a>
+                  <span className="text-white/70"> · {p.has}</span>
+                </li>
+              ))}
+              <li className="text-sm leading-relaxed">
+                <span className="font-medium text-white">Plus USGS</span>
+                <span className="text-white/70"> · live gauges on the river and San Pedro Creek, every 15 minutes.</span>
+              </li>
+            </ul>
+            <p className="mt-5 text-xs leading-relaxed text-white/50">
+              Each publisher&apos;s data is its own, under its own terms. DEVSA isn&apos;t affiliated with any of them.
+            </p>
+          </div>
+
+          <p className="mt-10 max-w-2xl text-white/70">Three questions to start from:</p>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
             {IDEAS.map((idea) => (
               <a
-                key={idea.slug}
+                key={idea.title}
                 href={`${REPO}/tree/main/starters/${idea.slug}`}
                 className="group flex h-full flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-6 transition-all duration-200 hover:border-neutral-700 hover:bg-neutral-900/70"
               >
