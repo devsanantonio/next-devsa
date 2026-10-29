@@ -67,9 +67,15 @@ export function AboutDevsa() {
                 </span>
                 <span className="block">Tech Communities.</span>
               </h2>
+              {/* Why first, then what. The homepage said what DEVSA does but
+                  never what was missing before it; that lived only on
+                  /buildingtogether, in the same words. It credits the groups
+                  (they were always here) and keeps DEVSA's claim to the
+                  checkable one: it connected them. "Between them" gives the
+                  bridge two sides, which "Three Audiences, One Bridge" builds on. */}
               <p className="max-w-3xl text-xl md:text-2xl text-gray-700 leading-[1.4] font-light">
-                DEVSA is the 501(c)(3) bridge across San Antonio&apos;s tech
-                ecosystem —{" "}
+                San Antonio never lacked tech groups. It lacked a way for them
+                to see each other. DEVSA is the 501(c)(3) bridge between them:{" "}
                 <strong className="font-semibold text-gray-900">
                   one shared calendar and one public directory
                 </strong>

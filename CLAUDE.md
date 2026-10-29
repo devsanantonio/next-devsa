@@ -105,7 +105,7 @@ The dead Vercel env vars (`DISCORD_JOBS_WEBHOOK_URL`, `DISCORD_EVENTS_WEBHOOK_UR
 
 Removed with it: `/api/discord-status`, `/api/coworking-space/ping-admin`, `lib/emails/coworking-inquiry-ops.ts`, and the `CoworkingSpace` JSON-LD, which advertised amenities, opening hours and `isAccessibleForFree` and would have gone on telling crawlers the room could be walked into.
 
-Nothing links to it any more — nav, mobile drawer, footer, and the four in-body links are gone. The homepage's secondary CTA is Donate now. Its sitemap priority dropped from 0.85 to 0.2.
+Nothing links to it any more — nav, mobile drawer, footer, and the four in-body links are gone. The homepage hero's secondary button is "Partners & Communities" (`/buildingtogether`), not Donate: Donate is already in the navbar, and two Donate buttons in the same view is one too many. Its sitemap priority dropped from 0.85 to 0.2.
 
 Still open: whether it stays at all, or 301s to `/events`. That was deliberately left until there is traffic data to decide on.
 

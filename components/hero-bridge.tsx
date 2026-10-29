@@ -190,9 +190,11 @@ function NextUp() {
           href={`/events/${next.slug}`}
           className="group inline-flex max-w-full items-center gap-3 rounded-lg text-sm leading-5 text-white/70 transition-colors hover:text-white motion-safe:animate-[fade-in_400ms_ease-out]"
         >
-          <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
-            <span className="absolute inline-flex h-full w-full rounded-full bg-[#00b2a9] opacity-60 motion-safe:animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00b2a9]" />
+          {/* The prompt chevron from the DEVSA mark, still. It was a teal dot
+              that pulsed forever, a third thing moving in a hero that already
+              has the photos and the typed headline word. */}
+          <span className="shrink-0 font-mono text-sm font-semibold leading-5 text-[#00b2a9]" aria-hidden>
+            &gt;
           </span>
           <span className="min-w-0 truncate">
             <span className="font-medium text-white/85">Next up:</span>{" "}
@@ -203,6 +205,78 @@ function NextUp() {
         </Link>
       )}
     </div>
+  )
+}
+
+/**
+ * The headline's last word, typed at a prompt: Builds, Connects, Grows,
+ * Learns, each typed out, held, and deleted for the next, once. It comes back
+ * to "Builds." and stops: a greeting in the first fifteen seconds, not a loop,
+ * because a word retyping every few seconds in the middle of the reading path
+ * kept pulling the eye off the sentence below. The photos are the hero's
+ * ongoing motion. The four verbs are
+ * the original line, "Find Your People. Build Your Future.", taken apart:
+ * learning and connecting are finding your people, building and growing are
+ * the future.
+ *
+ * It opens on "Builds", fully written, so the server render and a reader who
+ * asks for less motion both get the headline as chosen; the cycle only starts
+ * on the client, and never under prefers-reduced-motion. The word sits on its
+ * own line, so a longer word doesn't reflow the lines above it.
+ *
+ * The caret is the site's shell caret (txlfCaret in globals.css): a hard
+ * on/off rather than a fade, and held steady under reduced motion.
+ */
+const HERO_WORDS = ["Builds", "Connects", "Grows", "Learns"]
+
+function TypedWord() {
+  const [text, setText] = useState(`${HERO_WORDS[0]}.`)
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    let word = 0
+    let shown = text.length
+    let deleting = true
+    let timer: ReturnType<typeof setTimeout>
+    const full = () => `${HERO_WORDS[word]}.`
+    const step = () => {
+      if (deleting) {
+        shown -= 1
+        setText(full().slice(0, shown))
+        if (shown === 0) {
+          deleting = false
+          word = (word + 1) % HERO_WORDS.length
+          timer = setTimeout(step, 320)
+          return
+        }
+        timer = setTimeout(step, 45)
+      } else {
+        shown += 1
+        setText(full().slice(0, shown))
+        if (shown === full().length) {
+          // Back on the first word: the pass is done, and it rests here.
+          if (word === 0) return
+          deleting = true
+          timer = setTimeout(step, 2400)
+          return
+        }
+        timer = setTimeout(step, 95)
+      }
+    }
+    // Hold the first word as long as the others before the cycle begins.
+    timer = setTimeout(step, 2800)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <span className="block whitespace-nowrap">
+      {text}
+      <span
+        aria-hidden
+        className="ml-[0.06em] inline-block h-[0.78em] w-[0.42em] translate-y-[0.06em] bg-[#ef426f] animate-[txlfCaret_1.1s_infinite]"
+      />
+    </span>
   )
 }
 
@@ -218,7 +292,9 @@ export function HeroBridge() {
     function update() {
       const w = window.innerWidth
       setColumnCount(w < 640 ? 3 : w < 1024 ? 4 : 5)
-      setIsMobile(w < 768)
+      // Tablets take the phone layout too (photos first, text full width): the
+      // side-by-side layout squeezed the copy to ~290px on an upright iPad.
+      setIsMobile(w < 1024)
     }
     update()
     window.addEventListener("resize", update)
@@ -243,7 +319,7 @@ export function HeroBridge() {
   return (
     <section
       id="hero-bridge"
-      className="relative w-full min-h-dvh flex flex-col md:justify-center md:items-start overflow-hidden bg-neutral-950"
+      className="relative w-full min-h-dvh flex flex-col lg:justify-center lg:items-start overflow-hidden bg-neutral-950"
       data-bg-type="dark"
     >
       {/* Inject CSS keyframes once */}
@@ -267,26 +343,45 @@ export function HeroBridge() {
         }
       `}</style>
 
-      {/* Headline — below the images on mobile; leads the left column on desktop */}
-      <div className="order-2 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 md:pt-0">
+      {/* Headline — below the images on phones and tablets; leads the left column from lg up */}
+      {/* The headline's column is wider than the copy's (75% against 55%) so
+          "Where San Antonio" holds one line from tablets up; at 55% it needed
+          about 650px and had 545–630 on laptops, so "Where" sat alone. Phones
+          still wrap: one line there would mean shrinking the headline. */}
+      <div className="order-2 lg:order-0 relative z-20 w-full lg:max-w-[75%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 lg:pt-0">
         <motion.div
           initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-balance font-sans text-white font-black tracking-[-0.02em] leading-[1.05] md:leading-[1.1] text-[2.75rem] md:text-5xl lg:text-6xl xl:text-7xl">
-            Find Your People.{" "}
-            <span className="text-white/65 font-normal italic">Build Your</span>{" "}
-            Future.
+          {/* Below lg the size follows the screen width so "Where San Antonio"
+              always fits on one line: the phrase is about 9 times its font
+              size wide, and the column is the screen less 3rem of padding.
+              Capped at 3.5rem for tablets. */}
+          <h1 className="text-balance font-sans text-white font-black tracking-[-0.02em] leading-[1.05] lg:leading-[1.1] text-[min(calc((100vw-3rem)/9.4),3.5rem)] lg:text-6xl xl:text-7xl">
+            {/* One sentence for screen readers and search; the typed word is decoration. */}
+            <span className="sr-only">Where San Antonio learns, builds, connects and grows.</span>
+            <span aria-hidden>
+              <span className="whitespace-nowrap">
+                <span className="text-white/65 font-normal italic">Where</span> San&nbsp;Antonio
+              </span>
+              <TypedWord />
+            </span>
           </h1>
         </motion.div>
       </div>
 
-      {/* 3D Photo Carousel — leads on mobile (full-bleed, images first);
+      {/* 3D Photo Carousel — leads on phones and tablets (full-bleed, images first);
           full-bleed behind the text on desktop. Explicit mobile height because
-          the inner columns are absolutely positioned (zero intrinsic height). */}
+          the inner columns are absolutely positioned (zero intrinsic height).
+          On phones it's a strip, not half the screen: at 48dvh the headline
+          started mid-screen and the Community Calendar button sat below the
+          fold on an iPhone, so the first screen said nothing about DEVSA.
+          On tablets (md) it grows instead (flex-1) to fill whatever height the
+          copy leaves: with the text full width, an upright iPad otherwise had
+          a band of empty screen under "Next up". */}
       <div
-        className="order-1 md:order-0 relative z-0 w-full h-[48dvh] min-h-85 overflow-hidden md:h-auto md:min-h-0 md:overflow-visible md:absolute md:inset-0"
+        className="order-1 lg:order-0 relative z-0 w-full h-[30dvh] min-h-52 overflow-hidden md:h-auto md:flex-1 md:min-h-[30dvh] lg:h-auto lg:min-h-0 lg:overflow-visible lg:absolute lg:inset-0"
         style={{ perspective: "1200px" }}
       >
         <div
@@ -314,68 +409,54 @@ export function HeroBridge() {
             the gallery under the left ~60% of the screen at roughly 10–15%
             visibility — the strongest thing on the page reduced to a grey wash.
             The text column ends near 48% of the width, so the dark hold stops
-            just past it and fades out by 70%; top and bottom get a lighter
+            just past it and fades out by 72%. It held only 45% at the 52% mark,
+            where the copy still runs on a laptop, so a photo showed through the
+            end of the lines; it now holds 92% to 42%. Top and bottom get a lighter
             vignette so the nav and the next section still meet the hero
             cleanly. */}
         <div
-          className="hidden md:block absolute inset-0 z-10"
+          className="hidden lg:block absolute inset-0 z-10"
           style={{
             background:
-              "linear-gradient(to right, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.88) 36%, rgba(10,10,10,0.45) 52%, rgba(10,10,10,0.08) 70%, transparent 100%)",
+              "linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.92) 42%, rgba(10,10,10,0.6) 56%, rgba(10,10,10,0.12) 72%, transparent 100%)",
           }}
         />
-        <div className="hidden md:block absolute inset-0 bg-linear-to-b from-neutral-950/50 via-transparent to-neutral-950/60 z-10" />
+        <div className="hidden lg:block absolute inset-0 bg-linear-to-b from-neutral-950/50 via-transparent to-neutral-950/60 z-10" />
 
         {/* Mobile fades — blend the gallery into the text above and below */}
-        <div className="md:hidden absolute inset-x-0 top-0 h-20 bg-linear-to-b from-neutral-950 to-transparent z-10" />
-        <div className="md:hidden absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-neutral-950 to-transparent z-10" />
+        <div className="lg:hidden absolute inset-x-0 top-0 h-20 bg-linear-to-b from-neutral-950 to-transparent z-10" />
+        <div className="lg:hidden absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-neutral-950 to-transparent z-10" />
       </div>
 
-      {/* Body copy + CTAs — after the images on mobile; continues the left column on desktop */}
-      <div className="order-3 md:order-0 relative z-20 w-full md:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 pb-20 md:pt-8 md:pb-0">
+      {/* Body copy + CTAs — after the images on phones and tablets; continues the left column from lg up */}
+      <div className="order-3 lg:order-0 relative z-20 w-full lg:max-w-[55%] page-inset-left pr-6 sm:pr-10 md:pr-16 lg:pr-20 pt-8 pb-20 lg:pb-0">
         <motion.div
           initial={{ y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="space-y-7 md:space-y-8"
         >
-          <div className="space-y-4 md:space-y-5 max-w-[96rem] md:max-w-7xl">
-            {/* What DEVSA is, in one line. It used to read "DEVSA bridges the
-                gap between passionate builders, local partners, and the growing
-                tech ecosystem" — the right image in stock words, saying neither
-                what the gap was nor who was on each side. A bridge is still the
-                image (the section below is "Three Audiences, One Bridge."), now
-                as a noun with the three audiences named. "Nonprofit" is left to
-                the About section one scroll down, where it is explained. */}
-            <p className="md:text-pretty text-lg md:text-2xl text-white/75 leading-relaxed md:leading-[1.45] font-normal">
-              DEVSA is{" "}
-              <strong className="font-semibold text-white">the bridge</strong>{" "}
-              between San&nbsp;Antonio&apos;s builders, tech groups and partners.
-            </p>
-
-            {/* "Discover communities, events, and resources — all in one
-                place" was the vaguest line on the site. Three abstract nouns
-                that could describe any community org anywhere, in the position
-                where a reader decides whether this is for them.
-          
-                Named verticals do that job instead. Somebody does not think of
-                themselves as looking for a "community"; they think Python, or
-                Linux, or agents. The twelve here are the same ones the For
-                Builders lane names, and each is backed by a live group — see
-                the note in components/audience-lanes.tsx.
-          
-                The second sentence is the claim the site makes nowhere else:
-                the groups keep their own channels, those channels do not reach
-                the same people, and this is the one that is always current. */}
-            <p className="md:text-pretty text-base md:text-lg text-white/70 leading-relaxed">
-              <span className="font-medium text-white/85">
-                Python, Linux, .NET, AI, agents, game dev, UX, design, data,
-                security, AWS, Google
-              </span>{" "}
-              — 20+ specialty groups, one calendar. If it&apos;s happening in
-              San&nbsp;Antonio tech, it&apos;s here.
-            </p>
-          </div>
+          {/*
+            One paragraph, and it previews the page rather than repeating the
+            others. It used to be two: "the bridge between San Antonio's
+            builders, tech groups and partners", then a run of twelve topics
+            that is word for word the /events subtitle. Each other page owns one
+            idea (/about the origin, /buildingtogether the missing shared room,
+            /events the calendar); this is the one place that says all of what
+            DEVSA does, in the order the sections below explain it: the groups,
+            the conferences, the partners. The headline names no audience, so
+            this names all three (the homepage's "Three Audiences" section
+            below). "The same room" answers
+            /buildingtogether's "No Shared Room": the mission is in person, and
+            the calendar is how people find the rooms.
+          */}
+          <p className="max-w-2xl md:text-pretty text-lg md:text-2xl leading-relaxed md:leading-[1.45] text-white/70">
+            <strong className="font-semibold text-white">
+              DEVSA puts San&nbsp;Antonio&apos;s tech builders, organizers and partners in the same room.
+            </strong>{" "}
+            Twenty-five groups on one calendar, one channel to follow, and
+            conferences built here.
+          </p>
 
           {/* CTA Buttons — full-width on mobile, inline on desktop.
 
