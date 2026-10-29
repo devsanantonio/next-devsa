@@ -8,8 +8,8 @@ import Link from "next/link"
  *
  * What it can and can't say yet. TVSA approved the programming on 2026-10-29;
  * the credit wording ("on TVSA" rather than any "DEVSA × TVSA" that reads as a
- * co-production) and use of TVSA's logo are being confirmed with them. This
- * preview shows TVSA's "Public" logo and the three providers' logos on Jesse's
+ * co-production) and use of TVSA's logo are being confirmed with them. The
+ * page shows TVSA's "Public" logo and the three providers' logos on Jesse's
  * call; if TVSA or a provider says no, swap the image back for the name. Air
  * dates and times aren't set: the schedule says so rather than guessing.
  * Channel numbers are TVSA's own (sa.gov, the Public row). TVSA hands DEVSA
