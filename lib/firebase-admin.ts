@@ -282,7 +282,32 @@ export interface ApprovedAdmin {
   communityId?: string;
   firstName?: string;
   lastName?: string;
-  profileImage?: string;
+  profileImage?: string | null;   // a profiles/ blob only; see lib/profile-photo.ts
+  /**
+   * The organizer directory: other signed-in organizers see these on the
+   * Communities tab. Nothing here is public, and none of it is shown until the
+   * person ticks `inDirectory` themselves. Every save stamps
+   * `profileConfirmedAt`, so a stale contact shows its age.
+   */
+  title?: string | null;          // their role in the group: "Organizer", "President"
+  contactEmail?: string | null;   // shown instead of the sign-in email when set
+  linkedin?: string | null;
+  gradTerm?: string | null;       // student leads: "May 2027", so successors are planned for
+  inDirectory?: boolean;
+  profileConfirmedAt?: Date;
+  /**
+   * Groups an admin or super admin also runs, picked on their own profile. Each
+   * one adds an organizer view to the account menu and lists them in that
+   * group's directory. Organizers have one group, `communityId`, and ignore this.
+   */
+  organizerOf?: string[] | null;
+}
+
+/** A lead who handed the group on, kept so the group's history outlives the handoff. No contact details. */
+export interface PastLead {
+  name: string;
+  title?: string | null;
+  until: string;                  // "May 2026"
 }
 
 // Community (formerly TechCommunity from static data)
@@ -308,6 +333,10 @@ export interface Community {
   twitch?: string;
   facebook?: string;
   github?: string;
+  /** Absent means a tech group; student orgs are filtered apart in the organizer directory. */
+  kind?: 'tech' | 'student';
+  school?: string | null;
+  pastLeads?: PastLead[];
   createdAt: Date;
   updatedAt?: Date;
 }

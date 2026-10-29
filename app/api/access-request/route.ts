@@ -7,6 +7,13 @@ import {
   AccessRequestReceivedEmail,
   getAccessRequestReceivedSubject,
 } from '@/lib/emails/access-request-received';
+import {
+  AccessRequestAlertEmail,
+  AccessRequestDeclinedEmail,
+  getAccessRequestAlertSubject,
+  getAccessRequestDeclinedSubject,
+} from '@/lib/emails/access-request-decision';
+import { ALERT_EMAIL } from '@/lib/contact';
 
 interface AccessRequestBody {
   name: string;
@@ -106,6 +113,21 @@ export async function POST(request: NextRequest) {
         console.error('Failed to send confirmation email:', emailError);
         // Don't fail the request if email fails
       }
+
+      // And tell DEVSA, so it's approved while the person still cares. Get Involved
+      // inquiries already alert ALERT_EMAIL; access requests used to wait until
+      // someone happened to open the admin.
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: ALERT_EMAIL,
+          replyTo: normalizedEmail,
+          subject: getAccessRequestAlertSubject(name, communityOrg),
+          html: AccessRequestAlertEmail({ name, email: normalizedEmail, communityOrg }),
+        });
+      } catch (alertError) {
+        console.error('Failed to send access request alert:', alertError);
+      }
     }
 
     return NextResponse.json({
@@ -121,11 +143,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Delete (reject) an access request - admin only
+// Delete (reject) an access request - admin only. With `notify: true` the requester
+// gets a short "not right now" email first: the "request received" email promises
+// an answer either way, and a silent delete broke that promise.
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
     const { requestId } = body;
+    const notify = body.notify === true;
     const adminEmail = await verifiedEmail(request);
 
     if (!requestId || !adminEmail) {
@@ -168,6 +193,21 @@ export async function DELETE(request: NextRequest) {
         { error: 'Access request not found' },
         { status: 404 }
       );
+    }
+
+    if (notify && isResendConfigured() && resend) {
+      const req = requestDoc.data() as AccessRequest;
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: req.email,
+          replyTo: EMAIL_REPLY_TO,
+          subject: getAccessRequestDeclinedSubject(),
+          html: AccessRequestDeclinedEmail({ name: req.name, communityOrg: req.communityOrg }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send decline email:', emailError);
+      }
     }
 
     await requestRef.delete();

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { cleanText } from '@/lib/organizer-directory';
+
+/** A group's type for the organizer directory: student orgs are filtered apart. Anything else is a tech group. */
+const kindOf = (kind: unknown): 'tech' | 'student' => (kind === 'student' ? 'student' : 'tech');
 
 // GET - Fetch all communities (public)
 export async function GET(request: NextRequest) {
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school } = body;
     const adminEmail = await verifiedEmail(request);
 
     if (!id || !name || !logo || !description || !adminEmail) {
@@ -98,6 +102,8 @@ export async function POST(request: NextRequest) {
       ...(twitch && { twitch }),
       ...(facebook && { facebook }),
       ...(github && { github }),
+      kind: kindOf(kind),
+      school: kindOf(kind) === 'student' ? cleanText(school, 80) : null,
       createdAt: new Date(),
     };
 
@@ -122,7 +128,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school } = body;
     const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
@@ -170,25 +176,24 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Build update object
-    const updates: Partial<Community> = {
+    // Build update object. Only the fields sent are touched, so omitted ones survive.
+    const updates: Record<string, unknown> = {
       updatedAt: new Date(),
     };
 
     if (name !== undefined) updates.name = name;
     if (logo !== undefined) updates.logo = logo;
     if (description !== undefined) updates.description = description;
-    if (website !== undefined) updates.website = website || undefined;
-    if (discord !== undefined) updates.discord = discord || undefined;
-    if (meetup !== undefined) updates.meetup = meetup || undefined;
-    if (luma !== undefined) updates.luma = luma || undefined;
-    if (instagram !== undefined) updates.instagram = instagram || undefined;
-    if (twitter !== undefined) updates.twitter = twitter || undefined;
-    if (linkedin !== undefined) updates.linkedin = linkedin || undefined;
-    if (youtube !== undefined) updates.youtube = youtube || undefined;
-    if (twitch !== undefined) updates.twitch = twitch || undefined;
-    if (facebook !== undefined) updates.facebook = facebook || undefined;
-    if (github !== undefined) updates.github = github || undefined;
+    // A cleared link is stored as null. It was `|| undefined`, which Firestore
+    // rejects, so clearing any link failed the whole save with a 500.
+    const links = { website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github };
+    for (const [field, value] of Object.entries(links)) {
+      if (value !== undefined) updates[field] = value || null;
+    }
+    if (kind !== undefined) updates.kind = kindOf(kind);
+    if (school !== undefined || kind !== undefined) {
+      updates.school = kindOf(kind ?? (communityDoc.data() as Community).kind) === 'student' ? cleanText(school, 80) : null;
+    }
 
     await communityRef.update(updates);
 

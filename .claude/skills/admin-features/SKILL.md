@@ -53,6 +53,8 @@ Until 2026-10-12 the caller passed `adminEmail` / `organizerEmail` / `approverEm
 - **"Deletes are admin-only" is too broad.** It holds for RSVP and newsletter records. It does *not* hold for events or communities, where an organizer may delete within their own community — `DELETE /api/events` checks `adminData.communityId !== eventData.communityId` rather than refusing organizers outright.
 - Speakers and volunteers are scoped per *event*, not per community. `app/api/admin/data/route.ts` carries a small table naming which event each host community may see submissions for; adding an event to that list is the whole job.
 
+**Views: an admin who also runs groups.** An admin or super admin can tick "Groups you run" on their own profile (`organizerOf` on their `approved_admins` record; `groupsOf()` in `lib/organizer-directory.ts` adds their `communityId`). The account menu then offers **View as** — DEVSA, or the organizer view of each group. In the page, `adminRole` / `adminCommunityId` hold the view on screen and `accountRole` / `accountCommunityId` the account's own, so every role check follows the switch. On the server only reads are narrowed: `/api/admin/data?view=<group>` takes the organizer branch, and RSVPs pass `communityId`. Writes still run with the account's real authority, which is why the view hides Hand off (an organizer-only route that would refuse an admin). A view narrows; nothing about it may widen access.
+
 ## Reads go through one endpoint
 
 `GET /api/admin/data` is the dashboard's aggregate fetch — newsletter, speakers, volunteers, access requests, admins and communities in one response, already permission-filtered. Events, partners, RSVPs and Confluencia inquiries have their own routes.
@@ -73,7 +75,7 @@ Names live in `COLLECTIONS` in `lib/firebase-admin.ts` — import from there, ne
 
 **`?? null`, never `undefined`.** Firestore rejects `undefined` and the Admin SDK throws before it issues the RPC — `ignoreUndefinedProperties` is **not** set on this project. Coerce optional fields when writing.
 
-> **Known violation.** `PUT /api/communities` builds its update object with `updates.website = website || undefined` for all eleven link fields. Setting or editing a link works; *clearing* one sends `""`, which becomes `undefined`, and `communityRef.update()` throws — the admin gets a 500 and "Failed to update community". The fix is `|| null` (or `?? null`) on those lines. Do not copy this pattern from that file.
+> **Fixed 2026-10-28.** `PUT /api/communities` used to build its update with `updates.website = website || undefined` for all eleven link fields, so clearing a link threw and the admin got a 500. It now stores `null` for a cleared link. Don't reintroduce `|| undefined` anywhere.
 
 **Partial updates.** Community edits build an update object from only the fields present in the request and apply it with `.update()`, so omitted fields survive. Don't switch these to `.set()`.
 
@@ -111,6 +113,27 @@ Logos go to Vercel Blob via `POST /api/upload`. Allow-list: JPEG, PNG, WebP, SVG
 | `partnerId` | `partners/{id}-{ts}.{ext}` | admin/superadmin only |
 
 The branch keys on `partnerId !== null`, not on truthiness, so an unsaved record can still upload — it lands as `new-{ts}` and the form carries the returned URL into the create request. That distinction is also what stops an organizer reaching the partner path: sending `partnerId` takes the admin-only branch instead of falling through to the community check.
+
+**Profile photos** take a third branch: `purpose=profile`, any signed-in admin, JPEG/PNG/WebP only. The browser crops to a 256px square first (`lib/profile-photo.ts`). The route files it at `profiles/{admin record id}-<random>` (the id comes from the token, never the form), writes `profileImage` itself and deletes the photo it replaces. `PATCH /api/admin/auth` can only *remove* a photo (`profileImage: null`), never set one, and `isProfilePhotoUrl()` gates every read. So no other address can become someone's photo; keep it that way if you touch either route.
+
+## The Overview (landing tab)
+
+Since 2026-10-28 every role lands on `overview` (unless a `?tab=` deep link says otherwise): `components/admin/admin-overview.tsx`, borrowed from next-geekdom's admin Overview. It shows what needs doing, using only data the role already receives.
+
+- **Admins and superadmins:** inbox counts (access requests, speakers to review, Get Involved, drafts), each a button to its tab; this week's calendar with RSVP counts; quick actions; group and organizer health (groups with no organizer, organizers not seen signing in, not in the directory, student leads' graduation terms); and a preview of the next Monday Discord digest from `GET /api/admin/digest-preview` (admin-only, posts nothing).
+- **Organizers:** their own upcoming events and drafts, a checklist for their group's public page, their listed organizers, and other groups' events in the next 30 days (to prompt co-hosting). RSVP counts are hidden on other groups' events, because an organizer only receives their own group's RSVPs.
+- **The digest preview and the cron share `gatherWeekDigestEvents`** (`lib/weekly-digest.ts`), so the preview is the message that will post. `buildWeeklyDigestPayload(events, at)` takes the post date for its "Week of" title; the cron leaves it as now.
+- **"Not seen signing in"** counts organizers with no `lastLoginAt`, which means no sign-in since tracking began, not necessarily never. The tile says so.
+
+## The organizer directory (Communities tab)
+
+Since 2026-10-28 the Communities tab is also a directory of who runs each group, for the other organizers. It is never public.
+
+- **Opt-in profiles on `approved_admins`:** `title`, `contactEmail`, `linkedin`, `gradTerm`, `inDirectory`, `profileConfirmedAt`, edited in the **Your profile** drawer (account menu, or the tab's nudge banner) and saved through `PATCH /api/admin/auth`. Every save stamps `profileConfirmedAt`; rows show it and go amber after six months.
+- **What leaves the server** is decided once, in `toDirectoryEntry` (`lib/organizer-directory.ts`): opted-in people only, directory fields only. `/api/admin/data` returns `directory` to every role; organizers get it from an `inDirectory == true` query, so the rest of `approved_admins` never reaches them. LinkedIn must be a linkedin.com URL and the contact email must parse; both are refused, not stored, otherwise.
+- **Groups** gained `kind` (`'tech' | 'student'`, absent = tech), `school` and `pastLeads` (`{ name, title, until }`, no contact details). The type and school are set in both community drawers.
+- **The tab:** organizers see their own group on top (editable, with **Hand off to a new lead**), then every group as a read-only `DirectoryRow` from `components/admin/community-directory.tsx`. Admins see the same rows with Edit/Delete, and drag-to-reorder only while no search or filter is active, because reordering a filtered subset would write a partial order. Admins and superadmins with no `communityId` who opt in are listed together as the **DEVSA team** row.
+- **Handoff** (`POST /api/admin/handoff`) is organizer-only and scoped to the caller's own group: it creates organizer access for the successor (never moving someone from another group, never touching an admin) and sends the access-approved email. With `stepDown`, the caller's name and title go into `pastLeads` and their access is deleted, which signs them out.
 
 ## List tabs use the shared table system
 

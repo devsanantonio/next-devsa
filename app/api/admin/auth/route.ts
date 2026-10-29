@@ -4,6 +4,9 @@ import { getDb, COLLECTIONS, type ApprovedAdmin, type AccessRequest } from '@/li
 import { isProtectedAdmin } from '@/lib/protected-admins';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { AccessApprovedEmail } from '@/lib/emails/access-approved';
+import { cleanText, cleanEmail, cleanLinkedin, groupsOf } from '@/lib/organizer-directory';
+import { isProfilePhotoUrl } from '@/lib/profile-photo';
+import { del } from '@vercel/blob';
 
 // Check if user is an approved admin
 export async function GET(request: NextRequest) {
@@ -63,7 +66,17 @@ export async function GET(request: NextRequest) {
       communityId: adminData.communityId,
       firstName: adminData.firstName || null,
       lastName: adminData.lastName || null,
-      profileImage: adminData.profileImage || null,
+      profileImage: isProfilePhotoUrl(adminData.profileImage) ? adminData.profileImage : null,
+      // The organizer directory profile; see lib/organizer-directory.ts.
+      title: adminData.title ?? null,
+      contactEmail: adminData.contactEmail ?? null,
+      linkedin: adminData.linkedin ?? null,
+      gradTerm: adminData.gradTerm ?? null,
+      inDirectory: adminData.inDirectory === true,
+      profileConfirmedAt:
+        (adminData.profileConfirmedAt as unknown as { toDate?: () => Date } | undefined)?.toDate?.()?.toISOString() ?? null,
+      // An admin's own groups: each is an organizer view in the account menu. Empty for organizers.
+      groups: adminData.role === 'organizer' ? [] : groupsOf(adminData),
     });
   } catch (error) {
     console.error('Admin check error:', error);
@@ -280,12 +293,12 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// Update admin profile (firstName, lastName, profileImage)
+// Update admin profile: name and photo, and the organizer directory fields
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     // Your own profile only: the email is the signed-in one, not a field.
-    const { firstName, lastName, profileImage } = body;
+    const { firstName, lastName, profileImage, title, contactEmail, linkedin, gradTerm, inDirectory, organizerOf } = body;
     const email = await verifiedEmail(request);
 
     if (!email) {
@@ -314,18 +327,64 @@ export async function PATCH(request: NextRequest) {
 
     // Update profile fields
     const updateData: Partial<ApprovedAdmin> = {};
-    if (firstName !== undefined) updateData.firstName = firstName;
-    if (lastName !== undefined) updateData.lastName = lastName;
-    if (profileImage !== undefined) updateData.profileImage = profileImage;
+    if (firstName !== undefined) updateData.firstName = cleanText(firstName, 60) ?? '';
+    if (lastName !== undefined) updateData.lastName = cleanText(lastName, 60) ?? '';
+    // A photo is set only by uploading one (/api/upload, purpose=profile). Here it can
+    // only be removed, so no other address can ever be stored as someone's photo.
+    let removedPhoto: string | null = null;
+    if (profileImage === null || profileImage === '') {
+      const current = adminQuery.docs[0].data().profileImage;
+      updateData.profileImage = null;
+      if (isProfilePhotoUrl(current)) removedPhoto = current;
+    }
+
+    // The directory fields. Other organizers click these, so a malformed email or
+    // a non-LinkedIn URL is refused rather than stored.
+    if (contactEmail !== undefined) {
+      const email = cleanEmail(contactEmail);
+      if (email === 'invalid') {
+        return NextResponse.json({ error: "That contact email doesn't look right" }, { status: 400 });
+      }
+      updateData.contactEmail = email;
+    }
+    if (linkedin !== undefined) {
+      const url = cleanLinkedin(linkedin);
+      if (url === 'invalid') {
+        return NextResponse.json({ error: 'LinkedIn needs to be a linkedin.com profile link' }, { status: 400 });
+      }
+      updateData.linkedin = url;
+    }
+    if (title !== undefined) updateData.title = cleanText(title, 60);
+    if (gradTerm !== undefined) updateData.gradTerm = cleanText(gradTerm, 30);
+    if (inDirectory !== undefined) updateData.inDirectory = inDirectory === true;
+
+    // The groups an admin also runs. Admins only: an organizer's group is set by
+    // whoever approved them, and isn't theirs to widen. Ids must be real groups.
+    const me = adminQuery.docs[0].data() as ApprovedAdmin;
+    if (organizerOf !== undefined && me.role !== 'organizer') {
+      const wanted = Array.isArray(organizerOf)
+        ? [...new Set(organizerOf.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0))].slice(0, 10)
+        : [];
+      const found = await Promise.all(wanted.map((id) => db.collection(COLLECTIONS.COMMUNITIES).doc(id).get()));
+      updateData.organizerOf = wanted.filter((_, i) => found[i].exists);
+    }
+    // Any save is a confirmation that the profile is current; the directory shows its age.
+    const touchesDirectory = [title, contactEmail, linkedin, gradTerm, inDirectory, firstName, lastName].some((v) => v !== undefined);
+    if (touchesDirectory) updateData.profileConfirmedAt = new Date();
 
     await adminQuery.docs[0].ref.update(updateData);
+    if (removedPhoto) {
+      await del(removedPhoto).catch((err) => console.error('Removed profile photo not deleted:', err));
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Profile updated successfully',
-      firstName: firstName || null,
-      lastName: lastName || null,
-      profileImage: profileImage || null,
+      firstName: updateData.firstName ?? null,
+      lastName: updateData.lastName ?? null,
+      profileImage: updateData.profileImage === null ? null : undefined,
+      profileConfirmedAt: updateData.profileConfirmedAt?.toISOString() ?? null,
+      groups: me.role === 'organizer' ? [] : groupsOf({ ...me, ...updateData }),
     });
   } catch (error) {
     console.error('Update profile error:', error);

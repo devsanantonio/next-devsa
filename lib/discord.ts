@@ -72,8 +72,8 @@ const dayHeadingFmt = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
 });
 
-function weekOfLabel(): string {
-  return new Date().toLocaleDateString('en-US', {
+function weekOfLabel(at: Date = new Date()): string {
+  return at.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     timeZone: TZ,
@@ -193,10 +193,11 @@ function packFields(events: DigestEvent[], siteUrl: string, withTeasers: boolean
  * this the two surfaces disagreed — the site grouped under date headings and
  * Discord ran one flat list.
  */
-export function buildWeeklyDigestPayload(events: DigestEvent[]) {
+/** `at` is the day it posts; the cron leaves it as now, the admin preview passes next Monday. */
+export function buildWeeklyDigestPayload(events: DigestEvent[], at: Date = new Date()) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.devsa.community';
   const base = {
-    title: `Week of ${weekOfLabel()}`,
+    title: `Week of ${weekOfLabel(at)}`,
     url: `${siteUrl}/events`,
     color: EMBED_COLOR,
     footer: { text: 'One calendar for every community · devsa.community/events · Build on it: github.com/devsanantonio' },

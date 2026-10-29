@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { hostedEventIdsFor } from '@/lib/hosted-events';
+import { toDirectoryEntry, groupsOf, type DirectoryEntry } from '@/lib/organizer-directory';
+
+/** Opted-in profiles only, by name. See lib/organizer-directory.ts for what each entry carries. */
+const directoryFrom = (docs: FirebaseFirestore.QueryDocumentSnapshot[]) =>
+  docs
+    .map((doc) => toDirectoryEntry(doc.data()))
+    .filter((e): e is DirectoryEntry => e !== null)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
 /** Firestore timestamps come back as Timestamp; the client wants ISO strings. */
 const withIsoDate = (doc: FirebaseFirestore.QueryDocumentSnapshot, field: string) => ({
@@ -44,7 +52,14 @@ export async function GET(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+
+    // `?view=<group>`: an admin looking through the organizer view of a group they
+    // run themselves (see groupsOf). It narrows what comes back to exactly what
+    // that group's organizers get; it can never widen anything.
+    const view = request.nextUrl.searchParams.get('view');
+    const viewing = view && adminData.role !== 'organizer' && groupsOf(adminData).includes(view) ? view : null;
+    const isAdmin = !viewing && (adminData.role === 'admin' || adminData.role === 'superadmin');
+    const communityId = viewing ?? adminData.communityId;
 
     // Organizers see none of the sensitive collections, with one deliberate
     // exception: a community that hosts an event in HOSTED_EVENTS gets that
@@ -56,7 +71,7 @@ export async function GET(request: NextRequest) {
       let speakers: Record<string, unknown>[] = [];
       let volunteers: Record<string, unknown>[] = [];
 
-      const eventIds = await hostedEventIdsFor(adminData.communityId);
+      const eventIds = await hostedEventIdsFor(communityId);
       if (eventIds.length > 0) {
         // `in` takes up to 30 values, far more than the handful of hosted
         // events here, so one query covers every event a community owns.
@@ -77,14 +92,22 @@ export async function GET(request: NextRequest) {
           .sort(byNewest('submittedAt'));
       }
 
+      // The organizer directory is for every organizer, so it is the one thing from
+      // approved_admins they receive: opted-in profiles, directory fields only.
+      const directorySnap = await db
+        .collection(COLLECTIONS.APPROVED_ADMINS)
+        .where('inDirectory', '==', true)
+        .get();
+
       return NextResponse.json({
         newsletter: [],
         speakers,
         volunteers,
         accessRequests: [],
         admins: [],
-        role: adminData.role,
-        communityId: adminData.communityId,
+        directory: directoryFrom(directorySnap.docs),
+        role: viewing ? 'organizer' : adminData.role,
+        communityId,
       });
     }
 
@@ -143,6 +166,7 @@ export async function GET(request: NextRequest) {
       volunteers,
       accessRequests,
       admins,
+      directory: directoryFrom(adminsSnapshot.docs),
       role: adminData.role,
       communityId: adminData.communityId,
     });

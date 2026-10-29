@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import { getDb, COLLECTIONS, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { isProfilePhotoUrl, PROFILE_PHOTO_MAX_BYTES, PROFILE_PHOTO_TYPES } from '@/lib/profile-photo';
+
+/**
+ * `purpose=profile`: the signed-in person's own photo (lib/profile-photo.ts).
+ * Filed under their admin record's id, which comes from the token and never
+ * from the form, so nobody can replace anyone else's. Unlike logos, it saves
+ * the record here and deletes the photo it replaces: there is no form to
+ * submit, and replaced photos would otherwise pile up in Blob.
+ */
+async function uploadProfilePhoto(file: File, record: FirebaseFirestore.QueryDocumentSnapshot) {
+  if (!(PROFILE_PHOTO_TYPES as readonly string[]).includes(file.type)) {
+    return NextResponse.json({ error: 'Use a JPEG, PNG or WebP photo' }, { status: 400 });
+  }
+  if (file.size > PROFILE_PHOTO_MAX_BYTES) {
+    return NextResponse.json({ error: 'File too large. Maximum size is 5MB' }, { status: 400 });
+  }
+  const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+  // A random suffix keeps the address unguessable: the file is public to anyone who has it.
+  const blob = await put(`profiles/${record.id}.${extension}`, file, {
+    access: 'public',
+    addRandomSuffix: true,
+    contentType: file.type,
+  });
+  const previous = record.data().profileImage;
+  await record.ref.update({ profileImage: blob.url });
+  if (isProfilePhotoUrl(previous) && previous !== blob.url) {
+    await del(previous).catch((err) => console.error('Old profile photo not deleted:', err));
+  }
+  return NextResponse.json({ success: true, url: blob.url });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +65,10 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 403 }
       );
+    }
+
+    if (formData.get('purpose') === 'profile') {
+      return uploadProfilePhoto(file, adminQuery.docs[0]);
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;

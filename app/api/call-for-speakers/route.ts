@@ -15,6 +15,7 @@ import {
   getAccessGrantedInternalSubject,
 } from '@/lib/emails/access-granted-internal';
 import { AG_EVENT_ID, AG_FIRST_TIME_SPEAKER, AG_NOTIFY_EMAILS } from '@/data/access-granted/2026';
+import { SpeakerAcceptedEmail, SpeakerDeclinedEmail, getSpeakerDecisionSubject, speakerEventName } from '@/lib/emails/speaker-decision';
 
 const DEFAULT_EVENT_ID = 'aiconference2026';
 
@@ -260,8 +261,11 @@ const REVIEW_STATUSES: SpeakerSubmission['status'][] = ['pending', 'approved', '
 /**
  * Set a submission's review status. Admins can review any event; an organizer
  * only the events their community hosts — the same scope /api/admin/data uses
- * to decide what they can read, from the same helper. Changing a status sends
- * nothing to the speaker.
+ * to decide what they can read, from the same helper.
+ *
+ * Changing a status sends nothing to the speaker unless the reviewer ticks
+ * "Email the speaker" (`notify: true`), and then only for Accept or Decline.
+ * A notified decision records `notifiedAt`, so the panel can say it was sent.
  */
 export async function PATCH(request: NextRequest) {
   try {
@@ -270,7 +274,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
     }
 
-    const { submissionId, status } = await request.json();
+    const { submissionId, status, notify } = await request.json();
     if (!submissionId || !REVIEW_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
     }
@@ -306,7 +310,29 @@ export async function PATCH(request: NextRequest) {
       reviewedAt: new Date(),
     });
 
-    return NextResponse.json({ success: true });
+    // The decision email, only when asked for. A failure is reported, not thrown:
+    // the status is already saved.
+    let notified = false;
+    if (notify === true && (status === 'approved' || status === 'rejected') && isResendConfigured() && resend) {
+      const sub = submissionDoc.data() as SpeakerSubmission;
+      const eventName = speakerEventName(sub.eventId);
+      const accepted = status === 'approved';
+      try {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: sub.email.toLowerCase(),
+          replyTo: EMAIL_REPLY_TO,
+          subject: getSpeakerDecisionSubject(accepted, eventName),
+          html: (accepted ? SpeakerAcceptedEmail : SpeakerDeclinedEmail)({ name: sub.name, sessionTitle: sub.sessionTitle, eventName }),
+        });
+        await ref.update({ notifiedAt: new Date() });
+        notified = true;
+      } catch (emailError) {
+        console.error('Failed to send speaker decision email:', emailError);
+      }
+    }
+
+    return NextResponse.json({ success: true, notified });
   } catch (error) {
     console.error('Update speaker status error:', error);
     return NextResponse.json(

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { EVENT_BRANDS, EVENT_BRAND_KEYS } from "@/lib/event-brands"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -12,7 +12,8 @@ import {
   Mic2, 
   UserCheck, 
   Loader2, 
-  CheckCircle, 
+  Check,
+  CheckCircle,
   XCircle,
   Shield,
   Plus,
@@ -39,6 +40,8 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
 
 import {
@@ -73,6 +76,20 @@ import {
   ToolbarButton,
 } from "@/components/admin/data-table"
 import { useDragOrder } from "@/lib/hooks/use-drag-order"
+import { AdminOverview, type OverviewTab } from "@/components/admin/admin-overview"
+import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
+import {
+  Avatar,
+  DirectoryRow,
+  DirectoryPanel,
+  GroupTypeFields,
+  isStale,
+  kindLabel,
+  matchesDirectory,
+  organizersOf,
+  type DirectoryEntry,
+  type KindFilter,
+} from "@/components/admin/community-directory"
 
 interface NewsletterSubscription {
   id: string
@@ -116,6 +133,8 @@ interface SpeakerSubmission {
   eventId?: string
   submittedAt: string
   status: string
+  /** Set when the reviewer chose to email the decision; a Firestore timestamp as JSON. */
+  notifiedAt?: string | { _seconds: number } | null
 }
 
 type SpeakerStatus = "pending" | "approved" | "rejected"
@@ -153,9 +172,11 @@ interface Admin {
    * Only reaches admins and superadmins: organizers get `admins: []`.
    */
   lastLoginAt?: string | null
+  inDirectory?: boolean
   firstName?: string
   lastName?: string
   profileImage?: string
+  organizerOf?: string[] | null
 }
 
 interface CalendarEvent {
@@ -217,6 +238,9 @@ interface Community {
   twitch?: string
   facebook?: string
   github?: string
+  kind?: "tech" | "student"
+  school?: string | null
+  pastLeads?: { name: string; title?: string | null; until: string }[]
   isStatic?: boolean
 }
 
@@ -241,7 +265,7 @@ import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 const hostIds = (stored?: string | null) =>
   (stored || "").split(",").map((id) => id.trim()).filter(Boolean)
 
-type Tab = "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
+type Tab = "overview" | "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
 /**
  * A Demo Day partner or sponsor inquiry, as /api/admin/demo-day-inquiries
@@ -324,11 +348,40 @@ const getCommunityName = (communityId: string | undefined, communityList?: Commu
   return community?.name || communityId
 }
 
+/**
+ * Manage Admins order: most recent sign-in first, so whoever has drifted away
+ * collects at the bottom, where you look before removing access. Never signed
+ * in goes last, newest approval first, so a person approved yesterday sits
+ * above someone approved months ago who never came. Sign-ins were first
+ * recorded 2026-10-12; anyone not back since reads as never.
+ */
+const sortAdminsBySignIn = (list: Admin[]) =>
+  [...list].sort(
+    (a, b) =>
+      String(b.lastLoginAt ?? "").localeCompare(String(a.lastLoginAt ?? "")) ||
+      String(b.approvedAt ?? "").localeCompare(String(a.approvedAt ?? ""))
+  )
+
+const viewStorageKey = (email: string) => `devsa-admin-view:${email.toLowerCase()}`
+
 export default function AdminPage() {
   const router = useRouter()
   const [adminEmail, setAdminEmail] = useState("")
   const [adminRole, setAdminRole] = useState<"superadmin" | "admin" | "organizer" | null>(null)
   const [adminCommunityId, setAdminCommunityId] = useState<string | null>(null)
+  /**
+   * Views. An admin or super admin who also runs groups (their profile's
+   * "Groups you run") can switch the portal to any of them from the account
+   * menu and see exactly what that group's organizers see. `adminRole` and
+   * `adminCommunityId` above always hold the view on screen, so every check in
+   * this file follows the switch; the account's own role is kept here. The
+   * server narrows `/api/admin/data` to match (`?view=`), and never widens it.
+   */
+  const [accountRole, setAccountRole] = useState<"superadmin" | "admin" | "organizer" | null>(null)
+  const [accountCommunityId, setAccountCommunityId] = useState<string | null>(null)
+  const [ownGroups, setOwnGroups] = useState<string[]>([])
+  const [viewGroup, setViewGroup] = useState<string | null>(null)
+  const viewRef = useRef<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(false)
@@ -362,9 +415,32 @@ export default function AdminPage() {
   // the other; this says which.
   const [speakerDetailOpen, setSpeakerDetailOpen] = useState(false)
   const [updatingSpeakerStatus, setUpdatingSpeakerStatus] = useState<string | null>(null)
+  // Off by default and reset after every decision: a status change is internal unless the reviewer says otherwise.
+  const [notifySpeaker, setNotifySpeaker] = useState(false)
+  // Declining an access request: the "request received" email promises an answer either way.
+  const [declineTarget, setDeclineTarget] = useState<{ id: string; name: string; communityOrg: string } | null>(null)
+  const [declineNotify, setDeclineNotify] = useState(true)
+  // Telling the people who RSVP'd that an event changed or was called off. Only ever on purpose.
+  const [attendeeNotice, setAttendeeNotice] = useState<{
+    kind: "changed" | "cancelled"
+    eventId: string
+    title: string
+    count: number
+    previous?: { date: string; endTime?: string; venue?: string; address?: string; location?: string }
+  } | null>(null)
+  const [attendeeNote, setAttendeeNote] = useState("")
+  const [isNotifying, setIsNotifying] = useState(false)
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
   const [admins, setAdmins] = useState<Admin[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
+  /**
+   * The whole calendar, for read-only views of other groups: the Overview's
+   * "Around the community" and each group's calendar in the directory. `events`
+   * is an organizer's own group only (what they can edit), so those views used
+   * to come up empty for every organizer. Both views drop drafts and link-only
+   * events themselves.
+   */
+  const [calendar, setCalendar] = useState<CalendarEvent[]>([])
   const [communities, setCommunities] = useState<Community[]>([])
   const [communitiesSource, setCommunitiesSource] = useState<string>("static")
   const [rsvps, setRsvps] = useState<EventRSVP[]>([])
@@ -378,15 +454,96 @@ export default function AdminPage() {
   const [adminFirstName, setAdminFirstName] = useState<string>("")
   const [adminLastName, setAdminLastName] = useState<string>("")
   const [adminProfileImage, setAdminProfileImage] = useState<string>("")
-  const [showProfileEdit, setShowProfileEdit] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
-  const [profileFirstName, setProfileFirstName] = useState("")
-  const [profileLastName, setProfileLastName] = useState("")
+  const [photoBusy, setPhotoBusy] = useState<null | "upload" | "google" | "remove">(null)
+  // The organizer directory (Communities tab) and the signed-in person's own directory profile.
+  const [directory, setDirectory] = useState<DirectoryEntry[]>([])
+  const [dirQuery, setDirQuery] = useState("")
+  const [dirKind, setDirKind] = useState<KindFilter>("all")
+  const [openDirectory, setOpenDirectory] = useState<Set<string>>(new Set())
+  const [dirProfile, setDirProfile] = useState({ title: "", contactEmail: "", linkedin: "", gradTerm: "", inDirectory: false, confirmedAt: null as string | null })
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false)
+  const [profileDraft, setProfileDraft] = useState({ firstName: "", lastName: "", title: "", contactEmail: "", linkedin: "", gradTerm: "", inDirectory: true, organizerOf: [] as string[] })
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [showHandoff, setShowHandoff] = useState(false)
+  const [handoffEmail, setHandoffEmail] = useState("")
+  const [handoffStepDown, setHandoffStepDown] = useState(false)
+  const [isHandingOff, setIsHandingOff] = useState(false)
+  const [handoffError, setHandoffError] = useState<string | null>(null)
   
   // Modal state
   const [showAddAdmin, setShowAddAdmin] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  /**
+   * Closes the account menu on any click outside it, or Escape. A fixed
+   * full-screen backdrop can't do this here: the sidebar's slide-in transform
+   * makes it the containing block for fixed children, so a backdrop inside it
+   * covered only the sidebar and clicks on the page never reached it.
+   */
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!showUserMenu) return
+    const onPointerDown = (e: PointerEvent) => {
+      if (!userMenuRef.current?.contains(e.target as Node)) setShowUserMenu(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowUserMenu(false)
+    }
+    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("keydown", onKey)
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("keydown", onKey)
+    }
+  }, [showUserMenu])
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  /*
+   * The desktop sidebar can shrink to an icon rail, giving wide tables (RSVPs,
+   * Newsletter, Manage Admins) about 180px more on a laptop. Remembered per
+   * browser. Read once on the client: the sidebar only renders after sign-in,
+   * so the server's default never has to match it.
+   */
+  const [railCollapsed, setRailCollapsed] = useState(() => {
+    try {
+      return typeof window !== "undefined" && window.localStorage.getItem("devsa-admin-rail") === "collapsed"
+    } catch {
+      return false
+    }
+  })
+  /*
+   * The rail's tooltip. The browser's own (`title`) waits a second or more
+   * before showing, which in a rail of bare icons reads as broken. This one
+   * shows at once, on hover or keyboard focus. It is drawn outside the nav,
+   * fixed beside the item, because the nav scrolls and would clip it.
+   */
+  const [railTip, setRailTip] = useState<{ text: string; y: number } | null>(null)
+  const railTipProps = (text: string) =>
+    railCollapsed
+      ? {
+          "aria-label": text,
+          onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+            const r = e.currentTarget.getBoundingClientRect()
+            setRailTip({ text, y: r.top + r.height / 2 })
+          },
+          onFocus: (e: React.FocusEvent<HTMLElement>) => {
+            const r = e.currentTarget.getBoundingClientRect()
+            setRailTip({ text, y: r.top + r.height / 2 })
+          },
+          onMouseLeave: () => setRailTip(null),
+          onBlur: () => setRailTip(null),
+        }
+      : {}
+  const toggleRail = () => {
+    setRailTip(null)
+    setRailCollapsed((was) => {
+      try {
+        window.localStorage.setItem("devsa-admin-rail", was ? "open" : "collapsed")
+      } catch {
+        // Private mode or blocked storage: it still toggles, it just isn't remembered.
+      }
+      return !was
+    })
+  }
   const [showNotifications, setShowNotifications] = useState(false)
   const [showEditEvent, setShowEditEvent] = useState(false)
   const [showArchivedEvents, setShowArchivedEvents] = useState(false)
@@ -495,7 +652,7 @@ export default function AdminPage() {
   // Initialize the active section from the URL (?tab=) so sections are deep-linkable
   useEffect(() => {
     const validTabs: Tab[] = [
-      "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday", "getinvolved",
+      "overview", "newsletter", "speakers", "volunteers", "access", "admins", "events", "communities", "partners", "rsvps", "demoday", "getinvolved",
     ]
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null
     if (t && validTabs.includes(t)) setActiveTab(t)
@@ -556,19 +713,39 @@ export default function AdminPage() {
 
       if (data.isAdmin) {
         setAdminEmail(email)
-        setAdminRole(data.role)
-        setAdminCommunityId(data.communityId || null)
+        setAccountRole(data.role)
+        setAccountCommunityId(data.communityId || null)
+        const groups: string[] = Array.isArray(data.groups) ? data.groups : []
+        setOwnGroups(groups)
+        // Come back to the view they left in, if it's still one of their groups.
+        let view: string | null = null
+        try {
+          view = window.localStorage.getItem(viewStorageKey(email))
+        } catch {}
+        if (!view || !groups.includes(view)) view = null
+        viewRef.current = view
+        setViewGroup(view)
+        setAdminRole(view ? "organizer" : data.role)
+        setAdminCommunityId(view ?? (data.communityId || null))
         setAdminFirstName(data.firstName || "")
         setAdminLastName(data.lastName || "")
         setAdminProfileImage(data.profileImage || "")
+        setDirProfile({
+          title: data.title || "",
+          contactEmail: data.contactEmail || "",
+          linkedin: data.linkedin || "",
+          gradTerm: data.gradTerm || "",
+          inDirectory: data.inDirectory === true,
+          confirmedAt: data.profileConfirmedAt || null,
+        })
         setIsAuthenticated(true)
-        // Land on the section that matters most for the role — organizers open
-        // on their own community, everyone else on Events. Skipped when the URL
-        // already deep-links a section, so shared links still win.
+        // Everyone lands on the Overview: what needs doing, shaped by role (see
+        // components/admin/admin-overview.tsx). Skipped when the URL already
+        // deep-links a section, so shared links still win.
         if (!openedWithTabParam) {
-          setActiveTab(data.role === "organizer" ? "communities" : "events")
+          setActiveTab("overview")
         }
-        await fetchData(email, data.role, data.communityId)
+        await fetchData(email, view ? "organizer" : data.role, view ?? data.communityId)
       } else {
         setError(`${email} isn't approved for the admin portal. Request access below, or sign in with the email your access was approved under.`)
         await signOut(getAuthInstance())
@@ -623,10 +800,187 @@ export default function AdminPage() {
   )
   const partnerOrder = useDragOrder(partners, (ids) => persistOrder("partners", ids))
 
+  // The Overview's inputs. The digest preview is admin-only server-side; the loader is
+  // stable so the Overview fetches it once, not on every render.
+  const loadDigest = useCallback(async () => {
+    const res = await adminFetch("/api/admin/digest-preview")
+    return res.ok ? res.json() : null
+  }, [])
+  const rsvpCountByEvent = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const r of rsvps) counts[r.eventId] = (counts[r.eventId] ?? 0) + 1
+    return counts
+  }, [rsvps])
+
+  /** The profile drawer opens on what's saved; ticking into the directory is the default for someone not yet in it. */
+  const openProfileDrawer = () => {
+    setProfileDraft({
+      firstName: adminFirstName,
+      lastName: adminLastName,
+      title: dirProfile.title,
+      contactEmail: dirProfile.contactEmail,
+      linkedin: dirProfile.linkedin,
+      gradTerm: dirProfile.gradTerm,
+      inDirectory: dirProfile.inDirectory || !dirProfile.confirmedAt,
+      organizerOf: ownGroups.filter((g) => g !== accountCommunityId),
+    })
+    setProfileError(null)
+    setShowProfileDrawer(true)
+  }
+
+  const saveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingProfile(true)
+    setProfileError(null)
+    try {
+      const res = await adminFetch("/api/admin/auth", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        // Groups are an admin's to pick; an organizer's group is set when they're approved.
+        body: JSON.stringify(
+          accountRole === "organizer" ? { ...profileDraft, organizerOf: undefined } : profileDraft
+        ),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setProfileError(data.error || "Couldn't save your profile")
+        return
+      }
+      if (Array.isArray(data.groups)) {
+        setOwnGroups(data.groups)
+        // Unticked the group on screen: go back to the account's own view.
+        if (viewGroup && !data.groups.includes(viewGroup)) {
+          setShowProfileDrawer(false)
+          await switchView(null)
+        }
+      }
+      setAdminFirstName(data.firstName ?? profileDraft.firstName)
+      setAdminLastName(data.lastName ?? profileDraft.lastName)
+      setDirProfile({
+        title: profileDraft.title,
+        contactEmail: profileDraft.contactEmail,
+        linkedin: profileDraft.linkedin,
+        gradTerm: profileDraft.gradTerm,
+        inDirectory: profileDraft.inDirectory,
+        confirmedAt: data.profileConfirmedAt || new Date().toISOString(),
+      })
+      setShowProfileDrawer(false)
+      setSuccessMessage(profileDraft.inDirectory ? "Profile saved. You're in the organizer directory." : "Profile saved")
+      await fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)
+    } catch {
+      setProfileError("Couldn't save your profile")
+    } finally {
+      setIsSavingProfile(false)
+    }
+  }
+
+  /**
+   * Profile photo. Each action saves straight away, apart from the rest of the
+   * form: the photo is cropped square and shrunk in the browser
+   * (lib/profile-photo.ts), uploaded, and the server files it on this account's
+   * record and deletes the one it replaces.
+   */
+  const uploadProfilePhoto = async (source: Blob, via: "upload" | "google") => {
+    setProfileError(null)
+    if (source.size > PROFILE_PHOTO_MAX_BYTES) {
+      setProfileError("That photo is over 5 MB")
+      return
+    }
+    setPhotoBusy(via)
+    try {
+      const square = await squareProfilePhoto(source)
+      const form = new FormData()
+      form.append("file", new File([square], square.type === "image/webp" ? "photo.webp" : "photo.jpg", { type: square.type }))
+      form.append("purpose", "profile")
+      const res = await adminFetch("/api/upload", { method: "POST", body: form })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.url) {
+        setProfileError(data.error || "Couldn't upload your photo")
+        return
+      }
+      setAdminProfileImage(data.url)
+      await fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)
+    } catch {
+      setProfileError("Couldn't read that image. Try a JPEG or PNG.")
+    } finally {
+      setPhotoBusy(null)
+    }
+  }
+
+  /** The photo from their Google sign-in, at a size worth cropping. Google serves it cross-origin. */
+  const googlePhotoUrl = (() => {
+    const url = isAuthenticated ? getAuthInstance().currentUser?.photoURL : null
+    return url ? url.replace(/=s\d+(-c)?$/, "=s512-c") : null
+  })()
+  const takeGooglePhoto = async () => {
+    if (!googlePhotoUrl) return
+    try {
+      const res = await fetch(googlePhotoUrl)
+      if (!res.ok) throw new Error()
+      await uploadProfilePhoto(await res.blob(), "google")
+    } catch {
+      setProfileError("Couldn't fetch your Google photo. Upload one instead.")
+    }
+  }
+
+  const removeProfilePhoto = async () => {
+    setProfileError(null)
+    setPhotoBusy("remove")
+    try {
+      const res = await adminFetch("/api/admin/auth", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileImage: null }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setProfileError(data.error || "Couldn't remove your photo")
+        return
+      }
+      setAdminProfileImage("")
+      await fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)
+    } finally {
+      setPhotoBusy(null)
+    }
+  }
+
+  /** Hand the group to the next lead; stepping down signs this person out, since their access is gone. */
+  const submitHandoff = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsHandingOff(true)
+    setHandoffError(null)
+    try {
+      const res = await adminFetch("/api/admin/handoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: handoffEmail, stepDown: handoffStepDown }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setHandoffError(data.error || "Couldn't hand off the group")
+        return
+      }
+      setShowHandoff(false)
+      setHandoffEmail("")
+      if (data.steppedDown) {
+        handleLogout()
+        return
+      }
+      setSuccessMessage(`${handoffEmail} can now sign in as an organizer of ${getCommunityNameFromState(adminCommunityId || undefined)}.`)
+      await fetchData(adminEmail, adminRole ?? undefined, adminCommunityId ?? undefined)
+    } catch {
+      setHandoffError("Couldn't hand off the group")
+    } finally {
+      setIsHandingOff(false)
+    }
+  }
+
   const fetchData = async (email: string, role?: string, communityId?: string) => {
+    // In a group view, everything below is that group's organizer view, whatever the account is.
+    const viewing = viewRef.current
     try {
       const [adminDataRes, eventsRes, communitiesRes, partnersRes] = await Promise.all([
-        adminFetch("/api/admin/data"),
+        adminFetch(viewing ? `/api/admin/data?view=${encodeURIComponent(viewing)}` : "/api/admin/data"),
         adminFetch('/api/events?includeAll=true'),
         adminFetch('/api/communities'),
         adminFetch('/api/partners')
@@ -640,7 +994,7 @@ export default function AdminPage() {
       if (adminDataRes.ok) {
         // Only admins/superadmins should see newsletter, access requests, and
         // admins data. The API also enforces this; we double-check here.
-        const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
+        const isAdmin = !viewing && (hasAdminAccess(role) || hasAdminAccess(adminRole))
         setNewsletter(isAdmin ? (adminData.newsletter || []) : [])
         setAccessRequests(isAdmin ? (adminData.accessRequests || []) : [])
         setAdmins(isAdmin ? (adminData.admins || []) : [])
@@ -651,6 +1005,8 @@ export default function AdminPage() {
         setSpeakers(adminData.speakers || [])
         // Same reasoning as speakers: the API decides what an organizer may see.
         setVolunteers(adminData.volunteers || [])
+        // Every role gets the organizer directory: opted-in profiles only, decided server-side.
+        setDirectory(adminData.directory || [])
       }
       
       if (communitiesRes.ok) {
@@ -664,9 +1020,10 @@ export default function AdminPage() {
 
       if (eventsRes.ok) {
         // Organizers can only see events for their community
-        const userCommunityId = communityId || adminCommunityId
-        const userRole = role || adminRole
+        const userCommunityId = viewing ?? (communityId || adminCommunityId)
+        const userRole = viewing ? "organizer" : role || adminRole
         const allEvents = eventsData.events || []
+        setCalendar(allEvents)
         
         if (userRole === "organizer" && userCommunityId) {
           setEvents(allEvents.filter((event: CalendarEvent) => event.communityId === userCommunityId))
@@ -676,14 +1033,16 @@ export default function AdminPage() {
       }
 
       // Fetch RSVPs
-      const rsvpsRes = await adminFetch(`/api/rsvp?adminEmail=${encodeURIComponent(email)}`)
+      const rsvpsRes = await adminFetch(
+        `/api/rsvp?adminEmail=${encodeURIComponent(email)}${viewing ? `&communityId=${encodeURIComponent(viewing)}` : ""}`
+      )
       if (rsvpsRes.ok) {
         const rsvpsData = await rsvpsRes.json()
         setRsvps(rsvpsData.rsvps || [])
       }
 
       // Admin-only data
-      const isAdmin = hasAdminAccess(role) || hasAdminAccess(adminRole)
+      const isAdmin = !viewing && (hasAdminAccess(role) || hasAdminAccess(adminRole))
       if (isAdmin) {
         try {
           const demoDayRes = await adminFetch(`/api/admin/demo-day-inquiries?adminEmail=${encodeURIComponent(email)}`)
@@ -844,6 +1203,29 @@ export default function AdminPage() {
     setAdminEmail("")
     setAdminRole(null)
     setAdminCommunityId(null)
+    setAccountRole(null)
+    setAccountCommunityId(null)
+    setOwnGroups([])
+    setViewGroup(null)
+    viewRef.current = null
+  }
+
+  /** Switch between the account's own view (`null`) and the organizer view of one of its groups. */
+  const switchView = async (group: string | null) => {
+    setShowUserMenu(false)
+    viewRef.current = group
+    setViewGroup(group)
+    try {
+      if (group) window.localStorage.setItem(viewStorageKey(adminEmail), group)
+      else window.localStorage.removeItem(viewStorageKey(adminEmail))
+    } catch {}
+    const role = group ? "organizer" : accountRole
+    const communityId = group ?? accountCommunityId
+    setAdminRole(role)
+    setAdminCommunityId(communityId)
+    // The tab on screen may not exist in the other view; the Overview always does.
+    setActiveTab("overview")
+    await fetchData(adminEmail, role ?? undefined, communityId ?? undefined)
   }
 
   const handleApproveAccess = async (request: AccessRequest) => {
@@ -872,9 +1254,19 @@ export default function AdminPage() {
     }
   }
 
-  const handleRejectAccess = async (requestId: string) => {
-    if (!confirm("Are you sure you want to reject this access request? This action cannot be undone.")) return
-    
+  /** Opens the decline dialog; the decision (and whether to email) happens there. */
+  const handleRejectAccess = (requestId: string) => {
+    const req = accessRequests.find((r) => r.id === requestId)
+    if (!req) return
+    setDeclineNotify(true)
+    setDeclineTarget({ id: req.id, name: req.name, communityOrg: req.communityOrg })
+  }
+
+  const confirmDeclineAccess = async () => {
+    if (!declineTarget) return
+    const requestId = declineTarget.id
+    const notify = declineNotify
+    setDeclineTarget(null)
     setIsRejectingAccess(requestId)
     try {
       const response = await adminFetch("/api/access-request", {
@@ -883,11 +1275,13 @@ export default function AdminPage() {
         body: JSON.stringify({
           requestId,
           adminEmail,
+          notify,
         }),
       })
 
       if (response.ok) {
         setAccessRequests(prev => prev.filter(r => r.id !== requestId))
+        setSuccessMessage(notify ? "Request declined, and they've been told" : "Request declined")
       } else {
         const data = await response.json()
         setError(data.error || "Failed to reject access request")
@@ -1033,6 +1427,10 @@ export default function AdminPage() {
     if (!editingEvent) return
 
     const isCreate = !editingEvent.id
+    // What attendees knew before this save, to offer them an update if the date, time or place moved.
+    const before = isCreate ? undefined : events.find((ev) => ev.id === editingEvent.id)
+    const whereOf = (ev: { venue?: string; address?: string; location?: string }) =>
+      ev.venue && ev.address ? `${ev.venue}, ${ev.address}` : ev.venue || ev.address || ev.location || ""
 
     try {
       const response = await adminFetch("/api/events", {
@@ -1077,9 +1475,26 @@ export default function AdminPage() {
       })
 
       if (response.ok) {
+        const saved = editingEvent
         setShowEditEvent(false)
         setEditingEvent(null)
         setSuccessMessage(isCreate ? "Event created successfully" : "Event updated successfully")
+        const attendees = before ? rsvpCountByEvent[before.id] ?? 0 : 0
+        const moved =
+          !!before &&
+          (new Date(before.date).getTime() !== new Date(saved.date).getTime() ||
+            (before.endTime || "") !== (saved.endTime || "") ||
+            whereOf(before) !== whereOf(saved))
+        if (before && attendees > 0 && moved) {
+          setAttendeeNote("")
+          setAttendeeNotice({
+            kind: "changed",
+            eventId: before.id,
+            title: saved.title,
+            count: attendees,
+            previous: { date: before.date, endTime: before.endTime, venue: before.venue, address: before.address, location: before.location },
+          })
+        }
         await fetchData(adminEmail)
       } else {
         const data = await response.json()
@@ -1090,9 +1505,20 @@ export default function AdminPage() {
     }
   }
 
+  /** An event with RSVPs opens the notice dialog (delete and email, or delete quietly); one without just confirms. */
   const handleDeleteEvent = async (eventId: string) => {
+    const attendees = rsvpCountByEvent[eventId] ?? 0
+    if (attendees > 0) {
+      const ev = events.find((e) => e.id === eventId)
+      setAttendeeNote("")
+      setAttendeeNotice({ kind: "cancelled", eventId, title: ev?.title || "this event", count: attendees })
+      return
+    }
     if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) return
-    
+    await deleteEvent(eventId)
+  }
+
+  const deleteEvent = async (eventId: string) => {
     setIsDeleting(eventId)
     try {
       const response = await adminFetch("/api/events", {
@@ -1114,6 +1540,41 @@ export default function AdminPage() {
       setError("Failed to delete event")
     } finally {
       setIsDeleting(null)
+    }
+  }
+
+  /**
+   * Send the attendee notice. For a cancellation, `andDelete` deletes the event
+   * after the emails go out (the route reads the event, so it must still exist).
+   */
+  const sendAttendeeNotice = async (email: boolean, andDelete: boolean) => {
+    if (!attendeeNotice) return
+    const notice = attendeeNotice
+    setIsNotifying(true)
+    try {
+      if (email) {
+        const res = await adminFetch("/api/events/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: notice.eventId, kind: notice.kind, previous: notice.previous, note: attendeeNote }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          setError(data.error || "Couldn't email the attendees")
+          return
+        }
+        setSuccessMessage(
+          data.configured === false
+            ? "Email isn't configured here, so nothing was sent"
+            : `Emailed ${data.sent} of ${data.total} ${data.total === 1 ? "person" : "people"} who RSVP'd`
+        )
+      }
+      setAttendeeNotice(null)
+      if (andDelete) await deleteEvent(notice.eventId)
+    } catch {
+      setError("Couldn't email the attendees")
+    } finally {
+      setIsNotifying(false)
     }
   }
 
@@ -1279,6 +1740,8 @@ export default function AdminPage() {
   // filter, so working through "To review" moves straight to the next talk.
   const handleSpeakerStatus = async (submissionId: string, status: SpeakerStatus, next: string | null) => {
     const previous = speakers.find((s) => s.id === submissionId)?.status
+    const notify = notifySpeaker && status !== "pending"
+    setNotifySpeaker(false)
     setUpdatingSpeakerStatus(submissionId)
     setSpeakers((list) => list.map((s) => (s.id === submissionId ? { ...s, status } : s)))
     if (speakerStatusFilter !== "all" && speakerStatusFilter !== status) setSelectedSpeakerId(next)
@@ -1286,11 +1749,20 @@ export default function AdminPage() {
       const response = await adminFetch("/api/call-for-speakers", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId, status }),
+        body: JSON.stringify({ submissionId, status, notify }),
       })
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
         throw new Error(data.error || "Failed to update status")
+      }
+      if (notify) {
+        const data = await response.json().catch(() => ({}))
+        if (data.notified) {
+          setSpeakers((list) => list.map((s) => (s.id === submissionId ? { ...s, notifiedAt: new Date().toISOString() } : s)))
+          setSuccessMessage("Decision saved and emailed to the speaker")
+        } else {
+          setError("Decision saved, but the email to the speaker didn't send")
+        }
       }
     } catch (err) {
       setSpeakers((list) =>
@@ -1560,6 +2032,8 @@ export default function AdminPage() {
           twitch: editingCommunity.twitch,
           facebook: editingCommunity.facebook,
           github: editingCommunity.github,
+          kind: editingCommunity.kind ?? "tech",
+          school: editingCommunity.school ?? "",
           adminEmail,
         }),
       })
@@ -1861,6 +2335,7 @@ export default function AdminPage() {
     icon: Building2,
     count: isOrganizer ? undefined : communities.length,
   }
+  const overviewNav: NavItem = { id: "overview", label: "Overview", icon: Home }
   const eventsNav: NavItem = { id: "events", label: "Events", icon: CalendarDays, count: events.length }
   const rsvpsNav: NavItem = { id: "rsvps", label: "RSVPs", icon: Users, count: rsvps.length }
   const speakersNav: NavItem = {
@@ -1876,13 +2351,14 @@ export default function AdminPage() {
   // their community hosts the conference — so it is never an empty dead end.
   const mainNav: NavItem[] = isOrganizer
     ? [
+        overviewNav,
         myCommunityNav,
         eventsNav,
         rsvpsNav,
         ...(speakers.length > 0 ? [speakersNav] : []),
         ...(volunteers.length > 0 ? [volunteersNav] : []),
       ]
-    : [eventsNav, rsvpsNav, myCommunityNav]
+    : [overviewNav, eventsNav, rsvpsNav, myCommunityNav]
 
   /**
    * Admins and super admins see everything, so the sidebar groups it by what
@@ -1895,6 +2371,7 @@ export default function AdminPage() {
    * The devsa_subscribers collection is kept as the import's source record.
    */
   const adminGroups: { label: string; items: NavItem[] }[] = [
+    { label: "Start", items: [overviewNav] },
     { label: "Calendar", items: [eventsNav, rsvpsNav] },
     {
       label: "Directory",
@@ -1917,6 +2394,7 @@ export default function AdminPage() {
   ]
 
   const tabTitles: Record<Tab, string> = {
+    overview: "Overview",
     events: "Events",
     rsvps: "RSVPs",
     communities: adminRole === "organizer" ? "My Community" : "Communities",
@@ -1949,27 +2427,36 @@ export default function AdminPage() {
   const renderNavItem = (item: { id: Tab; label: string; icon: typeof Users; count?: number; alert?: number }) => {
     const Icon = item.icon
     const isActive = activeTab === item.id
+    // In the rail the label hides, so the tooltip carries it, with the count.
+    const hint = [item.label, item.alert ? `${item.alert} waiting` : typeof item.count === "number" ? String(item.count) : ""].filter(Boolean).join(" · ")
     return (
       <button
         key={item.id}
         onClick={() => goToTab(item.id)}
+        {...railTipProps(hint)}
         className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           isActive ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-800/60 hover:text-white"
-        }`}
+        } ${railCollapsed ? "lg:justify-center lg:px-0" : ""}`}
       >
         <span
           className={`absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-r-full bg-[#ef426f] transition-all ${
             isActive ? "w-0.5" : "w-0"
           }`}
         />
-        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#ef426f]" : "text-neutral-500 group-hover:text-neutral-300"}`} />
-        <span className="flex-1 truncate text-left">{item.label}</span>
+        <span className="relative shrink-0">
+          <Icon className={`h-4 w-4 ${isActive ? "text-[#ef426f]" : "text-neutral-500 group-hover:text-neutral-300"}`} />
+          {/* In the rail, something waiting shows as a dot on the icon. */}
+          {railCollapsed && item.alert ? (
+            <span className="absolute -right-1 -top-1 hidden h-2 w-2 rounded-full bg-[#ef426f] ring-2 ring-neutral-950 lg:block" />
+          ) : null}
+        </span>
+        <span className={`flex-1 truncate text-left ${railCollapsed ? "lg:hidden" : ""}`}>{item.label}</span>
         {item.alert ? (
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef426f] px-1.5 text-xs font-semibold text-white">
+          <span className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef426f] px-1.5 text-xs font-semibold text-white ${railCollapsed ? "lg:hidden" : ""}`}>
             {item.alert}
           </span>
         ) : typeof item.count === "number" ? (
-          <span className="text-xs tabular-nums text-neutral-500">{item.count}</span>
+          <span className={`text-xs tabular-nums text-neutral-500 ${railCollapsed ? "lg:hidden" : ""}`}>{item.count}</span>
         ) : null}
       </button>
     )
@@ -1984,23 +2471,59 @@ export default function AdminPage() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-neutral-800 bg-neutral-950 transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-neutral-800 bg-neutral-950 transition-[transform,width] duration-200 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${railCollapsed ? "lg:w-16" : ""}`}
       >
         {/* Brand */}
-        <div className="flex h-16 items-center justify-between gap-2 border-b border-neutral-800 px-5">
-          <div className="flex items-center gap-2.5">
+        <div className={`flex h-16 items-center justify-between gap-2 border-b border-neutral-800 px-5 ${railCollapsed ? "lg:justify-center lg:px-0" : ""}`}>
+          <div className="relative flex items-center gap-2.5">
             <img
               src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
               alt="DEVSA"
-              className="h-8 w-8"
+              className={`h-8 w-8 ${railCollapsed ? "lg:hidden" : ""}`}
             />
-            <div className="leading-tight">
+            {/*
+              Collapsed, the logo is the way back out. On hover or focus the logo
+              shrinks and fades as the expand icon grows in on the same spot, over
+              the nav items' hover ground. Reduced motion keeps only the fade.
+            */}
+            {railCollapsed && (
+              <button
+                onClick={toggleRail}
+                aria-label="Expand sidebar"
+                aria-expanded={false}
+                {...railTipProps("Expand sidebar")}
+                className="group relative hidden h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 ease-out hover:bg-neutral-800/60 focus-visible:bg-neutral-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-600 lg:flex"
+              >
+                <img
+                  src="https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
+                  alt=""
+                  className="h-8 w-8 transition duration-200 ease-out group-hover:scale-75 group-hover:opacity-0 group-focus-visible:scale-75 group-focus-visible:opacity-0 motion-reduce:group-hover:scale-100 motion-reduce:group-focus-visible:scale-100"
+                />
+                <PanelLeftOpen
+                  aria-hidden
+                  className="absolute h-5 w-5 scale-75 text-neutral-200 opacity-0 transition duration-200 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:scale-100"
+                />
+              </button>
+            )}
+            <div className={`leading-tight ${railCollapsed ? "lg:hidden" : ""}`}>
               <p className="text-sm font-semibold text-white">DEVSA</p>
               <p className="text-[11px] text-neutral-500">Admin Portal</p>
             </div>
           </div>
+          {/* Desktop only: the phone drawer closes with the X instead. */}
+          {!railCollapsed && (
+            <button
+              onClick={toggleRail}
+              aria-label="Collapse sidebar"
+              aria-expanded
+              title="Collapse sidebar"
+              className="hidden rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white lg:inline-flex"
+            >
+              <PanelLeftClose className="h-5 w-5" />
+            </button>
+          )}
           <button
             onClick={() => setSidebarOpen(false)}
             className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white lg:hidden"
@@ -2010,38 +2533,40 @@ export default function AdminPage() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+        <nav className={`flex-1 space-y-6 overflow-y-auto px-3 py-5 ${railCollapsed ? "lg:px-2" : ""}`}>
           {hasAdminAccess(adminRole) ? (
             adminGroups.map((group) => (
               <div key={group.label} className="space-y-1">
-                <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">{group.label}</p>
+                <p className={`px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600 ${railCollapsed ? "lg:hidden" : ""}`}>{group.label}</p>
+                {/* In the rail a group heading becomes a hairline. */}
+                {railCollapsed && <div className="mx-2 mb-2 hidden border-t border-neutral-800 lg:block" aria-hidden />}
                 {group.items.map(renderNavItem)}
               </div>
             ))
           ) : (
-            <div className="space-y-1">
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">General</p>
-              {mainNav.map(renderNavItem)}
-            </div>
+            // Organizers have one short list, so no heading: it would label the only group there is.
+            <div className="space-y-1">{mainNav.map(renderNavItem)}</div>
           )}
         </nav>
 
         {/* Footer: back to site + account */}
-        <div className="space-y-1 border-t border-neutral-800 p-3">
+        <div className={`space-y-1 border-t border-neutral-800 p-3 ${railCollapsed ? "lg:px-2" : ""}`}>
           <Link
             href="/"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-400 transition-colors hover:bg-neutral-800/60 hover:text-white"
+            {...railTipProps("Back to site")}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-400 transition-colors hover:bg-neutral-800/60 hover:text-white ${railCollapsed ? "lg:justify-center lg:px-0" : ""}`}
           >
-            <Home className="h-4 w-4 text-neutral-500" />
-            Back to site
-            <ExternalLink className="ml-auto h-3.5 w-3.5 text-neutral-600" />
+            <Home className="h-4 w-4 shrink-0 text-neutral-500" />
+            <span className={railCollapsed ? "lg:hidden" : ""}>Back to site</span>
+            <ExternalLink className={`ml-auto h-3.5 w-3.5 text-neutral-600 ${railCollapsed ? "lg:hidden" : ""}`} />
           </Link>
 
           {/* Account */}
-          <div className="relative">
+          <div ref={userMenuRef} className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-neutral-800/60"
+              {...railTipProps("Account")}
+              className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-neutral-800/60 ${railCollapsed ? "lg:justify-center lg:px-0" : ""}`}
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#ef426f]">
                 {adminProfileImage ? (
@@ -2052,23 +2577,24 @@ export default function AdminPage() {
                   <User className="h-4 w-4 text-white" />
                 )}
               </div>
-              <div className="min-w-0 flex-1">
+              <div className={`min-w-0 flex-1 ${railCollapsed ? "lg:hidden" : ""}`}>
                 <p className="truncate text-sm font-medium text-white">{adminFirstName || adminEmail?.split('@')[0]}</p>
                 <p className={`truncate text-xs ${
                   adminRole === "superadmin" ? "text-yellow-400" :
                   adminRole === "admin" ? "text-purple-400" : "text-blue-400"
                 }`}>
-                  {adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
+                  {viewGroup
+                    ? `Organizer · ${getCommunityNameFromState(viewGroup)}`
+                    : adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
                 </p>
               </div>
-              <ChevronDown className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
+              <ChevronDown className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""} ${railCollapsed ? "lg:hidden" : ""}`} />
             </button>
 
             {/* Account menu — opens upward from the sidebar footer */}
             {showUserMenu && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl">
+                <div className={`absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 shadow-xl ${railCollapsed ? "lg:right-auto lg:w-60" : ""}`}>
                   {/* User Info Header */}
                   <div className="px-4 py-4 border-b border-neutral-700 bg-neutral-800/80">
                     <div className="flex items-center gap-3">
@@ -2101,6 +2627,38 @@ export default function AdminPage() {
                     </div>
                   </div>
 
+                  {/* View as: the account's own view, or the organizer view of a group it runs */}
+                  {accountRole && accountRole !== "organizer" && ownGroups.length > 0 && (
+                    <div className="p-2 border-b border-neutral-700" role="group" aria-label="View as">
+                      <p className="px-3 pb-1.5 pt-1 text-xs uppercase tracking-wider text-neutral-400">View as</p>
+                      {[null, ...ownGroups].map((group) => {
+                        const current = group === viewGroup
+                        const logo = group ? communities.find((c) => c.id === group)?.logo : "/branding/devsa-logo.svg"
+                        return (
+                          <button
+                            key={group ?? "__account"}
+                            onClick={() => (current ? setShowUserMenu(false) : switchView(group))}
+                            aria-current={current ? "true" : undefined}
+                            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                              current ? "bg-neutral-700/50 text-white" : "text-neutral-300 hover:bg-neutral-700/50"
+                            }`}
+                          >
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-neutral-900">
+                              {logo ? <img src={logo} alt="" className="h-full w-full object-contain p-0.5" /> : <Users className="h-3.5 w-3.5 text-neutral-400" />}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-medium">{group ? getCommunityNameFromState(group) : "DEVSA"}</span>
+                              <span className="block truncate text-xs text-neutral-400">
+                                {group ? "Organizer" : accountRole === "superadmin" ? "Super Admin" : "Admin"}
+                              </span>
+                            </span>
+                            {current && <Check className="h-4 w-4 shrink-0 text-[#ef426f]" />}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+
                   {/* Community Info (for organizers) */}
                   {adminRole === "organizer" && (
                     <div className="px-4 py-3 border-b border-neutral-700">
@@ -2113,90 +2671,19 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {/* Edit Profile Section */}
-                  {showProfileEdit ? (
-                    <div className="px-4 py-3 border-b border-neutral-700">
-                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Edit Profile</p>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs text-neutral-400 mb-1">First Name</label>
-                          <input
-                            type="text"
-                            value={profileFirstName}
-                            onChange={(e) => setProfileFirstName(e.target.value)}
-                            placeholder="Enter first name"
-                            className="w-full rounded-lg border border-neutral-600 bg-neutral-700/50 px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-neutral-400 mb-1">Last Name</label>
-                          <input
-                            type="text"
-                            value={profileLastName}
-                            onChange={(e) => setProfileLastName(e.target.value)}
-                            placeholder="Enter last name"
-                            className="w-full rounded-lg border border-neutral-600 bg-neutral-700/50 px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-                          />
-                        </div>
-                        <div className="flex gap-2 pt-2">
-                          <button
-                            onClick={async () => {
-                              setIsSavingProfile(true)
-                              try {
-                                const res = await adminFetch('/api/admin/auth', {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({
-                                    email: adminEmail,
-                                    firstName: profileFirstName,
-                                    lastName: profileLastName,
-                                  }),
-                                })
-                                if (res.ok) {
-                                  setAdminFirstName(profileFirstName)
-                                  setAdminLastName(profileLastName)
-                                  setShowProfileEdit(false)
-                                  setSuccessMessage('Profile updated successfully')
-                                }
-                              } catch {
-                                setError('Failed to update profile')
-                              } finally {
-                                setIsSavingProfile(false)
-                              }
-                            }}
-                            disabled={isSavingProfile}
-                            className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-3 py-2 text-sm font-medium text-white hover:bg-[#d93a60] disabled:opacity-50"
-                          >
-                            {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowProfileEdit(false)
-                              setProfileFirstName(adminFirstName)
-                              setProfileLastName(adminLastName)
-                            }}
-                            className="flex-1 rounded-lg border border-neutral-600 px-3 py-2 text-sm font-medium text-neutral-300 hover:bg-neutral-700"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-2 border-b border-neutral-700">
-                      <button
-                        onClick={() => {
-                          setProfileFirstName(adminFirstName)
-                          setProfileLastName(adminLastName)
-                          setShowProfileEdit(true)
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
-                      >
-                        <Settings className="h-4 w-4" />
-                        Edit Profile
-                      </button>
-                    </div>
-                  )}
+                  {/* Profile: opens the drawer with the directory fields */}
+                  <div className="p-2 border-b border-neutral-700">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false)
+                        openProfileDrawer()
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-neutral-300 hover:bg-neutral-700/50 rounded-lg transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Edit profile
+                    </button>
+                  </div>
 
                   {/* Logout Button */}
                   <div className="p-2">
@@ -2219,7 +2706,17 @@ export default function AdminPage() {
       </aside>
 
       {/* Main column */}
-      <div className="lg:pl-64">
+      {railCollapsed && railTip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed left-[4.5rem] z-[60] hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg lg:block"
+          style={{ top: railTip.y }}
+        >
+          {railTip.text}
+        </div>
+      )}
+
+      <div className={`transition-[padding] duration-200 ${railCollapsed ? "lg:pl-16" : "lg:pl-64"}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-800 bg-black/80 px-4 backdrop-blur sm:px-6">
           <button
@@ -2796,9 +3293,10 @@ export default function AdminPage() {
                         )}
                       </div>
 
-                      {/* Decision bar. Status is internal: changing it emails no one. */}
+                      {/* Decision bar. A status change is internal unless "Email the speaker" is ticked
+                          (off by default, and reset after every decision). */}
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-800 px-5 py-4">
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           {(["approved", "rejected", "pending"] as const)
                             .filter((st) => st !== "pending" || speakerStatus(selected) !== "pending")
                             .map((st) => {
@@ -2825,6 +3323,23 @@ export default function AdminPage() {
                               </button>
                             )
                           })}
+                          <label className="ml-1 inline-flex cursor-pointer items-center gap-2 text-sm text-neutral-300">
+                            <input
+                              type="checkbox"
+                              checked={notifySpeaker}
+                              onChange={(e) => setNotifySpeaker(e.target.checked)}
+                              className="h-4 w-4 accent-[#ef426f]"
+                            />
+                            Email the speaker
+                          </label>
+                          {selected.notifiedAt && (
+                            <span className="text-xs text-neutral-400">
+                              Decision emailed{" "}
+                              {new Date(
+                                typeof selected.notifiedAt === "string" ? selected.notifiedAt : selected.notifiedAt._seconds * 1000
+                              ).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          )}
                         </div>
                         {/* Deleting a submission is admin/superadmin only on the
                             API side, so organizers do not get a button that
@@ -3061,7 +3576,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {admins.map((admin) => (
+                    {sortAdminsBySignIn(admins).map((admin) => (
                       <Tr key={admin.id}>
                         <Td>
                           <PrimaryCell
@@ -3280,10 +3795,7 @@ export default function AdminPage() {
                                   ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
                                   : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
                             }`}>
-                              {event.eventType === 'in-person' && '🏢'}
-                              {event.eventType === 'hybrid' && '🔀'}
-                              {event.eventType === 'virtual' && '💻'}
-                              {' '}{event.eventType}
+                              {event.eventType}
                             </span>
                           )}
                         </div>
@@ -4154,6 +4666,41 @@ export default function AdminPage() {
           )}
 
           {/* Communities Tab */}
+          {activeTab === "overview" && adminRole && (
+            <AdminOverview
+              role={adminRole as "superadmin" | "admin" | "organizer"}
+              myCommunityId={adminCommunityId}
+              communities={communities}
+              events={calendar}
+              rsvpCountByEvent={rsvpCountByEvent}
+              directory={directory}
+              admins={admins}
+              pending={{
+                access: pendingAccessCount,
+                speakers: speakers.filter((s) => speakerStatus(s) === "pending").length,
+                getInvolved: newGetInvolvedCount,
+              }}
+              youEmail={dirProfile.contactEmail || adminEmail}
+              youListed={dirProfile.inDirectory}
+              loadDigest={loadDigest}
+              go={(tab: OverviewTab) => setActiveTab(tab)}
+              addEvent={() => {
+                setActiveTab("events")
+                handleOpenCreateEvent()
+              }}
+              addCommunity={() => {
+                setActiveTab("communities")
+                setShowCreateCommunity(true)
+              }}
+              editGroup={() => {
+                const mine = communities.find((c) => c.id === adminCommunityId)
+                setActiveTab("communities")
+                if (mine) handleEditCommunity(mine)
+              }}
+              editProfile={openProfileDrawer}
+            />
+          )}
+
           {activeTab === "communities" && (
             <div>
               <div className="flex items-center justify-between mb-6">
@@ -4192,163 +4739,243 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {adminRole === "organizer" ? (
-                // Organizer view - show only their community
-                (() => {
-                  const myCommunity = communities.find(c => c.id === adminCommunityId)
-                  if (!myCommunity) {
-                    return (
-                      <div className="text-center py-12">
-                        <Building2 className="mx-auto h-12 w-12 text-neutral-600 mb-4" />
-                        <p className="text-neutral-400 mb-2">No community assigned to your account.</p>
-                        <p className="text-neutral-500 text-sm">Contact an admin to assign you to a community.</p>
-                      </div>
-                    )
-                  }
-                  return (
-                    <div className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6">
-                      <div className="flex items-start gap-4 mb-6">
-                        {myCommunity.logo && (
-                          <img 
-                            src={myCommunity.logo} 
-                            alt={myCommunity.name} 
-                            className="h-16 w-16 rounded-xl object-contain bg-neutral-900 p-2"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold tracking-tight text-white">{myCommunity.name}</h3>
-                          <p className="text-neutral-400 text-sm mt-1 leading-relaxed">{myCommunity.description}</p>
-                        </div>
-                        {communitiesSource === 'firestore' && (
-                          <button
-                            onClick={() => handleEditCommunity(myCommunity)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-700 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-600 transition-colors"
-                          >
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {myCommunity.website && (
-                          <a href={myCommunity.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Website
-                          </a>
-                        )}
-                        {myCommunity.meetup && (
-                          <a href={myCommunity.meetup} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Meetup
-                          </a>
-                        )}
-                        {myCommunity.discord && (
-                          <a href={myCommunity.discord} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Discord
-                          </a>
-                        )}
-                        {myCommunity.luma && (
-                          <a href={myCommunity.luma} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Lu.ma
-                          </a>
-                        )}
-                        {myCommunity.twitter && (
-                          <a href={myCommunity.twitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Twitter
-                          </a>
-                        )}
-                        {myCommunity.instagram && (
-                          <a href={myCommunity.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
-                            <ExternalLink className="h-4 w-4" /> Instagram
-                          </a>
-                        )}
-                      </div>
-                      {communitiesSource !== 'firestore' && (
-                        <p className="mt-4 text-xs text-yellow-400">
-                          Editing is disabled until an admin migrates communities to Firestore.
-                        </p>
-                      )}
-                    </div>
-                  )
-                })()
-              ) : (
-                // Admin view - show all communities
-                <div className="space-y-4">
-                  {communities.length === 0 ? (
-                    <p className="text-neutral-400 text-center py-8">No communities found.</p>
-                  ) : (
-                    communityOrder.items.map((community) => (
-                      <div
-                        key={community.id}
-                        {...communityOrder.getRowProps(community.id)}
-                        className={`rounded-xl border bg-neutral-800/30 p-4 transition-colors ${
-                          communityOrder.draggingId === community.id
-                            ? "border-[#ef426f]/60 opacity-50"
-                            : communityOrder.overId === community.id
-                              ? "border-[#ef426f] bg-neutral-800/60"
-                              : "border-neutral-800 hover:bg-neutral-800/50"
-                        }`}
+              {(() => {
+                /*
+                 * The organizer directory. Organizers get their own group on top,
+                 * editable as before, and every other group below as a read-only
+                 * row that opens to show who runs it. Admins get the same rows with
+                 * Edit and Delete, and drag-to-reorder whenever no search or filter
+                 * is narrowing the list (reordering a filtered subset would write a
+                 * partial order).
+                 */
+                const toggle = (id: string) =>
+                  setOpenDirectory((prev) => {
+                    const next = new Set(prev)
+                    if (next.has(id)) next.delete(id)
+                    else next.add(id)
+                    return next
+                  })
+                const filtering = dirQuery.trim() !== "" || dirKind !== "all"
+                const shows = (c: Community) => matchesDirectory(c, organizersOf(c.id, directory), dirQuery, dirKind)
+                const myCommunity = adminRole === "organizer" ? communities.find((c) => c.id === adminCommunityId) : undefined
+                // DEVSA's own admins, listed together so organizers can reach DEVSA too. An admin who
+                // also runs a group shows here and under that group.
+                const devsaTeam = directory.filter((e) => e.role !== "organizer")
+                const devsaRow = { id: "__devsa", name: "DEVSA", logo: "/branding/devsa-logo.svg", description: "" }
+                const showDevsa = devsaTeam.length > 0 && dirKind !== "student" &&
+                  (!dirQuery.trim() || matchesDirectory({ ...devsaRow, kind: "tech" }, devsaTeam, dirQuery, "all"))
+                const stale = isStale(dirProfile.confirmedAt)
+                const others = communities.filter((c) => c.id !== myCommunity?.id && shows(c))
+                const adminActions = (community: Community) =>
+                  communitiesSource === "firestore" && hasAdminAccess(adminRole) ? (
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button
+                        onClick={() => handleEditCommunity(community)}
+                        className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
                       >
-                        <div className="flex items-start gap-4">
-                          {/* Grab handle. A real button so it is focusable and
-                              takes arrow keys — HTML5 drag events only fire for
-                              a pointer, so without this the list is
-                              mouse-only. */}
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCommunity(community.id, community.name)}
+                        disabled={isDeletingCommunity === community.id}
+                        className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors disabled:opacity-50"
+                      >
+                        {isDeletingCommunity === community.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
+                      </button>
+                    </div>
+                  ) : null
+
+                return (
+                  <>
+                    {/* The nudge: not listed yet, or listed but not confirmed in six months */}
+                    {(!dirProfile.inDirectory || stale) && (
+                      <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[#ef426f]/40 bg-[#ef426f]/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-neutral-200">
+                          {!dirProfile.inDirectory
+                            ? "You're not in the organizer directory yet. Add your name, role and LinkedIn so other organizers can reach you."
+                            : "Is your directory profile still current? Other organizers see when you last confirmed it."}
+                        </p>
+                        <button
+                          onClick={openProfileDrawer}
+                          className="shrink-0 rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                        >
+                          {!dirProfile.inDirectory ? "Add yourself" : "Confirm or update"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Search and filter */}
+                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                        <input
+                          type="search"
+                          value={dirQuery}
+                          onChange={(e) => setDirQuery(e.target.value)}
+                          placeholder="Search groups or people"
+                          aria-label="Search groups or people"
+                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                        />
+                      </div>
+                      <div className="flex gap-2" role="group" aria-label="Filter by type">
+                        {([["all", "All"], ["tech", "Tech groups"], ["student", "Student orgs"]] as [KindFilter, string][]).map(([value, text]) => (
                           <button
-                            type="button"
-                            {...communityOrder.getHandleProps(community.id)}
-                            className="mt-0.5 shrink-0 cursor-grab rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-800 hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ef426f] active:cursor-grabbing"
+                            key={value}
+                            onClick={() => setDirKind(value)}
+                            aria-pressed={dirKind === value}
+                            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                              dirKind === value ? "bg-white text-neutral-900" : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                            }`}
                           >
-                            <GripVertical className="h-4 w-4" />
+                            {text}
                           </button>
-                          {community.logo && (
-                            <img 
-                              src={community.logo} 
-                              alt={community.name} 
-                              className="h-12 w-12 rounded-lg object-contain bg-neutral-900 p-1.5 shrink-0"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-white truncate">{community.name}</h3>
-                              <span className="text-xs text-neutral-500 px-2 py-0.5 bg-neutral-800 rounded-full">{community.id}</span>
-                            </div>
-                            <p className="text-neutral-400 text-sm mt-1 line-clamp-2">{community.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-neutral-500">
-                              {community.website && <span>Website</span>}
-                              {community.meetup && <span>Meetup</span>}
-                              {community.discord && <span>Discord</span>}
-                              {community.luma && <span>Lu.ma</span>}
-                              {community.twitter && <span>Twitter</span>}
-                            </div>
-                          </div>
-                          {communitiesSource === 'firestore' && (
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                onClick={() => handleEditCommunity(community)}
-                                className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors"
-                              >
-                                Edit
-                              </button>
-                              {hasAdminAccess(adminRole) && (
-                                <button
-                                  onClick={() => handleDeleteCommunity(community.id, community.name)}
-                                  disabled={isDeletingCommunity === community.id}
-                                  className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors disabled:opacity-50"
-                                >
-                                  {isDeletingCommunity === community.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    "Delete"
-                                  )}
-                                </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Organizers: your own group, editable, with its people and the handoff */}
+                    {adminRole === "organizer" && (
+                      myCommunity ? (
+                        <div className="mb-6 rounded-xl border border-neutral-700 bg-neutral-800/40 p-5 sm:p-6">
+                          <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Your community</p>
+                          {/* The spotlight: the group as the public sees it, with Edit beside it. */}
+                          <div className="mb-6 flex flex-col gap-4 border-b border-neutral-800 pb-6 sm:flex-row sm:items-start">
+                            {myCommunity.logo && (
+                              <img src={myCommunity.logo} alt="" className="h-16 w-16 shrink-0 rounded-2xl border border-neutral-800 bg-neutral-900 object-contain p-2.5" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h3 className="text-xl font-bold tracking-tight text-white">{myCommunity.name}</h3>
+                                  <p className="mt-0.5 text-sm text-neutral-400">{kindLabel(myCommunity)}</p>
+                                </div>
+                                {communitiesSource === "firestore" && (
+                                  <button
+                                    onClick={() => handleEditCommunity(myCommunity)}
+                                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-neutral-700 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-neutral-600"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                    Edit
+                                  </button>
+                                )}
+                              </div>
+                              {myCommunity.description && (
+                                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-300">{myCommunity.description}</p>
                               )}
                             </div>
+                          </div>
+                          <DirectoryPanel
+                            community={myCommunity}
+                            organizers={organizersOf(myCommunity.id, directory)}
+                            events={calendar}
+                            youEmail={dirProfile.contactEmail || adminEmail}
+                          />
+                          <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-800 pt-4">
+                            <button
+                              onClick={openProfileDrawer}
+                              className="rounded-lg bg-neutral-700 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-600 transition-colors"
+                            >
+                              Edit your profile
+                            </button>
+                            {/* Handing off is an organizer account's to do; an admin's view of a group isn't one. */}
+                            {!viewGroup && (
+                              <button
+                                onClick={() => {
+                                  setHandoffEmail("")
+                                  setHandoffStepDown(false)
+                                  setHandoffError(null)
+                                  setShowHandoff(true)
+                                }}
+                                className="rounded-lg border border-neutral-600 px-3 py-2 text-sm font-semibold text-neutral-200 hover:bg-neutral-700/60 transition-colors"
+                              >
+                                Hand off to a new lead
+                              </button>
+                            )}
+                          </div>
+                          {communitiesSource !== "firestore" && (
+                            <p className="mt-4 text-xs text-yellow-400">
+                              Editing is disabled until an admin migrates communities to Firestore.
+                            </p>
                           )}
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
+                      ) : (
+                        <div className="mb-6 rounded-xl border border-neutral-800 py-10 text-center">
+                          <Building2 className="mx-auto mb-3 h-10 w-10 text-neutral-500" />
+                          <p className="text-neutral-300">No community assigned to your account.</p>
+                          <p className="mt-1 text-sm text-neutral-400">Contact an admin to assign you to a community.</p>
+                        </div>
+                      )
+                    )}
+
+                    <div className="space-y-3">
+                      {showDevsa && (
+                        <DirectoryRow
+                          community={devsaRow}
+                          organizers={devsaTeam}
+                          events={calendar}
+                          open={openDirectory.has(devsaRow.id)}
+                          onToggle={() => toggle(devsaRow.id)}
+                          youEmail={dirProfile.contactEmail || adminEmail}
+                          label="DEVSA team"
+                          hideCalendar
+                        />
+                      )}
+
+                      {communities.length === 0 ? (
+                        <p className="py-8 text-center text-neutral-400">No communities found.</p>
+                      ) : hasAdminAccess(adminRole) && !filtering ? (
+                        // Admins, unfiltered: the full list, draggable, as before.
+                        communityOrder.items.map((community) => (
+                          <DirectoryRow
+                            key={community.id}
+                            community={community}
+                            organizers={organizersOf(community.id, directory)}
+                            events={calendar}
+                            open={openDirectory.has(community.id)}
+                            onToggle={() => toggle(community.id)}
+                            youEmail={dirProfile.contactEmail || adminEmail}
+                            rowProps={communityOrder.getRowProps(community.id)}
+                            highlight={
+                              communityOrder.draggingId === community.id
+                                ? "border-[#ef426f]/60 opacity-50"
+                                : communityOrder.overId === community.id
+                                  ? "border-[#ef426f] bg-neutral-800/60"
+                                  : undefined
+                            }
+                            lead={
+                              // A real button so it is focusable and takes arrow keys — HTML5 drag
+                              // events only fire for a pointer, so without this the list is mouse-only.
+                              <button
+                                type="button"
+                                {...communityOrder.getHandleProps(community.id)}
+                                className="shrink-0 cursor-grab rounded-lg p-1.5 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ef426f] active:cursor-grabbing"
+                              >
+                                <GripVertical className="h-4 w-4" />
+                              </button>
+                            }
+                            trailing={adminActions(community)}
+                          />
+                        ))
+                      ) : others.length === 0 && !showDevsa ? (
+                        <p className="py-8 text-center text-neutral-400">No groups match.</p>
+                      ) : (
+                        others.map((community) => (
+                          <DirectoryRow
+                            key={community.id}
+                            community={community}
+                            organizers={organizersOf(community.id, directory)}
+                            events={calendar}
+                            open={openDirectory.has(community.id)}
+                            onToggle={() => toggle(community.id)}
+                            youEmail={dirProfile.contactEmail || adminEmail}
+                            trailing={adminActions(community)}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </>
+                )
+              })()}
 
               {/* Edit Community Drawer */}
               <SlideDrawer
@@ -4448,6 +5075,11 @@ export default function AdminPage() {
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
                         />
                       </div>
+                      <GroupTypeFields
+                        kind={editingCommunity.kind}
+                        school={editingCommunity.school}
+                        onChange={({ kind, school }) => setEditingCommunity({ ...editingCommunity, kind, school })}
+                      />
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
@@ -4720,6 +5352,11 @@ export default function AdminPage() {
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 resize-none"
                         />
                       </div>
+                      <GroupTypeFields
+                        kind={newCommunity.kind}
+                        school={newCommunity.school}
+                        onChange={({ kind, school }) => setNewCommunity({ ...newCommunity, kind, school })}
+                      />
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">Website</label>
@@ -5362,7 +5999,10 @@ export default function AdminPage() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-800/50">
-                              {eventRsvps.map((rsvp) => (
+                              {/* Latest registration first, to the second; the API returns them unordered. */}
+                              {[...eventRsvps]
+                                .sort((a, b) => (new Date(b.submittedAt).getTime() || 0) - (new Date(a.submittedAt).getTime() || 0))
+                                .map((rsvp) => (
                                 <tr key={rsvp.id} className="hover:bg-neutral-800/30 transition-colors leading-tight">
                                   <td className="py-2 px-4 text-sm font-semibold text-white whitespace-nowrap">{rsvp.firstName} {rsvp.lastName}</td>
                                   <td className="py-2 px-4 text-sm font-medium text-neutral-400 whitespace-nowrap">{rsvp.email}</td>
@@ -5611,6 +6251,272 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* Declining an access request: the "request received" email promised an answer either way. */}
+          {declineTarget && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="decline-title">
+              <div className="w-full max-w-md rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
+                <h3 id="decline-title" className="text-lg font-bold text-white">Decline {declineTarget.name}&apos;s request?</h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                  For {declineTarget.communityOrg}. The request is removed from the list.
+                </p>
+                <label className="mt-4 flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                  <input type="checkbox" checked={declineNotify} onChange={(e) => setDeclineNotify(e.target.checked)} className="mt-1 h-4 w-4 accent-[#ef426f]" />
+                  <span>
+                    <span className="block text-sm font-semibold text-white">Let them know</span>
+                    <span className="mt-1 block text-sm text-neutral-400">
+                      A short, kind &ldquo;not right now&rdquo; email, inviting them to reply. Untick it for spam.
+                    </span>
+                  </span>
+                </label>
+                <div className="mt-5 flex gap-3">
+                  <button onClick={confirmDeclineAccess} className="flex-1 rounded-xl bg-red-500/90 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-500">
+                    Decline
+                  </button>
+                  <button onClick={() => setDeclineTarget(null)} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-300 hover:bg-neutral-800">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Telling the people who RSVP'd: after a save that moved the date, time or place, or before deleting. */}
+          {attendeeNotice && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="notice-title">
+              <div className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
+                <h3 id="notice-title" className="text-lg font-bold text-white">
+                  {attendeeNotice.kind === "changed"
+                    ? `Email the ${attendeeNotice.count} ${attendeeNotice.count === 1 ? "person" : "people"} who RSVP'd?`
+                    : `Delete ${attendeeNotice.title}?`}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                  {attendeeNotice.kind === "changed"
+                    ? `You moved the date, time or place of ${attendeeNotice.title}. They'll get the new details, with the old ones crossed out.`
+                    : `${attendeeNotice.count} ${attendeeNotice.count === 1 ? "person has" : "people have"} RSVP'd. Without an email they may show up to an empty room.`}
+                </p>
+                <label htmlFor="notice-note" className="mt-4 block text-sm font-semibold text-neutral-300">
+                  A note from you <span className="font-normal text-neutral-400">(optional)</span>
+                </label>
+                <textarea
+                  id="notice-note"
+                  rows={3}
+                  maxLength={600}
+                  value={attendeeNote}
+                  onChange={(e) => setAttendeeNote(e.target.value)}
+                  placeholder={attendeeNotice.kind === "changed" ? "We outgrew the room, so we're moving next door." : "Our speaker fell ill. We'll reschedule soon."}
+                  className="mt-2 w-full resize-none rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                />
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    onClick={() => sendAttendeeNotice(true, attendeeNotice.kind === "cancelled")}
+                    disabled={isNotifying}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
+                  >
+                    {isNotifying ? <Loader2 className="h-4 w-4 animate-spin" /> : attendeeNotice.kind === "changed" ? `Email ${attendeeNotice.count}` : `Delete and email ${attendeeNotice.count}`}
+                  </button>
+                  {attendeeNotice.kind === "cancelled" ? (
+                    <>
+                      <button onClick={() => sendAttendeeNotice(false, true)} disabled={isNotifying} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
+                        Delete without emailing
+                      </button>
+                      <button onClick={() => setAttendeeNotice(null)} disabled={isNotifying} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-neutral-400 hover:text-white disabled:opacity-50">
+                        Keep the event
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={() => setAttendeeNotice(null)} disabled={isNotifying} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
+                      Not now
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Your profile: name and the organizer directory fields. Opened from the account menu or the Communities tab. */}
+          <SlideDrawer
+            open={showProfileDrawer}
+            onClose={() => setShowProfileDrawer(false)}
+            title="Your profile"
+            subtitle="What other organizers see in the directory"
+            widthClass="max-w-xl"
+          >
+            <form onSubmit={saveProfile} className="space-y-5">
+              <div className="flex items-center gap-4">
+                <Avatar
+                  name={[profileDraft.firstName, profileDraft.lastName].filter(Boolean).join(" ") || adminEmail}
+                  photo={adminProfileImage || null}
+                  size={64}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap gap-2">
+                    <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg bg-neutral-700 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-neutral-600 focus-within:ring-2 focus-within:ring-neutral-500 ${photoBusy ? "pointer-events-none opacity-60" : ""}`}>
+                      {photoBusy === "upload" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      {adminProfileImage ? "Change photo" : "Upload photo"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="sr-only"
+                        disabled={!!photoBusy}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          e.target.value = ""
+                          if (file) uploadProfilePhoto(file, "upload")
+                        }}
+                      />
+                    </label>
+                    {googlePhotoUrl && !adminProfileImage && (
+                      <button
+                        type="button"
+                        onClick={takeGooglePhoto}
+                        disabled={!!photoBusy}
+                        className="inline-flex items-center gap-2 rounded-lg border border-neutral-600 px-3 py-2 text-sm font-semibold text-neutral-200 transition-colors hover:bg-neutral-700/60 disabled:opacity-60"
+                      >
+                        {photoBusy === "google" && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Use my Google photo
+                      </button>
+                    )}
+                    {adminProfileImage && (
+                      <button
+                        type="button"
+                        onClick={removeProfilePhoto}
+                        disabled={!!photoBusy}
+                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-60"
+                      >
+                        {photoBusy === "remove" && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-xs text-neutral-400">JPEG, PNG or WebP, up to 5 MB. Cropped to a square. Saves right away.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="profile-first" className="block text-sm font-semibold text-neutral-300 mb-2">First name</label>
+                  <input id="profile-first" type="text" maxLength={60} value={profileDraft.firstName} onChange={(e) => setProfileDraft({ ...profileDraft, firstName: e.target.value })} className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+                </div>
+                <div>
+                  <label htmlFor="profile-last" className="block text-sm font-semibold text-neutral-300 mb-2">Last name</label>
+                  <input id="profile-last" type="text" maxLength={60} value={profileDraft.lastName} onChange={(e) => setProfileDraft({ ...profileDraft, lastName: e.target.value })} className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="profile-title" className="block text-sm font-semibold text-neutral-300 mb-2">Your role in the group</label>
+                <input id="profile-title" type="text" maxLength={60} value={profileDraft.title} onChange={(e) => setProfileDraft({ ...profileDraft, title: e.target.value })} placeholder="Organizer, President, Co-lead" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+              </div>
+              <div>
+                <label htmlFor="profile-email" className="block text-sm font-semibold text-neutral-300 mb-2">Contact email</label>
+                <input id="profile-email" type="email" value={profileDraft.contactEmail} onChange={(e) => setProfileDraft({ ...profileDraft, contactEmail: e.target.value })} placeholder={adminEmail} className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+                <p className="mt-1.5 text-xs text-neutral-400">Leave blank to use {adminEmail}.</p>
+              </div>
+              <div>
+                <label htmlFor="profile-linkedin" className="block text-sm font-semibold text-neutral-300 mb-2">LinkedIn</label>
+                <input id="profile-linkedin" type="text" inputMode="url" value={profileDraft.linkedin} onChange={(e) => setProfileDraft({ ...profileDraft, linkedin: e.target.value })} placeholder="linkedin.com/in/yourname" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+              </div>
+              {communities.find((c) => c.id === adminCommunityId)?.kind === "student" && (
+                <div>
+                  <label htmlFor="profile-grad" className="block text-sm font-semibold text-neutral-300 mb-2">When you graduate</label>
+                  <input id="profile-grad" type="text" maxLength={30} value={profileDraft.gradTerm} onChange={(e) => setProfileDraft({ ...profileDraft, gradTerm: e.target.value })} placeholder="May 2027" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+                  <p className="mt-1.5 text-xs text-neutral-400">So the next lead can be lined up before you go.</p>
+                </div>
+              )}
+              {accountRole && accountRole !== "organizer" && (
+                <fieldset>
+                  <legend className="block text-sm font-semibold text-neutral-300 mb-1">Groups you run</legend>
+                  <p className="mb-2 text-xs text-neutral-400">
+                    Each one adds an organizer view to your account menu, and lists you with that group in the directory.
+                  </p>
+                  <div className="max-h-56 overflow-y-auto rounded-xl border border-neutral-700 bg-neutral-800/50 p-2">
+                    {[...communities]
+                      .sort((a, b) => {
+                        const on = (c: Community) => (c.id === accountCommunityId || profileDraft.organizerOf.includes(c.id) ? 0 : 1)
+                        return on(a) - on(b) || a.name.localeCompare(b.name)
+                      })
+                      .map((c) => {
+                        const assigned = c.id === accountCommunityId
+                        return (
+                          <label key={c.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-neutral-200 hover:bg-neutral-700/40">
+                            <input
+                              type="checkbox"
+                              checked={assigned || profileDraft.organizerOf.includes(c.id)}
+                              disabled={assigned}
+                              onChange={(e) =>
+                                setProfileDraft({
+                                  ...profileDraft,
+                                  organizerOf: e.target.checked
+                                    ? [...profileDraft.organizerOf, c.id]
+                                    : profileDraft.organizerOf.filter((id) => id !== c.id),
+                                })
+                              }
+                              className="h-4 w-4 accent-[#ef426f]"
+                            />
+                            <span className="min-w-0 flex-1 truncate">{c.name}</span>
+                            {assigned && <span className="text-xs text-neutral-400">Assigned</span>}
+                          </label>
+                        )
+                      })}
+                  </div>
+                </fieldset>
+              )}
+              <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                <input type="checkbox" checked={profileDraft.inDirectory} onChange={(e) => setProfileDraft({ ...profileDraft, inDirectory: e.target.checked })} className="mt-1 h-4 w-4 accent-[#ef426f]" />
+                <span>
+                  <span className="block text-sm font-semibold text-white">Show me in the organizer directory</span>
+                  <span className="mt-1 block text-sm text-neutral-400">
+                    Signed-in organizers see your name, role, email and LinkedIn on the Communities tab. It&apos;s never shown on the public site.
+                  </span>
+                </span>
+              </label>
+              {profileError && <p className="text-sm text-red-400">{profileError}</p>}
+              <div className="flex gap-3 pt-1">
+                <button type="submit" disabled={isSavingProfile} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50">
+                  {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                </button>
+                <button type="button" onClick={() => setShowProfileDrawer(false)} className="flex-1 rounded-xl border border-neutral-600 px-5 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-700/60 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </SlideDrawer>
+
+          {/* Hand off: invite the next lead of the organizer's own group, optionally stepping down. */}
+          <SlideDrawer
+            open={showHandoff}
+            onClose={() => setShowHandoff(false)}
+            title="Hand off to a new lead"
+            subtitle={getCommunityNameFromState(adminCommunityId || undefined)}
+            widthClass="max-w-xl"
+          >
+            <form onSubmit={submitHandoff} className="space-y-5">
+              <p className="text-sm leading-relaxed text-neutral-300">
+                The next lead gets organizer access to {getCommunityNameFromState(adminCommunityId || undefined)}, and an email saying so.
+                They sign in with that address and can add themselves to the directory.
+              </p>
+              <div>
+                <label htmlFor="handoff-email" className="block text-sm font-semibold text-neutral-300 mb-2">Their email</label>
+                <input id="handoff-email" type="email" required value={handoffEmail} onChange={(e) => setHandoffEmail(e.target.value)} placeholder="next.lead@example.edu" className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white placeholder:text-neutral-400 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20" />
+              </div>
+              <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                <input type="checkbox" checked={handoffStepDown} onChange={(e) => setHandoffStepDown(e.target.checked)} className="mt-1 h-4 w-4 accent-[#ef426f]" />
+                <span>
+                  <span className="block text-sm font-semibold text-white">Step down after inviting</span>
+                  <span className="mt-1 block text-sm text-neutral-400">
+                    Your access ends and you&apos;re signed out. The group keeps your name and role as a past lead, with no contact details.
+                  </span>
+                </span>
+              </label>
+              {handoffError && <p className="text-sm text-red-400">{handoffError}</p>}
+              <div className="flex gap-3 pt-1">
+                <button type="submit" disabled={isHandingOff} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50">
+                  {isHandingOff ? <Loader2 className="h-4 w-4 animate-spin" /> : handoffStepDown ? "Invite and step down" : "Invite"}
+                </button>
+                <button type="button" onClick={() => setShowHandoff(false)} className="flex-1 rounded-xl border border-neutral-600 px-5 py-3 text-sm font-semibold text-neutral-300 hover:bg-neutral-700/60 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </SlideDrawer>
           </div>
         </div>
       </div>
