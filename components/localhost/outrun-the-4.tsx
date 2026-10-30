@@ -60,17 +60,19 @@ const G = (8 * JUMP_H) / (JUMP_T * JUMP_T)
 const VY = (G * JUMP_T) / 2
 
 /* Colors, by index into the palette below. */
-const C = { sky: 1, ground: 2, runner: 3, obstacle: 4, puddle: 5, stop: 6, bus: 7, amber: 8, window: 9, star: 10, band: 11, tree: 12, pink: 13, teal: 14, sun: 15, house: 16, shirt: 17 }
+const C = { sky: 1, ground: 2, runner: 3, obstacle: 4, puddle: 5, stop: 6, bus: 7, amber: 8, window: 9, star: 10, tree: 12, pink: 13, teal: 14, sun: 15, house: 16, shirt: 17, pole: 18, air1: 19, air2: 20, air3: 21 }
 
-type Mode = "night" | "dawn" | "day" | "dusk"
+type Mode = "night" | "dawn" | "day"
 const modeAt = (secs: number): Mode => {
   const h = Math.floor(secs / 3600) % 24
-  return h < 6 || h >= 20 ? "night" : h < 8 ? "dawn" : h < 17 ? "day" : "dusk"
+  // No dusk: it read as murk, not a sunset. Day runs until dark.
+  return h < 6 || h >= 20 ? "night" : h < 8 ? "dawn" : "day"
 }
 function palette(mode: Mode, route: string) {
   const night = mode === "night"
   const p: string[] = []
-  p[C.sky] = night ? "#1c1c1c" : mode === "day" ? "#2c2c2c" : "#242424"
+  // C.sky is the buildings' body: the skyline, dark against whatever the sky is doing.
+  p[C.sky] = night ? "#1c1c1c" : mode === "day" ? "#2a2a2a" : "#242424"
   p[C.ground] = "#525252"
   p[C.runner] = "#f5f5f5"
   p[C.obstacle] = "#b5b5b5"
@@ -80,13 +82,21 @@ function palette(mode: Mode, route: string) {
   p[C.amber] = "#ffb547"
   p[C.window] = "#8f6a26"
   p[C.star] = "#5e5e5e"
-  p[C.band] = mode === "dawn" ? "#5a3a24" : "#5a2a2c"
-  p[C.tree] = night ? "#22402f" : "#2f6046"
+  // Scenery sits back so the sidewalk reads first: trees, houses and streetlight poles are dim.
+  p[C.tree] = night ? "#1b3226" : "#24493a"
   p[C.pink] = "#ef426f"
   p[C.teal] = "#00b2a9"
-  p[C.sun] = night ? "#a3a3a3" : mode === "day" ? "#e8e2cf" : "#ff8200"
-  p[C.house] = night ? "#2a2a2a" : "#383838"
+  p[C.sun] = night ? "#a3a3a3" : mode === "day" ? "#ffd23f" : "#ff8200"
+  p[C.house] = night ? "#232323" : "#2e2e2e"
   p[C.shirt] = "#3d3d3d"
+  p[C.pole] = "#333333"
+  // The sky, top band to horizon. By day a dim blue that fades toward the street (an LED sign
+  // can't go white, but blue says daytime); at dawn, pink into the logo's orange.
+  const air =
+    mode === "day" ? ["#1e3247", "#1a2a3b", "#172230"]
+    : mode === "dawn" ? ["#22202f", "#45283a", "#6e4419"]
+    : ["#141414", "#141414", "#141414"]
+  ;[p[C.air1], p[C.air2], p[C.air3]] = air
   return p
 }
 
@@ -428,22 +438,36 @@ export function OutrunThe4() {
       const cam = Math.floor(d * ppm)
       const col = (mi: number) => runCol + Math.floor(mi * ppm) - cam
 
-      // Sky: stars and a moon at night, a low warm band and sun at dawn and dusk, a pale sun by day.
+      // Sky: stars and a moon at night, a warm glow and a low sun at dawn, a blue sky and a yellow sun by day.
       if (mode === "night")
         for (let x = 0; x < cols; x++) {
           const h = hash(x + Math.floor(cam * 0.05), 7)
           if (h < 0.06 && (Math.floor(t * 2 + h * 40) % 9 !== 0)) put(x, SIGN_ROWS + 2 + Math.floor(hash(x, 8) * 14), C.star)
         }
-      if (mode === "dawn" || mode === "dusk")
-        for (let yy = GROUND - 16; yy < GROUND; yy++)
-          for (let x = 0; x < cols; x++) if (hash(x, yy) < (yy - (GROUND - 16)) / 26) put(x, yy, C.band)
+      // By day the whole sky is lit, in three bands; at dawn only the lower half glows,
+      // in solid rows rather than scattered dots, so it reads as a sunset and not as static.
+      if (mode !== "night") {
+        const top = mode === "day" ? SIGN_ROWS + 1 : GROUND - 18
+        const span = GROUND - top
+        for (let yy = top; yy < GROUND; yy++) {
+          const band = (yy - top) / span < 1 / 3 ? C.air1 : (yy - top) / span < 2 / 3 ? C.air2 : C.air3
+          for (let x = 0; x < cols; x++) put(x, yy, band)
+        }
+      }
+      // At dawn the sun sits on top of the glow, clear of the stop signs (same orange). By day it has
+      // rays, so it can't be mistaken for the moon, which is the same disc without them.
       {
-        const cx = cols - Math.round(cols * 0.12), cy = mode === "day" || mode === "night" ? SIGN_ROWS + 6 : GROUND - 13
+        const cx = cols - Math.round(cols * 0.12), cy = mode === "night" ? SIGN_ROWS + 6 : mode === "day" ? SIGN_ROWS + 8 : GROUND - 19
         for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dy * dy <= 10) put(cx + dx, cy + dy, C.sun)
+        if (mode === "day")
+          for (const [rx, ry] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+            const reach = rx && ry ? [4, 5] : [5, 6]
+            for (const k of reach) put(cx + rx * k, cy + ry * k, C.sun)
+          }
       }
 
       // The skyline: windows lit at night, dark by day.
-      const lit = mode === "night" ? 0.45 : mode === "day" ? 0 : 0.18
+      const lit = mode === "night" ? 0.45 : mode === "day" ? 0 : 0.18 // dawn: a few still on
       const farCam = Math.floor(cam * FAR)
       grow(far, FAR, farCam + cols)
       for (const b of far) {
@@ -469,17 +493,13 @@ export function OutrunThe4() {
       }
       // Streetlights along the sidewalk, lit after dark.
       for (let x = -(cam % 52); x < cols; x += 52) {
-        for (let k = 1; k <= 18; k++) put(x, GROUND - k, C.ground)
-        put(x + 1, GROUND - 18, C.ground)
-        put(x + 2, GROUND - 18, mode === "day" ? C.ground : C.amber)
+        for (let k = 1; k <= 18; k++) put(x, GROUND - k, C.pole)
+        put(x + 1, GROUND - 18, C.pole)
+        put(x + 2, GROUND - 18, mode === "day" ? C.pole : C.amber)
       }
 
-      // Sidewalk, and grit that moves with it.
-      for (let x = 0; x < cols; x++) {
-        put(x, GROUND, C.ground)
-        const wx = x + cam
-        for (let r = 2; r < 6; r++) if (((wx * 73856093) ^ (r * 19349663)) % 23 === 0) put(x, GROUND + r, C.ground)
-      }
+      // The sidewalk: one clean line. (It had grit under it that scrolled along; it read as noise.)
+      for (let x = 0; x < cols; x++) put(x, GROUND, C.ground)
       stops.forEach((s, k) => {
         const x = col(s.d)
         if (x < -10 || x > cols + 10) return
@@ -557,7 +577,8 @@ export function OutrunThe4() {
       const slot = Math.floor(t / 2.8) % 4, slotT = t % 2.8
       if (over) msg = caught ? `THE 4 CAUGHT YOU · ${passed} STOPS` : "YOU BEAT THE 4 TO NORTH STAR"
       else if (!running) msg = `${data!.route.short} NORTH STAR · ${clock(times[1])}`
-      else if (flash && t < flash.until) msg = `+1 BEAT IT TO ${flash.name}`
+      // The +1 floats over the stop itself; the headsign just names it.
+      else if (flash && t < flash.until) msg = `BEAT IT TO ${flash.name}`
       else if (slot === 0) msg = `NEXT ${next.name}`
       else if (slot === 1) msg = `${Math.max(0, next.d - d).toFixed(2)} MI TO GO`
       else if (slot === 2) {

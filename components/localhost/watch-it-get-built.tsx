@@ -16,18 +16,28 @@ import { Check, Copy, Pause, Play } from "lucide-react"
  * for the permits around that spot, and shows the SQL it sent, with a copy
  * button, as the County section does.
  *
+ * The public side sits on top: the City's bond projects downtown, as teal rings
+ * sized by budget, bright while the City has them under construction and dim once
+ * they're done. Private permits in pink, public money in teal, on the same blocks.
+ * Their dates are the City's seasons ("Summer 2023"); scripts/build-permits.py
+ * says how they're read and which citywide programs are left out.
+ *
  * The dataset names a primary contact on every permit, often a private person.
  * The query never asks for it. Project names and full addresses show only on
  * commercial permits; everything else is shown by its block.
  */
 
-type Permits = { origin: [number, number]; start: string; asOf: string; kinds: string[]; permits: number[]; streets: number[][] }
+type Bond = { name: string; kind: string; x: number; y: number; start: number; end: number; from: string; to: string; budget: number; phase: string; status: string; bond: number }
+type Permits = { origin: [number, number]; start: string; asOf: string; kinds: string[]; permits: number[]; streets: number[][]; public: Bond[] }
 type Row = { type: string; work: string; name: string; place: string; submitted: string; issued: string; value: number | null; area: number | null }
 type Answer = { label: string; rows: Row[]; total: number; request: string }
 
 const SQL_API = "https://data.sanantonio.gov/api/3/action/datastore_search_sql"
 const RESOURCE = "c21106f9-3ef5-4f3a-8604-f992b4db7512"
 const PINK = "#ef426f"
+const TEAL = "#00b2a9"
+/** A bond project's ring: about 5 px for $1 million, 14 px for $60 million, before the map's scale factor. */
+const ringRadius = (budget: number) => 3 + Math.sqrt(budget / 1e6) * 1.4
 const NOT_BUILDING = ["Garage Sale", "Tree Affidavit Permit", "Tree Permit", "On Premise Sign", "Across the Street Banner", "Temporary Weekend Sign", "Feather Sign", "Avenue Sign", "Event Sign", "Inflatable Sign", "Off Premise Billboard", "Billboard Demolition"]
 /** The window: about 3.7 km square, from San Pedro Creek to VelocityTX, Main Plaza a little south and west of center. */
 const SPAN = 3700, CENTER: [number, number] = [100, 330]
@@ -249,6 +259,18 @@ export function WatchItGetBuilt() {
       ctx.arc(x, y, st.r * k * (1 + glow * 1.6), 0, Math.PI * 2)
       ctx.fill()
     }
+    // Public money on top: bond projects under construction on this day, and the ones already done.
+    for (const b of data.public) {
+      if (b.start > day) continue
+      const done = day > b.end
+      const x = W / 2 + (b.x - CENTER[0]) * s, y = H / 2 - (b.y - CENTER[1]) * s
+      ctx.globalAlpha = done ? 0.55 : 1
+      ctx.strokeStyle = TEAL
+      ctx.lineWidth = done ? 1.2 : 2
+      ctx.beginPath()
+      ctx.arc(x, y, ringRadius(b.budget) * k, 0, Math.PI * 2)
+      ctx.stroke()
+    }
     ctx.globalAlpha = 1
     if (point) {
       const px = W / 2 + ((point.lon - data.origin[0]) * kx - CENTER[0]) * s, py = H / 2 - ((point.lat - data.origin[1]) * 111_320 - CENTER[1]) * s
@@ -263,14 +285,22 @@ export function WatchItGetBuilt() {
   }, [data, day, point, kx, layer])
 
   const shown = useMemo(() => {
-    if (!data) return { total: 0, built: 0 }
+    if (!data) return { total: 0, built: 0, underway: 0 }
     let total = 0, built = 0
     for (let i = 0; i < data.permits.length && data.permits[i] <= day; i += 4) {
       total++
       if (data.permits[i + 3] === 0) built++
     }
-    return { total, built }
+    const underway = data.public.filter((b) => b.start <= day && day <= b.end).length
+    return { total, built, underway }
   }, [data, day])
+
+  /** Bond projects within 400 m of the picked spot, from the same file: a street project's point can sit a block or two off. */
+  const nearbyPublic = useMemo(() => {
+    if (!data || !point) return []
+    const px = (point.lon - data.origin[0]) * kx, py = (point.lat - data.origin[1]) * 111_320
+    return data.public.filter((b) => Math.hypot(b.x - px, b.y - py) <= 400).sort((a, b) => b.budget - a.budget)
+  }, [data, point, kx])
 
   async function lookUp(lon: number, lat: number, label: string) {
     setPoint({ lon, lat, label })
@@ -344,7 +374,7 @@ ORDER BY "DATE ISSUED" DESC`
             onClick={onClick}
             className="block aspect-square w-full cursor-crosshair"
             role="img"
-            aria-label="Downtown San Antonio's streets in dots, with every building permit the City has issued there since January 2025 appearing in the order it was issued. Click a spot to see the permits there."
+            aria-label="Downtown San Antonio's streets in dots, with every building permit the City has issued there since January 2025 appearing in the order it was issued, and the City's bond projects as rings while they're under construction. Click a spot to see the permits there."
           />
           {!data && <div className="absolute inset-0 flex items-center justify-center font-mono text-xs text-white/50">Loading the City&apos;s permits…</div>}
           {current && (
@@ -353,6 +383,9 @@ ORDER BY "DATE ISSUED" DESC`
               <p className="font-mono text-lg text-white">{fmtDay(current)}</p>
               <p className="mt-1 font-mono text-[11px] text-white/60">
                 {shown.total.toLocaleString("en-US")} permits · {shown.built} new {shown.built === 1 ? "building" : "buildings"}
+              </p>
+              <p className="font-mono text-[11px]" style={{ color: TEAL }}>
+                {shown.underway} public {shown.underway === 1 ? "project" : "projects"} under construction
               </p>
             </div>
           )}
@@ -424,6 +457,14 @@ ORDER BY "DATE ISSUED" DESC`
                   {k.label}
                 </li>
               ))}
+              <li className="inline-flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full border-2" style={{ borderColor: TEAL }} />
+                City bond project, under construction
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full border opacity-60" style={{ borderColor: TEAL }} />
+                done
+              </li>
             </ul>
           </div>
         )}
@@ -481,7 +522,7 @@ ORDER BY "DATE ISSUED" DESC`
                               {r.issued ? ` · issued ${fmtDay(new Date(`${r.issued.slice(0, 10)}T12:00:00`))}` : ""}
                               {r.submitted && r.issued
                                 ? days(r.submitted, r.issued) > 0
-                                  ? `, ${days(r.submitted, r.issued)} days after it was filed`
+                                  ? `, ${days(r.submitted, r.issued)} ${days(r.submitted, r.issued) === 1 ? "day" : "days"} after it was filed`
                                   : ", the day it was filed"
                                 : ""}
                               {r.area ? ` · ${r.area.toLocaleString("en-US")} sq ft` : ""}
@@ -495,6 +536,24 @@ ORDER BY "DATE ISSUED" DESC`
                     <p className="mt-3 text-white/70">No building permits right here since January 2025.</p>
                   )}
                 </>
+              )}
+              {nearbyPublic.length > 0 && (
+                <div className="mt-5 border-t border-neutral-800 pt-4">
+                  <p className="font-mono text-[11px] uppercase tracking-widest" style={{ color: TEAL }}>
+                    Public money nearby · City bond projects
+                  </p>
+                  <ul className="mt-3 space-y-3">
+                    {nearbyPublic.map((b) => (
+                      <li key={b.name + b.start} className="text-sm leading-relaxed">
+                        <span className="font-semibold text-white">{b.name}</span>
+                        {b.budget ? <span className="text-white"> · {money(b.budget)}</span> : null}
+                        <span className="block text-white/60">
+                          {b.phase === "Complete" ? "Done" : `Under ${b.phase.toLowerCase()}`} · {b.status.toLowerCase()} · construction {b.from} to {b.to}, by the City&apos;s estimate · {b.bond} bond
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </>
           )}

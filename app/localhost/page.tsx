@@ -62,6 +62,10 @@ export const metadata: Metadata = {
  * (scripts/build-community.py). Geekdom is a DEVSA partner and the room: DEVSA
  * brings the groups, the groups run their meetups.
  */
+/** The City's bond projects under construction downtown since January 2025, from the same file. */
+const publicTotal = permits.public.length
+const publicBudget = permits.public.reduce((sum, b) => sum + b.budget, 0)
+const money = (v: number) => `$${Math.round(v / 1e6)} million`
 const geekdom = community.venues.find((v) => v.name === "Geekdom")
 const today = { events: geekdom?.events ?? 0, groups: geekdom?.groups ?? [] }
 
@@ -168,8 +172,10 @@ export default function LocalhostPage() {
           <p className="mt-5 max-w-2xl text-white/70">
             Before anyone builds, remodels or rewires downtown, the City issues a permit, and it publishes every one.
             This is {(permits.permits.length / 4).toLocaleString("en-US")} of them, lit in the order they were issued,
-            on the City&apos;s own map of its streets. Click a spot and the page asks the City&apos;s API what&apos;s
-            being built there, live from your browser, and shows you the request.
+            on the City&apos;s own map of its streets. The teal rings are the other half: the City&apos;s own bond
+            projects downtown, {publicTotal} of them since January 2025, worth {money(publicBudget)}, public money on the
+            same blocks. Click a spot and the page asks the City&apos;s API what&apos;s being built there, live from
+            your browser, and shows you the request.
           </p>
           <div className="mt-10">
             <WatchItGetBuilt />
@@ -183,7 +189,8 @@ export default function LocalhostPage() {
           <p className="mt-6 text-xs leading-relaxed text-white/50">
             Data: City of San Antonio Open Data, CC BY 4.0 (permits issued, through{" "}
             {new Date(`${permits.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-            ); street centerlines from Development Services and Public Works. Permits name a primary contact, often a
+            ); bond projects from the City&apos;s Bond Program, citywide programs left out; street centerlines from
+            Development Services and Public Works. Permits name a primary contact, often a
             private person; this page never asks for it, and shows homes by their block. A DEVSA project, not affiliated
             with the City of San Antonio.
           </p>
