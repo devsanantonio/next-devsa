@@ -105,20 +105,49 @@ const PEEK_FLOOD = [
 ]
 const ISSUES = `${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`
 
-/** One card per section: what else the source publishes, and the starter that gets you into it. */
-function BuildYourOwn({ starter, label, children }: { starter: string; label: string; children: React.ReactNode }) {
+/**
+ * Each section's close: not another card, but a rule and one line of intent. A question the starter
+ * answers, a few numbers about what the source holds, the command, and the way in. The credit line sits
+ * under it, small, as part of the same close. Other publishers that pair with a section are in the
+ * Build section's list, not repeated here.
+ */
+function BuildYourOwn({
+  starter, label, question, facts, args = "", children,
+}: { starter: string; label: string; question: string; facts: [string, string][]; args?: string; children: React.ReactNode }) {
   return (
-    <div className="mt-10 flex flex-col gap-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-6 md:flex-row md:items-center md:justify-between md:gap-10">
-      <div className="max-w-3xl">
-        <p className={eyebrow}>Build your own</p>
-        <p className="mt-3 text-sm leading-relaxed text-white/70">{children}</p>
+    // A full-width band at the foot of the section, a shade lighter than the page: it reads as the section's
+    // footer, so its end can't be mistaken for the next section's start. The question is set lighter than
+    // a section heading on purpose; only section titles are black-weight.
+    <div className="mt-16 border-t border-neutral-800 bg-[#121212] md:mt-20">
+      <div className="page-shell py-8 md:py-10">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-10">
+          <div className="min-w-0">
+            <p className={eyebrow}>
+              <span className="text-[#ff8200]">&gt;</span> Build your own
+            </p>
+            <p className="mt-2 text-xl font-semibold leading-snug text-white md:text-2xl">{question}</p>
+            <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px]">
+              {facts.map(([n, what]) => (
+                <li key={what}>
+                  <span className="text-white">{n}</span> <span className="text-white/60">{what}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex min-w-0 flex-col items-start gap-3 md:items-end">
+            <code className="max-w-full overflow-x-auto whitespace-nowrap font-mono text-[12px] text-white/70">
+              <span className="text-[#ff8200]">$</span> python3 starters/{starter}/main.py{args ? ` ${args}` : ""}
+            </code>
+            <a
+              href={`${REPO}/tree/main/starters/${starter}`}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+            >
+              Start with {label} <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+        <p className="mt-6 border-t border-neutral-800/70 pt-4 text-xs leading-relaxed text-white/50">{children}</p>
       </div>
-      <a
-        href={`${REPO}/tree/main/starters/${starter}`}
-        className="inline-flex shrink-0 self-start md:self-center items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10"
-      >
-        Start with {label} <ArrowUpRight className="h-4 w-4" />
-      </a>
     </div>
   )
 }
@@ -128,7 +157,7 @@ export default function LocalhostPage() {
     <main className="min-h-screen bg-neutral-950 text-white">
       <LocalhostHero />
 
-      <section id="bexar-county" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
+      <section id="bexar-county" className="scroll-mt-24 border-t border-neutral-900 pt-16 md:pt-24" data-bg-type="dark">
         <div className="page-shell">
           <p className={eyebrow}><span className="text-white/80">1718 → today</span> · Bexar County open data</p>
           <h2 className={h2}>
@@ -145,24 +174,22 @@ export default function LocalhostPage() {
           <div className="mt-10">
             <FollowTheWater today={today} />
           </div>
-          <BuildYourOwn starter="acequias" label="Acequias">
-            The County publishes more than 300 map layers: the acequias, missions and land grants of the 1700s, cattle
-            drives and railroads, 15,349 buildings from 1896, 4,200 places from 1897, and every district map from Congress
-            to your voter precinct. The starter tells you which acequias ran near any point, and maps them all with a
-            year slider. For the water as it is now, the San Antonio River Authority publishes the creeks and their
-            floodplains, and USGS the live gauges.
-          </BuildYourOwn>
-          <p className="mt-6 text-xs leading-relaxed text-white/50">
-            Data: Bexar County Information Technology GIS (Tricentennial historical layers: river, acequias, labores, land
-            grants, missions and presidio; 1896 Sanborn maps). Today: the DEVSA community calendar, as of{" "}
-            {new Date(`${community.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
-            Grantees are named as the County records them. Live creek level: U.S. Geological Survey, gauge 08178500. A
-            DEVSA project, not affiliated with Bexar County or USGS.
-          </p>
         </div>
+        <BuildYourOwn
+          starter="acequias"
+          label="Acequias"
+          question="Which acequia ran past your street?"
+          facts={[["300+", "County map layers"], ["15,349", "buildings from 1896"], ["4,200", "places from 1897"], ["348", "land grants"]]}
+        >
+          Data: Bexar County Information Technology GIS (Tricentennial historical layers: river, acequias, labores, land
+          grants, missions and presidio; 1896 Sanborn maps). Today: the DEVSA community calendar, as of{" "}
+          {new Date(`${community.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+          Grantees are named as the County records them. Live creek level: U.S. Geological Survey, gauge 08178500. A
+          DEVSA project, not affiliated with Bexar County or USGS.
+        </BuildYourOwn>
       </section>
 
-      <section id="city" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
+      <section id="city" className="scroll-mt-24 border-t border-neutral-900 pt-16 md:pt-24" data-bg-type="dark">
         <div className="page-shell">
           <p className={eyebrow}><span className="text-white/80">Since 2025</span> · City of San Antonio open data</p>
           <h2 className={h2}>
@@ -180,24 +207,24 @@ export default function LocalhostPage() {
           <div className="mt-10">
             <WatchItGetBuilt />
           </div>
-          <BuildYourOwn starter="permits-near-you" label="Permits near you">
-            Every permit citywide, with its type, dates, declared value and square footage, and next to it 311 service
-            calls, fire inspections, street and sidewalk projects and low-water crossings. The starter sends the same SQL
-            as the map above for any point you give it, and says how long each permit took. Past the City line, the
-            Alamo Area MPO publishes the region&apos;s 68 funded road and transit projects through 2030.
-          </BuildYourOwn>
-          <p className="mt-6 text-xs leading-relaxed text-white/50">
-            Data: City of San Antonio Open Data, CC BY 4.0 (permits issued, through{" "}
-            {new Date(`${permits.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-            ); bond projects from the City&apos;s Bond Program, citywide programs left out; street centerlines from
-            Development Services and Public Works. Permits name a primary contact, often a
-            private person; this page never asks for it, and shows homes by their block. A DEVSA project, not affiliated
-            with the City of San Antonio.
-          </p>
         </div>
+        <BuildYourOwn
+          starter="permits-near-you"
+          label="Permits near you"
+          question="What's being built on your block?"
+          args="--meters 60"
+          facts={[[(permits.permits.length / 4).toLocaleString("en-US"), "permits downtown since 2025"], ["370", "bond projects citywide"], ["½ million", "311 calls"], ["1", "SQL query"]]}
+        >
+          Data: City of San Antonio Open Data, CC BY 4.0 (permits issued, through{" "}
+          {new Date(`${permits.asOf}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          ); bond projects from the City&apos;s Bond Program, citywide programs left out; street centerlines from
+          Development Services and Public Works. Permits name a primary contact, often a
+          private person; this page never asks for it, and shows homes by their block. A DEVSA project, not affiliated
+          with the City of San Antonio.
+        </BuildYourOwn>
       </section>
 
-      <section id="via" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
+      <section id="via" className="scroll-mt-24 border-t border-neutral-900 pt-16 md:pt-24" data-bg-type="dark">
         <div className="page-shell">
           <p className={eyebrow}><span className="text-white/80">Right now</span> · VIA Metropolitan Transit open data</p>
           <h2 className={h2}>
@@ -213,18 +240,18 @@ export default function LocalhostPage() {
           <div className="mt-10">
             <OutrunThe4 />
           </div>
-          <BuildYourOwn starter="via-next-bus" label="VIA next bus">
-            6,098 stops, 88 routes and every scheduled trip through January 10, 2027, in GTFS, the format every transit
-            app reads, plus where the buses are right now as GTFS-realtime. The starter tells you when the next bus leaves
-            any stop. The Alamo Area MPO adds the other ways to get around: bike lanes, and how stressful each road is to
-            ride.
-          </BuildYourOwn>
-          <p className="mt-6 text-xs leading-relaxed text-white/50">
-            Data provided by VIA Metropolitan Transit: the published GTFS schedule, version {via.feed.version.split("_")[0]}.
-            Bus times are VIA&apos;s; the runner, the sidewalk and the speed-up are the game. A DEVSA project, not
-            affiliated with VIA.
-          </p>
         </div>
+        <BuildYourOwn
+          starter="via-next-bus"
+          label="VIA next bus"
+          question="When does the next bus leave your stop?"
+          args={'"houston & st mary"'}
+          facts={[["6,098", "stops"], ["88", "routes"], ["every", "scheduled trip"], ["live", "bus positions"]]}
+        >
+          Data provided by VIA Metropolitan Transit: the published GTFS schedule, version {via.feed.version.split("_")[0]}.
+          Bus times are VIA&apos;s; the runner, the sidewalk and the speed-up are the game. A DEVSA project, not
+          affiliated with VIA.
+        </BuildYourOwn>
       </section>
 
       <section id="build" className="scroll-mt-24 bg-white py-16 text-gray-900 md:py-24" data-bg-type="light">

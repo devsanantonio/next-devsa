@@ -921,20 +921,15 @@ export function OutrunThe4() {
         )}
       </div>
 
+      {/* Nothing under the game until you've played it: the controls are on its start screen, and the
+          section's intro already says how the bus runs. A run's end brings the payoff, the next real
+          departures (the part that helps riders, which VIA's license asks for) and the rows of
+          stop_times.txt the bus you raced ran on. */}
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start" aria-live="polite">
+        {result && trip && (
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">
-            {result ? "If you'd rather ride it" : "How to play"}
-          </p>
-          {!result && (
-            <p className="mt-3 leading-relaxed text-white/80">
-              Jump the cones, puddles and scooters, and duck the papel picado. Each one you hit costs you a beat, and
-              the bus doesn&apos;t wait. It&apos;s slow through downtown and fast up San Pedro, exactly as VIA schedules
-              it, so build your lead early.
-              {best > 0 && <span className="mt-2 block text-sm text-white/60">Your best: {best} stops.</span>}
-            </p>
-          )}
-          {result && trip && (
+          <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">If you&apos;d rather ride it</p>
+          {(
             <>
               <p className="mt-3 leading-relaxed text-white/80">
                 That was the {leaves} trip on VIA&apos;s {serviceName} schedule, North Star in{" "}
@@ -950,6 +945,7 @@ export function OutrunThe4() {
                   </ul>
                 </>
               )}
+              {best > 0 && <p className="mt-4 text-sm text-white/60">Your best: {best} stops.</p>}
               <p className="mt-4 text-sm text-white/60">
                 Scheduled times. VIA&apos;s{" "}
                 <a href="https://www.viainfo.net" className="font-medium text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">
@@ -960,11 +956,12 @@ export function OutrunThe4() {
             </>
           )}
         </div>
+        )}
 
-        {trip && (
+        {result && trip && (
           <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a]">
             <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">The bus you&apos;re racing</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">The bus you raced</p>
               <button type="button" onClick={copy} className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 hover:text-white">
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy"}
