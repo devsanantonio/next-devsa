@@ -47,6 +47,13 @@ export const metadata: Metadata = {
  * on the published schedule. The City's is "Watch downtown get built", every
  * building permit issued downtown since January 2025, in the order it was issued.
  *
+ * The sections run in time, and their labels say so: 1718 to today, since 2025,
+ * right now, next. They also share a place: the water story ends at Geekdom's
+ * corner, the permits are the blocks around it, and the bus race starts a
+ * block away. Keep that order. "Your turn" is the one light section, because
+ * it's where the reader stops watching and starts building; the three pieces
+ * are drawn for a dark ground and stay on it.
+ *
  * Seven agencies publish San Antonio's open data, not three: the Build section
  * lists all of them (#publishers), and the repo's peek starter reads any of them.
  * Four have no piece here; they're how the question cards reach past the three.
@@ -60,26 +67,37 @@ const today = { events: geekdom?.events ?? 0, groups: geekdom?.groups ?? [] }
 
 const eyebrow = "font-mono text-[11px] uppercase tracking-widest text-white/50"
 const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-4xl lg:text-5xl"
+const eyebrowLight = "font-mono text-[11px] uppercase tracking-widest text-gray-500"
+const h2Light = h2.replace("text-white", "text-gray-900")
 const link = "font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
 const REPO = "https://github.com/devsanantonio/localhost"
 
 /** Questions to start from. Each section above already links its own starter; two of these reach past the
     three pieces to the publishers below, through peek. Curiosity, not products. */
 const IDEAS = [
-  { slug: "peek", source: "City of San Antonio · Alamo Area MPO", title: "Where the money goes", body: "The City's 370 bond projects each carry a budget, what's been spent and whether they're on schedule; the MPO's 68 funded road and transit projects run through 2030. Put them on one map: which districts' projects run behind?" },
-  { slug: "peek", source: "Alamo Area MPO · USGS", title: "When it rains", body: "The MPO scored 6,372 road segments for how much of each floods, from a 5-year storm to a 500-year one. Which roads on your commute go under first, and what's the creek doing right now?" },
-  { slug: "permits-near-you", source: "City of San Antonio", title: "The wait", body: "Four25 San Pedro waited 785 days from filing to permit. Which kinds of work wait longest, and where? Chart filing-to-permit by type or council district." },
+  { slug: "peek", source: "City of San Antonio · Alamo Area MPO", title: "Where the money goes.", body: "The City's 370 bond projects and the MPO's 68 funded ones, on one map. Which districts' projects run behind?" },
+  { slug: "peek", source: "Alamo Area MPO · USGS", title: "When it rains.", body: "6,372 road segments, each scored for how much of it floods. Which roads on your commute go under first?" },
+  { slug: "permits-near-you", source: "City of San Antonio", title: "The wait.", body: "A new $18 million building at 425 San Pedro Ave waited 785 days for its permits. Which kinds of work wait longest, and where?" },
 ]
 
 /** Who publishes San Antonio's open data. The first three have a piece above; the rest are why the hero says seven. */
 const PUBLISHERS = [
-  { name: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", has: "Census geography, every district map, and San Antonio in 1718 and 1896." },
-  { name: "City of San Antonio", href: "https://data.sanantonio.gov", has: "Permits, 311, bond projects, streets and drainage: about 170 datasets." },
-  { name: "VIA Metropolitan Transit", href: "https://www.viainfo.net/developers-resources/", has: "Every route, stop and scheduled trip, and where the buses are now." },
-  { name: "San Antonio River Authority", href: "https://sariverauthority-sara-tx.opendata.arcgis.com", has: "The river and its creeks: watersheds, floodplains, water quality, the Mission Reach." },
-  { name: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", has: "The region's funded road and transit projects, flood-exposed roads and bike stress." },
-  { name: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, has: "Housing communities by council district, and low water crossings." },
-  { name: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", has: "The aquifer under the city: its daily level, springflow and drought stage." },
+  { name: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", tags: "1718 · 1896 · census · districts" },
+  { name: "City of San Antonio", href: "https://data.sanantonio.gov", tags: "permits · 311 · bonds · streets" },
+  { name: "VIA Metropolitan Transit", href: "https://www.viainfo.net/developers-resources/", tags: "routes · stops · live buses" },
+  { name: "San Antonio River Authority", href: "https://sariverauthority-sara-tx.opendata.arcgis.com", tags: "creeks · floodplains · water quality" },
+  { name: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", tags: "road projects · flood risk · bikes" },
+  { name: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, tags: "housing · low water crossings" },
+  { name: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", tags: "aquifer level · springflow" },
+  { name: "USGS", href: "https://waterdata.usgs.gov", tags: "live creek gauges, every 15 min" },
+]
+
+/** Real output from `python3 main.py --find flood` in starters/peek, October 29, 2026: the first lines of 33. */
+const PEEK_FLOOD = [
+  ["Oct 19, 2026", "San Antonio River Authority ", "Proposed Nature Based Solution Projects view"],
+  ["Sep 30, 2026", "Opportunity Home San Antonio", "Opportunity Home _ Low Water Crossings_WFL1"],
+  ["Sep 30, 2026", "City of San Antonio         ", "LowWaterCrossings"],
+  ["Jul 15, 2026", "San Antonio River Authority ", "Draft Floodplain Lower San Antonio River"],
 ]
 const ISSUES = `${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`
 
@@ -108,7 +126,7 @@ export default function LocalhostPage() {
 
       <section id="bexar-county" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>Bexar County open data</p>
+          <p className={eyebrow}><span className="text-white/80">1718 → today</span> · Bexar County open data</p>
           <h2 className={h2}>
             Follow the water.{" "}
             <span className="font-light italic text-white/50">San Antonio, 1718 to today.</span>
@@ -142,7 +160,7 @@ export default function LocalhostPage() {
 
       <section id="city" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>City of San Antonio open data</p>
+          <p className={eyebrow}><span className="text-white/80">Since 2025</span> · City of San Antonio open data</p>
           <h2 className={h2}>
             Watch downtown get built.{" "}
             <span className="font-light italic text-white/50">Every permit since January 2025.</span>
@@ -174,7 +192,7 @@ export default function LocalhostPage() {
 
       <section id="via" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
         <div className="page-shell">
-          <p className={eyebrow}>VIA Metropolitan Transit open data</p>
+          <p className={eyebrow}><span className="text-white/80">Right now</span> · VIA Metropolitan Transit open data</p>
           <h2 className={h2}>
             Outrun the 4.{" "}
             <span className="font-light italic text-white/50">On VIA&apos;s real schedule.</span>
@@ -202,71 +220,101 @@ export default function LocalhostPage() {
         </div>
       </section>
 
-      <section id="build" className="scroll-mt-24 border-t border-neutral-900 py-16 md:py-24" data-bg-type="dark">
+      <section id="build" className="scroll-mt-24 bg-white py-16 text-gray-900 md:py-24" data-bg-type="light">
         <div className="page-shell">
-          <p className={eyebrow}>Build with us</p>
-          <h2 className={h2}>
+          <p className={eyebrowLight}><span className="text-gray-900">Next</span> · Build with us</p>
+          <h2 className={h2Light}>
             Your turn.{" "}
-            <span className="font-light italic text-white/50">The data is open, and so is the code.</span>
+            <span className="font-light italic text-gray-500">The data is open, and so is the code.</span>
           </h2>
-          <p className="mt-5 max-w-2xl text-white/70">
-            Each starter is one Python file that asks one source a real question, and runs in under a minute. The repo
-            has six, from the 1897 city directory to 311 by district, and{" "}
-            <a href={`${REPO}/tree/main/starters/peek`} className={link}>peek</a> reads any of the seven: search them all
-            for a word, then see any layer&apos;s fields and first rows.{" "}
-            <a href={`${REPO}/blob/main/SOURCES.md`} className={link}>SOURCES.md</a> covers what each publishes, and their
-            terms.
+          <p className="mt-5 max-w-2xl text-gray-600">
+            Six starters, one Python file each, running in under a minute. Start from a source, or search all seven at once.
           </p>
 
-          {/* Who publishes what. Most of these don't link to each other, which is the point of listing them. */}
-          <div id="publishers" className="mt-10 scroll-mt-24 rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <p className={eyebrow}>Who publishes what</p>
-            <ul className="mt-5 grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-2">
-              {PUBLISHERS.map((p) => (
-                <li key={p.name} className="text-sm leading-relaxed">
-                  <a href={p.href} className={link}>{p.name}</a>
-                  <span className="text-white/70"> · {p.has}</span>
-                </li>
+          {/* Shown, not described: peek searching every publisher for one word. Real output, trimmed. */}
+          <div className="mt-10 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a]">
+            <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">starters/peek</p>
+              <a href={`${REPO}/tree/main/starters/peek`} className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 hover:text-white">
+                Open it <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+            <pre className="overflow-x-auto px-5 py-4 font-mono text-[12px] leading-relaxed text-white/70">
+              <span className="text-[#ff8200]">$</span> <span className="text-white">python3 main.py --find flood</span>{"\n"}
+              <span className="text-white/50">33 public layers mention &quot;flood&quot;, newest first</span>{"\n"}
+              {PEEK_FLOOD.map(([date, who, title]) => (
+                <span key={title}>
+                  {date.padEnd(14)}<span className="text-[#00b2a9]">{who}</span>  {title}{"\n"}
+                </span>
               ))}
-              <li className="text-sm leading-relaxed">
-                <span className="font-medium text-white">Plus USGS</span>
-                <span className="text-white/70"> · live gauges on the river and San Pedro Creek, every 15 minutes.</span>
-              </li>
-            </ul>
-            <p className="mt-5 text-xs leading-relaxed text-white/50">
-              Each publisher&apos;s data is its own, under its own terms. DEVSA isn&apos;t affiliated with any of them.
-            </p>
+              <span className="text-white/50">…</span>{"\n\n"}
+              <span className="text-[#ff8200]">$</span> <span className="text-white">python3 main.py &lt;any layer&gt;</span>
+              <span className="text-white/50">   # its fields, first rows and credit line</span>
+            </pre>
           </div>
 
-          <p className="mt-10 max-w-2xl text-white/70">Three questions to start from:</p>
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-            {IDEAS.map((idea) => (
-              <a
-                key={idea.title}
-                href={`${REPO}/tree/main/starters/${idea.slug}`}
-                className="group flex h-full flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-6 transition-all duration-200 hover:border-neutral-700 hover:bg-neutral-900/70"
-              >
-                <p className={eyebrow}>Idea · {idea.source}</p>
-                <p className="flex-1 text-white/80">
-                  <span className="font-semibold text-white">{/[.?!]$/.test(idea.title) ? idea.title : `${idea.title}.`}</span> {idea.body}
-                </p>
-                <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 group-hover:text-white">
-                  Start from starters/{idea.slug} <ArrowUpRight className="h-3.5 w-3.5" />
-                </p>
+          {/* Who publishes what, as tiles: a name and a few words each. The full story is SOURCES.md. */}
+          <div id="publishers" className="mt-10 scroll-mt-24">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <p className={eyebrowLight}>Who publishes what</p>
+              <a href={`${REPO}/blob/main/SOURCES.md`} className="font-mono text-[11px] uppercase tracking-widest text-gray-600 hover:text-gray-900">
+                What each has, and its terms: SOURCES.md
               </a>
-            ))}
+            </div>
+            <ul className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {PUBLISHERS.map((p) => (
+                <li key={p.name}>
+                  <a href={p.href} className="group flex h-full flex-col justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors duration-200 hover:border-gray-300 hover:bg-white">
+                    <span className="text-sm font-medium leading-snug text-gray-900">{p.name}</span>
+                    <span className="font-mono text-[11px] leading-relaxed text-gray-600 group-hover:text-gray-900">{p.tags}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-gray-500">Each publisher&apos;s data is its own, under its own terms. DEVSA isn&apos;t affiliated with any of them.</p>
           </div>
+
+          {/* After the tiles, a change of pace rather than a third grid: the questions read as a numbered
+              list, set off by a rule, the way the page's own sections are. */}
+          <div className="mt-16 border-t border-gray-200 pt-12">
+            <p className={eyebrowLight}>Not sure where to start?</p>
+            <p className="mt-4 max-w-2xl text-balance font-sans text-2xl font-black leading-tight tracking-[-0.01em] text-gray-900 md:text-3xl">
+              Start with a question.{" "}
+              <span className="font-light italic text-gray-500">Here are three.</span>
+            </p>
+            <ol className="mt-8 divide-y divide-gray-200 border-y border-gray-200">
+              {IDEAS.map((idea, i) => (
+                <li key={idea.title}>
+                  <a
+                    href={`${REPO}/tree/main/starters/${idea.slug}`}
+                    className="group grid grid-cols-[2.5rem_1fr] gap-x-4 gap-y-2 py-6 md:grid-cols-[3rem_1fr_auto] md:items-baseline md:gap-x-8"
+                  >
+                    <span className="font-mono text-sm text-[#d6335c]">0{i + 1}</span>
+                    <span className="min-w-0">
+                      <span className="block text-lg font-semibold text-gray-900">{idea.title}</span>
+                      <span className="mt-1 block text-gray-600">{idea.body}</span>
+                      <span className="mt-2 block font-mono text-[11px] uppercase tracking-widest text-gray-500">{idea.source}</span>
+                    </span>
+                    <span className="col-start-2 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-gray-600 transition-colors group-hover:text-gray-900 md:col-start-3">
+                      starters/{idea.slug} <ArrowUpRight className="h-3.5 w-3.5" />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+
           <div className="mt-10 flex flex-wrap gap-3">
-            <a href={ISSUES} className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100">
+            <a href={ISSUES} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-800">
               Pick up a good first issue <ArrowUpRight className="h-4 w-4" />
             </a>
-            <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10">
+            <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
               Add yours to the showcase <ArrowUpRight className="h-4 w-4" />
             </a>
-            <a href="/discord" className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10">
+            <a href="/discord" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
               Show it in #build-and-tell
             </a>
-            <Link href="/events" className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white/30 hover:bg-white/10">
+            <Link href="/events" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
               Build with people: find a meetup
             </Link>
           </div>
