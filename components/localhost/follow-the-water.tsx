@@ -15,6 +15,10 @@ import { Check, Copy } from "lucide-react"
  * Every date and line is the County's: its Tricentennial layers, packed by
  * scripts/build-water.py into public/localhost/water.json, with the 1896
  * Sanborn map from sanborn.json on top (same origin, Main Plaza, in meters).
+ * Today, FEMA's flood map (the County republishes it) comes in under the old ditches:
+ * it hugs the river and the creek, and almost none of the acequias' length lies in it.
+ * The step says how much and asks why, without answering: the data shows where, not why.
+ *
  * The last step queries the County's live acequia layer and shows the request,
  * and ends on the water as it is now: San Pedro Creek's live level from the
  * USGS gauge at Furnish, read in the browser (USGS allows it, no key). If the
@@ -33,6 +37,10 @@ type Water = {
   fields: { name: string; rings: number[][] }[]
   lots: Lot[]
   places: { name: string; at: [number, number] }[]
+  /** FEMA's 1% annual-chance floodplain, as the County publishes it. */
+  flood: number[][]
+  /** Meters of acequia in the flood step's view, and how many lie inside the floodplain (scripts/build-water.py). */
+  floodShare: { meters: number; inside: number }
 }
 type Sanborn = { buildings: [number, number[]][]; blocks: number[][] }
 type Step = { year: number; center: [number, number]; span: number; eyebrow: string; title: string; body: React.ReactNode }
@@ -43,7 +51,7 @@ const GEEKDOM_LONLAT = [-98.49337, 29.42637]
 /** USGS 08178500, San Pedro Creek at Furnish: gage height (00065) and flow (00060), every 15 minutes.
  * Gage height is the water surface against the gauge's own fixed zero, not the creek's depth. */
 const CREEK_GAUGE = "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=08178500&parameterCd=00065,00060"
-const COLORS = { river: "#6fa8e0", acequia: "#00b2a9", field: "#e8c562", city: "#c9c9c9", block: "#262626", here: "#ff8200" }
+const COLORS = { river: "#6fa8e0", acequia: "#00b2a9", field: "#e8c562", city: "#c9c9c9", block: "#262626", here: "#ff8200", flood: "#2a4f86" }
 
 /** Where along a path the first `f` of its length ends: the ditches draw themselves as they're dug. */
 function partial(path: number[], f: number) {
@@ -161,6 +169,19 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
       body: <>The Upper Labor ditch, dug from 1776, was the last big one. As the city piped in its water, the ditches went dry one by one: Concepción&apos;s in 1869, the Upper Labor in 1896, the Principal and the Alamo&apos;s in 1905, the San Pedro in 1912. By 1896 the Sanborn map shows downtown built over them. Look at where the blocks bend.</>,
     },
     {
+      // center and span match FLOOD_VIEW in scripts/build-water.py, where the share is measured.
+      year: 2026, center: [0, -1000], span: 8000,
+      eyebrow: "Today · the flood map", title: "Where the water goes now.",
+      body: water ? (
+        <>
+          In blue, today&apos;s flood map: FEMA&apos;s, which the County publishes, marking the ground with a 1-in-100 chance
+          of flooding in any year. It hugs the river and the creek. Of the {Math.round(water.floodShare.meters / 1000)} km of
+          acequia on this map, about {Math.round(100 * (1 - water.floodShare.inside / water.floodShare.meters))}% runs outside
+          it. Luck, or people who read the land?
+        </>
+      ) : null,
+    },
+    {
       year: 2026, center: [GEEKDOM[0], GEEKDOM[1] + 60], span: 900,
       eyebrow: "Today", title: "Geekdom's corner.",
       body: close ? (
@@ -266,6 +287,15 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
         if (y < when) continue
         o.globalAlpha = Math.min(1, (y - when + 1) / 3) * (city > 0 ? 0.3 * (1 - city) + 0.1 : 0.55)
         for (const r of l.rings) {
+          path(r, true)
+          o.fill()
+        }
+      }
+      // Today's floodplain, under everything that's water.
+      if (y >= 2000) {
+        o.globalAlpha = Math.min(1, (y - 2000) / 20)
+        o.fillStyle = COLORS.flood
+        for (const r of water.flood) {
           path(r, true)
           o.fill()
         }
@@ -428,7 +458,7 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
           )}
         </div>
         <ul className="mt-2 hidden flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-white/60 sm:flex" aria-label="Map key">
-          {[["River and creek", COLORS.river], ["Acequias", COLORS.acequia], ["Fields and land grants", COLORS.field], ["1896 buildings", COLORS.city]].map(([l, c]) => (
+          {[["River and creek", COLORS.river], ["Acequias", COLORS.acequia], ["Fields and land grants", COLORS.field], ["1896 buildings", COLORS.city], ["Floodplain today", COLORS.flood]].map(([l, c]) => (
             <li key={l} className="inline-flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: c }} />
               {l}
@@ -440,7 +470,7 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
       <div className="min-w-0 lg:order-1">
         {steps.map((s, i) => (
           <div
-            key={s.eyebrow}
+            key={s.title}
             ref={(el) => {
               stepRefs.current[i] = el
             }}
