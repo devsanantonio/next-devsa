@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { SpeakPageClient } from "./speak-page-client"
+import { GiveATalkClient } from "./give-a-talk-client"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -16,11 +16,11 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/speak" },
+  alternates: { canonical: "/give-a-talk" },
   openGraph: {
     title: `${TITLE} | DEVSA`,
     description: DESCRIPTION,
-    url: `${siteUrl}/speak`,
+    url: `${siteUrl}/give-a-talk`,
     siteName: "DEVSA",
     images: [{ url: `${siteUrl}/api/og/buildingtogether`, width: 1200, height: 630, alt: "San Antonio tech communities, DEVSA" }],
     locale: "en_US",
@@ -36,6 +36,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SpeakPage() {
-  return <SpeakPageClient />
+export default function GiveATalkPage() {
+  return <GiveATalkClient />
 }

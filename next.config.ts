@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
       // in the mark is San Antonio's area code.
       { source: "/210", destination: "/localhost", permanent: true },
 
+      // The page for giving a talk launched at /speak on 2026-10-31 and was renamed
+      // the same day; the redirect keeps any link shared in between working.
+      { source: "/speak", destination: "/give-a-talk", permanent: true },
+
       // SA Startup + Tech Week runs its own site, so DEVSA no longer hosts a
       // landing page or call for speakers for it. Permanent (308) — a future
       // year would live at its own slug, not this one.

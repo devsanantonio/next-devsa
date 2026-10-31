@@ -81,8 +81,15 @@ function links(n: number) {
 export function CommunityNetwork({
   className = "",
   communities,
+  tone = "dark",
 }: {
   className?: string
+  /**
+   * The ground it sits on. "light" only changes the group-to-group lines (gray
+   * instead of white) and drops the node rings: the nodes and the hub keep their
+   * dark discs, because several marks are white and only read on dark.
+   */
+  tone?: "dark" | "light"
   /** Pass when the parent already fetched /api/communities; otherwise this fetches its own. */
   communities?: Community[]
 }) {
@@ -144,11 +151,11 @@ export function CommunityNetwork({
 
       {edges.map(([a, b], i) =>
         pts[a] && pts[b] ? (
-          <motion.line key={`e${i}`} x1={pts[a].x} y1={pts[a].y} x2={pts[b].x} y2={pts[b].y} stroke="#fff" strokeOpacity={0.14} strokeWidth={1} {...draw(i)} />
+          <motion.line key={`e${i}`} x1={pts[a].x} y1={pts[a].y} x2={pts[b].x} y2={pts[b].y} stroke={tone === "light" ? "#111827" : "#fff"} strokeOpacity={tone === "light" ? 0.12 : 0.14} strokeWidth={1} {...draw(i)} />
         ) : null,
       )}
       {pts.map((p, i) => (
-        <motion.line key={`h${groups[i].id}`} x1={CX} y1={CY} x2={p.x} y2={p.y} stroke={COLORS[i % 3]} strokeOpacity={0.6} strokeWidth={1.4} {...draw(i)} />
+        <motion.line key={`h${groups[i].id}`} x1={CX} y1={CY} x2={p.x} y2={p.y} stroke={COLORS[i % 3]} strokeOpacity={tone === "light" ? 0.75 : 0.6} strokeWidth={1.4} {...draw(i)} />
       ))}
 
       {pts.map((p, i) => (
@@ -156,7 +163,7 @@ export function CommunityNetwork({
           <a href={`/buildingtogether/${groups[i].id}`} aria-label={groups[i].name}>
             <title>{groups[i].name}</title>
             <g transform={`translate(${p.x} ${p.y})`}>
-              <circle r={NODE} fill="#151515" stroke="#2c2c2c" strokeWidth={1} />
+              <circle r={NODE} fill="#151515" stroke={tone === "light" ? "none" : "#2c2c2c"} strokeWidth={1} />
               <image
                 href={NODE_LOGO[groups[i].id]?.src ?? groups[i].logo}
                 filter={NODE_LOGO[groups[i].id]?.white ? "url(#cn-white)" : undefined}

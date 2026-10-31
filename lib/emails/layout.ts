@@ -127,6 +127,16 @@ export function button(href: string, label: string, color: string = C.pink, text
 </table>`
 }
 
+/**
+ * A community group's logo at the top of a card, for mail about that group's call
+ * for speakers. The src must already be one mail clients show (lib/email-logo.ts);
+ * the card is near-black, which is the ground the groups' marks were drawn for.
+ */
+export function groupMark(src: string | null | undefined, name: string): string {
+  if (!src) return ""
+  return `<img src="${src}" alt="${esc(name)}" width="56" height="56" style="display: block; width: 56px; height: 56px; margin: 0 0 20px 0; border: 0; object-fit: contain;" />`
+}
+
 /** The site's three logo colors as a 4px rule across the top of the card. */
 function brandBar(colors: [string, string, string]): string {
   return `<table role="presentation" style="width: 100%; border-collapse: collapse;">

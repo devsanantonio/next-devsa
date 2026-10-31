@@ -16,10 +16,13 @@ import {
 } from '@/lib/emails/access-granted-internal';
 import { AG_EVENT_ID, AG_FIRST_TIME_SPEAKER, AG_NOTIFY_EMAILS } from '@/data/access-granted/2026';
 import { SpeakerAcceptedEmail, SpeakerDeclinedEmail, getSpeakerDecisionSubject, speakerEventName } from '@/lib/emails/speaker-decision';
-import { GroupTalkNotifyEmail, getGroupTalkNotifySubject } from '@/lib/emails/speaker-group';
+import { GroupTalkNotifyEmail, getGroupTalkNotifySubject, TalkSharedEmail } from '@/lib/emails/speaker-group';
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
-import { groupCallEventId, plainText, SPEAKER_CALL_LIMITS as L } from '@/lib/speaker-calls';
+import { groupCallEventId, plainText, OPEN_POOL_ID, isPoolTalk, SPEAKER_CALL_LIMITS as L } from '@/lib/speaker-calls';
+import { logActivity } from '@/lib/activity-log';
+import { FieldValue } from 'firebase-admin/firestore';
 import type { Community } from '@/lib/firebase-admin';
+import { emailLogoUrl } from '@/lib/email-logo';
 
 const DEFAULT_EVENT_ID = 'aiconference2026';
 
@@ -41,6 +44,9 @@ interface SpeakerSubmissionRequest {
   communityId?: string;
   /** The answer to the group's own question, if it asked one. */
   answer?: string;
+  /** The open pool on /speak, and the speaker's consent to have the talk shared with groups. */
+  pool?: boolean;
+  shareConsent?: boolean;
   /**
    * Set by the Access Granted form when one person picked "Both". It is not
    * persisted — the volunteer signup is its own record — it only tells the
@@ -60,6 +66,8 @@ export async function POST(request: NextRequest) {
     // A community group's standing call (lib/speaker-calls.ts) has its own path:
     // it checks the call is open, and tells the group's organizers.
     if (body.communityId !== undefined) return submitToGroup(request, body);
+    // The open pool on /speak: no group chosen; an admin shares it later.
+    if (body.pool === true) return submitToPool(request, body);
     const {
       name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin,
       audienceLevel, considerFor, accommodations, eventId, alsoVolunteering,
@@ -206,6 +214,182 @@ export async function POST(request: NextRequest) {
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** The talk fields every group and pool submission shares, capped and plain, or the 400 to return. The link is required. */
+function talkFields(body: SpeakerSubmissionRequest) {
+  const name = plainText(body.name, L.name);
+  const email = plainText(body.email, L.email)?.toLowerCase() ?? null;
+  const sessionTitle = plainText(body.sessionTitle, L.sessionTitle);
+  const abstract = plainText(body.abstract, L.abstract);
+  if (!name || !email || !sessionTitle || !abstract) {
+    return NextResponse.json({ error: 'Name, email, a talk title and a description are required.' }, { status: 400 });
+  }
+  if (!EMAIL_SHAPE.test(email)) {
+    return NextResponse.json({ error: 'That email address doesn\'t look right.' }, { status: 400 });
+  }
+  // A link is required, so organizers can see who they'd be booking: LinkedIn, GitHub or a site.
+  const linkedin = plainText(body.linkedin, L.link);
+  if (!linkedin || !/^https?:\/\/\S+\.\S+/i.test(linkedin)) {
+    return NextResponse.json({ error: 'Add a link to your LinkedIn, GitHub or personal site.' }, { status: 400 });
+  }
+  return {
+    name,
+    email,
+    company: null,
+    sessionTitle,
+    sessionFormat: plainText(body.sessionFormat, 60),
+    track: null,
+    abstract,
+    // No bio field on the form any more; kept for older talks, and for a client that still sends one.
+    bio: plainText(body.bio, L.bio),
+    linkedin,
+    audienceLevel: plainText(body.audienceLevel, 40),
+    considerFor: null,
+    accommodations: null,
+  };
+}
+
+/**
+ * The open pool: a talk from someone who doesn't know which group it fits. Only
+ * stored with the speaker's consent to share it; only admins see it until one
+ * shares it with a group (shareTalk). The super admins hear about each one.
+ */
+async function submitToPool(request: NextRequest, body: SpeakerSubmissionRequest) {
+  const limit = rateLimit(getClientIp(request), 5, 60_000);
+  if (!limit.success) return rateLimitResponse(limit.resetMs);
+  if (body.shareConsent !== true) {
+    return NextResponse.json({ error: 'Tick the box so we can share your talk with the groups it fits.' }, { status: 400 });
+  }
+  const talk = talkFields(body);
+  if (talk instanceof NextResponse) return talk;
+
+  const db = getDb();
+  const submission: SpeakerSubmission = {
+    ...talk,
+    eventId: OPEN_POOL_ID,
+    shareConsent: true,
+    sharedWith: [],
+    submittedAt: new Date(),
+    status: 'pending',
+  };
+  const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
+
+  if (isResendConfigured() && resend) {
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: talk.email,
+        replyTo: EMAIL_REPLY_TO,
+        subject: getSpeakerThankYouSubject(talk.sessionTitle),
+        html: SpeakerThankYouEmail({ name: talk.name, sessionTitle: talk.sessionTitle, sessionFormat: talk.sessionFormat || '', pool: true }),
+      });
+    } catch (emailError) {
+      console.error('Failed to send pool talk thank-you:', emailError);
+    }
+    try {
+      const supers = await db.collection(COLLECTIONS.APPROVED_ADMINS).where('role', '==', 'superadmin').get();
+      const to = [...new Set(supers.docs.map((d) => String(d.data().email || '').toLowerCase()).filter(Boolean))];
+      if (to.length) {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to,
+          replyTo: talk.email,
+          subject: getGroupTalkNotifySubject('Open pool', talk.sessionTitle),
+          html: GroupTalkNotifyEmail({
+            groupName: 'Open pool', name: talk.name, email: talk.email, sessionTitle: talk.sessionTitle,
+            sessionFormat: talk.sessionFormat, audienceLevel: talk.audienceLevel, abstract: talk.abstract,
+            bio: talk.bio, link: talk.linkedin,
+          }),
+        });
+      }
+    } catch (notifyError) {
+      console.error('Failed to notify admins of a pool talk:', notifyError);
+    }
+  }
+
+  return NextResponse.json({ success: true, recordId: docRef.id });
+}
+
+/**
+ * An admin shares an open-pool talk with a group. The group gets its own copy
+ * (eventId `group:<id>`, routedFrom the pool talk), so each group it is shared
+ * with decides on it independently, in its own Speakers tab; the pool talk keeps
+ * a list of where it went. The group's organizers and the speaker are told.
+ */
+async function shareTalk(adminEmail: string, adminData: FirebaseFirestore.DocumentData, submissionId: string, communityId: string) {
+  if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    return NextResponse.json({ error: 'Only admins can share talks from the open pool' }, { status: 403 });
+  }
+  const db = getDb();
+  const poolRef = db.collection(COLLECTIONS.SPEAKERS).doc(submissionId);
+  const [poolDoc, groupDoc] = await Promise.all([poolRef.get(), db.collection(COLLECTIONS.COMMUNITIES).doc(communityId).get()]);
+  const talk = poolDoc.data() as SpeakerSubmission | undefined;
+  if (!talk || !isPoolTalk(talk.eventId)) {
+    return NextResponse.json({ error: 'That talk is not in the open pool' }, { status: 400 });
+  }
+  if (talk.shareConsent !== true) {
+    return NextResponse.json({ error: 'The speaker did not agree to have this talk shared' }, { status: 400 });
+  }
+  if (!groupDoc.exists) return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+  if ((talk.sharedWith || []).some((s) => s.communityId === communityId)) {
+    return NextResponse.json({ error: 'Already shared with that group' }, { status: 409 });
+  }
+  const groupName = String(groupDoc.data()?.name || communityId);
+  const groupLogo = emailLogoUrl({ id: communityId, logo: groupDoc.data()?.logo });
+  const at = new Date();
+  const copy: SpeakerSubmission = {
+    name: talk.name, email: talk.email, company: talk.company ?? null,
+    sessionTitle: talk.sessionTitle, sessionFormat: talk.sessionFormat ?? null, track: null,
+    abstract: talk.abstract, bio: talk.bio ?? null, linkedin: talk.linkedin ?? null,
+    audienceLevel: talk.audienceLevel ?? null, considerFor: null, accommodations: null,
+    eventId: groupCallEventId(communityId), communityId, groupName,
+    routedFrom: poolRef.id, suggestedBy: adminEmail,
+    submittedAt: at, status: 'pending',
+  };
+  const copyRef = await db.collection(COLLECTIONS.SPEAKERS).add(copy);
+  await poolRef.update({ sharedWith: FieldValue.arrayUnion({ communityId, groupName, by: adminEmail, at }) });
+  await logActivity({
+    actor: adminEmail,
+    action: 'sent',
+    kind: 'speaker',
+    targetId: copyRef.id,
+    label: `"${talk.sessionTitle}" shared with ${groupName}`,
+  });
+
+  if (isResendConfigured() && resend) {
+    try {
+      const [assigned, alsoRun] = await Promise.all([
+        db.collection(COLLECTIONS.APPROVED_ADMINS).where('communityId', '==', communityId).get(),
+        db.collection(COLLECTIONS.APPROVED_ADMINS).where('organizerOf', 'array-contains', communityId).get(),
+      ]);
+      const to = [...new Set([...assigned.docs, ...alsoRun.docs].map((d) => String(d.data().email || '').toLowerCase()).filter(Boolean))];
+      if (to.length) {
+        await resend.emails.send({
+          from: EMAIL_FROM, to, replyTo: talk.email,
+          subject: getGroupTalkNotifySubject(groupName, talk.sessionTitle, true),
+          html: GroupTalkNotifyEmail({
+            groupName, name: talk.name, email: talk.email, sessionTitle: talk.sessionTitle,
+            sessionFormat: talk.sessionFormat, audienceLevel: talk.audienceLevel, abstract: talk.abstract,
+            bio: talk.bio, link: talk.linkedin, suggested: true, groupLogo,
+          }),
+        });
+      }
+    } catch (notifyError) {
+      console.error('Failed to notify group organizers of a shared talk:', notifyError);
+    }
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM, to: talk.email, replyTo: EMAIL_REPLY_TO,
+        subject: `Your talk is with ${groupName}`,
+        html: TalkSharedEmail({ name: talk.name, sessionTitle: talk.sessionTitle, groupName, groupId: communityId, groupLogo }),
+      });
+    } catch (emailError) {
+      console.error('Failed to tell the speaker their talk was shared:', emailError);
+    }
+  }
+
+  return NextResponse.json({ success: true, sharedWith: { communityId, groupName, by: adminEmail, at: at.toISOString() }, copyId: copyRef.id });
+}
+
 /**
  * A talk offered to a community group through its call for speakers. Refused
  * unless the group's call is open right now, so a stale page can't submit to a
@@ -224,30 +408,12 @@ async function submitToGroup(request: NextRequest, body: SpeakerSubmissionReques
     return NextResponse.json({ error: "This group isn't taking talks right now." }, { status: 400 });
   }
 
-  const name = plainText(body.name, L.name);
-  const email = plainText(body.email, L.email)?.toLowerCase() ?? null;
-  const sessionTitle = plainText(body.sessionTitle, L.sessionTitle);
-  const abstract = plainText(body.abstract, L.abstract);
-  if (!name || !email || !sessionTitle || !abstract) {
-    return NextResponse.json({ error: 'Name, email, a talk title and a description are required.' }, { status: 400 });
-  }
-  if (!EMAIL_SHAPE.test(email)) {
-    return NextResponse.json({ error: 'That email address doesn\'t look right.' }, { status: 400 });
-  }
+  const talk = talkFields(body);
+  if (talk instanceof NextResponse) return talk;
+  const { name, email, sessionTitle, abstract } = talk;
   const question = group.speakersQuestion || null;
   const submission: SpeakerSubmission = {
-    name,
-    email,
-    company: null,
-    sessionTitle,
-    sessionFormat: plainText(body.sessionFormat, 60),
-    track: null,
-    abstract,
-    bio: plainText(body.bio, L.bio),
-    linkedin: plainText(body.linkedin, L.link),
-    audienceLevel: plainText(body.audienceLevel, 40),
-    considerFor: null,
-    accommodations: null,
+    ...talk,
     eventId: groupCallEventId(communityId),
     communityId,
     groupName: group.name,
@@ -257,6 +423,7 @@ async function submitToGroup(request: NextRequest, body: SpeakerSubmissionReques
     status: 'pending',
   };
   const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
+  const groupLogo = emailLogoUrl({ id: communityId, logo: group.logo });
 
   if (isResendConfigured() && resend) {
     // Thank the speaker. Swallowed on failure: the talk is already saved.
@@ -266,7 +433,7 @@ async function submitToGroup(request: NextRequest, body: SpeakerSubmissionReques
         to: email,
         replyTo: EMAIL_REPLY_TO,
         subject: getSpeakerThankYouSubject(sessionTitle),
-        html: SpeakerThankYouEmail({ name, sessionTitle, sessionFormat: submission.sessionFormat || '', groupName: group.name }),
+        html: SpeakerThankYouEmail({ name, sessionTitle, sessionFormat: submission.sessionFormat || '', groupName: group.name, groupLogo }),
       });
     } catch (emailError) {
       console.error('Failed to send group talk thank-you:', emailError);
@@ -289,7 +456,7 @@ async function submitToGroup(request: NextRequest, body: SpeakerSubmissionReques
             groupName: group.name, name, email, sessionTitle,
             sessionFormat: submission.sessionFormat, audienceLevel: submission.audienceLevel,
             abstract, bio: submission.bio, link: submission.linkedin,
-            question, answer: submission.answer,
+            question, answer: submission.answer, groupLogo,
           }),
         });
       }
@@ -382,7 +549,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
     }
 
-    const { submissionId, status, notify } = await request.json();
+    const { submissionId, status, notify, shareWith } = await request.json();
+    if (submissionId && typeof shareWith === 'string' && shareWith) {
+      const who = await getDb().collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', adminEmail.toLowerCase()).limit(1).get();
+      if (who.empty) return NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 });
+      return shareTalk(adminEmail.toLowerCase(), who.docs[0].data(), submissionId, shareWith);
+    }
     if (!submissionId || !REVIEW_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
     }
@@ -426,13 +598,19 @@ export async function PATCH(request: NextRequest) {
       // A group call's talk is "at" the group, by the name it had when the talk came in.
       const eventName = sub.groupName || speakerEventName(sub.eventId);
       const accepted = status === 'approved';
+      // A group's talk gets the meetup wording and the group's logo, not a conference's.
+      let group: { name: string; logo: string | null } | null = null;
+      if (sub.communityId && sub.groupName) {
+        const groupDoc = await db.collection(COLLECTIONS.COMMUNITIES).doc(sub.communityId).get();
+        group = { name: sub.groupName, logo: emailLogoUrl({ id: sub.communityId, logo: groupDoc.data()?.logo }) };
+      }
       try {
         await resend.emails.send({
           from: EMAIL_FROM,
           to: sub.email.toLowerCase(),
           replyTo: EMAIL_REPLY_TO,
           subject: getSpeakerDecisionSubject(accepted, eventName),
-          html: (accepted ? SpeakerAcceptedEmail : SpeakerDeclinedEmail)({ name: sub.name, sessionTitle: sub.sessionTitle, eventName }),
+          html: (accepted ? SpeakerAcceptedEmail : SpeakerDeclinedEmail)({ name: sub.name, sessionTitle: sub.sessionTitle, eventName, group }),
         });
         await ref.update({ notifiedAt: new Date() });
         notified = true;

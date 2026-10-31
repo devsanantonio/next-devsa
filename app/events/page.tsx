@@ -3,6 +3,7 @@ import { ConferencePortfolio } from "@/components/events/conference-portfolio"
 import { FeaturedTxlf } from "@/components/events/featured-txlf"
 import { EventsVisitMarker } from "@/components/events/conference-back-link"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
+import { GiveATalkSection } from "@/components/events/give-a-talk-section"
 import { listCommunities } from "@/lib/communities"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -145,6 +146,9 @@ export default async function EventsPage() {
           communityCount={communityCount}
           featured={<FeaturedTxlf variant="strip" />}
         />
+        {/* Its own section, after the calendar and before the conferences: the people reading
+            the calendar are the next speakers, and the network is every group they could speak to. */}
+        <GiveATalkSection />
         {/* What DEVSA runs.
         
             The on-demand archive that sat below this is gone. It was a video

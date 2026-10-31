@@ -5,7 +5,7 @@ import { SPEAKER_CALL_LIMITS as L } from "@/lib/speaker-calls"
 
 /**
  * The group's call for speakers, in the community editor (lib/speaker-calls.ts).
- * Open, the group page shows a "Speak at …" form and /speak lists the group;
+ * Open, the group page shows a "Speak at …" form and /give-a-talk lists the group;
  * talks land in this organizer's Speakers tab. Saved with the rest of the form.
  */
 export function SpeakerCallFields({
@@ -36,7 +36,7 @@ export function SpeakerCallFields({
         <span>
           <span className="block text-sm font-semibold text-white">Looking for speakers</span>
           <span className="mt-0.5 block text-sm text-neutral-400">
-            Adds a talk form to your group&apos;s page and lists you on devsa.community/speak. Talks arrive in your
+            Adds a talk form to your group&apos;s page and lists you on devsa.community/give-a-talk. Talks arrive in your
             Speakers tab, and by email.
           </span>
         </span>

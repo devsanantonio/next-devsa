@@ -1,4 +1,4 @@
-import { emailShell, eyebrow, heading, panel, fields, button, esc, C, SITE } from "./layout"
+import { emailShell, eyebrow, heading, paragraph, panel, fields, button, esc, firstNameOf, groupMark, C, SITE } from "./layout"
 
 interface GroupTalkNotifyProps {
   groupName: string
@@ -12,6 +12,10 @@ interface GroupTalkNotifyProps {
   link?: string | null
   question?: string | null
   answer?: string | null
+  /** Shared from the open pool by an admin, rather than sent to the group directly. */
+  suggested?: boolean
+  /** The group's logo, already a URL mail clients show (lib/email-logo.ts). */
+  groupLogo?: string | null
 }
 
 /**
@@ -26,8 +30,9 @@ export function GroupTalkNotifyEmail(p: GroupTalkNotifyProps): string {
     preheader: `${esc(p.name)}: ${esc(p.sessionTitle)}`,
     audience: "internal",
     body: `
-      ${eyebrow(`${esc(p.groupName)} · call for speakers`)}
-      ${heading("A new talk came in")}
+      ${groupMark(p.groupLogo, p.groupName)}
+      ${eyebrow(p.suggested ? `${esc(p.groupName)} · suggested by DEVSA` : `${esc(p.groupName)} · call for speakers`)}
+      ${heading(p.suggested ? `DEVSA thinks this talk fits ${esc(p.groupName)}` : "A new talk came in")}
       ${fields([
         ["Talk", esc(p.sessionTitle)],
         ["Speaker", esc(p.name)],
@@ -44,6 +49,25 @@ export function GroupTalkNotifyEmail(p: GroupTalkNotifyProps): string {
   })
 }
 
-export function getGroupTalkNotifySubject(groupName: string, sessionTitle: string): string {
-  return `[${groupName}] New talk: "${sessionTitle}"`
+export function getGroupTalkNotifySubject(groupName: string, sessionTitle: string, suggested = false): string {
+  return `[${groupName}] ${suggested ? "Suggested talk" : "New talk"}: "${sessionTitle}"`
+}
+
+/**
+ * To the speaker, when an admin shares their open-pool talk with a group: so they
+ * know who may contact them, which is what they consented to.
+ */
+export function TalkSharedEmail({ name, sessionTitle, groupName, groupId, groupLogo }: { name: string; sessionTitle: string; groupName: string; groupId: string; groupLogo?: string | null }): string {
+  return emailShell({
+    title: `Your talk is with ${esc(groupName)}`,
+    preheader: `We shared "${esc(sessionTitle)}" with ${esc(groupName)}'s organizers.`,
+    body: `
+      ${groupMark(groupLogo, groupName)}
+      ${eyebrow("Talk shared")}
+      ${heading(`${firstNameOf(name)}, ${esc(groupName)} has your talk.`)}
+      ${paragraph(`We shared &ldquo;${esc(sessionTitle)}&rdquo; with ${esc(groupName)}&rsquo;s organizers, who run one of San Antonio&rsquo;s tech community groups. If it fits an upcoming meetup, they&rsquo;ll email you to set a date.`)}
+      ${button(`${SITE}/buildingtogether/${encodeURIComponent(groupId)}`, `About ${esc(groupName)}`)}
+      ${paragraph("Questions? Reply to this email.", { last: true })}
+    `,
+  })
 }

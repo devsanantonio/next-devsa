@@ -1,9 +1,10 @@
 "use client"
 
 import { GoogleCalendarIcon, AppleCalendarIcon, OutlookIcon } from "@/components/icons/calendar-icons"
+import { DiscordIcon, InstagramIcon } from "@/components/icons/social-icons"
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin, ArrowUpRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ChevronDown, CalendarIcon, Plus, CalendarPlus, Rss, Check, Copy, X, MapPin, ArrowUpRight, Mail } from "lucide-react"
 import type { TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import Link from "next/link"
@@ -625,119 +626,140 @@ function CalendarSubscribeModal({ open, onClose }: { open: boolean; onClose: () 
 }
 
 /**
- * What this calendar can do that a list of links cannot.
+ * How the calendar finds people: "The Calendar Is Open".
  *
- * Three capabilities were already built and shipped here, and the site spoke
- * to none of them: an iCal subscription that lands every group's events in a
- * reader's own calendar app, organizer accounts that write to the calendar
- * directly, and an RSS feed plus an iframe embed that let anyone re-publish
- * the whole thing on their own site or pipe it into their own Discord.
+ * Opens on the hook from Spotlight 3 ("> Missed another meetup?_"), then lists
+ * every place the calendar actually turns up, each of them live:
  *
- * They were reachable only through a 13px button and a gray footnote, so the
- * two modals behind them — which are good, and cover Google, Apple, Outlook,
- * MonitoRSS, Slack and a field reference — were effectively unlisted.
+ *  - the iCal subscription (CalendarSubscribeModal);
+ *  - the Monday Discord digest (app/api/events/weekly-digest, Mondays 15:00 UTC);
+ *  - the weekly "This Week" post on Instagram, X and LinkedIn;
+ *  - the day-before email to everyone who RSVP'd here (app/api/events/reminders);
+ *  - and, for organizers, publishing straight to it.
  *
- * They are also the clearest proof of the thing /buildingtogether claims:
- * DEVSA does not run these events and does not own this calendar. The groups
- * publish it and anybody may take it. A band that says so belongs at the foot
- * of the list, after a reader has seen what is in it.
+ * Beside the heading, a card for builders: the open feeds (RSS at
+ * /api/events/feed, iCalendar at /api/events/calendar, both filterable by
+ * communityId, and the JSON schema at /api/events/feed/schema), documented in the
+ * public devsanantonio/community-calendar-api repo. Change a claim here only after
+ * checking it against those routes.
  *
- * Light, not dark. ConferencePortfolio opens on #0a0a0a immediately below
- * this, and two dark bands back to back is exactly the repeat that got the
- * homepage's conferences section rebuilt.
- *
- * The eyebrow is the page's own marketing idiom, not the mono one the four
- * conference routes use. The header above this already set the sans form on
- * /events, and a second idiom on one page is the drift the design-system
- * skill was written about.
+ * Built to fit one screen on a 13" laptop and up: the heading and the builder card
+ * share a row, and the five ways sit in one row of five from xl (three, then one,
+ * below that), each a sentence long. Rows with a top rule, not cards. The Spotlight 3
+ * loop was tried beside this, and in the hero; both times the page read busier, and
+ * the section reads better without it.
  */
 function OpenCalendarBand({
   onSubscribe,
   onFeed,
+  communityCount,
 }: {
   onSubscribe: () => void
   onFeed: () => void
+  communityCount?: number
 }) {
-  const cards = [
+  const action = "group/act inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-gray-900"
+  const arrow = <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
+  const ways: { key: string; icon: React.ReactNode; title: string; body: string; act?: React.ReactNode }[] = [
     {
-      key: "subscribe",
-      icon: CalendarPlus,
-      title: "In your own calendar",
-      body: "Subscribe once and every group's events show up in Google, Apple or Outlook — new ones appear on their own, and change when a group changes them.",
-      action: { label: "Subscribe", onClick: onSubscribe },
+      key: "calendar",
+      icon: <CalendarPlus className="h-5 w-5" />,
+      title: "In your calendar app",
+      body: "Subscribe once in Google, Apple or Outlook. New events show up on their own.",
+      act: <button onClick={onSubscribe} className={action}>Subscribe {arrow}</button>,
+    },
+    {
+      key: "discord",
+      icon: <DiscordIcon className="h-5 w-5" />,
+      title: "On Discord, every Monday",
+      // A non-breaking hyphen, so the channel name never splits across lines.
+      body: "The week's events post in #community\u2011calendar every Monday morning.",
+      act: <a href="/discord" target="_blank" rel="noopener noreferrer" className={action}>Join the Discord {arrow}</a>,
+    },
+    {
+      key: "social",
+      icon: <InstagramIcon className="h-5 w-5" />,
+      title: "This Week, in your feed",
+      body: "Every week's events as one post on Instagram, X and LinkedIn.",
+      act: (
+        <span className="flex flex-wrap gap-x-3 gap-y-1">
+          <a href="https://instagram.com/devsatx" target="_blank" rel="noopener noreferrer" className={action}>Instagram {arrow}</a>
+          <a href="https://twitter.com/devsatx" target="_blank" rel="noopener noreferrer" className={action}>X {arrow}</a>
+          <a href="https://linkedin.com/company/devsa" target="_blank" rel="noopener noreferrer" className={action}>LinkedIn {arrow}</a>
+        </span>
+      ),
+    },
+    {
+      key: "reminder",
+      icon: <Mail className="h-5 w-5" />,
+      title: "A reminder the day before",
+      body: "RSVP to an event here, and we'll email you the day before so it doesn't slip by.",
     },
     {
       key: "publish",
-      icon: Plus,
-      title: "Organizers publish it",
-      body: "If you run a group here, you add your own events and they are live the moment you save. Nobody at DEVSA is in the middle of it, and nobody has to be asked. Every event also gets a poster with your logo on it, sized for socials — save it from the event's Share button.",
-      action: { label: "Add your event", href: "/signin" },
-    },
-    {
-      key: "republish",
-      icon: Rss,
-      title: "Take it with you",
-      body: "An embed snippet puts the live calendar on your own website, and an RSS feed pipes it into your Discord or Slack. The whole city's calendar, on your page.",
-      action: { label: "Feed and embed", onClick: onFeed },
+      icon: <Plus className="h-5 w-5" />,
+      title: "Run a group? Publish once.",
+      body: "Live the moment you save, with a poster sized for socials.",
+      act: <Link href="/signin" className={action}>Add your event {arrow}</Link>,
     },
   ]
 
   return (
     <div className="page-shell mt-20 md:mt-28">
       <div className="border-t border-gray-200 pt-12 md:pt-16">
-        <div className="max-w-3xl">
-          <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
-            The Calendar Is Open
-          </p>
-          <h2 className="mt-5 text-balance font-sans text-gray-900 leading-none text-3xl md:text-4xl lg:text-5xl font-black tracking-[-0.02em]">
-            Yours to Subscribe,{" "}
-            <span className="text-gray-600 font-light italic">Publish</span> and
-            Embed.
-          </h2>
-          <p className="mt-5 text-lg md:text-xl font-light leading-[1.45] text-gray-600">
-            These events are not DEVSA&apos;s. Neither is the feed — it is built
-            to be taken, which is the whole point of keeping one.
-          </p>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
+          <div className="min-w-0">
+            <p className="text-sm md:text-base font-medium text-gray-500 uppercase tracking-[0.2em]">
+              The Calendar Is Open
+            </p>
+            {/* The hook in Spotlight 3's own terminal type: the teal prompt and the pink cursor. */}
+            <h2 className="mt-5 text-balance font-sans text-gray-900 leading-none text-3xl md:text-4xl lg:text-5xl font-black tracking-[-0.02em]">
+              <span className="text-[#00b2a9]">&gt;</span> Missed another meetup?
+              <span aria-hidden className="ml-2 inline-block h-[0.12em] w-[0.6em] bg-[#ef426f] align-baseline" />
+            </h2>
+            <p className="mt-5 text-lg md:text-xl font-light leading-[1.45] text-gray-600">
+              Every group on this calendar publishes here. This is how it finds you.
+            </p>
+          </div>
+
+          {/* For builders: the same calendar, as open feeds. */}
+          <div className="min-w-0 overflow-hidden rounded-2xl bg-[#0a0a0a] p-6 md:p-7" data-bg-type="dark">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">Build on it</p>
+            <pre className="mt-3 overflow-x-auto font-mono text-[13px] leading-relaxed text-white/80">
+              <span className="text-white/50">~ %</span> <span className="text-white">curl</span> devsa.community/api/events/feed<span className="text-[#ff8200]">?communityId=aws,datanauts</span>{"\n"}
+              <span className="text-[#ff8200]">→</span> RSS · iCalendar · JSON schema · {communityCount ? `${communityCount} groups · ` : ""}no key
+            </pre>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button
+                onClick={onFeed}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10"
+              >
+                Feed and embed
+              </button>
+              <a
+                href="https://github.com/devsanantonio/community-calendar-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
+              >
+                The API on GitHub <ArrowUpRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-10 grid gap-4 md:mt-14 md:grid-cols-3 md:gap-6">
-          {cards.map((card) => {
-            const Icon = card.icon
-            return (
-              <div
-                key={card.key}
-                className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 transition-colors duration-200 hover:border-gray-300"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <Icon className="h-4 w-4 text-gray-600" aria-hidden />
-                </div>
-                <p className="mt-4 text-base font-semibold text-gray-900">
-                  {card.title}
-                </p>
-                <p className="mt-2 flex-1 text-sm font-light leading-[1.65] text-gray-600">
-                  {card.body}
-                </p>
-                {card.action.href ? (
-                  <Link
-                    href={card.action.href}
-                    className="group/act mt-5 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-gray-900"
-                  >
-                    {card.action.label}
-                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
-                  </Link>
-                ) : (
-                  <button
-                    onClick={card.action.onClick}
-                    className="group/act mt-5 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-gray-900"
-                  >
-                    {card.action.label}
-                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5" />
-                  </button>
-                )}
-              </div>
-            )
-          })}
-        </div>
+        <ul className="mt-12 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {ways.map((w) => (
+            <li key={w.key} className="flex min-w-0 flex-col border-t border-gray-200 pt-5">
+              <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-700">
+                {w.icon}
+              </span>
+              <p className="mt-4 text-base font-semibold text-gray-900">{w.title}</p>
+              <p className="mt-1.5 flex-1 text-[15px] font-light leading-[1.55] text-gray-600">{w.body}</p>
+              {w.act && <div className="mt-3">{w.act}</div>}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
@@ -1034,6 +1056,9 @@ export function CommunityEventsSection({
             looking pressed: still short enough that the calendar shows below
             it in the first screen. Laptops keep md:py-20. */}
         <div className="page-shell relative py-16 md:py-20 2xl:py-28">
+          {/* One column, and nothing moving. The Spotlight 3 loop sat in the right half for
+              a day and the band read as two headlines, its giant animated type beside the
+              h1, with the moving one winning. */}
           <div>
           <div className="space-y-4">
             <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
@@ -2099,6 +2124,7 @@ export function CommunityEventsSection({
       <OpenCalendarBand
         onSubscribe={() => setShowCalendarSubscribe(true)}
         onFeed={() => setShowRssFeed(true)}
+        communityCount={communityCount}
       />
 
       {/* RSS Feed Modal */}

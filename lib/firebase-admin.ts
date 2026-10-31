@@ -189,6 +189,13 @@ export interface SpeakerSubmission {
   /** The organizer's extra question, worded as asked, and the speaker's answer. */
   question?: string | null;
   answer?: string | null;
+  /** Open pool (eventId 'open-pool'): the speaker agreed to have DEVSA share the talk with groups it fits. */
+  shareConsent?: boolean;
+  /** On a pool talk: each group an admin shared it with. */
+  sharedWith?: { communityId: string; groupName: string; by: string; at: Date }[];
+  /** On a group's copy of a pool talk: the pool talk it came from, and the admin who suggested it. */
+  routedFrom?: string | null;
+  suggestedBy?: string | null;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
   /** Who last set the status in the admin, and when. */
@@ -351,7 +358,7 @@ export interface Community {
   pastLeads?: PastLead[];
   /**
    * The group's standing call for speakers (lib/speaker-calls.ts). Open, its
-   * group page shows a "Speak at …" form and /speak lists it.
+   * group page shows a "Speak at …" form and /give-a-talk lists it.
    */
   speakersOpen?: boolean;
   /** What the group is looking for, in the organizer's words. */

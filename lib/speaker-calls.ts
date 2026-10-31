@@ -19,6 +19,17 @@ export const groupCallEventId = (communityId: string) => `${GROUP_CALL_PREFIX}${
 export const groupIdOfCall = (eventId?: string | null) =>
   eventId?.startsWith(GROUP_CALL_PREFIX) ? eventId.slice(GROUP_CALL_PREFIX.length) : null
 
+/**
+ * The open pool: talks from people who don't know which group they fit. Only
+ * admins see it. An admin shares a talk with a group, which copies it into
+ * that group's queue (eventId `group:<id>`, routedFrom the pool talk) and tells
+ * the group's organizers and the speaker. A pool talk is only ever shared with
+ * the speaker's consent, given on the form.
+ */
+export const OPEN_POOL_ID = "open-pool"
+
+export const isPoolTalk = (eventId?: string | null) => eventId === OPEN_POOL_ID
+
 /** The formats a group call offers. Short on purpose: a meetup's slots are the meetup's to decide. */
 export const GROUP_TALK_FORMATS = ["Lightning talk (5–10 min)", "Talk (20–30 min)", "Workshop or demo"] as const
 

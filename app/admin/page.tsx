@@ -82,6 +82,7 @@ import { ActivityTab } from "@/components/admin/activity-tab"
 import { RsvpsTab } from "@/components/admin/rsvps-tab"
 import { AdminsTab } from "@/components/admin/admins-tab"
 import { SpeakerCallFields } from "@/components/admin/speaker-call-fields"
+import { isPoolTalk } from "@/lib/speaker-calls"
 import { GroupPicker } from "@/components/admin/group-picker"
 import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
 import { isHostedBy } from "@/lib/event-hosts"
@@ -142,6 +143,12 @@ interface SpeakerSubmission {
   groupName?: string | null
   question?: string | null
   answer?: string | null
+  /** Open pool: the speaker agreed to sharing, and the groups an admin has shared it with. */
+  shareConsent?: boolean
+  sharedWith?: { communityId: string; groupName: string; by: string; at: string | { _seconds: number } }[]
+  /** On a group's copy of a pool talk. */
+  routedFrom?: string | null
+  suggestedBy?: string | null
   submittedAt: string
   status: string
   /** Set when the reviewer chose to email the decision; a Firestore timestamp as JSON. */
@@ -411,6 +418,8 @@ export default function AdminPage() {
   const [volunteers, setVolunteers] = useState<VolunteerSignup[]>([])
   const [volunteerEventFilter, setVolunteerEventFilter] = useState<string>("all")
   const [speakerEventFilter, setSpeakerEventFilter] = useState<string>("all")
+  const [shareTarget, setShareTarget] = useState("")
+  const [sharingTalk, setSharingTalk] = useState(false)
   const [speakerStatusFilter, setSpeakerStatusFilter] = useState<"all" | SpeakerStatus>("pending")
   const [speakerSearch, setSpeakerSearch] = useState("")
   const [selectedSpeakerId, setSelectedSpeakerId] = useState<string | null>(null)
@@ -1706,6 +1715,29 @@ export default function AdminPage() {
     }
   }
 
+  // Share an open-pool talk with a group: the group gets its own copy to decide on.
+  const handleShareTalk = async (submissionId: string, communityId: string) => {
+    if (!communityId) return
+    setSharingTalk(true)
+    setError(null)
+    try {
+      const response = await adminFetch("/api/call-for-speakers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId, shareWith: communityId }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || "Couldn't share the talk")
+      setShareTarget("")
+      setSuccessMessage(`Shared with ${data.sharedWith?.groupName ?? "the group"}. Its organizers and the speaker have been emailed.`)
+      await fetchData(adminEmail)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't share the talk")
+    } finally {
+      setSharingTalk(false)
+    }
+  }
+
   const handleDeleteSpeaker = async (submissionId: string) => {
     if (!confirm("Are you sure you want to delete this speaker submission? This action cannot be undone.")) return
     
@@ -2993,6 +3025,7 @@ export default function AdminPage() {
             ).sort()
             // A group call's talks are keyed `group:<id>`; show the group's name instead.
             const eventLabel = (ev: string) => {
+              if (isPoolTalk(ev)) return "Open pool · find a group"
               const group = speakers.find((s) => (s.eventId || "—") === ev)?.groupName
               return group ? `${group} · call for speakers` : ev
             }
@@ -3018,6 +3051,7 @@ export default function AdminPage() {
             const select = (id: string | null) => {
               setSelectedSpeakerId(id)
               setSpeakerDetailOpen(true)
+              setShareTarget("")
             }
             const statusTabs: { value: "all" | SpeakerStatus; label: string; count: number }[] = [
               { value: "pending", label: SPEAKER_STATUS.pending.label, count: statusCount("pending") },
@@ -3128,7 +3162,7 @@ export default function AdminPage() {
                                   {s.company && <span className="text-neutral-500"> · {s.company}</span>}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-neutral-500">
-                                  {[speakerEventFilter === "all" ? (s.groupName || s.eventId) : null, s.sessionFormat]
+                                  {[speakerEventFilter === "all" ? (s.groupName || (isPoolTalk(s.eventId) ? "Open pool" : s.eventId)) : null, s.sessionFormat]
                                     .filter(Boolean)
                                     .join(" · ")}
                                 </p>
@@ -3224,6 +3258,48 @@ export default function AdminPage() {
                           {fact("Submitted", new Date(selected.submittedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }))}
                         </dl>
 
+                        {/* A pool talk has no group yet: an admin shares it with the groups it fits.
+                            Each share gives that group its own copy to decide on (see shareTalk). */}
+                        {isPoolTalk(selected.eventId) && hasAdminAccess(adminRole) && (
+                          <div className="mt-6 rounded-lg border border-[#00b2a9]/30 bg-[#00b2a9]/5 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[#5fd6cf]">Open pool · share with a group</p>
+                            <p className="mt-1 text-sm text-neutral-300">
+                              The speaker agreed to have this talk shared. Sharing it emails that group&apos;s organizers and the speaker,
+                              and puts a copy in the group&apos;s Speakers tab for them to decide on.
+                            </p>
+                            {(selected.sharedWith?.length ?? 0) > 0 && (
+                              <p className="mt-3 text-sm text-neutral-200">
+                                Shared with{" "}
+                                {selected.sharedWith!.map((g) => g.groupName).join(", ")}
+                              </p>
+                            )}
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <AdminCombobox
+                                className="w-64"
+                                value={shareTarget}
+                                onChange={setShareTarget}
+                                options={[
+                                  { value: "", label: "Choose a group" },
+                                  ...communities
+                                    .filter((c) => !selected.sharedWith?.some((g) => g.communityId === c.id))
+                                    .map((c) => ({ value: c.id, label: c.name })),
+                                ]}
+                              />
+                              <button
+                                onClick={() => handleShareTalk(selected.id, shareTarget)}
+                                disabled={!shareTarget || sharingTalk}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-[#00b2a9]/20 px-4 py-2 text-sm font-semibold text-[#5fd6cf] transition-colors hover:bg-[#00b2a9]/30 disabled:opacity-50"
+                              >
+                                {sharingTalk && <Loader2 className="h-4 w-4 animate-spin" />}
+                                Share with group
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {selected.suggestedBy && (
+                          <p className="mt-6 text-sm text-neutral-400">Suggested by DEVSA from the open pool.</p>
+                        )}
+
                         {selected.question && selected.answer && (
                           <div className="mt-6 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
                             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{selected.question}</p>
@@ -3260,6 +3336,8 @@ export default function AdminPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           {(["approved", "rejected", "pending"] as const)
                             .filter((st) => st !== "pending" || speakerStatus(selected) !== "pending")
+                            // A pool talk is accepted by a group, not by DEVSA: share it instead.
+                            .filter((st) => st !== "approved" || !isPoolTalk(selected.eventId))
                             .map((st) => {
                             const current = speakerStatus(selected) === st
                             const next = neighbour(1) ?? neighbour(-1)

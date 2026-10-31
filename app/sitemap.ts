@@ -55,7 +55,7 @@ function staticRoutes(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/localhost`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/tv`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     // Open calls for speakers change as organizers open and close them.
-    { url: `${baseUrl}/speak`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${baseUrl}/give-a-talk`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
   ]
 }
 

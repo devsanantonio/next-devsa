@@ -199,7 +199,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // The group's call for speakers (lib/speaker-calls.ts). Plain text, capped,
-    // null when cleared, so the group page and /speak render exactly what was typed.
+    // null when cleared, so the group page and /give-a-talk render exactly what was typed.
     if (speakersOpen !== undefined) updates.speakersOpen = speakersOpen === true;
     if (speakersNote !== undefined) updates.speakersNote = plainText(speakersNote, SPEAKER_CALL_LIMITS.note);
     if (speakersQuestion !== undefined) updates.speakersQuestion = plainText(speakersQuestion, SPEAKER_CALL_LIMITS.question);
