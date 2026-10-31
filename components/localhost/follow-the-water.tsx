@@ -135,26 +135,25 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
     {
       year: 1700, center: [-300, 1500], span: 6500,
       eyebrow: "Before 1718", title: "First, water.",
-      body: <>Before there was a city there was the San Antonio River and San Pedro Creek, both fed by springs a few miles north of downtown. Everything that follows is about getting their water to where people lived.</>,
+      body: <>Before there was a city, there was the San Antonio River and San Pedro Creek, fed by springs just north of downtown. Everything after is about moving their water.</>,
     },
     {
       year: 1720, center: [-300, 1500], span: 6500,
       eyebrow: "1718", title: "A presidio, a mission, and ditches.",
-      body: <>In 1718 Spain founded the Presidio de Béxar and Mission San Antonio de Valero, later called the Alamo. The County dates the first acequias to that same year: the Acequia Principal and the San Pedro. A third, the Segundo, was abandoned a year later.</>,
+      body: <>In 1718 Spain founded the Presidio de Béxar and Mission Valero, later the Alamo. The County dates the first acequias to that year: the Principal and the San Pedro.</>,
     },
     {
       year: 1731, center: [1500, -5000], span: 17000,
       eyebrow: "1720 – 1731", title: "Down the river, four more missions.",
-      body: <>Concepción, San José, San Juan and Espada lined the river to the south, each with its own acequia, dug by the Native people who lived and worked at the missions. Watch them reach out from the river one by one.</>,
+      body: <>Concepción, San José, San Juan and Espada lined the river to the south, each with an acequia dug by the Native people who lived at the missions.</>,
     },
     {
       year: 1732, center: [-200, 300], span: 3400,
       eyebrow: "1731", title: "The Canary Islanders.",
       body: (
         <>
-          In 1731 families from the Canary Islands arrived to found the Villa de San Fernando, San Antonio&apos;s first civil town,
-          and were granted lots between the creek and the river
-          {grantees1731.length > 0 && <>: {grantees1731.slice(0, 5).join(", ")} and more</>}. Hover a lot to read whose it was.
+          In 1731 families from the Canary Islands founded the Villa de San Fernando, granted lots between the creek and the river
+          {grantees1731.length > 0 && <>: {grantees1731.slice(0, 3).join(", ")} and more</>}. Hover a lot to read whose it was.
         </>
       ),
     },
@@ -166,7 +165,7 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
     {
       year: 1896, center: [0, 330], span: 2400,
       eyebrow: "1776 – 1912", title: "The city covers the water.",
-      body: <>The Upper Labor ditch, dug from 1776, was the last big one. As the city piped in its water, the ditches went dry one by one: Concepción&apos;s in 1869, the Upper Labor in 1896, the Principal and the Alamo&apos;s in 1905, the San Pedro in 1912. By 1896 the Sanborn map shows downtown built over them. Look at where the blocks bend.</>,
+      body: <>As the city piped in its water, the ditches went dry one by one, the San Pedro last, in 1912. By 1896 downtown was built over them. Look at where the blocks bend.</>,
     },
     {
       // center and span match FLOOD_VIEW in scripts/build-water.py, where the share is measured.
@@ -174,10 +173,9 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
       eyebrow: "Today · the flood map", title: "Where the water goes now.",
       body: water ? (
         <>
-          In blue, today&apos;s flood map: FEMA&apos;s, which the County publishes, marking the ground with a 1-in-100 chance
-          of flooding in any year. It hugs the river and the creek. Of the {Math.round(water.floodShare.meters / 1000)} km of
-          acequia on this map, about {Math.round(100 * (1 - water.floodShare.inside / water.floodShare.meters))}% runs outside
-          it. Luck, or people who read the land?
+          In blue, today&apos;s flood map (FEMA&apos;s, published by the County): ground with a 1-in-100 chance of flooding each
+          year. About {Math.round(100 * (1 - water.floodShare.inside / water.floodShare.meters))}% of the{" "}
+          {Math.round(water.floodShare.meters / 1000)} km of acequia here runs outside it. Luck, or people who read the land?
         </>
       ) : null,
     },
@@ -186,13 +184,11 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
       eyebrow: "Today", title: "Geekdom's corner.",
       body: close ? (
         <>
-          The {close.a.name}, dug in {close.a.dug}, ran about {Math.round(close.d / 10) * 10} m from Houston and Soledad, the corner
-          where Geekdom is now. It went dry in {close.a.dry}. DEVSA has brought {today.events} meetups from {today.groups.length} tech
-          groups to this corner.
+          The {close.a.name}, dug in {close.a.dug}, ran {Math.round(close.d / 10) * 10} m from where Geekdom is now. It went dry in{" "}
+          {close.a.dry}. DEVSA has brought {today.events} meetups from {today.groups.length} groups to this corner.
           {creek && (
             <>
-              {" "}And the creek still runs: right now San Pedro Creek reads {creek.feet.toFixed(1)} ft on the federal
-              gauge at Furnish, carrying {Math.round(creek.cfs)} cubic feet of water a second.
+              {" "}The creek still runs: {creek.feet.toFixed(1)} ft on the gauge at Furnish right now.
             </>
           )}
         </>

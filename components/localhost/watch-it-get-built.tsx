@@ -491,8 +491,7 @@ ORDER BY "DATE ISSUED" DESC`
             <>
               <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">What&apos;s being built?</p>
               <p className="mt-3 text-lg leading-relaxed text-white/80">
-                Click anywhere on the map, or pick a place. You&apos;ll get every permit the City has issued there since
-                January 2025, straight from its API: what the work is, when it was issued and how long that took.
+                Click the map or pick a place, and the page asks the City&apos;s API what&apos;s being built there.
               </p>
             </>
           )}

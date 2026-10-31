@@ -73,7 +73,6 @@ const eyebrow = "font-mono text-[11px] uppercase tracking-widest text-white/50"
 const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-4xl lg:text-5xl"
 const eyebrowLight = "font-mono text-[11px] uppercase tracking-widest text-gray-500"
 const h2Light = h2.replace("text-white", "text-gray-900")
-const link = "font-medium text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
 const REPO = "https://github.com/devsanantonio/localhost"
 
 /** Questions to start from. Each section above already links its own starter; two of these reach past the
@@ -165,11 +164,9 @@ export default function LocalhostPage() {
             <span className="font-light italic text-white/50">San Antonio, 1718 to today.</span>
           </h2>
           <p className="mt-5 max-w-2xl text-white/70">
-            Before San Antonio had streets it had acequias, irrigation ditches dug from the river and San Pedro Creek.
-            Bexar County has mapped every one, with the year it was dug and the year it went dry, along with the fields
-            and land grants they fed, in maps it made for San Antonio&apos;s 300th anniversary. They&apos;re published in
-            its map services rather than on its open-data portal, which starts at 1896. Scroll, and three centuries pass over downtown: each ditch appears in the year the
-            County dates it and fades in the year it was abandoned.
+            Before San Antonio had streets, it had acequias: ditches dug from the river and San Pedro Creek. Bexar County
+            has mapped every one, with the year it was dug and the year it went dry. Scroll, and three centuries pass over
+            downtown.
           </p>
           <div className="mt-10">
             <FollowTheWater today={today} />
@@ -197,12 +194,9 @@ export default function LocalhostPage() {
             <span className="font-light italic text-white/50">Every permit since January 2025.</span>
           </h2>
           <p className="mt-5 max-w-2xl text-white/70">
-            Before anyone builds, remodels or rewires downtown, the City issues a permit, and it publishes every one.
-            This is {(permits.permits.length / 4).toLocaleString("en-US")} of them, lit in the order they were issued,
-            on the City&apos;s own map of its streets. The teal rings are the other half: the City&apos;s own bond
-            projects downtown, {publicTotal} of them since January 2025, worth {money(publicBudget)}, public money on the
-            same blocks. Click a spot and the page asks the City&apos;s API what&apos;s being built there, live from
-            your browser, and shows you the request.
+            The City publishes every permit it issues. Here are the{" "}
+            {(permits.permits.length / 4).toLocaleString("en-US")} downtown since January 2025, lit in the order they were
+            issued, and in teal the City&apos;s own bond projects: {publicTotal} of them, {money(publicBudget)}.
           </p>
           <div className="mt-10">
             <WatchItGetBuilt />
@@ -232,10 +226,8 @@ export default function LocalhostPage() {
             <span className="font-light italic text-white/50">On VIA&apos;s real schedule.</span>
           </h2>
           <p className="mt-5 max-w-2xl text-white/70">
-            VIA publishes every trip its buses make, stop by stop and to the second. Press Run and you&apos;re at
-            Navarro &amp; Houston, a block from Geekdom, with the next real Route 4 one stop behind you. The bus
-            keeps its timetable, 24 times faster; you run 4% faster than it can average, so a clean run wins. Beat it up
-            San Pedro to as many stops as you can.
+            VIA publishes every trip its buses make, to the second. Race the next real Route 4 from Navarro &amp;
+            Houston, a block from Geekdom, up San Pedro.
           </p>
           <div className="mt-10">
             <OutrunThe4 />
