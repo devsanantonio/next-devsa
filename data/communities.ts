@@ -14,4 +14,8 @@ export interface TechCommunity {
   twitch?: string
   facebook?: string
   github?: string
+  /** The group's call for speakers (lib/speaker-calls.ts), from Firestore. */
+  speakersOpen?: boolean
+  speakersNote?: string | null
+  speakersQuestion?: string | null
 }

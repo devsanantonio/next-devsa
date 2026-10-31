@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { type TechCommunity } from "@/data/communities"
+import { SpeakerCallForm } from "@/components/speak/speaker-call-form"
 
 import { 
   ArrowLeft,
@@ -82,6 +83,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
     }
     fetchCommunity()
   }, [slug])
+
 
   // Fetch events from Firestore
   useEffect(() => {
@@ -169,6 +171,15 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
     : null
 
   // Show loading state while fetching community data
+  // A shared link to #speak arrives before the section exists (the group and its events load
+  // client-side), so the browser can't jump to it. Scroll once both have loaded: the events list
+  // sits above the section, and arriving later it would push the section back down.
+  useEffect(() => {
+    if (community?.speakersOpen && !isLoadingEvents && window.location.hash === "#speak") {
+      requestAnimationFrame(() => document.getElementById("speak")?.scrollIntoView())
+    }
+  }, [community, isLoadingEvents])
+
   if (isLoadingCommunity) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
@@ -511,6 +522,25 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
               </div>
             )}
           </motion.div>
+
+          {/* The group's call for speakers, while its organizers have it open (lib/speaker-calls.ts).
+              Built like the closing ask below it, eyebrow and heading, so it reads as part of the page
+              rather than a widget dropped in. #speak is the link organizers share. */}
+          {community.speakersOpen && (
+            <div id="speak" className="mt-14 scroll-mt-24 border-t border-gray-200 pt-10">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400">Call for speakers</p>
+              <h2 className="mt-4 text-balance font-sans text-2xl font-black leading-[1.1] tracking-[-0.02em] text-gray-900 sm:text-3xl">
+                Speak at {community.name}.
+              </h2>
+              <p className="mt-4 max-w-xl whitespace-pre-wrap text-[17px] leading-[1.7] text-gray-600">
+                {community.speakersNote ||
+                  "Have something to share? First talks are welcome. Tell the organizers what you'd like to cover, and they'll reach out when there's a night that fits."}
+              </p>
+              <div className="mt-8">
+                <SpeakerCallForm communityId={community.id} groupName={community.name} question={community.speakersQuestion} />
+              </div>
+            </div>
+          )}
 
           {/* The closing ask.
 

@@ -16,6 +16,10 @@ import {
 } from '@/lib/emails/access-granted-internal';
 import { AG_EVENT_ID, AG_FIRST_TIME_SPEAKER, AG_NOTIFY_EMAILS } from '@/data/access-granted/2026';
 import { SpeakerAcceptedEmail, SpeakerDeclinedEmail, getSpeakerDecisionSubject, speakerEventName } from '@/lib/emails/speaker-decision';
+import { GroupTalkNotifyEmail, getGroupTalkNotifySubject } from '@/lib/emails/speaker-group';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { groupCallEventId, plainText, SPEAKER_CALL_LIMITS as L } from '@/lib/speaker-calls';
+import type { Community } from '@/lib/firebase-admin';
 
 const DEFAULT_EVENT_ID = 'aiconference2026';
 
@@ -33,6 +37,10 @@ interface SpeakerSubmissionRequest {
   considerFor?: string;
   accommodations?: string;
   eventId?: string;
+  /** Set by a group's call for speakers, in place of eventId. */
+  communityId?: string;
+  /** The answer to the group's own question, if it asked one. */
+  answer?: string;
   /**
    * Set by the Access Granted form when one person picked "Both". It is not
    * persisted — the volunteer signup is its own record — it only tells the
@@ -49,6 +57,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SpeakerSubmissionRequest = await request.json();
+    // A community group's standing call (lib/speaker-calls.ts) has its own path:
+    // it checks the call is open, and tells the group's organizers.
+    if (body.communityId !== undefined) return submitToGroup(request, body);
     const {
       name, email, company, sessionTitle, sessionFormat, track, abstract, bio, linkedin,
       audienceLevel, considerFor, accommodations, eventId, alsoVolunteering,
@@ -193,6 +204,103 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * A talk offered to a community group through its call for speakers. Refused
+ * unless the group's call is open right now, so a stale page can't submit to a
+ * closed call. Rate limited on top of BotID because each one emails the group's
+ * organizers. Text is stored plain and capped (plainText), never HTML-encoded.
+ */
+async function submitToGroup(request: NextRequest, body: SpeakerSubmissionRequest) {
+  const limit = rateLimit(getClientIp(request), 5, 60_000);
+  if (!limit.success) return rateLimitResponse(limit.resetMs);
+
+  const communityId = typeof body.communityId === 'string' ? body.communityId.trim() : '';
+  const db = getDb();
+  const groupDoc = communityId ? await db.collection(COLLECTIONS.COMMUNITIES).doc(communityId).get() : null;
+  const group = groupDoc?.exists ? (groupDoc.data() as Community) : null;
+  if (!group || group.speakersOpen !== true) {
+    return NextResponse.json({ error: "This group isn't taking talks right now." }, { status: 400 });
+  }
+
+  const name = plainText(body.name, L.name);
+  const email = plainText(body.email, L.email)?.toLowerCase() ?? null;
+  const sessionTitle = plainText(body.sessionTitle, L.sessionTitle);
+  const abstract = plainText(body.abstract, L.abstract);
+  if (!name || !email || !sessionTitle || !abstract) {
+    return NextResponse.json({ error: 'Name, email, a talk title and a description are required.' }, { status: 400 });
+  }
+  if (!EMAIL_SHAPE.test(email)) {
+    return NextResponse.json({ error: 'That email address doesn\'t look right.' }, { status: 400 });
+  }
+  const question = group.speakersQuestion || null;
+  const submission: SpeakerSubmission = {
+    name,
+    email,
+    company: null,
+    sessionTitle,
+    sessionFormat: plainText(body.sessionFormat, 60),
+    track: null,
+    abstract,
+    bio: plainText(body.bio, L.bio),
+    linkedin: plainText(body.linkedin, L.link),
+    audienceLevel: plainText(body.audienceLevel, 40),
+    considerFor: null,
+    accommodations: null,
+    eventId: groupCallEventId(communityId),
+    communityId,
+    groupName: group.name,
+    question,
+    answer: question ? plainText(body.answer, L.answer) : null,
+    submittedAt: new Date(),
+    status: 'pending',
+  };
+  const docRef = await db.collection(COLLECTIONS.SPEAKERS).add(submission);
+
+  if (isResendConfigured() && resend) {
+    // Thank the speaker. Swallowed on failure: the talk is already saved.
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: email,
+        replyTo: EMAIL_REPLY_TO,
+        subject: getSpeakerThankYouSubject(sessionTitle),
+        html: SpeakerThankYouEmail({ name, sessionTitle, sessionFormat: submission.sessionFormat || '', groupName: group.name }),
+      });
+    } catch (emailError) {
+      console.error('Failed to send group talk thank-you:', emailError);
+    }
+
+    // Tell the group's organizers: those assigned to it, and admins who run it too (organizerOf).
+    try {
+      const [assigned, alsoRun] = await Promise.all([
+        db.collection(COLLECTIONS.APPROVED_ADMINS).where('communityId', '==', communityId).get(),
+        db.collection(COLLECTIONS.APPROVED_ADMINS).where('organizerOf', 'array-contains', communityId).get(),
+      ]);
+      const to = [...new Set([...assigned.docs, ...alsoRun.docs].map((d) => String(d.data().email || '').toLowerCase()).filter(Boolean))];
+      if (to.length) {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to,
+          replyTo: email,
+          subject: getGroupTalkNotifySubject(group.name, sessionTitle),
+          html: GroupTalkNotifyEmail({
+            groupName: group.name, name, email, sessionTitle,
+            sessionFormat: submission.sessionFormat, audienceLevel: submission.audienceLevel,
+            abstract, bio: submission.bio, link: submission.linkedin,
+            question, answer: submission.answer,
+          }),
+        });
+      }
+    } catch (notifyError) {
+      console.error('Failed to notify group organizers:', notifyError);
+    }
+  }
+
+  return NextResponse.json({ success: true, recordId: docRef.id });
+}
+
 // Delete a speaker submission
 export async function DELETE(request: NextRequest) {
   try {
@@ -315,7 +423,8 @@ export async function PATCH(request: NextRequest) {
     let notified = false;
     if (notify === true && (status === 'approved' || status === 'rejected') && isResendConfigured() && resend) {
       const sub = submissionDoc.data() as SpeakerSubmission;
-      const eventName = speakerEventName(sub.eventId);
+      // A group call's talk is "at" the group, by the name it had when the talk came in.
+      const eventName = sub.groupName || speakerEventName(sub.eventId);
       const accepted = status === 'approved';
       try {
         await resend.emails.send({

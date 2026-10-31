@@ -42,6 +42,7 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 - **The public directory** (${SITE}/buildingtogether): ${groupCount || "the city's"} community groups and ${partners.length || "the"} partners, each with its own page.
 - **One channel to follow**: DEVSA's LinkedIn (https://www.linkedin.com/company/devsa), Instagram (https://www.instagram.com/devsatx), X (https://x.com/devsatx) and YouTube (https://www.youtube.com/@devsatx), where events and conferences have been streamed live. They cover what is happening across the groups, including the ones that have no social accounts of their own.
 - **Partner pop-ups**: SheBuilds with Lovable, and Zero to Agent with Vercel.
+- **Give a talk** (${SITE}/speak): every San Antonio community group currently looking for speakers, and any DEVSA conference whose call for speakers is open. Each group's form is on its own page (${SITE}/buildingtogether/<group>#speak); first-time speakers are welcome.
 - **DEVSA TV** (${SITE}/tv): DEVSA programming is coming to TVSA, San Antonio's public access channel, with first episodes in December 2026, featuring the groups, speakers and builders DEVSA connects. Watch on Spectrum 20, Grande 19 or AT&T 99, or TVSA's stream; every episode is also published on DEVSA's YouTube (https://www.youtube.com/@devsatx). Air dates and times are not yet announced.
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
@@ -104,6 +105,7 @@ ${partners.map((p) => `- [${p.name}](${SITE}/buildingtogether/${p.id})${p.websit
 - [Groups and partners](${SITE}/buildingtogether)
 - [About, the board and the record](${SITE}/about)
 - [Code of conduct](${SITE}/code-of-conduct)
+- [Give a talk: groups looking for speakers](${SITE}/speak)
 - [DEVSA TV: coming to TVSA, San Antonio's public access channel, this December](${SITE}/tv)
 - [Branding kit: logos, colors and conference wordmarks](${SITE}/branding)
 - Conferences: [The Model](${SITE}/events/the-model), [Access Granted](${SITE}/events/access-granted), [PySanAntonio](${SITE}/events/pysanantonio), [More Human Than Human](${SITE}/events/morehumanthanhuman)

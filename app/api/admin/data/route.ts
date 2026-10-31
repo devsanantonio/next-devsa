@@ -62,9 +62,10 @@ export async function GET(request: NextRequest) {
     const communityId = viewing ?? adminData.communityId;
 
     // Organizers see none of the sensitive collections, with one deliberate
-    // exception: a community that hosts an event in HOSTED_EVENTS gets that
-    // event's speaker submissions AND volunteer signups, because its organizers
-    // are the ones building the lineup and the crew. Every other event's
+    // exception: the speaker submissions to their own group's call for speakers,
+    // plus, for a community that hosts an event in HOSTED_EVENTS, that event's
+    // submissions AND volunteer signups, because its organizers are the ones
+    // building the lineup and the crew. Every other event's
     // submissions stay admin-only, and this is enforced here rather than in the
     // client so the scoping is not bypassable.
     if (!isAdmin) {

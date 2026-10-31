@@ -3,6 +3,7 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { logActivity, diffFields } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
 import { cleanText } from '@/lib/organizer-directory';
+import { SPEAKER_CALL_LIMITS, plainText } from '@/lib/speaker-calls';
 
 /** A group's type for the organizer directory: student orgs are filtered apart. Anything else is a tech group. */
 const kindOf = (kind: unknown): 'tech' | 'student' => (kind === 'student' ? 'student' : 'tech');
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school, speakersOpen, speakersNote, speakersQuestion } = body;
     const adminEmail = await verifiedEmail(request);
 
     if (!id || !name || !logo || !description || !adminEmail) {
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school } = body;
+    const { id, name, logo, description, website, discord, meetup, luma, instagram, twitter, linkedin, youtube, twitch, facebook, github, kind, school, speakersOpen, speakersNote, speakersQuestion } = body;
     const adminEmail = await verifiedEmail(request);
 
     if (!id || !adminEmail) {
@@ -196,6 +197,12 @@ export async function PUT(request: NextRequest) {
     if (school !== undefined || kind !== undefined) {
       updates.school = kindOf(kind ?? (communityDoc.data() as Community).kind) === 'student' ? cleanText(school, 80) : null;
     }
+
+    // The group's call for speakers (lib/speaker-calls.ts). Plain text, capped,
+    // null when cleared, so the group page and /speak render exactly what was typed.
+    if (speakersOpen !== undefined) updates.speakersOpen = speakersOpen === true;
+    if (speakersNote !== undefined) updates.speakersNote = plainText(speakersNote, SPEAKER_CALL_LIMITS.note);
+    if (speakersQuestion !== undefined) updates.speakersQuestion = plainText(speakersQuestion, SPEAKER_CALL_LIMITS.question);
 
     await communityRef.update(updates);
     await logActivity({

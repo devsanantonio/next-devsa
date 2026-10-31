@@ -81,6 +81,7 @@ import { AdminOverview, type OverviewTab } from "@/components/admin/admin-overvi
 import { ActivityTab } from "@/components/admin/activity-tab"
 import { RsvpsTab } from "@/components/admin/rsvps-tab"
 import { AdminsTab } from "@/components/admin/admins-tab"
+import { SpeakerCallFields } from "@/components/admin/speaker-call-fields"
 import { GroupPicker } from "@/components/admin/group-picker"
 import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
 import { isHostedBy } from "@/lib/event-hosts"
@@ -137,6 +138,10 @@ interface SpeakerSubmission {
   considerFor?: string
   accommodations?: string
   eventId?: string
+  /** Set on a group call's talk (eventId `group:<id>`). */
+  groupName?: string | null
+  question?: string | null
+  answer?: string | null
   submittedAt: string
   status: string
   /** Set when the reviewer chose to email the decision; a Firestore timestamp as JSON. */
@@ -251,6 +256,9 @@ interface Community {
   school?: string | null
   pastLeads?: { name: string; title?: string | null; until: string }[]
   isStatic?: boolean
+  speakersOpen?: boolean
+  speakersNote?: string | null
+  speakersQuestion?: string | null
 }
 
 interface EventRSVP {
@@ -1121,7 +1129,7 @@ export default function AdminPage() {
     const headers = [
       "Name", "Email", "Company", "Talk title", "Format", "Audience level",
       "Considered for", "Abstract", "Bio", "Links", "Accessibility requests",
-      "Event", "Status", "Submitted at",
+      "Event", "Your question", "Answer", "Status", "Submitted at",
     ]
     const csv = [
       headers.join(","),
@@ -1129,7 +1137,7 @@ export default function AdminPage() {
         [
           s.name, s.email, s.company, s.sessionTitle, s.sessionFormat,
           s.audienceLevel, s.considerFor, s.abstract, s.bio, s.linkedin,
-          s.accommodations, s.eventId, s.status,
+          s.accommodations, s.groupName || s.eventId, s.question, s.answer, s.status,
           s.submittedAt ? new Date(s.submittedAt).toISOString() : "",
         ].map(cell).join(",")
       ),
@@ -1140,7 +1148,7 @@ export default function AdminPage() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `speaker-submissions-${scope}-${new Date().toISOString().split("T")[0]}.csv`
+    a.download = `speaker-submissions-${scope.replace(/[^a-z0-9-]+/gi, "-")}-${new Date().toISOString().split("T")[0]}.csv`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -1958,6 +1966,9 @@ export default function AdminPage() {
           github: editingCommunity.github,
           kind: editingCommunity.kind ?? "tech",
           school: editingCommunity.school ?? "",
+          speakersOpen: editingCommunity.speakersOpen === true,
+          speakersNote: editingCommunity.speakersNote ?? "",
+          speakersQuestion: editingCommunity.speakersQuestion ?? "",
           adminEmail,
         }),
       })
@@ -2980,6 +2991,11 @@ export default function AdminPage() {
             const speakerEvents = Array.from(
               new Set(speakers.map((s) => s.eventId || "—"))
             ).sort()
+            // A group call's talks are keyed `group:<id>`; show the group's name instead.
+            const eventLabel = (ev: string) => {
+              const group = speakers.find((s) => (s.eventId || "—") === ev)?.groupName
+              return group ? `${group} · call for speakers` : ev
+            }
             const inEvent =
               speakerEventFilter === "all"
                 ? speakers
@@ -3031,7 +3047,7 @@ export default function AdminPage() {
                         { value: "all", label: "All events", count: speakers.length },
                         ...speakerEvents.map((ev) => ({
                           value: ev,
-                          label: ev,
+                          label: eventLabel(ev),
                           count: speakers.filter((s) => (s.eventId || "—") === ev).length,
                         })),
                       ]}
@@ -3112,7 +3128,7 @@ export default function AdminPage() {
                                   {s.company && <span className="text-neutral-500"> · {s.company}</span>}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-neutral-500">
-                                  {[speakerEventFilter === "all" ? s.eventId : null, s.sessionFormat]
+                                  {[speakerEventFilter === "all" ? (s.groupName || s.eventId) : null, s.sessionFormat]
                                     .filter(Boolean)
                                     .join(" · ")}
                                 </p>
@@ -3207,6 +3223,13 @@ export default function AdminPage() {
                           {fact("Considered for", selected.considerFor)}
                           {fact("Submitted", new Date(selected.submittedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }))}
                         </dl>
+
+                        {selected.question && selected.answer && (
+                          <div className="mt-6 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{selected.question}</p>
+                            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-neutral-200">{selected.answer}</p>
+                          </div>
+                        )}
 
                         {selected.accommodations && (
                           <div className="mt-6 rounded-lg border border-[#ffdd00]/25 bg-[#ffdd00]/5 p-4">
@@ -4948,6 +4971,13 @@ export default function AdminPage() {
                         kind={editingCommunity.kind}
                         school={editingCommunity.school}
                         onChange={({ kind, school }) => setEditingCommunity({ ...editingCommunity, kind, school })}
+                      />
+                      <SpeakerCallFields
+                        communityId={editingCommunity.id}
+                        open={editingCommunity.speakersOpen}
+                        note={editingCommunity.speakersNote}
+                        question={editingCommunity.speakersQuestion}
+                        onChange={(next) => setEditingCommunity({ ...editingCommunity, ...next })}
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <div>

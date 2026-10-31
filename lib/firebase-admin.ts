@@ -183,6 +183,12 @@ export interface SpeakerSubmission {
   /** Accessibility, scheduling or A/V requests. */
   accommodations?: string | null;
   eventId?: string;
+  /** Set on a group call's submission (eventId `group:<id>`), with the group's name as it was then. */
+  communityId?: string | null;
+  groupName?: string | null;
+  /** The organizer's extra question, worded as asked, and the speaker's answer. */
+  question?: string | null;
+  answer?: string | null;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
   /** Who last set the status in the admin, and when. */
@@ -343,6 +349,15 @@ export interface Community {
   kind?: 'tech' | 'student';
   school?: string | null;
   pastLeads?: PastLead[];
+  /**
+   * The group's standing call for speakers (lib/speaker-calls.ts). Open, its
+   * group page shows a "Speak at …" form and /speak lists it.
+   */
+  speakersOpen?: boolean;
+  /** What the group is looking for, in the organizer's words. */
+  speakersNote?: string | null;
+  /** One extra question the organizer adds to the form, as RSVPs allow. */
+  speakersQuestion?: string | null;
   createdAt: Date;
   updatedAt?: Date;
 }

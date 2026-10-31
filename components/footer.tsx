@@ -389,6 +389,7 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
                   the city's open data) were reachable only by URL and the sitemap. */}
               <h3 className="text-white text-[13px] font-semibold uppercase tracking-wider mt-8 mb-5">More from DEVSA</h3>
               <ul className="space-y-3.5">
+                <li><Link href="/speak" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Give a talk</Link></li>
                 <li><Link href="/tv" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">DEVSA TV</Link></li>
                 <li><Link href="/localhost" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">localhost:210</Link></li>
               </ul>

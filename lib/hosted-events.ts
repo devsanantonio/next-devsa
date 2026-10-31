@@ -1,4 +1,5 @@
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { groupCallEventId } from '@/lib/speaker-calls';
 import { PYSA_EVENT_ID, PYSA_HOST_COMMUNITY } from '@/data/pysa/2026';
 import {
   AG_EVENT_ID,
@@ -32,19 +33,24 @@ export const HOSTED_EVENTS: {
 ];
 
 /**
- * The eventIds an organizer's community hosts, or [] when it hosts none.
+ * The eventIds an organizer's community owns: always its own group call, then any
+ * conference it hosts. [] only when there is no community.
  * Used both to scope what an organizer reads and what they may change, so the
  * two can never disagree.
  */
 export async function hostedEventIdsFor(communityId: string | undefined): Promise<string[]> {
   if (!communityId) return [];
+  // Every group owns its own standing call for speakers (lib/speaker-calls.ts),
+  // whether or not it hosts a conference.
+  const own = groupCallEventId(communityId);
   const communityDoc = await getDb().collection(COLLECTIONS.COMMUNITIES).doc(communityId).get();
   const communityName = communityDoc.exists
     ? (communityDoc.data()?.name as string | undefined)
     : undefined;
-  return HOSTED_EVENTS.filter(
+  const conferences = HOSTED_EVENTS.filter(
     (ev) =>
       communityName?.trim().toLowerCase() === ev.communityName.toLowerCase() ||
       (ev.communityId !== undefined && communityId === ev.communityId)
   ).map((ev) => ev.eventId);
+  return [own, ...conferences];
 }
