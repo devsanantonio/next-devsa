@@ -426,7 +426,12 @@ export function FollowTheWater({ today }: { today: { events: number; groups: str
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
       {/* The map stays put while the story scrolls past it, square and never taller than the window, so a laptop
           sees all of it. */}
-      <div className="sticky top-16 z-10 -mx-4 bg-neutral-950/95 px-4 py-2 lg:order-2 lg:top-24 lg:mx-0 lg:w-[min(calc(100svh-10rem),58vw)] lg:self-start lg:bg-transparent lg:p-0">
+      {/* On a phone the cards scroll up under the map. Two strips stop them reappearing:
+          one above the map, filling the gap to the navbar (41px; top-16 leaves 23px),
+          and a blurred fade below it, so a card's text dissolves into the map's edge
+          instead of sliding under a hard line. Both are phone-only; from lg the map
+          sits beside the cards. */}
+      <div className="sticky top-16 z-10 -mx-4 bg-neutral-950 px-4 py-2 before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-8 before:bg-neutral-950 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-16 after:bg-linear-to-b after:from-neutral-950 after:via-neutral-950/70 after:to-transparent after:backdrop-blur-sm after:[mask-image:linear-gradient(to_bottom,black,transparent)] lg:order-2 lg:top-24 lg:mx-0 lg:w-[min(calc(100svh-10rem),58vw)] lg:self-start lg:bg-transparent lg:p-0 lg:before:hidden lg:after:hidden">
         <div className="relative overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a]">
           <canvas
             ref={canvasRef}

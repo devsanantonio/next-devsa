@@ -235,9 +235,8 @@ export function LocalhostHero() {
               that lists them. The title above is the answer: the bridge to every agency
               publishing it. (The comparison to DEVSA as the bridge between the city's
               tech groups came out: it trailed the hook.) "Agencies", never "partners": DEVSA is affiliated with none
-              of them, and the page says so. Not "a starter for each source": there are
-              six starters for seven publishers. The experiments are the row below, so
-              the sentence stops at the bridge. */}
+              of them, and the page says so. There is now a starter for every publisher (ten in all, Nov 2026), but the
+              sentence stops at the bridge; the experiments are the row below. */}
           {/* One lead paragraph under the title, as the conference pages do it: the hook
               opens it in white, then the bridge. The hook was set at display size for a
               while and competed with the title. */}

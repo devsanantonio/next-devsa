@@ -5,6 +5,8 @@ import { LocalhostHero } from "@/components/localhost/localhost-hero"
 import { FollowTheWater } from "@/components/localhost/follow-the-water"
 import { OutrunThe4 } from "@/components/localhost/outrun-the-4"
 import { WatchItGetBuilt } from "@/components/localhost/watch-it-get-built"
+import { LayerCatalog } from "@/components/localhost/layer-catalog"
+import { getCatalog, getChanges, getStatus } from "@/lib/localhost-data"
 import community from "@/public/localhost/community.json"
 import permits from "@/public/localhost/permits.json"
 import via from "@/public/localhost/via-route-4.json"
@@ -77,24 +79,40 @@ const eyebrowLight = "font-mono text-[11px] uppercase tracking-widest text-gray-
 const h2Light = h2.replace("text-white", "text-gray-900")
 const REPO = "https://github.com/devsanantonio/localhost"
 
-/** Questions to start from. Each section above already links its own starter; two of these reach past the
-    three pieces to the publishers below, through peek. Curiosity, not products. */
+/** Questions to start from, each one command away. Output is real, from a run on Nov 2, 2026, trimmed;
+    the numbers move as the agencies update. Curiosity, not products. */
 const IDEAS = [
-  { slug: "peek", source: "City of San Antonio · Alamo Area MPO", title: "Where the money goes.", body: "The City's 370 bond projects and the MPO's 68 funded ones, on one map. Which districts' projects run behind?" },
-  { slug: "peek", source: "Alamo Area MPO · USGS", title: "When it rains.", body: "6,372 road segments, each scored for how much of it floods. Which roads on your commute go under first?" },
-  { slug: "permits-near-you", source: "City of San Antonio", title: "The wait.", body: "A new $18 million building at 425 San Pedro Ave waited 785 days for its permits. Which kinds of work wait longest, and where?" },
+  {
+    slug: "funded-projects", source: "Alamo Area MPO · City of San Antonio", title: "Where the money goes.",
+    body: "The MPO's 68 funded road and transit projects for 2027–2030, and the City's 370 bond projects, on one map. Which districts' projects run behind?",
+    run: "python3 starters/funded-projects/main.py",
+    output: ["2027   31 projects   $1,030.0M", "2028   18 projects     $842.9M", "2029    9 projects     $121.9M", "2030   10 projects      $77.1M"],
+  },
+  {
+    slug: "funded-projects", source: "Alamo Area MPO · USGS", title: "When it rains.",
+    body: "6,372 road segments, each scored for how much of it floods. Which roads on your commute go under first? creek-levels adds the live gauges.",
+    run: "python3 starters/funded-projects/main.py --flooding",
+    output: ["2.36 mi   3 segments  Mission Pkwy", "1.61 mi   2 segments  Elbel Rd", "1.39 mi   2 segments  Evans"],
+  },
+  {
+    slug: "permits-near-you", source: "City of San Antonio", title: "The wait.",
+    body: "A new $18 million building at 425 San Pedro Ave waited 785 days for its permits. Which kinds of work wait longest, and where?",
+    run: "python3 starters/permits-near-you/main.py",
+    output: ["28 building permits within 150 m of Geekdom's corner", "Median wait from filing to permit: 63 days."],
+  },
 ]
 
-/** Who publishes San Antonio's open data. The first three have a piece above; the first seven are the hero's "Seven APIs". USGS is the federal extra, labeled as such. */
+/** Who publishes San Antonio's open data. The first three have a piece above; the first seven are the hero's "Seven APIs". USGS is the federal extra, labeled as such.
+    catalogName is how the repo's weekly catalog and check name each publisher. */
 const PUBLISHERS = [
-  { name: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", tags: "1718 · 1896 · census · districts" },
-  { name: "City of San Antonio", href: "https://data.sanantonio.gov", tags: "permits · 311 · bonds · streets" },
-  { name: "VIA Metropolitan Transit", href: "https://www.viainfo.net/developers-resources/", tags: "routes · stops · live buses" },
-  { name: "San Antonio River Authority", href: "https://sariverauthority-sara-tx.opendata.arcgis.com", tags: "creeks · floodplains · water quality" },
-  { name: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", tags: "road projects · flood risk · bikes" },
-  { name: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, tags: "housing · low water crossings" },
-  { name: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", tags: "aquifer level · springflow" },
-  { name: "USGS", href: "https://waterdata.usgs.gov", tags: "federal · live creek gauges, every 15 min" },
+  { name: "Bexar County", catalogName: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", tags: "1718 · 1896 · census · districts" },
+  { name: "City of San Antonio", catalogName: "City of San Antonio", href: "https://data.sanantonio.gov", tags: "permits · 311 · bonds · streets" },
+  { name: "VIA Metropolitan Transit", catalogName: "VIA Metropolitan Transit", feeds: true, href: "https://www.viainfo.net/developers-resources/", tags: "routes · stops · live buses" },
+  { name: "San Antonio River Authority", catalogName: "San Antonio River Authority", href: "https://sariverauthority-sara-tx.opendata.arcgis.com", tags: "creeks · floodplains · water quality" },
+  { name: "Alamo Area MPO", catalogName: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", tags: "road projects · flood risk · bikes" },
+  { name: "Opportunity Home San Antonio", catalogName: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, tags: "housing · low water crossings" },
+  { name: "Edwards Aquifer Authority", catalogName: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", tags: "aquifer level · springflow" },
+  { name: "USGS", catalogName: "U.S. Geological Survey", feeds: true, href: "https://waterdata.usgs.gov", tags: "federal · live creek gauges, every 15 min" },
 ]
 
 /** Real output from `python3 main.py --find flood` in starters/peek, October 29, 2026: the first lines of 33. */
@@ -153,7 +171,13 @@ function BuildYourOwn({
   )
 }
 
-export default function LocalhostPage() {
+const shortDay = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })
+
+export default async function LocalhostPage() {
+  // The repo's weekly check: catalog counts, what changed, which sources answered. Each can be null.
+  const [catalog, changes, status] = await Promise.all([getCatalog(), getChanges(), getStatus()])
+  const checkedOn = status ? shortDay(status.checked_at.slice(0, 10)) : ""
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <LocalhostHero />
@@ -256,7 +280,8 @@ export default function LocalhostPage() {
             <span className="font-light italic text-gray-500">The data is open, and so is the code.</span>
           </h2>
           <p className="mt-5 max-w-2xl text-gray-600">
-            Six starters, one Python file each, running in under a minute. Start from a source, or search all seven at once.
+            Ten starters, one Python file each, at least one for every publisher, each running in under a minute and
+            each taking <code className="font-mono text-[0.9em] text-gray-900">--json</code>. Start from a source, or search all seven at once.
           </p>
 
           {/* Shown, not described: peek searching every publisher for one word. Real output, trimmed. */}
@@ -299,12 +324,70 @@ export default function LocalhostPage() {
                   <a href={p.href} className="group flex h-full flex-col justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors duration-200 hover:border-gray-300 hover:bg-white">
                     <span className="text-sm font-medium leading-snug text-gray-900">{p.name}</span>
                     <span className="font-mono text-[11px] leading-relaxed text-gray-600 group-hover:text-gray-900">{p.tags}</span>
+                    {(() => {
+                      const count = catalog?.by_publisher[p.catalogName]
+                      const answered = status?.publishers.find((x) => x.publisher === p.catalogName)
+                      if (count === undefined && !answered) return null
+                      return (
+                        <span className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-gray-200 pt-2 text-[11px] text-gray-600">
+                          {count !== undefined && <span>{count.toLocaleString()} {p.feeds ? (count === 1 ? "feed" : "feeds") : count === 1 ? "layer" : "layers"}</span>}
+                          {answered && (
+                            <span className="inline-flex items-center gap-1">
+                              <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${answered.ok ? "bg-emerald-600" : "bg-amber-600"}`} />
+                              {answered.ok ? "answered" : "didn't answer"} {checkedOn}
+                            </span>
+                          )}
+                        </span>
+                      )
+                    })()}
                   </a>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-xs text-gray-500">Each publisher&apos;s data is its own, under its own terms. DEVSA isn&apos;t affiliated with any of them.</p>
+            <p className="mt-3 text-xs text-gray-600">
+              Each publisher&apos;s data is its own, under its own terms. DEVSA isn&apos;t affiliated with any of them.
+              {status && " Layer counts and answers come from the repo's weekly check, which runs every starter against its live source."}
+            </p>
           </div>
+
+          {/* The catalog: one place to find them, literally. Every public layer, searchable, refreshed weekly. */}
+          {catalog && (
+            <div id="catalog" className="mt-16 scroll-mt-24 border-t border-gray-200 pt-12">
+              <p className={eyebrowLight}>Every layer, one list</p>
+              <p className="mt-4 max-w-2xl text-balance font-sans text-2xl font-black leading-tight tracking-[-0.01em] text-gray-900 md:text-3xl">
+                {catalog.count.toLocaleString()} public layers.{" "}
+                <span className="font-light italic text-gray-500">Search them all.</span>
+              </p>
+              <p className="mt-3 max-w-2xl text-gray-600">
+                Every public map layer from every publisher, plus VIA&apos;s feeds, the USGS gauges and the J-17 well.
+                Rebuilt every Monday, and in the repo as{" "}
+                <a href={`${REPO}/blob/main/data/catalog.json`} className="font-mono text-[0.9em] text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">data/catalog.json</a>.
+              </p>
+              <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                <LayerCatalog publishers={Object.entries(catalog.by_publisher).map(([name, count]) => ({ name, count }))} />
+                {changes && changes.changes.length > 0 && (
+                  <div>
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-gray-600">Updated in the last two weeks</p>
+                    <ul className="mt-3 divide-y divide-gray-200 border-y border-gray-200">
+                      {changes.changes.slice(0, 8).map((c) => (
+                        <li key={c.url}>
+                          <a href={c.url} target="_blank" rel="noopener noreferrer" className="group block py-3">
+                            <span className="block truncate text-sm font-medium text-gray-900 group-hover:underline">
+                              {c.title.replace(/_/g, " ")}
+                              {c.change === "new" && <span className="ml-2 font-mono text-[10px] uppercase tracking-widest text-[#d6335c]">new</span>}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-gray-600">
+                              {c.publisher} · {shortDay(c.modified)}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* After the tiles, a change of pace rather than a third grid: the questions read as a numbered
               list, set off by a rule, the way the page's own sections are. */}
@@ -325,7 +408,17 @@ export default function LocalhostPage() {
                     <span className="min-w-0">
                       <span className="block text-lg font-semibold text-gray-900">{idea.title}</span>
                       <span className="mt-1 block text-gray-600">{idea.body}</span>
-                      <span className="mt-2 block font-mono text-[11px] uppercase tracking-widest text-gray-500">{idea.source}</span>
+                      <span className="mt-2 block font-mono text-[11px] uppercase tracking-widest text-gray-600">{idea.source}</span>
+                      {/* The answer is one command away: the command, and a few lines of what it printed. */}
+                      <span className="mt-4 block overflow-x-auto rounded-lg bg-[#0a0a0a] px-4 py-3 font-mono text-[12px] leading-relaxed text-white/70">
+                        <span className="block whitespace-nowrap">
+                          <span className="select-none text-[#ff8200]">$ </span>
+                          <span className="text-white">{idea.run}</span>
+                        </span>
+                        {idea.output.map((line) => (
+                          <span key={line} className="block whitespace-pre">{line}</span>
+                        ))}
+                      </span>
                     </span>
                     <span className="col-start-2 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-gray-600 transition-colors group-hover:text-gray-900 md:col-start-3">
                       starters/{idea.slug} <ArrowUpRight className="h-3.5 w-3.5" />
@@ -334,6 +427,36 @@ export default function LocalhostPage() {
                 </li>
               ))}
             </ol>
+          </div>
+
+          {/* Their own agent, their own model account: nothing hosted, nothing billed to DEVSA. */}
+          <div className="mt-16 grid gap-6 border-t border-gray-200 pt-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:gap-12">
+            <div>
+              <p className={eyebrowLight}>Use it with your agent</p>
+              <p className="mt-4 text-balance font-sans text-2xl font-black leading-tight tracking-[-0.01em] text-gray-900 md:text-3xl">
+                Ask San Antonio.{" "}
+                <span className="font-light italic text-gray-500">From your own Claude Code.</span>
+              </p>
+              <p className="mt-3 text-gray-600">
+                The repo&apos;s MCP starter gives any agent the data as tools: search every publisher, look inside a layer,
+                run a starter. It runs on your machine, on your own model account, and it hands your agent the same rules
+                as{" "}
+                <a href={`${REPO}/blob/main/AGENTS.md`} className="font-mono text-[0.9em] text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">AGENTS.md</a>:
+                credit every source, no affiliation claims, no neighborhood crime rankings.
+              </p>
+              <a href={`${REPO}/tree/main/starters/mcp`} className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">
+                Claude Desktop and Cursor setup <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+            <div className="min-w-0 self-start overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a]">
+              <p className="border-b border-neutral-800 px-5 py-3 font-mono text-[11px] uppercase tracking-widest text-white/50">Claude Code</p>
+              <pre className="overflow-x-auto px-5 py-4 font-mono text-[12px] leading-relaxed text-white/70">
+                <span className="text-[#ff8200]">$</span> <span className="text-white">claude mcp add localhost-210 -- python3 starters/mcp/main.py</span>{"\n\n"}
+                <span className="text-white/50">&gt; Which council district calls 311 most about potholes?</span>{"\n"}
+                <span className="text-white/50">&gt; What&apos;s the aquifer at today?</span>{"\n"}
+                <span className="text-white/50">&gt; Find layers about bike lanes. What&apos;s in the newest?</span>
+              </pre>
+            </div>
           </div>
 
           {/* One button and three quiet links, where there were four buttons in a row: the

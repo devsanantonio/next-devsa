@@ -105,6 +105,11 @@ export const QUESTIONS: readonly string[] = [
   'Which kind of company, campus or organization would you love to see host a meetup?',
   'Group organizers: what’s coming up that people here should know about?',
   'What talk would you give at a San Antonio meetup if someone asked you tomorrow?',
+  // San Antonio's open data (devsa.community/localhost). Appended so the rotation's earlier days don't move.
+  'There are over 1,500 public map layers about San Antonio. What would you search for first?',
+  'If you could put any two San Antonio datasets on one map, which two, and what would you look for?',
+  'What’s a question about San Antonio you think the city’s open data could answer?',
+  'Have you ever built something with public data? Share it, even if it was a spreadsheet.',
 ];
 
 export const POLLS: readonly DiscordPoll[] = [
