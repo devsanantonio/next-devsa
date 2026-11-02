@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Download, Loader2, Mail, Trash2, Users } from "lucide-react"
+import { Download, Loader2, Mail, ScanLine, Trash2, Users } from "lucide-react"
+import { CheckinDoor } from "@/components/admin/checkin-door"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { messageWindow, MESSAGE_LIMIT } from "@/lib/event-messages"
 
@@ -148,6 +149,20 @@ export function RsvpsTab({
       onError("Couldn't move them up")
     } finally {
       setPromotingRsvp(null)
+    }
+  }
+
+  /** The check-in screen for one event (components/admin/checkin-door.tsx).
+      ?checkin=<eventId> opens it directly, so a door phone can keep it bookmarked. */
+  const [doorEventId, setDoorEventId] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("checkin"),
+  )
+  const closeDoor = () => {
+    setDoorEventId(null)
+    const url = new URL(window.location.href)
+    if (url.searchParams.has("checkin")) {
+      url.searchParams.delete("checkin")
+      window.history.replaceState(null, "", url)
     }
   }
 
@@ -393,10 +408,18 @@ export function RsvpsTab({
                           <Mail className="h-3.5 w-3.5" />
                           Message attendees
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setDoorEventId(eventId)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#ef426f] px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#d63760]"
+                        >
+                          <ScanLine className="h-3.5 w-3.5" />
+                          Check in
+                        </button>
                       </div>
                     </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-175">
+                    <div className="relative overflow-x-auto">
+                      <table className="admin-table w-full min-w-175">
                         <thead>
                           <tr className="border-b border-neutral-800">
                             <th className="w-16 text-left py-2.5 px-4 text-[11px] font-bold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Came</th>
@@ -497,6 +520,21 @@ export function RsvpsTab({
             )
           })()}
         </div>
+
+      {doorEventId && (() => {
+        const ev = events.find((e) => e.id === doorEventId)
+        const sample = rsvps.find((r) => r.eventId === doorEventId)
+        if (!ev && !sample) return null
+        return (
+          <CheckinDoor
+            event={{ id: doorEventId, title: ev?.title ?? "This event", date: ev?.date }}
+            rows={rsvps.filter((r) => r.eventId === doorEventId)}
+            setRows={setRsvps}
+            adminFetch={adminFetch}
+            onClose={closeDoor}
+          />
+        )
+      })()}
 
       {/* Message attendees: subject and note, to everyone going (not the waitlist). */}
       {messageTarget && (

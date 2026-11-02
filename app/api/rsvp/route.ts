@@ -440,15 +440,65 @@ export async function PATCH(request: NextRequest) {
   try {
     const email = await verifiedEmail(request);
     if (!email) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
-    const { rsvpId, action, value } = await request.json().catch(() => ({}));
-    if (!rsvpId || (action !== 'checkin' && action !== 'promote')) {
-      return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
-    }
+    const body = await request.json().catch(() => ({}));
+    const { rsvpId, action, value } = body;
 
     const db = getDb();
     const adminQuery = await db.collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get();
     if (adminQuery.empty) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     const admin = adminQuery.docs[0].data() as ApprovedAdmin;
+
+    // A walk-in, added at the door by the event's organizers (the check-in screen).
+    // Saved under an id made from the device's clientId, so the offline queue
+    // sending it twice writes one person, not two. Checked in at once, and no
+    // email: they're standing there, and the reminder skips anyone without one.
+    if (action === 'walkin') {
+      const eventId = typeof body.eventId === 'string' ? body.eventId : '';
+      const clientId = typeof body.clientId === 'string' ? body.clientId.replace(/[^\w-]/g, '').slice(0, 64) : '';
+      const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+      const firstName = text(body.firstName, 100);
+      const lastName = text(body.lastName, 100);
+      const walkInEmail = text(body.email, 200).toLowerCase();
+      if (!eventId || !clientId || !firstName) {
+        return NextResponse.json({ error: 'A name is needed' }, { status: 400 });
+      }
+      if (walkInEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(walkInEmail)) {
+        return NextResponse.json({ error: "That email doesn't look right" }, { status: 400 });
+      }
+      const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(eventId).get();
+      if (!eventDoc.exists) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+      const eventData = eventDoc.data()!;
+      if (!isAdminRole(admin.role) && !isHostedBy(eventData, admin.communityId)) {
+        return NextResponse.json({ error: 'Unauthorized - not your event' }, { status: 403 });
+      }
+      const ref = db.collection(COLLECTIONS.EVENT_RSVPS).doc(`door-${clientId}`);
+      const existing = await ref.get();
+      if (!existing.exists) {
+        const walkIn: EventRSVP = {
+          eventId,
+          eventSlug: eventData.slug || '',
+          communityId: String(eventData.communityId || '').split(',')[0].trim(),
+          firstName,
+          lastName,
+          email: walkInEmail,
+          joinNewsletter: false,
+          submittedAt: new Date(),
+          checkedInAt: new Date(),
+          checkedInBy: email,
+          source: 'door',
+        };
+        await ref.set(walkIn);
+      }
+      const saved = (await ref.get()).data()!;
+      return NextResponse.json({
+        success: true,
+        rsvp: { id: ref.id, ...saved, submittedAt: saved.submittedAt?.toDate?.()?.toISOString() ?? null, checkedInAt: saved.checkedInAt?.toDate?.()?.toISOString() ?? null },
+      });
+    }
+
+    if (!rsvpId || (action !== 'checkin' && action !== 'promote')) {
+      return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
+    }
 
     const rsvpRef = db.collection(COLLECTIONS.EVENT_RSVPS).doc(rsvpId);
     const rsvpDoc = await rsvpRef.get();
@@ -464,7 +514,7 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'checkin') {
       const checkedInAt = value === false ? null : new Date();
-      await rsvpRef.update({ checkedInAt });
+      await rsvpRef.update({ checkedInAt, checkedInBy: checkedInAt ? email : null });
       return NextResponse.json({ success: true, checkedInAt: checkedInAt?.toISOString() ?? null });
     }
 

@@ -117,7 +117,9 @@ const when = (iso: string) =>
 
 function Tile({ label, action, children, className = "" }: { label: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 ${className}`}>
+    // min-w-0: a grid item won't shrink below its content otherwise, and one long
+    // event title stretched every tile, and the page, past a phone's width.
+    <section className={`min-w-0 rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">{label}</h3>
         {action}
@@ -244,6 +246,10 @@ export function AdminOverview(props: {
   editGroup: () => void
   /** Open the group editor at its call-for-speakers setting. */
   openSpeakerCall: () => void
+  /** Open the check-in screen for an event (components/admin/checkin-door.tsx). */
+  openCheckin: (eventId: string) => void
+  /** Today, as Date.toDateString() on the client: read once by the page, so render stays pure. */
+  todayKey: string
   editProfile: () => void
 }) {
   const isOrganizer = props.role === "organizer"
@@ -433,6 +439,12 @@ function OrganizerView(p: ViewProps & { nameOf: (id: string) => string }) {
 
         <Tile label="Quick actions">
           <div className="space-y-2">
+            {/* On the day: the door, first. An event of theirs today that takes RSVPs here. */}
+            {p.events
+              .filter((e) => ours(e) && e.rsvpEnabled && e.status !== "draft" && new Date(e.date).toDateString() === p.todayKey)
+              .map((e) => (
+                <Action key={e.id} primary onClick={() => p.openCheckin(e.id)}>Check in: {e.title}</Action>
+              ))}
             <Action primary onClick={p.addEvent}><Plus className="h-4 w-4" /> Add an event</Action>
             <Action onClick={p.editGroup}>Edit your group</Action>
             {/* The call for speakers lives in the group editor, where it was easy to

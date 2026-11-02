@@ -169,3 +169,20 @@ Since 2026-10-28 the Communities tab is also a directory of who runs each group,
 Newsletter, Volunteers, Access Requests, Manage Admins and Confluencia are all built from `components/admin/data-table.tsx`: `TabHeader` (title, one-line summary of counts, actions), `DataTable`/`Th`/`Tr`/`Td`, `PrimaryCell` for the first column, `Pill`, `DateCell`, `LongText` for notes and messages, `RowAction(s)`, `EmptyState` and `ToolbarButton`. A new list tab should be assembled from these, not from class strings copied out of a neighbor — that is how the five tabs ended up with five header styles.
 
 Readable text never goes below `text-neutral-400`. On the admin panel's ground `neutral-500` measures 4.3:1 and `neutral-600` 2.5:1, both under AA. Speakers is a review queue (list + detail) rather than a table, but its header uses `TabHeader` too. **Get Involved** is a table whose rows open a `SlideDrawer` (`Tr` takes `onClick`; give the row a real button too): the whole inquiry, its status, its past replies, and a reply box using `RichTextEditor`. `POST /api/admin/get-involved` sends the reply through Resend in the branded shell (`lib/emails/get-involved-reply.ts`, markdown rendered by `lib/emails/markdown.ts` with the event parser), with an optional button, reply-to the sending admin; `test: true` sends it to that admin and saves nothing. A combobox inside a table or drawer needs `floating`, or the scroll container clips its menu.
+
+## Check-in at the door
+
+`components/admin/checkin-door.tsx`, opened from each event's **Check in** button in the RSVPs tab, from the organizer Overview's "Check in: {event}" on the day of an event, or directly with `?tab=rsvps&checkin=<eventId>` (a door phone can keep it bookmarked). Built after next-sasw's door: a full-screen, phone-first screen with a 56px pinned search, a full-size Check in per row, a loud confirmation bar with Undo that clears itself, and "Add {name}" for a walk-in when nobody matches. Writes go through `lib/checkin-queue.ts`, which keeps them on the device when venue wifi drops and replays them, so every operation must stay safe to send twice:
+
+- `PATCH /api/rsvp` `{ rsvpId, action: "checkin", value }` sets or clears `checkedInAt` (and `checkedInBy`).
+- `PATCH /api/rsvp` `{ action: "walkin", eventId, clientId, firstName, lastName?, email? }` writes `door-<clientId>` once, already checked in, `source: "door"`, and sends no email. Admins, or organizers of a hosting group.
+
+## The portal on a phone
+
+Every tab must fit 390px without the page widening. Phones answer a page wider than the screen by zooming the whole portal out, so "the page doesn't scroll sideways" is not the test: measure `document.documentElement.scrollWidth` with a mobile viewport. Three causes found on 2026-11-01, worth checking first:
+
+- A horizontal scroller (`overflow-x-auto`) that isn't `relative`: an absolutely positioned descendant, like a header's `sr-only` label, escapes it and widens the page. `DataTable`'s wrapper is relative for this reason.
+- A grid or flex item without `min-w-0`, which won't shrink below its content (the Overview's tiles, the partner cards).
+- Unbreakable text (a URL in a description) inside such an item.
+
+Under `sm`, `.admin-table` (globals.css) turns `DataTable` rows and the RSVP list into stacked cards, and the page's panel drops its border and padding.

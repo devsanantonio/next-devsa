@@ -498,3 +498,18 @@ body {
     animation: none;
   }
 }
+
+/*
+ * Admin tables on a phone (components/admin/data-table.tsx, and the RSVP list).
+ * A 44rem table in a 390px screen scrolled sideways inside its box, and the
+ * squeezed columns made every row tall. Under sm each row becomes a card: the
+ * header hides, cells stack, and actions move to the left under the row.
+ */
+@media (max-width: 639px) {
+  .admin-table { min-width: 0 !important; }
+  .admin-table thead { display: none; }
+  .admin-table tr { display: block; padding: 0.75rem 0; }
+  .admin-table td { display: block; padding: 0.2rem 1rem !important; text-align: left !important; }
+  .admin-table td:empty { display: none; }
+  .admin-table [data-row-actions] { justify-content: flex-start; margin-top: 0.25rem; }
+}

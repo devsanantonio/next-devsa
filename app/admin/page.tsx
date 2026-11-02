@@ -631,6 +631,8 @@ export default function AdminPage() {
   // read it from the event. Reset whenever the drawer opens on another event or
   // closes, adjusting state during render (React's documented pattern for state
   // that follows something else) rather than in an effect.
+  // Today, read once on the client for the Overview's "Check in" action (render stays free of Date.now()).
+  const [overviewToday] = useState(() => new Date().toDateString())
   const [eventRegChoice, setEventRegChoice] = useState<"external" | "rsvp" | "none" | null>(null)
   const regChoiceFor = showEditEvent ? (editingEvent?.id ?? "new") : null
   const [regChoiceKey, setRegChoiceKey] = useState<string | null>(null)
@@ -2808,7 +2810,7 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-8">
 
         {/* Success/Error messages */}
         {successMessage && (
@@ -2826,7 +2828,9 @@ export default function AdminPage() {
         )}
 
         {/* Content */}
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 sm:p-8">
+        {/* The panel every tab sits in. No chrome on a phone: a bordered, padded box
+            inside the padded page left tabs ~300px of a 390px screen. */}
+        <div className="sm:rounded-2xl sm:border sm:border-neutral-800 sm:bg-neutral-900/50 sm:p-8">
           {/* Newsletter Tab - Admin Only */}
           {activeTab === "newsletter" && hasAdminAccess(adminRole) && (
             <div>
@@ -3705,7 +3709,7 @@ export default function AdminPage() {
                 </div>
                 <button
                   onClick={handleOpenCreateEvent}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                  className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors sm:px-5"
                 >
                   <Plus className="h-4 w-4" />
                   Create Event
@@ -3724,11 +3728,12 @@ export default function AdminPage() {
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 
                 const renderEventCard = (event: CalendarEvent) => (
-                  <div key={event.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-6 hover:bg-neutral-800/50 transition-colors">
+                  <div key={event.id} className="rounded-xl border border-neutral-800 bg-neutral-800/30 p-4 sm:p-6 hover:bg-neutral-800/50 transition-colors">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-bold tracking-tight text-white truncate">{event.title}</h3>
+                        {/* On a phone the title gets its own line, whole, and the badges wrap under it. */}
+                        <div className="flex flex-wrap items-center gap-2 mb-2 sm:gap-3">
+                          <h3 className="basis-full break-words text-lg font-bold tracking-tight text-white sm:basis-auto sm:truncate">{event.title}</h3>
                           <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 ${
                             event.status === "published"
                               ? "bg-green-500/20 text-green-400"
@@ -3805,7 +3810,7 @@ export default function AdminPage() {
                         </div>
                         <p className="text-neutral-400 text-sm mt-3 line-clamp-2">{eventDescriptionToPlainText(event.description, { singleLine: true })}</p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                         {event.isStatic ? (
                           <span className="text-xs text-neutral-500 italic">
                             Edit in data/events.ts
@@ -4304,9 +4309,10 @@ export default function AdminPage() {
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
-                      {/* Date and Time - using separate fields for accuracy */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
+                      {/* Date and Time - using separate fields for accuracy. On a phone the
+                          date takes its own row: three columns cut the values off. */}
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <div className="col-span-2 sm:col-span-1">
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">
                             Date
                           </label>
@@ -4773,6 +4779,14 @@ export default function AdminPage() {
                 setActiveTab("communities")
                 if (mine) handleEditCommunity(mine)
               }}
+              openCheckin={(eventId) => {
+                // The RSVPs tab opens the door from ?checkin= when it mounts.
+                const url = new URL(window.location.href)
+                url.searchParams.set("checkin", eventId)
+                window.history.replaceState(null, "", url)
+                setActiveTab("rsvps")
+              }}
+              todayKey={overviewToday}
               openSpeakerCall={() => {
                 // The call's own panel, at the top of the Speakers tab: focus its box.
                 setActiveTab("speakers")
@@ -4796,7 +4810,7 @@ export default function AdminPage() {
                   {hasAdminAccess(adminRole) && communitiesSource === 'firestore' && (
                     <button
                       onClick={() => setShowCreateCommunity(true)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors sm:px-5"
                     >
                       <Plus className="h-4 w-4" />
                       Create Community
@@ -5589,7 +5603,7 @@ export default function AdminPage() {
                 <h2 className="text-xl font-bold tracking-tight text-white">Partners</h2>
                 <button
                   onClick={() => { setNewPartner(emptyPartner); setShowCreatePartner(true) }}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors"
+                  className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors sm:px-5"
                 >
                   <Plus className="h-4 w-4" />
                   Create Partner
@@ -5610,7 +5624,7 @@ export default function AdminPage() {
                     <div
                       key={partner.id}
                       {...partnerOrder.getRowProps(partner.id)}
-                      className={`flex gap-4 rounded-xl border bg-neutral-800/30 p-4 transition-colors ${
+                      className={`flex min-w-0 gap-4 rounded-xl border bg-neutral-800/30 p-4 transition-colors ${
                         partnerOrder.draggingId === partner.id
                           ? "border-[#ef426f]/60 opacity-50"
                           : partnerOrder.overId === partner.id
@@ -5653,7 +5667,7 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-xs text-neutral-400">{partner.description}</p>
+                        <p className="mt-1 line-clamp-2 break-words text-xs text-neutral-400">{partner.description}</p>
                         {partner.website && (
                           <a
                             href={partner.website}

@@ -568,6 +568,10 @@ export interface EventRSVP {
   promotedAt?: Date | null;
   /** Ticked at the door; what turnout is counted from. */
   checkedInAt?: Date | null;
+  /** "door": added at check-in by an organizer, a walk-in with no RSVP. Absent for the public form. */
+  source?: 'door';
+  /** Who checked them in or added them at the door. */
+  checkedInBy?: string | null;
 }
 
 // AI Conference types

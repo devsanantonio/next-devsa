@@ -48,8 +48,11 @@ export function DataTable({
   children: React.ReactNode
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-neutral-800">
-      <table className={`w-full ${minWidth} border-collapse text-left`}>{children}</table>
+    // relative: an absolutely positioned descendant (a header's sr-only label) is
+    // otherwise placed against an ancestor outside this scroller, escapes it, and
+    // widens the whole page, which phones answer by zooming the portal out.
+    <div className="relative overflow-x-auto rounded-xl border border-neutral-800">
+      <table className={`admin-table w-full ${minWidth} border-collapse text-left`}>{children}</table>
     </div>
   )
 }
@@ -238,7 +241,7 @@ export function RowAction({
 }
 
 export function RowActions({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-center justify-end gap-1">{children}</div>
+  return <div data-row-actions className="flex items-center justify-end gap-1">{children}</div>
 }
 
 export function EmptyState({ children }: { children: React.ReactNode }) {

@@ -339,7 +339,9 @@ export function DirectoryRow({
   return (
     <div {...rowProps} className={`rounded-xl border bg-neutral-800/30 transition-colors ${highlight ?? "border-neutral-800 hover:bg-neutral-800/50"}`}>
       <div className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
-        {lead}
+        {/* The drag handle: not on a phone, where dragging to reorder fights the
+            page's own scroll and the handle costs the name its width. */}
+        {lead && <span className="hidden sm:contents">{lead}</span>}
         <button
           type="button"
           onClick={onToggle}
@@ -351,7 +353,7 @@ export function DirectoryRow({
             <img src={community.logo} alt="" className="h-10 w-10 shrink-0 rounded-lg bg-neutral-900 object-contain p-1" />
           )}
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-bold text-white">{community.name}</span>
+            <span className="block line-clamp-2 break-words font-bold text-white sm:truncate">{community.name}</span>
             <span className="block truncate text-sm text-neutral-400">
               {label ?? kindLabel(community)}
               {organizers.length > 0 && ` · ${organizers.length} ${organizers.length === 1 ? "organizer" : "organizers"} listed`}

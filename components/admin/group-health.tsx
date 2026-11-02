@@ -193,7 +193,7 @@ export function GroupHealth({
       <p className="mb-3 text-[13px] text-neutral-400">
         Last 90 days, with the arrow against the 90 before. RSVPs and turnout count events that took RSVPs here; most groups use Meetup or Luma.
       </p>
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[46rem] text-left text-sm">
           <thead>
             <tr className="border-b border-neutral-800 text-[11px] uppercase tracking-wider text-neutral-400">
