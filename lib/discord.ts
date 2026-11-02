@@ -235,14 +235,32 @@ export function buildWeeklyDigestPayload(events: DigestEvent[], at: Date = new D
   };
 }
 
-export async function shareWeeklyDigestToDiscord(events: DigestEvent[]): Promise<void> {
+/** The file name the week's graphic is uploaded under, and referenced by in the embed. */
+export const WEEK_GRAPHIC_NAME = 'devsa-this-week.png';
+
+/**
+ * Posts the digest. With `graphic`, the week's social graphic (the PNG from
+ * /api/og/week/social) goes up with the message as a file and is shown as the
+ * card's image. Uploaded, not linked: a link would have Discord fetch the
+ * image on its own schedule, and the post should be a fixed snapshot of what
+ * the calendar held that Monday.
+ */
+export async function shareWeeklyDigestToDiscord(events: DigestEvent[], graphic?: ArrayBuffer | null): Promise<void> {
   if (!isEventsDiscordConfigured()) return;
 
-  const res = await fetch(DISCORD_EVENTS_WEBHOOK_URL!, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(buildWeeklyDigestPayload(events)),
-  });
+  const payload = buildWeeklyDigestPayload(events);
+  let init: RequestInit;
+  if (graphic) {
+    const embeds = payload.embeds.map((e, i) => (i === 0 ? { ...e, image: { url: `attachment://${WEEK_GRAPHIC_NAME}` } } : e));
+    const form = new FormData();
+    form.append('payload_json', JSON.stringify({ ...payload, embeds, attachments: [{ id: 0, filename: WEEK_GRAPHIC_NAME }] }));
+    form.append('files[0]', new Blob([graphic], { type: 'image/png' }), WEEK_GRAPHIC_NAME);
+    init = { method: 'POST', body: form };
+  } else {
+    init = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+  }
+
+  const res = await fetch(DISCORD_EVENTS_WEBHOOK_URL!, init);
 
   // Discord answers a rejected embed with a 400 and a body explaining which
   // limit was hit. Unread, that arrives as a digest that silently did not

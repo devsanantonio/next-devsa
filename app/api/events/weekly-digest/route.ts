@@ -5,11 +5,29 @@ import {
   shareWeeklyDigestToDiscord,
 } from '@/lib/discord';
 import { gatherWeekDigestEvents } from '@/lib/weekly-digest';
+import { GET as renderWeekGraphic } from '@/app/api/og/week/social/route';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
 /**
- * GET — posts this week's calendar to the DEVSA Discord.
+ * The week's social graphic as PNG bytes, rendered by the graphic's own route
+ * handler so Discord gets exactly what /api/og/week/social draws. Fails soft:
+ * a graphic that will not render costs the post its image, never the post.
+ */
+async function weekGraphic(origin: string, week: string): Promise<ArrayBuffer | null> {
+  try {
+    const res = await renderWeekGraphic(new NextRequest(`${origin}/api/og/week/social?week=${week}`));
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    return await res.arrayBuffer();
+  } catch (err) {
+    console.error('Weekly graphic render failed; posting without it:', err);
+    return null;
+  }
+}
+
+/**
+ * GET — posts this week's calendar to the DEVSA Discord, with the week's
+ * "This week" social graphic attached as the card's image.
  *
  * Registered in vercel.json and therefore publicly reachable, so it checks
  * CRON_SECRET before doing any work.
@@ -38,12 +56,15 @@ export async function GET(request: NextRequest) {
         // can be answered without posting to a live channel to find out.
         configured: isEventsDiscordConfigured(),
         payload: buildWeeklyDigestPayload(events),
+        // What the post will carry as its image. Open it to check the week.
+        graphic: `${request.nextUrl.origin}/api/og/week/social?week=${week}`,
       });
     }
 
     // Posts even when the week is empty — a quiet week is worth saying out
     // loud, and silence is indistinguishable from the cron having failed.
-    const posted = await shareWeeklyDigestToDiscord(events)
+    const graphic = isEventsDiscordConfigured() ? await weekGraphic(request.nextUrl.origin, week) : null;
+    const posted = await shareWeeklyDigestToDiscord(events, graphic)
       .then(() => true)
       .catch((err) => {
         console.error('Discord weekly digest failed:', err);
@@ -61,6 +82,7 @@ export async function GET(request: NextRequest) {
          state this endpoint gets checked for after a deploy. */
       configured: isEventsDiscordConfigured(),
       discord: posted,
+      graphic: !!graphic,
     });
   } catch (error) {
     console.error('Weekly digest error:', error);
