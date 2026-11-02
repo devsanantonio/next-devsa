@@ -86,9 +86,9 @@ Unsubscribe lands on `/newsletter/unsubscribe`, which asks for a click rather th
 
 ## The server reaches Firebase without a key
 
-Since 2026-11-01 the server authenticates to Google with Workload Identity Federation, not a service-account key. Each Vercel deployment's OIDC token is exchanged for short-lived credentials through the `vercel` pool in GCP project `media-analytics-proxy` (owned by jesseovr@gmail.com), impersonating `analytics-reader@…`, the same account the key belonged to. The pool's provider accepts only project `v0-nextdevsa` on the `devsa` team. `lib/firebase-admin.ts` takes this path whenever the four `GCP_*` variables are set, and falls back to `GOOGLE_SERVICE_ACCOUNT_KEY` only when they are not.
+Since 2026-11-01 the server authenticates to Google with Workload Identity Federation, not a service-account key. Each Vercel deployment's OIDC token is exchanged for short-lived credentials through the `vercel` pool in GCP project `media-analytics-proxy` (owned by jesseovr@gmail.com), impersonating `devsa-site@…`, an account whose only permission is `roles/datastore.user` conditioned to the `devsa` database. The pool's provider accepts only project `v0-nextdevsa` on the `devsa` team. `lib/firebase-admin.ts` takes this path whenever the four `GCP_*` variables are set, and falls back to `GOOGLE_SERVICE_ACCOUNT_KEY` only when they are not.
 
-Firebase Admin's Firestore accepts only a key or application-default credentials, so in keyless mode `getDb()` builds Firestore directly with the auth client. The service account has `roles/datastore.owner` and no Firebase Auth admin role; the app only calls `verifyIdToken`, which needs none.
+Firebase Admin's Firestore accepts only a key or application-default credentials, so in keyless mode `getDb()` builds Firestore directly with the auth client. `devsa-site` has no Firebase Auth admin role; the app only calls `verifyIdToken`, which needs none. The old key's account, `analytics-reader`, owned the whole project's Firestore, including the `(default)` database of a retired CRM; DEVSA no longer uses it.
 
 ## Firestore uses a NAMED database
 

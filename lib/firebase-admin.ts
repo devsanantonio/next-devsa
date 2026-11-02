@@ -15,14 +15,15 @@ let firestoreInstance: Firestore | null = null;
  * Keyless, when the four GCP_* variables are set (Vercel, from 2026-11-01). The
  * deployment's own Vercel OIDC token is exchanged with Google for credentials
  * that expire within the hour, through the `vercel` Workload Identity pool in
- * GCP project media-analytics-proxy, impersonating the same service account
- * the key belongs to. The pool's provider accepts only project v0-nextdevsa on
- * the devsa team. No long-lived secret exists for this path.
+ * GCP project media-analytics-proxy, impersonating devsa-site@, an account that
+ * can use the `devsa` Firestore database and nothing else (an IAM condition on
+ * roles/datastore.user). The pool's provider accepts only project v0-nextdevsa
+ * on the devsa team. No long-lived secret exists for this path.
  *
  *   GCP_PROJECT_NUMBER                     532183698348
  *   GCP_WORKLOAD_IDENTITY_POOL_ID          vercel
  *   GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID vercel
- *   GCP_SERVICE_ACCOUNT_EMAIL              analytics-reader@media-analytics-proxy.iam.gserviceaccount.com
+ *   GCP_SERVICE_ACCOUNT_EMAIL              devsa-site@media-analytics-proxy.iam.gserviceaccount.com
  *
  * The key, GOOGLE_SERVICE_ACCOUNT_KEY, otherwise: local development, and any
  * environment without the variables above.
