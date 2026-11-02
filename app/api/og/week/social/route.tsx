@@ -6,6 +6,7 @@ import { centralDayKey, centralWeekDayKeys, upcomingWeekDayKeys } from "@/lib/ev
 import { loadBrandFonts, loadBrandMonoFonts } from "@/lib/og-fonts"
 import { BRAND_GRADIENT_STOPS, DevsaLogoMark, LOGO_COLORS } from "@/lib/og-brand"
 import { eventCardFromData, eventHosts } from "@/lib/og-event"
+import { TXLF, TXLF_DAY_KEYS, TXLF_NAVY, TXLF_ORANGE } from "@/data/txlf"
 
 export const runtime = "nodejs"
 
@@ -30,10 +31,12 @@ const LIST_TOP = 330
 const LIST_BOTTOM = 1190
 const CARD_GAP = 20
 
-type Size = { pad: number; num: number; day: number; logo: number; meta: number; title: number; host: number }
+type Size = { pad: number; num: number; day: number; logo: number; meta: number; title: number; host: number; gap: number }
 
-const REGULAR: Size = { pad: 28, num: 84, day: 26, logo: 96, meta: 22, title: 40, host: 24 }
-const COMPACT: Size = { pad: 24, num: 62, day: 22, logo: 76, meta: 19, title: 33, host: 21 }
+const REGULAR: Size = { pad: 28, num: 84, day: 26, logo: 96, meta: 22, title: 40, host: 24, gap: CARD_GAP }
+const COMPACT: Size = { pad: 24, num: 62, day: 22, logo: 76, meta: 19, title: 33, host: 21, gap: CARD_GAP }
+/** For a six-card week, which neither size above fits (Nov 2–8, 2026, with Texas Linux Fest). */
+const TIGHT: Size = { pad: 18, num: 52, day: 19, logo: 62, meta: 17, title: 29, host: 19, gap: 14 }
 
 /** Left of the title: date column and logo tile, with their gaps. */
 const textWidth = (s: Size) => W - PAD * 2 - s.pad * 2 - (s.num * 1.35 + 30) - (s.logo + 30)
@@ -59,7 +62,8 @@ function cardHeight(title: string, s: Size): number {
 /**
  * The renderer has no overflow clipping, so cards too tall for the canvas run
  * over the foot. Each card's height is estimated from its title's length, the
- * regular size is used if every card fits at it, then the compact one, and
+ * regular size is used if every card fits at it, then the compact one, then the
+ * tight one, and
  * the list stops at the last card that fits; the foot counts the rest.
  */
 function fit(titles: string[]): { size: Size; count: number } {
@@ -67,13 +71,14 @@ function fit(titles: string[]): { size: Size; count: number } {
   const countAt = (s: Size) => {
     let used = 0
     for (let i = 0; i < titles.length; i++) {
-      used += cardHeight(titles[i], s) + (i ? CARD_GAP : 0)
+      used += cardHeight(titles[i], s) + (i ? s.gap : 0)
       if (used > room) return i
     }
     return titles.length
   }
   if (countAt(REGULAR) === titles.length) return { size: REGULAR, count: titles.length }
-  return { size: COMPACT, count: countAt(COMPACT) }
+  if (countAt(COMPACT) === titles.length) return { size: COMPACT, count: titles.length }
+  return { size: TIGHT, count: countAt(TIGHT) }
 }
 
 const fmt = (key: string, o: Intl.DateTimeFormatOptions) =>
@@ -105,7 +110,9 @@ function weekLabel(keys: string[]): string {
  * With no `week`, it is the week ahead: this week on a Monday, otherwise the
  * one starting next Monday (lib/event-week.ts). `?week=YYYY-MM-DD` draws the
  * week containing that date. Link-only events are left off, as on every
- * listing surface.
+ * listing surface. Texas Linux Fest, the calendar's featured event, is added
+ * from data/txlf.ts in its own navy and orange, because it is not a Firestore
+ * record; it was missing from the Nov 2–8 graphic until it was.
  */
 export async function GET(request: NextRequest) {
   const week = request.nextUrl.searchParams.get("week")
@@ -127,7 +134,7 @@ export async function GET(request: NextRequest) {
     .filter((e) => isListed(e) && e.date && !isNaN(new Date(e.date).getTime()) && inWeek.has(centralDayKey(new Date(e.date))))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  const all = await Promise.all(
+  const firestore = await Promise.all(
     docs.slice(0, MAX_CARDS).map(async (data) => {
       const card = await eventCardFromData(db, data)
       const { logos, names } = await eventHosts(card)
@@ -144,13 +151,35 @@ export async function GET(request: NextRequest) {
         host: card.official ? ["DEVSA", ...card.hosts.map((h) => h.name)].join(" + ") : names,
         logo: logos[0] ?? null,
         official: card.official,
+        txlf: false,
+        at: new Date(data.date).getTime(),
       }
     })
   )
 
+  // Texas Linux Fest, the calendar's featured event, is not a Firestore record, so
+  // it is added here as the calendar adds it: once, on its first day in this week.
+  const txlfDay = TXLF_DAY_KEYS.find((k) => inWeek.has(k))
+  const txlfCard = txlfDay
+    ? [
+        {
+          dow: fmt(txlfDay, { weekday: "short" }).toUpperCase(),
+          num: fmt(txlfDay, { day: "numeric" }),
+          title: TXLF.name,
+          meta: `NOV 6–7 · ${TXLF.location.toUpperCase()}`,
+          host: "DEVSA is a community partner",
+          logo: `${request.nextUrl.origin}${TXLF.badgePng}`,
+          official: false,
+          txlf: true,
+          at: new Date(`${txlfDay}T08:00:00-06:00`).getTime(),
+        },
+      ]
+    : []
+  const all = [...firestore, ...txlfCard].sort((a, b) => a.at - b.at).slice(0, MAX_CARDS)
+
   const { size: s, count } = fit(all.map((r) => r.title))
   const cards = all.slice(0, count)
-  const more = docs.length - cards.length
+  const more = docs.length + txlfCard.length - cards.length
 
   return new ImageResponse(
     (
@@ -187,7 +216,7 @@ export async function GET(request: NextRequest) {
         </div>
 
         {/* Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: CARD_GAP, position: "absolute", top: LIST_TOP, left: PAD, right: PAD }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: s.gap, position: "absolute", top: LIST_TOP, left: PAD, right: PAD }}>
           {cards.length === 0 ? (
             <span style={{ fontSize: 40, fontWeight: 700, color: INK, lineHeight: 1.25 }}>
               A quiet week on the calendar. See what’s coming up at devsa.community/events
@@ -201,8 +230,8 @@ export async function GET(request: NextRequest) {
                   alignItems: "center",
                   padding: s.pad,
                   borderRadius: 24,
-                  backgroundColor: c.official ? DEVSA_BLUE : CARD,
-                  border: `2px solid ${c.official ? DEVSA_BLUE : CARD_EDGE}`,
+                  backgroundColor: c.official ? DEVSA_BLUE : c.txlf ? TXLF_NAVY : CARD,
+                  border: `2px solid ${c.official ? DEVSA_BLUE : c.txlf ? TXLF_NAVY : CARD_EDGE}`,
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: s.num * 1.35, marginRight: 30 }}>
@@ -219,7 +248,8 @@ export async function GET(request: NextRequest) {
                     flexShrink: 0,
                     borderRadius: 18,
                     marginRight: 30,
-                    backgroundColor: c.official ? "transparent" : "#1e1e1e",
+                    // TXLF's badge carries its own white ground, so no tile behind it.
+                    backgroundColor: c.official || c.txlf ? "transparent" : "#1e1e1e",
                     // No logo: the gradient fills the tile, as on the site.
                     // (Satori rejects backgroundImage "none", so omit it.)
                     ...(c.logo || c.official
@@ -231,7 +261,7 @@ export async function GET(request: NextRequest) {
                     <DevsaLogoMark size={Math.round(s.logo * 0.78)} alt />
                   ) : c.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.logo} alt="" style={{ maxWidth: s.logo * 0.72, maxHeight: s.logo * 0.72, objectFit: "contain" }} />
+                    <img src={c.logo} alt="" style={{ maxWidth: s.logo * (c.txlf ? 1 : 0.72), maxHeight: s.logo * (c.txlf ? 1 : 0.72), objectFit: "contain" }} />
                   ) : null}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
@@ -240,7 +270,7 @@ export async function GET(request: NextRequest) {
                       fontFamily: "Geist Mono",
                       fontSize: s.meta,
                       fontWeight: 600,
-                      color: c.official ? INK : LOGO_COLORS.teal,
+                      color: c.official ? INK : c.txlf ? TXLF_ORANGE : LOGO_COLORS.teal,
                       letterSpacing: "0.1em",
                     }}
                   >

@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
+import { TXLF, TXLF_DAY_KEYS, TXLF_NAVY, TXLF_ORANGE, TXLF_PAPER } from "@/data/txlf"
 
 /**
  * Texas Linux Fest 2026, in the calendar's featured slot.
@@ -30,7 +31,7 @@ import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
  * Copied to public/txlf/ rather than read from the partner record at runtime:
  * a mark updated in the admin will not reach this copy, which is the tradeoff
  * taken because a fetch for one image on a mostly-static card is the wrong
- * shape. If TXLF rebrands, this file is the second place to change.
+ * shape. If TXLF rebrands, this file and data/txlf.ts are the places to change.
  *
  * ## One surface, not three
  *
@@ -50,25 +51,11 @@ import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react"
  * thing — on a calendar page, a reader should not have to infer that the one
  * card above the list is the featured one.
  */
-const TXLF_NAVY = "#002070"
-const TXLF_PAPER = "#f0f0f0"
-const TXLF_ORANGE = "#ff6600"
 
-/**
- * The festival runs two days, and the calendar lists days. Both keys are
- * written out rather than derived from a range, because the list groups on a
- * `YYYY-MM-DD` string in San Antonio's timezone and a Date built from a range
- * would have to be converted back into exactly these.
- */
-export const TXLF_DAY_KEYS = ["2026-11-06", "2026-11-07"] as const
 
-const TXLF = {
-  name: "Texas Linux Festival 2026",
-  dateLabel: "November 6–7, 2026",
-  location: "Austin, TX",
-  href: "https://2026.texaslinuxfest.org/",
-  since: "community-run since 2010",
-} as const
+// The festival's data and palette live in data/txlf.ts, shared with the weekly
+// social graphic. TXLF_DAY_KEYS is re-exported for the calendar list.
+export { TXLF_DAY_KEYS }
 
 /**
  * `day` puts the card inside the calendar list on each of the festival's two
