@@ -1,9 +1,11 @@
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import {
   ACCESS_GRANTED,
   ACCESS_GREEN,
   AG_LOCK,
   AG_ONE_LINER,
+  AG_POSITIONING,
   AG_ORGANIZERS,
 } from "@/data/access-granted/2026"
 import { disabledSlot, primaryButton } from "@/components/access-granted/2026/button-styles"
@@ -74,36 +76,51 @@ export function AccessGrantedHero() {
           <div className="flex flex-col gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14 xl:gap-20">
           {/* Copy */}
           <div className="order-2 lg:order-0">
-            <h1 className="font-display text-5xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
+            {/* lg:mt-5 holds the name off the back link by the same gap The
+                Model's masthead opens with; it sat about 15px under it. The
+                lock's lift below drops by the same 20px so the two still share
+                a top edge. Below lg the lock sits between them. */}
+            <h1 className="font-display lg:mt-5 text-5xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
               <span style={{ color: ACCESS_GREEN }}>Access</span> Granted
             </h1>
 
             {/* A rule rather than a filled green panel — a solid block of
                 #00ff66 at this size shouts, and the green stays sparing. */}
+            {/* One lead paragraph: which of DEVSA's conferences this is, then
+                the organizers' line (verbatim, shared with next-sasw). The line
+                was briefly set as its own display-size hook and competed with
+                the wordmark; at body size the punch is carried by the white
+                turn instead. Same shape as More Human Than Human's and The
+                Model's lead lines. */}
             <p
-              className="mt-6 border-l-2 pl-5 text-pretty text-lg text-white/80 md:text-xl"
+              className="mt-6 max-w-xl border-l-2 pl-5 text-pretty text-lg leading-relaxed text-white/75 md:text-xl"
               style={{ borderColor: ACCESS_GREEN }}
             >
-              {AG_ONE_LINER.setup} {AG_ONE_LINER.turn}
+              {AG_POSITIONING} {AG_ONE_LINER.setup}{" "}
+              <span className="text-white">{AG_ONE_LINER.turn}</span>
             </p>
 
             <div className="mt-10">
-              <Prompt>Powered by</Prompt>
-              {/* Three across on phones. As a flex-wrap this ran 4 + 1 from
-                  414px up — every Pro-sized handset — widowing the last mark.
-                  A fixed three keeps the rows even; sm and up it flows. */}
-              {/* Three across at every width, so six marks always read as two
-                  even rows. The flex-wrap this replaced ran 5 + 1 once the copy
-                  column narrowed for the larger art, widowing DEVSA on its own
-                  line — the same failure the phone layout was already fixed
-                  for, reappearing at desktop. */}
-              <ul className="mt-5 grid w-fit grid-cols-[repeat(3,auto)] items-center justify-items-start gap-x-8 gap-y-7 sm:gap-x-10 sm:gap-y-8">
+              {/* By edition: these groups powered the first one. Access Granted
+                  is DEVSA's, and the next edition is open to other partners. */}
+              <Prompt>First edition, powered by</Prompt>
+              {/* One row at every width (2026-11-01): two rows of three took as
+                  much height as the copy above them. The marks are sized down to
+                  fit (heights in AG_ORGANIZERS) and spread across the column. */}
+              <ul className="mt-5 flex w-full max-w-lg items-center justify-between gap-3">
                 {AG_ORGANIZERS.map((org) => (
                   <li key={org.name}>
                     <OrganizerLogo org={org} accent={ACCESS_GREEN} />
                   </li>
                 ))}
               </ul>
+              <Link
+                href="/buildingtogether#get-involved"
+                className="group mt-7 inline-flex items-center gap-1.5 text-sm font-medium text-white/75 transition-colors hover:text-white"
+              >
+                Partner on the next one
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
             </div>
 
             <div className="mt-10">
@@ -135,7 +152,8 @@ export function AccessGrantedHero() {
               grounded in its own scene, and with the video masked to fade at
               its edges a green ellipse underneath sits in the faded zone and
               reads as a smear rather than as weight. */}
-          {/* A fixed 44px lift, and fixed is the point.
+          {/* A fixed lift (44px, less the 20px the heading now sits down), and
+              fixed is the point.
 
               Cropping the dead space out of the asset got the lock's opaque
               top to the frame's top, but its first *visible* pixel is still
@@ -148,7 +166,7 @@ export function AccessGrantedHero() {
               position does not, landing within a pixel at 1440 and overshooting
               by 43px at 1920. Fixing the asset is what made a fixed offset
               correct. */}
-          <div className="relative order-1 mx-auto w-full max-w-md lg:order-0 lg:-mt-11 lg:max-w-none">
+          <div className="relative order-1 mx-auto w-full max-w-md lg:order-0 lg:-mt-6 lg:max-w-none">
             {/* Muted and autoplaying, so it is decoration by every definition
                 the platforms use: no sound, no controls, nothing announced.
                 `poster` is the loop's own lit frame, so the first paint is the

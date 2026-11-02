@@ -2,10 +2,11 @@
 
 import Link from "next/link"
 import { motion } from "motion/react"
+import { ArrowUpRight } from "lucide-react"
 import { MascotClip } from "@/components/pysa/2026/mascot-clip"
 import { disabledSlot, primaryButton } from "@/components/pysa/2026/button-styles"
 import { hasHappened } from "@/lib/event-phase"
-import { PYSA_2026, PYSA_COLORS, PYSA_WORDMARK } from "@/data/pysa/2026"
+import { PYSA_2026, PYSA_COLORS, PYSA_ORGANIZERS, PYSA_WORDMARK } from "@/data/pysa/2026"
 
 /**
  * Feathers the clip's left edge — the one facing the copy — so its box never
@@ -156,9 +157,11 @@ export function PysaHero() {
                   end up stacked back to back competing for first glance. */}
               <div className="flex flex-col gap-3">
                 {/* The wordmark is art, not type — Amador is Adobe-Fonts-only,
-                    so it cannot be set live. The alt text carries the name and
-                    "returns." stays real text, which keeps the h1 meaningful to
-                    screen readers and search engines. */}
+                    so it cannot be set live. The alt text carries the name, which
+                    keeps the h1 meaningful to screen readers and search engines.
+                    The "the 2026 edition" line under it came out on 2026-11-01:
+                    the year is in the fact row and the lead line, and the mark
+                    reads stronger alone. */}
                 <h1 className="flex flex-col items-start gap-1 font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] md:text-5xl lg:text-6xl xl:text-7xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -168,9 +171,6 @@ export function PysaHero() {
                     height={PYSA_WORDMARK.height}
                     className="h-auto w-full max-w-[26rem] lg:max-w-[32rem] xl:max-w-[38rem]"
                   />
-                  <span className="font-light italic" style={{ color: PYSA_COLORS.blue }}>
-                    {isPast ? "the 2026 edition" : "returns October 2026"}
-                  </span>
                 </h1>
               </div>
 
@@ -189,17 +189,60 @@ export function PysaHero() {
                 style={{ maskImage: MOBILE_MASK, WebkitMaskImage: MOBILE_MASK }}
               />
 
-              <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
-                San Antonio&apos;s Python conference{" "}
-                {isPast ? "returned" : "is back"} for a second year — an
-                afternoon of{" "}
-                <strong className="font-semibold text-white">
-                  learning, networking, and community building
-                </strong>{" "}
-                with the people already doing the work here.
+              <p
+                className="max-w-xl border-l-2 pl-5 text-base leading-relaxed text-white/75 sm:text-lg md:text-xl"
+                style={{ borderColor: PYSA_COLORS.blue }}
+              >
+                {/* Whose it is and who it is for, then what the afternoon is,
+                    with the last clause carrying the voice (white, as Access
+                    Granted's turn is). Every topic is from the 2026 schedule:
+                    agentic coding and agents' dependencies, TDD, AI's effect on
+                    the job, and Python Jeopardy to close. It replaced "returned
+                    for a second year — an afternoon of learning, networking,
+                    and community building", which could describe any meetup,
+                    and which said "San Antonio's" where it is DEVSA's. */}
+                DEVSA&apos;s Python conference, for the people writing Python
+                in San Antonio. Talks on agents, testing and what AI is doing
+                to the craft,{" "}
+                <span className="text-white">
+                  and a round of Python Jeopardy, because it should still be fun.
+                </span>
               </p>
             </div>
 
+
+            {/* The edition's community partners, then the way in for the next
+                one. Partners, not organizers: Alamo Python and the PyTexas
+                Foundation share the event with their people (PyTexas gave
+                conference tickets away) and hold no part of the brand, so DEVSA
+                is not among the marks; the lead line already says it is DEVSA's. */}
+            <div className="mt-2">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">
+                2026 community partners
+              </p>
+              <ul className="mt-4 flex items-center gap-8">
+                {PYSA_ORGANIZERS.filter((org) => org.name !== "DEVSA").map((org) => (
+                  <li key={org.name}>
+                    <a
+                      href={org.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block opacity-85 transition-opacity duration-200 hover:opacity-100"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={org.logo} alt={org.name} className="h-11 w-auto object-contain sm:h-12" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/buildingtogether#get-involved"
+                className="group mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white/75 transition-colors hover:text-white"
+              >
+                Partner on the next one
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
 
             {/* Single action on purpose: last year's recap is reachable from
                 the archive card further down, and it was competing here. */}

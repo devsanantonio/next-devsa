@@ -8,10 +8,11 @@ import { getConference } from "@/data/conferences"
 /**
  * Access Granted on the DEVSA site.
  *
- * This page exists to run the open calls — for talks and for hands — while
- * they are open. The official event page lives in the sasw-geekdom/next-sasw
- * repo, which owns the brand; once the call closes and the lineup is picked,
- * the speakers and sessions move there and that page becomes canonical.
+ * It was built to run the open calls, for talks and for hands. Those closed with
+ * the first edition (September 30, 2026); the page is now the record of that
+ * afternoon and the way in for partners on the next one. next-sasw carries the
+ * same brand and the same one-liner, so a wording change to either is made in
+ * both.
  *
  * Two sections only, on purpose. It used to carry a program section listing
  * the floor and the workshop track, which is out: the tables belong to the
@@ -32,10 +33,9 @@ export default function AccessGrantedPage() {
     <main className="overflow-x-hidden bg-black" data-bg-type="dark">
       <ConferenceBackLink accent={ACCESS_GREEN} />
       <AccessGrantedHero />
-      {/* The week lockup and the date/time/room rail, moved down out of the
-          masthead — they are facts, and the schedule is where somebody looking
-          one up is already headed. */}
-      <AccessGrantedFacts />
+      {/* The first edition's facts, moved down out of the masthead: the
+          schedule is where somebody looking one up is already headed. */}
+      {conference && <AccessGrantedFacts conference={conference} />}
       {conference && <ConferenceLineup conference={conference} />}
     </main>
   )

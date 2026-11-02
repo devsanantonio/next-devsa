@@ -122,9 +122,12 @@ Geist Sans everywhere, Geist Mono for the mono idiom, both via `next/font`.
 **In pages**, Oswald is only Access Granted's wordmark — one `font-display`
 class in the repo, on that one `h1`.
 
-**In OG cards** it is the display face for all five conference cards, while
-DEVSA's own pages stay in Geist so they read as the site rather than as an
-event. Satori cannot use `next/font` — it needs the bytes — so those cards load
+**In OG cards** it is the display face for the conference cards that set their
+name as type, while DEVSA's own pages stay in Geist so they read as the site
+rather than as an event. Two conference cards use their own wordmark instead:
+PySanAntonio its Amador art, and The Model its Geist Mono THE with MODEL in a
+lavender selection, on white (2026-11-01; it had been Oswald on lavender,
+which is not how The Model writes its name anywhere else). Satori cannot use `next/font` — it needs the bytes — so those cards load
 TTFs from `lib/og-fonts/` through `loadDisplayFonts()`, not the CSS variable.
 
 Reach the faces through `font-sans` / `font-mono`, which resolve through

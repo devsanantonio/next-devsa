@@ -38,12 +38,11 @@ export default function PySanAntonioPage() {
     <main className="overflow-x-hidden bg-[#0a0a0a]" data-bg-type="dark">
       <ConferenceBackLink accent={PYSA_COLORS.blue} />
       <PysaHero />
-      {/* The week lockup and the date/time/room rail, moved down out of the
-          masthead — they are facts, and the schedule is where somebody looking
-          one up is already headed. */}
-      <PysaFacts />
+      {/* The edition's facts sit under the masthead, above the room and the
+          schedule, where somebody looking one up is already headed. */}
       {conference && (
         <>
+          <PysaFacts conference={conference} />
           <ConferenceRoom conference={conference} />
           <ConferenceLineup conference={conference} />
         </>

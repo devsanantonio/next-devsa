@@ -6,12 +6,14 @@ import { ConferenceBackLink } from "@/components/events/conference-back-link"
 import { ConferenceLineup } from "@/components/events/conference-sections"
 import { MoreHumanFacts } from "@/components/more-human/event-facts"
 import { getConference } from "@/data/conferences"
+import { MH_HOOK } from "@/data/more-human/2026"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 const MH_AMBER = "#ff9900"
 
-const DESCRIPTION =
-  "More Human Than Human is DEVSA's AI conference for engineering, security and the people leading the change — fourteen sessions at Geekdom on what shifts when the tools stop being tools."
+// Leads with the hero's positioning (MH_HOOK), so search and shares say what
+// the page says: AI for developers and engineers, The Model's counterpart.
+const DESCRIPTION = `More Human Than Human is ${MH_HOOK.positioning} ${MH_HOOK.turn} The first edition, powered by 434 MEDIA, ran nine sessions at Geekdom in February 2026.`
 
 export const metadata: Metadata = {
   title: "More Human Than Human — DEVSA's AI Conference",

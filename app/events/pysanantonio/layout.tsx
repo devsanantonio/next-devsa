@@ -24,8 +24,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
  * need editing the day after the next one runs; when a date for the third is
  * set it belongs here as an addition, not as the whole title.
  */
+// DEVSA's event, with Alamo Python and the PyTexas Foundation as community
+// partners. This said "led by Alamo Python", and the JSON-LD and publisher
+// named Alamo Python as organizer; neither organizes it or holds its brand.
 const description =
-  "PySanAntonio is San Antonio's Python conference, led by Alamo Python with the PyTexas Foundation and DEVSA. The second edition ran on October 2, 2026 at Geekdom as part of SA Startup + Tech Week — an afternoon of talks, networking and community building for the city's Python community."
+  "PySanAntonio is DEVSA's Python conference in San Antonio, with community partners Alamo Python and the PyTexas Foundation. The second edition ran October 2, 2026 at Geekdom during SA Startup + Tech Week: six talks and Python Jeopardy, an afternoon of learning, networking and community building."
 
 export const metadata: Metadata = {
   title: "PySanAntonio — San Antonio's Python Conference",
@@ -46,7 +49,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "DEVSA Community" }],
   creator: "DEVSA",
-  publisher: "Alamo Python",
+  publisher: "DEVSA",
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/events/pysanantonio",
@@ -124,23 +127,13 @@ export default function PySanAntonioLayout({
       endDate: PYSA_2026.superEvent.end,
       url: SASTW_URL,
     },
-    organizer: [
-      {
-        "@type": "Organization",
-        name: "Alamo Python",
-        url: "https://www.meetup.com/alamo-python/",
-      },
-      {
-        "@type": "Organization",
-        name: "PyTexas Foundation",
-        url: "https://www.pytexas.org/",
-      },
-      {
-        "@type": "Organization",
-        name: "DEVSA",
-        url: "https://www.devsa.community/",
-      },
-    ],
+    // DEVSA alone: the partners are named in the description, and schema.org
+    // has no "community partner" role that would not overstate them.
+    organizer: {
+      "@type": "Organization",
+      name: "DEVSA",
+      url: "https://www.devsa.community/",
+    },
     sponsor: [
       { "@type": "Organization", name: "Geekdom", url: "https://geekdom.com/" },
     ],

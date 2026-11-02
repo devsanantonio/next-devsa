@@ -3,10 +3,9 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { TheModelHero } from "@/components/the-model/2026/hero"
 import { ConferenceBackLink } from "@/components/events/conference-back-link"
-import {
-  ConferenceLineup,
-  ConferenceRoom,
-} from "@/components/events/conference-sections"
+import { ConferenceLineup } from "@/components/events/conference-sections"
+import { TheModelFacts } from "@/components/the-model/2026/facts"
+import { TheModelRoom } from "@/components/the-model/2026/room"
 import { getConference } from "@/data/conferences"
 import { MODEL_INK, MODEL_LAVENDER, THE_MODEL } from "@/data/the-model/2026"
 
@@ -66,11 +65,14 @@ export default function TheModelPage() {
       data-bg-type="dark"
     >
       <ConferenceBackLink accent={MODEL_LAVENDER} />
-      <TheModelHero />
+      {/* The room's photo is the hero's ground now, not a box under it; the facts,
+          the afternoon and more of the room follow (2026-11-01). */}
+      <TheModelHero photo={conference?.photo} photoAlt={conference?.photoAlt} />
       {conference && (
         <>
-          <ConferenceRoom conference={conference} />
+          <TheModelFacts conference={conference} />
           <ConferenceLineup conference={conference} />
+          <TheModelRoom />
         </>
       )}
 

@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import { MODEL_INK, MODEL_LAVENDER, MODEL_ORGANIZERS } from "@/data/the-model/2026"
 import { ModelLabel, ModelWordmark } from "@/components/brand/the-model"
 
@@ -33,24 +34,52 @@ import { ModelLabel, ModelWordmark } from "@/components/brand/the-model"
  *
  * The positioning sentence above it is deliberately parallel to More Human Than
  * Human's. The two are DEVSA's pair of AI conferences — this one for creators,
- * creatives, founders and builders, that one for engineering, security and the
- * people leading the change — and somebody landing on either page should be
+ * creatives, founders and builders, that one for developers and engineers
+ * building software factories and agent harnesses — and somebody landing on either page should be
  * able to tell within a line which of the two they came for.
  *
- * Date, time and venue are deliberately not restated anywhere on this page.
- * They are in the reel and in data/conferences.ts, and a line that has to be
- * updated in three places when an edition moves is a line that will be wrong
- * in two of them.
+ * Date, time and venue sit in the stat row under this hero (TheModelFacts),
+ * read from data/the-model/2026.ts and data/conferences.ts rather than typed
+ * here: a line that has to be updated in three places when an edition moves is
+ * a line that will be wrong in two of them. The preview reel that used to carry
+ * them is gone.
+ *
+ * The room's photo is the hero's ground (2026-11-01). It was a rounded box
+ * under a 400px masthead, so neither a 13" laptop nor a 1080p monitor ever
+ * showed it whole on the first screen, and the page opened on a dark band
+ * with an empty right half. The hero now fills the screen under the navbar,
+ * capped so a tall monitor doesn't get acres of photo. Phones are the
+ * exception: below md the photo leaves the background and follows the copy.
  */
 
-export function TheModelHero() {
+export function TheModelHero({
+  photo,
+  photoAlt,
+}: {
+  photo?: string
+  photoAlt?: string
+}) {
   return (
     <section
-      className="relative overflow-hidden"
+      className="relative isolate overflow-hidden md:flex md:min-h-[min(calc(100svh-7rem),62rem)] md:items-end"
       style={{ backgroundColor: MODEL_INK }}
       data-bg-type="dark"
     >
-      <div className="page-shell pt-2 pb-10 md:pt-3 md:pb-12">
+      {photo && (
+        <>
+          <Image src={photo} alt={photoAlt ?? ""} fill priority sizes="100vw" className="-z-20 hidden object-cover object-[60%_35%] md:block" />
+          {/* Dark from the bottom and the left, where the words sit, so they read on
+              any part of the photo; the stage stays visible top-right. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 hidden md:block"
+            style={{
+              background: `linear-gradient(to top, ${MODEL_INK} 0%, ${MODEL_INK}e6 28%, ${MODEL_INK}66 60%, ${MODEL_INK}26 100%), linear-gradient(to right, ${MODEL_INK}cc 0%, ${MODEL_INK}4d 55%, transparent 80%)`,
+            }}
+          />
+        </>
+      )}
+      <div className="page-shell w-full pt-24 pb-10 md:pb-14">
         <div className="max-w-3xl">
           {/* The mark alone in the heading. The vibe line used to sit inside
               the h1 beside it, set at text-4xl font-black — a second display
@@ -90,7 +119,9 @@ export function TheModelHero() {
               rendering names, on a mistaken claim that the artwork was not
               available. All three are live partner records. */}
           <div className="mt-10">
-            <ModelLabel>Powered by</ModelLabel>
+            {/* By edition: these are the partners who helped power the first one.
+                The Model isn't theirs alone, and the next edition is open to others. */}
+            <ModelLabel>First edition, powered by</ModelLabel>
             <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-5">
               {MODEL_ORGANIZERS.map((org) => (
                 <Link
@@ -109,9 +140,25 @@ export function TheModelHero() {
                 </Link>
               ))}
             </div>
+            <Link
+              href="/buildingtogether#get-involved"
+              className="group mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white/75 transition-colors hover:text-white"
+            >
+              Partner on the next one
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
           </div>
         </div>
       </div>
+      {/* On a phone the photo is not the ground. Cropped to a portrait screen it
+          was one person's shoulder under the wordmark, the conversation gone, so
+          it sits under the words instead, whole and edge to edge. Same sizes as
+          the ground above, so the browser fetches one file for both. */}
+      {photo && (
+        <div className="relative aspect-video w-full md:hidden">
+          <Image src={photo} alt={photoAlt ?? ""} fill priority sizes="100vw" className="object-cover" />
+        </div>
+      )}
     </section>
   )
 }

@@ -38,7 +38,7 @@ export async function GET() {
             <img src={wordmark} width={660} height={132} alt="" />
           </div>
         }
-        hook="The city&apos;s Python conference — a full afternoon of talks and the people who actually ship Python in San Antonio."
+        hook="DEVSA's Python conference, for the people writing Python in San Antonio. Talks on agents, testing and what AI is doing to the craft."
         theme={{ ...DEVSA, bg: PYSA_COLORS.ink, accent: PYSA_COLORS.yellow }}
         footer="A DEVSA conference"
       />

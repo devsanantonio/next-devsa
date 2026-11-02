@@ -1,48 +1,32 @@
-import { CalendarDays, Clock, MapPin } from "lucide-react"
-import { ACCESS_GRANTED, ACCESS_GREEN } from "@/data/access-granted/2026"
-import { SastwLockup } from "@/components/access-granted/2026/sastw-lockup"
+import { ACCESS_GRANTED } from "@/data/access-granted/2026"
+import type { Conference } from "@/data/conferences"
+import { ConferenceFacts } from "@/components/events/conference-facts"
 
 /**
- * The week lockup and the date/time/room rail.
+ * The first edition, in four facts, above the lineup. Rendered by
+ * ConferenceFacts, shared with The Model and PySanAntonio.
  *
- * These were in the masthead. They are facts, and a masthead that opens with
- * logistics spends its strongest position on the least interesting thing on
- * the page — the name and the hook are what earn a reader, and the schedule is
- * where somebody looking up when a thing started is already going.
+ * This replaced a monospace date/time/room rail under the week's lockup
+ * ("Part of SA Startup + Tech Week", in the week's own logo). With the week
+ * over, that credit read as if Access Granted belonged to it. It is DEVSA's,
+ * run during the week, and the last fact says so in plain words.
  *
- * So they sit directly above the lineup now, which is also the only place on
- * the page where the date is load-bearing: a running order means nothing
- * without the day it ran.
+ * Values come from the data files, never typed here. The lockpicking village
+ * ran all afternoon rather than in a slot, so it is named beside the talk count
+ * instead of counted as one.
  */
-const META = [
-  { Icon: CalendarDays, label: "Date", value: ACCESS_GRANTED.dateLabel },
-  { Icon: Clock, label: "Time", value: ACCESS_GRANTED.timeLabel },
-  {
-    Icon: MapPin,
-    label: "Where",
-    value: `${ACCESS_GRANTED.venue}, ${ACCESS_GRANTED.venueDetail}`,
-  },
-]
+export function AccessGrantedFacts({ conference }: { conference: Conference }) {
+  const talks = (conference.sessions ?? []).filter((s) => !/village/i.test(s.title)).length
+  const village = (conference.sessions ?? []).some((s) => /village/i.test(s.title))
+  const where = conference.venueDetail?.split("—")[0].trim()
+  const facts: { value: string; label: string }[] = [
+    { value: ACCESS_GRANTED.dateLabel.replace(/^\w+, /, ""), label: "The first edition" },
+    ...(talks
+      ? [{ value: `${talks} talks`, label: `${village ? "And a lockpicking village, " : ""}${ACCESS_GRANTED.timeLabel}` }]
+      : []),
+    { value: ACCESS_GRANTED.venue, label: where || ACCESS_GRANTED.venueDetail },
+    { value: "SA Startup + Tech Week", label: "DEVSA's activation during the week" },
+  ]
 
-export function AccessGrantedFacts() {
-  return (
-    <section className="page-shell pb-10 md:pb-12">
-      <div className="border-t border-white/10 pt-10">
-        <SastwLockup />
-        <dl className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-widest text-white/55">
-          {META.map(({ Icon, label, value }) => (
-            <div key={label} className="flex items-center gap-2">
-              <dt className="sr-only">{label}</dt>
-              <Icon
-                className="h-3.5 w-3.5 shrink-0"
-                style={{ color: ACCESS_GREEN }}
-                aria-hidden="true"
-              />
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </section>
-  )
+  return <ConferenceFacts facts={facts} />
 }

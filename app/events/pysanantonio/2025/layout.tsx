@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "DEVSA Community" }],
   creator: "DEVSA",
-  publisher: "Alamo Python",
+  publisher: "DEVSA",
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/events/pysanantonio/2025",
@@ -67,7 +67,7 @@ export default function PySanAntonio2025Layout({
     "@type": "Event",
     name: "PySanAntonio 2025",
     description:
-      "San Antonio's first Python conference, hosted by Alamo Python, DEVSA, and the PyTexas Foundation at Geekdom.",
+      "San Antonio's first Python conference, a DEVSA conference with community partners Alamo Python and the PyTexas Foundation, at Geekdom.",
     startDate: "2025-11-08T13:00:00-06:00",
     endDate: "2025-11-08T18:00:00-06:00",
     eventStatus: "https://schema.org/EventScheduled",
@@ -84,23 +84,13 @@ export default function PySanAntonio2025Layout({
         addressCountry: "US",
       },
     },
-    organizer: [
-      {
-        "@type": "Organization",
-        name: "Alamo Python",
-        url: "https://www.meetup.com/alamo-python/",
-      },
-      {
-        "@type": "Organization",
-        name: "PyTexas Foundation",
-        url: "https://www.pytexas.org/",
-      },
-      {
-        "@type": "Organization",
-        name: "DEVSA",
-        url: "https://www.devsa.community/",
-      },
-    ],
+    // DEVSA's conference; Alamo Python and the PyTexas Foundation are community
+    // partners, named in the description. They were listed as organizers.
+    organizer: {
+      "@type": "Organization",
+      name: "DEVSA",
+      url: "https://www.devsa.community/",
+    },
     sponsor: [
       { "@type": "Organization", name: "Geekdom", url: "https://geekdom.com/" },
       { "@type": "Organization", name: "H-E-B", url: "https://www.heb.com/" },

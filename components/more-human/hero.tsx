@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { MoreHumanWordmark } from "@/components/brand/more-human"
 import { getConference } from "@/data/conferences"
+import { MH_HOOK, MH_ORGANIZERS } from "@/data/more-human/2026"
 
 const MH_AMBER = "#ff9900"
 
@@ -154,14 +155,46 @@ export function MoreHumanHero() {
             <MoreHumanWordmark size="hero" as="h1" />
 
             <p
-              className="mt-6 border-l-2 pl-5 text-pretty text-lg text-white/80 md:text-xl"
+              className="mt-6 border-l-2 pl-5 text-pretty text-lg text-white/75 md:text-xl"
               style={{ borderColor: MH_AMBER }}
             >
-              DEVSA&apos;s AI conference, on what changes when the tools stop
-              being tools — a room of builders, dreamers and technologists on
-              how AI is re-architecting the way we write code, secure the
-              internet and lead organizations.
+              {/* The developer half of DEVSA's AI pair (The Model is the
+                  creative half), said first, then the turn in white as Access
+                  Granted's and PySanAntonio's are. Shared with the share card
+                  through MH_HOOK. It read "a room of builders, dreamers and
+                  technologists", which could have been either conference. */}
+              {MH_HOOK.positioning}{" "}
+              <span className="text-white">{MH_HOOK.turn}</span>
             </p>
+
+            {/* By edition: 434 MEDIA powered the first one. The conference is
+                DEVSA's, and the next edition is open to other partners. */}
+            <div className="mt-10">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">
+                First edition, powered by
+              </p>
+              <ul className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-4">
+                {MH_ORGANIZERS.map((org) => (
+                  <li key={org.name}>
+                    <a
+                      href={org.href}
+                      {...(org.href.includes("devsa.community") ? {} : { target: "_blank", rel: "noreferrer" })}
+                      className="block opacity-85 transition-opacity duration-200 hover:opacity-100"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={org.logo} alt={org.name} className={`${org.heightClass} w-auto object-contain`} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/buildingtogether#get-involved"
+                className="group mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white/75 transition-colors hover:text-white"
+              >
+                Partner on the next one
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
 
             {/* The same single action Access Granted and PySanAntonio end on.
                 There is no date for the next edition and nothing to register

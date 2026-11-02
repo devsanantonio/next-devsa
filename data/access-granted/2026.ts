@@ -84,6 +84,12 @@ export const ACCESS_GRANTED = {
 } as const
 
 /**
+ * Which of DEVSA's conferences this is, said before the one-liner: the lead of
+ * the hero's paragraph and of the share card's hook, so the two read the same.
+ */
+export const AG_POSITIONING = "DEVSA's security conference, built with San Antonio's hacker community."
+
+/**
  * The line the whole activation hangs on, in two halves.
  *
  * Split rather than stored whole so the turn can start its own line from lg up
@@ -388,53 +394,41 @@ export const AG_ORGANIZERS = [
     name: "BSides San Antonio",
     href: "https://www.bsidessatx.com/",
     logo: "/access-granted/orgs/bsides.png",
-    heightClass: "h-12 sm:h-14",
+    heightClass: "h-8 sm:h-11",
   },
   {
     name: "DEF CON Group San Antonio",
     href: "https://dcgsatx.com/",
     logo: "/access-granted/orgs/defcon.png",
-    heightClass: "h-12 sm:h-14",
+    heightClass: "h-8 sm:h-11",
   },
   {
     name: "San Antonio Hackers Association",
     href: "https://www.devsa.community/buildingtogether/saha",
     logo: "/access-granted/orgs/saha.png",
-    heightClass: "h-10 sm:h-11",
+    heightClass: "h-6 sm:h-8",
   },
   {
     name: "UTSA CyberJedis",
     href: "https://www.instagram.com/utsacyberjedis/",
     logo: "/access-granted/orgs/cyberjedis.png",
-    heightClass: "h-16 sm:h-18",
+    heightClass: "h-10 sm:h-14",
   },
   {
     name: "Alamo City Locksport",
     href: "https://www.devsa.community/buildingtogether/alamo-city-locksport",
-    logo: "/access-granted/orgs/locksport.png",
-    heightClass: "h-16 sm:h-20",
+    // The current mark (the keyhole Alamo), cropped from the community's admin
+    // logo. The white mark this replaced was the club's earlier one.
+    logo: "/access-granted/orgs/locksport-alamo.png",
+    heightClass: "h-8 sm:h-11",
   },
   {
     name: "DEVSA",
     href: "https://www.devsa.community/",
     logo: "/access-granted/orgs/devsa.png",
-    heightClass: "h-9 sm:h-10",
+    heightClass: "h-6 sm:h-8",
   },
 ] as const
 
-/** The week's own site, for the "part of" link. */
+/** The week's own site, for the superEvent in the page's structured data. */
 export const SASTW_URL = "https://sasw.co"
-
-/**
- * The week's mark, shared with PySanAntonio — same files in public/sastw,
- * pointed at from here rather than imported from data/pysa/2026.ts.
- *
- * Two events in the same week should show the identical logo, but Access
- * Granted should not have to import PySanAntonio's constants to do it: that
- * would make this page's header depend on a file about a different event, and
- * whichever of the two is edited first would quietly move the other.
- */
-export const SASTW_LOGO = {
-  white: "/sastw/horizontal-white.svg",
-  magenta: "/sastw/horizontal-magenta.svg",
-} as const

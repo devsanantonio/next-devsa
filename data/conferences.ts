@@ -310,14 +310,16 @@ export const conferences: Conference[] = [
     key: "more-human-than-human",
     name: "More Human Than Human",
     blurb:
-      "DEVSA's AI conference for engineering, security and the people leading the change. The Model is its counterpart on the creative side.",
+      "DEVSA's AI conference for developers and engineers building software factories and agent harnesses. The Model is its counterpart on the creative side.",
     status: "returning",
     lastRun: "February 28, 2026",
     venue: "Geekdom",
     venueDetail: "The Rand, 3rd Floor — 110 E Houston St",
     timeLabel: "1:00 – 5:00 PM",
     href: "/events/morehumanthanhuman",
-    poweredBy: ["DEVSA", "Digital Canvas", "Geekdom"],
+    // The first edition's partner (confirmed 2026-11-01); it listed Digital
+    // Canvas and Geekdom.
+    poweredBy: ["DEVSA", "434 MEDIA"],
     /* No entry in EVENT_BRANDS yet. That registry drives the lockups the
        community calendar renders on event cards, and there is no scheduled
        edition for it to render — when a date exists, this gets an entry and
@@ -354,31 +356,25 @@ export const conferences: Conference[] = [
        which is the question left once "when should I arrive" has stopped
        mattering.
 
-       The five community slots are in the list rather than filtered out of it.
-       They are five minutes each and they are not talks, but they are what the
-       afternoon actually was — a room that gave its stage to ACM UTSA, Geeks &&,
-       ACM-SA, Chaincraft and Alamo Python between the sessions. Dropping them
-       would tidy the record into something that did not happen. */
+       The five five-minute community slots (ACM UTSA, Geeks && on AI-April,
+       ACM-SA's VelociCode II, Chaincraft, and Alamo Python on the PyTexas
+       Conference) came out of the list on 2026-11-01, at the organizers'
+       request; it is the talks now. */
     sessions: [
       { time: "1:10 – 1:50", title: "Key AI Skills for Leaders", people: "Wes Etheredge" },
-      { time: "1:50 – 1:55", title: "ACM UTSA", people: "Alekzander Brysch" },
       { time: "1:55 – 2:15", title: "How Do Agents Actually Work?", people: "Samad Ahmed" },
       { time: "2:15 – 2:35", title: "GitHub Copilot SDK", people: "Daniel Ward" },
-      { time: "2:35 – 2:40", title: "AI-April", people: "Geeks &&" },
       {
         time: "2:40 – 2:55",
         title: "GTM Research in the Age of AI",
         people: "Serena Hernandez",
       },
       { time: "2:55 – 3:15", title: "Godot Audio Stack", people: "Werner Mendizabal" },
-      { time: "3:15 – 3:20", title: "VelociCode II", people: "ACM-SA" },
       {
         time: "3:20 – 3:35",
         title: "What\u2019s Left When the Code Writes Itself?",
         people: "Angel Escobedo",
       },
-      { time: "3:35 – 3:40", title: "Chaincraft", people: "Ryan Beltr\u00e1n" },
-      { time: "3:40 – 3:45", title: "PyTexas Conference", people: "Alamo Python" },
       {
         time: "3:50 – 4:20",
         title: "We Can\u2019t Do This Without YOU",

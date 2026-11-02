@@ -1,14 +1,17 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { ACCESS_GRANTED, AG_ORGANIZERS, SASTW_URL } from "@/data/access-granted/2026"
+import { ACCESS_GRANTED, SASTW_URL } from "@/data/access-granted/2026"
 import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
+// Written for after the first edition. It used to advertise the open call for
+// speakers and volunteers, a career corner and a threat-modeling workshop, and
+// say "this week", all of which went stale on October 1.
 const description =
-  "Access Granted — Wednesday, September 30, 2026 at Geekdom, part of SA Startup + Tech Week. Every other room this week is people talking about technology; this one is people taking it apart. Free, drop-in lockpicking, a cyber career corner, a founder threat-modeling workshop and a hacker talk track, run by San Antonio's security community. Call for speakers and volunteers open."
+  "Access Granted is DEVSA's free security conference in San Antonio. Every other room is people talking about technology; this one is people taking it apart. The first edition ran September 30, 2026 at Geekdom during SA Startup + Tech Week: seven hacker talks and a lockpicking village, powered by BSides San Antonio, DEF CON Group San Antonio, the San Antonio Hackers Association, UTSA CyberJedis and Alamo City Locksport."
 
-const title = "Access Granted — Sept 30, 2026 | Call for Speakers & Volunteers"
+const title = "Access Granted — DEVSA's security conference in San Antonio"
 
 export const metadata: Metadata = {
   title,
@@ -27,7 +30,6 @@ export const metadata: Metadata = {
     "SA Startup Week",
     "SA Tech Week",
     "Geekdom",
-    "call for speakers",
     "cybersecurity conference San Antonio",
     "DEVSA",
   ],
@@ -96,7 +98,6 @@ export default function AccessGrantedLayout({
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
       url: `${siteUrl}/events/access-granted`,
     },
     location: {
@@ -120,13 +121,14 @@ export default function AccessGrantedLayout({
       endDate: ACCESS_GRANTED.superEvent.end,
       url: SASTW_URL,
     },
-    // Every org on the wall is a co-organizer here; the activation's whole
-    // premise is that no single group hosts it.
-    organizer: AG_ORGANIZERS.map((org) => ({
+    // DEVSA's conference. The groups on the wall powered the first edition
+    // and are named in the description; this used to list all six as
+    // organizers, which said the conference was theirs.
+    organizer: {
       "@type": "Organization",
-      name: org.name,
-      url: org.href,
-    })),
+      name: "DEVSA",
+      url: "https://www.devsa.community/",
+    },
     sponsor: [
       { "@type": "Organization", name: "Geekdom", url: "https://geekdom.com/" },
     ],

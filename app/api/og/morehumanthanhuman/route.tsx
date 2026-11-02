@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { MH_HOOK } from "@/data/more-human/2026"
 import { OgCard, DEVSA } from "@/lib/og-card"
 import { loadDisplayFonts } from "@/lib/og-fonts"
 
@@ -11,7 +12,7 @@ export async function GET() {
     (
       <OgCard
         title={["More Human", "Than Human"]}
-        hook="The engineering side of AI — the people shipping it, securing it, and answering for it when it goes wrong."
+        hook={MH_HOOK.positioning}
         theme={{ ...DEVSA, accent: "#ff9900" }}
         display
         footer="A DEVSA conference"
