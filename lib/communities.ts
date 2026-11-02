@@ -31,6 +31,9 @@ export interface CommunityLink {
   /** Absent on records that have not had one uploaded. The footer ignores it;
       the logo wall on /buildingtogether needs it. */
   logo?: string
+  /** The group's call for speakers is open (lib/speaker-calls.ts). The Give a
+      Talk share card counts these. */
+  speakersOpen?: boolean
 }
 
 /**
@@ -66,6 +69,7 @@ export const listCommunities = cache(async (): Promise<CommunityLink[]> => {
         id: row.id,
         name: row.name,
         logo: (row as { logo?: string }).logo,
+        speakersOpen: (row as { speakersOpen?: boolean }).speakersOpen === true,
       }))
   } catch (error) {
     console.error("Communities fetch failed:", error)

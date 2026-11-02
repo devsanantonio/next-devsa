@@ -5,7 +5,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 
 const TITLE = "Give a Talk in San Antonio"
 const DESCRIPTION =
-  "San Antonio tech community groups looking for speakers right now, in one place. Lightning talks, full talks and workshops; first talks welcome."
+  "Give a talk in San Antonio: the tech community groups looking for speakers right now, in one place, or tell DEVSA your idea and we'll find the group it fits. Lightning talks, full talks and workshops; first talks welcome."
 
 /**
  * Every open call for speakers: community groups' standing calls (opened by
@@ -22,7 +22,8 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     url: `${siteUrl}/give-a-talk`,
     siteName: "DEVSA",
-    images: [{ url: `${siteUrl}/api/og/buildingtogether`, width: 1200, height: 630, alt: "San Antonio tech communities, DEVSA" }],
+    // Its own card (app/api/og/give-a-talk), with the live number of open calls.
+    images: [{ url: `${siteUrl}/api/og/give-a-talk`, width: 1200, height: 630, alt: "Give a talk in San Antonio, DEVSA" }],
     locale: "en_US",
     type: "website",
   },
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${TITLE} | DEVSA`,
     description: DESCRIPTION,
-    images: [`${siteUrl}/api/og/buildingtogether`],
+    images: [`${siteUrl}/api/og/give-a-talk`],
     creator: "@devsatx",
     site: "@devsatx",
   },
