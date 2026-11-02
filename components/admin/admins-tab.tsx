@@ -18,6 +18,7 @@ import {
 import { SlideDrawer } from "@/components/admin/slide-drawer"
 import { GroupPicker } from "@/components/admin/group-picker"
 import { isProtectedAdmin } from "@/lib/protected-admins"
+import { AdminCombobox } from "@/components/admin/admin-combobox"
 
 /**
  * Manage Admins: everyone with access, how recently they used it, and the
@@ -114,6 +115,10 @@ export function AdminsTab({
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (role === "organizer" && !communityId) {
+      onError("Choose the group they'll organize")
+      return
+    }
     setSaving(true)
     try {
       const res = await adminFetch("/api/admin/auth", {
@@ -274,13 +279,17 @@ export function AdminsTab({
           </p>
           {role === "organizer" ? (
             <div>
-              <label htmlFor="admin-community" className="mb-2 block text-sm font-semibold text-neutral-300">Assigned Community *</label>
-              <select id="admin-community" required value={communityId} onChange={(e) => setCommunityId(e.target.value)} className={field}>
-                <option value="">Select a community</option>
-                {communities.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <label id="admin-community-label" className="mb-2 block text-sm font-semibold text-neutral-300">Assigned Community *</label>
+              {/* Required, which a combobox button can't declare: save() checks it. */}
+              <AdminCombobox
+                floating
+                ariaLabelledby="admin-community-label"
+                buttonClassName="rounded-xl py-3 px-4"
+                placeholder="Select a community"
+                options={communities.map((c) => ({ value: c.id, label: c.name }))}
+                value={communityId}
+                onChange={setCommunityId}
+              />
               <p className="mt-2 text-xs text-neutral-400">Organizers can only create and manage events for their assigned community</p>
             </div>
           ) : (

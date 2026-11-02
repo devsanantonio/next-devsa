@@ -28,6 +28,12 @@ export interface AdminComboboxOption {
  * routes despite the name.
  *
  * Keyboard: ArrowUp/Down to move, Enter/Space to select, Escape to close.
+ *
+ * `floating` is for a combobox inside a DataTable row. The table scrolls
+ * sideways (overflow-x-auto), which clips everything that overflows it, so an
+ * ordinary dropdown on the last rows was cut off. Floating, the menu is
+ * positioned against the window instead, opens upward when there isn't room
+ * below, and closes on scroll or resize rather than drifting off its button.
  */
 export function AdminCombobox({
   options,
@@ -39,6 +45,8 @@ export function AdminCombobox({
   accent = "#ef426f",
   variant = "dark",
   ariaLabelledby,
+  ariaLabel,
+  floating = false,
 }: {
   options: AdminComboboxOption[]
   value: string
@@ -50,12 +58,17 @@ export function AdminCombobox({
   variant?: "dark" | "light"
   /** Id of a visible label, so the control is announced with its name. */
   ariaLabelledby?: string
+  /** A name for the control when there is no visible label to point at. */
+  ariaLabel?: string
+  /** Position the menu against the window: for a combobox inside a scrolling table. */
+  floating?: boolean
 }) {
   const isLight = variant === "light"
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const rootRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<(HTMLLIElement | null)[]>([])
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties | undefined>(undefined)
 
   const selected = options.find((o) => o.value === value) ?? null
 
@@ -74,8 +87,34 @@ export function AdminCombobox({
     }
   }, [open, activeIndex])
 
+  // Floating: close on any scroll or resize, since a fixed menu wouldn't follow its button.
+  useEffect(() => {
+    if (!open || !floating) return
+    const close = () => setOpen(false)
+    window.addEventListener("scroll", close, true)
+    window.addEventListener("resize", close)
+    return () => {
+      window.removeEventListener("scroll", close, true)
+      window.removeEventListener("resize", close)
+    }
+  }, [open, floating])
+
   const openMenu = () => {
     setActiveIndex(options.findIndex((o) => o.value === value))
+    if (floating && rootRef.current) {
+      const r = rootRef.current.getBoundingClientRect()
+      const width = Math.max(r.width, 224) // min-w-56
+      const height = Math.min(options.length * 40 + 16, 288) // rows + padding, capped at max-h-72
+      const below = window.innerHeight - r.bottom
+      const up = below < height + 16 && r.top > below
+      const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
+      setMenuStyle({
+        position: "fixed",
+        left,
+        width,
+        ...(up ? { bottom: window.innerHeight - r.top + 8 } : { top: r.bottom + 8 }),
+      })
+    }
     setOpen(true)
   }
 
@@ -123,6 +162,7 @@ export function AdminCombobox({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-labelledby={ariaLabelledby}
+        aria-label={ariaLabel}
         className={cn(
           "flex w-full items-center justify-between gap-2 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20",
           isLight
@@ -151,8 +191,10 @@ export function AdminCombobox({
       {open && (
         <ul
           role="listbox"
+          style={floating ? menuStyle : undefined}
           className={cn(
-            "absolute right-0 z-50 mt-2 max-h-72 w-full min-w-56 overflow-auto rounded-xl border p-1.5 shadow-xl",
+            "z-50 max-h-72 overflow-auto rounded-xl border p-1.5 shadow-xl",
+            !floating && "absolute right-0 mt-2 w-full min-w-56",
             isLight ? "border-gray-200 bg-white" : "border-neutral-700 bg-neutral-800"
           )}
         >

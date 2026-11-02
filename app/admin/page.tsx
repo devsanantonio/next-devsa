@@ -2801,16 +2801,18 @@ export default function AdminPage() {
                     className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-2 pl-9 pr-3 text-sm text-white placeholder:text-neutral-500 focus:border-neutral-500 focus:outline-none"
                   />
                 </div>
-                <select
+                <AdminCombobox
+                  className="w-44 shrink-0"
+                  buttonClassName="py-2"
+                  ariaLabel="Filter by status"
+                  options={[
+                    { value: "all", label: "All statuses" },
+                    { value: "active", label: "Active" },
+                    { value: "unsubscribed", label: "Unsubscribed" },
+                  ]}
                   value={newsletterStatus}
-                  onChange={(e) => { setNewsletterStatus(e.target.value as typeof newsletterStatus); setNewsletterPage(0) }}
-                  aria-label="Filter by status"
-                  className="rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-300 focus:border-neutral-500 focus:outline-none"
-                >
-                  <option value="all">All statuses</option>
-                  <option value="active">Active</option>
-                  <option value="unsubscribed">Unsubscribed</option>
-                </select>
+                  onChange={(v) => { setNewsletterStatus(v as typeof newsletterStatus); setNewsletterPage(0) }}
+                />
                 {/* Community Group Filter */}
                 <div className="relative">
                   <button
@@ -3534,6 +3536,8 @@ export default function AdminPage() {
                             <span className="block text-neutral-300">{request.communityOrg || "—"}</span>
                             {/* Which group they'll organize: required before Approve. */}
                             <AdminCombobox
+                              floating
+                              ariaLabel={`Group for ${request.name}`}
                               className="mt-2 min-w-[14rem]"
                               options={communities.map((c) => ({ value: c.id, label: c.name }))}
                               value={groupForRequest(request)}
@@ -3843,7 +3847,7 @@ export default function AdminPage() {
                         const addable = communities.filter((c) => !hostIds.includes(c.id)).sort((a, b) => a.name.localeCompare(b.name))
                         return (
                           <div>
-                            <label htmlFor="event-cohost" className="block text-sm font-semibold text-neutral-300 mb-2">Hosts</label>
+                            <label id="event-cohost-label" className="block text-sm font-semibold text-neutral-300 mb-2">Hosts</label>
                             <div className="mb-2 flex flex-wrap gap-2">
                               {hostIds.map((id) => {
                                 const name = communities.find((c) => c.id === id)?.name || id
@@ -3867,17 +3871,16 @@ export default function AdminPage() {
                                 )
                               })}
                             </div>
-                            <select
-                              id="event-cohost"
+                            {/* Always blank: picking a group adds it to the hosts above. */}
+                            <AdminCombobox
+                              floating
+                              ariaLabelledby="event-cohost-label"
+                              buttonClassName="rounded-xl py-3 px-4"
+                              placeholder="Add a co-host group…"
+                              options={addable.map((c) => ({ value: c.id, label: c.name }))}
                               value=""
-                              onChange={(e) => e.target.value && setHosts([...hostIds, e.target.value])}
-                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                            >
-                              <option value="">Add a co-host group…</option>
-                              {addable.map((c) => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                              ))}
-                            </select>
+                              onChange={(v) => v && setHosts([...hostIds, v])}
+                            />
                             <p className="mt-1.5 text-xs text-neutral-400">Co-hosts&apos; organizers can edit this event too, and it shows on both groups&apos; pages.</p>
                           </div>
                         )
@@ -4154,21 +4157,20 @@ export default function AdminPage() {
                         {editingEvent.isOfficial && (
                           <div className="mt-3 space-y-3 border-l-2 border-[#ef426f]/30 pl-4">
                             <div>
-                              <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                              <label id="event-brand-label" className="block text-sm font-semibold text-neutral-300 mb-2">
                                 Activation branding
                               </label>
-                              <select
+                              <AdminCombobox
+                                floating
+                                ariaLabelledby="event-brand-label"
+                                buttonClassName="rounded-xl px-4"
+                                options={[
+                                  { value: "", label: "None — standard card" },
+                                  ...EVENT_BRAND_KEYS.map((k) => ({ value: k, label: EVENT_BRANDS[k].label })),
+                                ]}
                                 value={editingEvent.brand || ""}
-                                onChange={(e) => setEditingEvent({ ...editingEvent, brand: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-[#ef426f]"
-                              >
-                                <option value="">None &mdash; standard card</option>
-                                {EVENT_BRAND_KEYS.map((k) => (
-                                  <option key={k} value={k}>
-                                    {EVENT_BRANDS[k].label}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(v) => setEditingEvent({ ...editingEvent, brand: v })}
+                              />
                               <p className="mt-2 text-xs text-neutral-500">
                                 Only for the activations that have a design system of their
                                 own. Gives the card that activation&rsquo;s lockup, color
@@ -4547,17 +4549,20 @@ export default function AdminPage() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                        <label id="event-status-label" className="block text-sm font-semibold text-neutral-300 mb-2">
                           Status
                         </label>
-                        <select
+                        <AdminCombobox
+                          floating
+                          ariaLabelledby="event-status-label"
+                          buttonClassName="rounded-xl py-3 px-4 text-base"
+                          options={[
+                            { value: "published", label: "Published" },
+                            { value: "draft", label: "Draft" },
+                          ]}
                           value={editingEvent.status}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
-                          className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                        >
-                          <option value="published">Published</option>
-                          <option value="draft">Draft</option>
-                        </select>
+                          onChange={(v) => setEditingEvent({ ...editingEvent, status: v })}
+                        />
                         <p className="mt-2 text-xs text-neutral-500">
                           Draft events are only visible in the admin dashboard
                         </p>
@@ -5844,16 +5849,19 @@ export default function AdminPage() {
                         <Td><LongText text={decodeEntities(inq.message)} /></Td>
                         <Td><DateCell value={inq.submittedAt} time /></Td>
                         <Td>
-                          <select
+                          <AdminCombobox
+                            floating
+                            className="w-36"
+                            buttonClassName="px-2.5 py-1.5"
+                            ariaLabel={`Status for ${decodeEntities(inq.organization)}`}
+                            options={[
+                              { value: "new", label: "New" },
+                              { value: "contacted", label: "Contacted" },
+                              { value: "closed", label: "Closed" },
+                            ]}
                             value={inq.status}
-                            onChange={(e) => handleDemoDayStatus(inq.id, e.target.value as DemoDayInquiryRow["status"])}
-                            className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500"
-                            aria-label={`Status for ${decodeEntities(inq.organization)}`}
-                          >
-                            <option value="new">New</option>
-                            <option value="contacted">Contacted</option>
-                            <option value="closed">Closed</option>
-                          </select>
+                            onChange={(v) => handleDemoDayStatus(inq.id, v as DemoDayInquiryRow["status"])}
+                          />
                         </Td>
                         <Td align="right">
                           <RowActions>
@@ -5947,16 +5955,20 @@ export default function AdminPage() {
                           <Td><LongText text={decodeEntities(inq.message)} /></Td>
                           <Td><DateCell value={inq.submittedAt} time /></Td>
                           <Td>
-                            <select
+                            {/* The app's combobox, floating so the table's scroll can't clip it. */}
+                            <AdminCombobox
+                              floating
+                              className="w-36"
+                              buttonClassName="px-2.5 py-1.5"
+                              ariaLabel={`Status for ${who}`}
+                              options={[
+                                { value: "new", label: "New" },
+                                { value: "contacted", label: "Contacted" },
+                                { value: "closed", label: "Closed" },
+                              ]}
                               value={inq.status}
-                              onChange={(e) => handleGetInvolvedStatus(inq.id, e.target.value as GetInvolvedRow["status"])}
-                              className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500"
-                              aria-label={`Status for ${who}`}
-                            >
-                              <option value="new">New</option>
-                              <option value="contacted">Contacted</option>
-                              <option value="closed">Closed</option>
-                            </select>
+                              onChange={(v) => handleGetInvolvedStatus(inq.id, v as GetInvolvedRow["status"])}
+                            />
                           </Td>
                           <Td align="right">
                             <RowActions>
@@ -5971,7 +5983,9 @@ export default function AdminPage() {
                                 onClick={() => handleDeleteGetInvolved(inq.id)}
                                 aria-label={`Delete inquiry from ${who}`}
                                 icon={<Trash2 className="h-4 w-4" />}
-                              />
+                              >
+                                Delete
+                              </RowAction>
                             </RowActions>
                           </Td>
                         </Tr>
