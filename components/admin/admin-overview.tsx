@@ -62,6 +62,8 @@ export interface OverviewCommunity {
   linkedin?: string | null
   instagram?: string | null
   kind?: "tech" | "student"
+  /** The group's call for speakers is open (lib/speaker-calls.ts). */
+  speakersOpen?: boolean
 }
 
 export interface OverviewAdmin {
@@ -240,6 +242,8 @@ export function AdminOverview(props: {
   addEvent: () => void
   addCommunity: () => void
   editGroup: () => void
+  /** Open the group editor at its call-for-speakers setting. */
+  openSpeakerCall: () => void
   editProfile: () => void
 }) {
   const isOrganizer = props.role === "organizer"
@@ -431,6 +435,15 @@ function OrganizerView(p: ViewProps & { nameOf: (id: string) => string }) {
           <div className="space-y-2">
             <Action primary onClick={p.addEvent}><Plus className="h-4 w-4" /> Add an event</Action>
             <Action onClick={p.editGroup}>Edit your group</Action>
+            {/* The call for speakers lives in the group editor, where it was easy to
+                miss. Here it says where the call stands and goes to what's next. */}
+            {group.speakersOpen ? (
+              <Action onClick={() => p.go("speakers")}>
+                Call for speakers open{p.pending.speakers > 0 ? ` · ${p.pending.speakers} to review` : ""}
+              </Action>
+            ) : (
+              <Action onClick={p.openSpeakerCall}>Open a call for speakers</Action>
+            )}
             <Action onClick={p.editProfile}>{p.youListed ? "Edit your profile" : "Add yourself to the directory"}</Action>
           </div>
         </Tile>

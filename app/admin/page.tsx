@@ -82,7 +82,7 @@ import { AdminOverview, type OverviewTab } from "@/components/admin/admin-overvi
 import { ActivityTab } from "@/components/admin/activity-tab"
 import { RsvpsTab } from "@/components/admin/rsvps-tab"
 import { AdminsTab } from "@/components/admin/admins-tab"
-import { SpeakerCallFields } from "@/components/admin/speaker-call-fields"
+import { SpeakerCallPanel } from "@/components/admin/speaker-call-panel"
 import { isPoolTalk } from "@/lib/speaker-calls"
 import { GroupPicker } from "@/components/admin/group-picker"
 import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
@@ -2048,9 +2048,9 @@ export default function AdminPage() {
           github: editingCommunity.github,
           kind: editingCommunity.kind ?? "tech",
           school: editingCommunity.school ?? "",
-          speakersOpen: editingCommunity.speakersOpen === true,
-          speakersNote: editingCommunity.speakersNote ?? "",
-          speakersQuestion: editingCommunity.speakersQuestion ?? "",
+          // The call for speakers isn't sent from here: it has its own panel in the
+          // Speakers tab (SpeakerCallPanel), and an editor opened before a call was
+          // saved there would otherwise write the old call back.
           adminEmail,
         }),
       })
@@ -3144,6 +3144,22 @@ export default function AdminPage() {
                   </>
                 }
               />
+
+              {/* An organizer's own call: open it, close it, say what you want. It used to
+                  live in Edit Community, but it isn't part of the group's listing. */}
+              {adminRole === "organizer" && (() => {
+                const group = communities.find((c) => c.id === adminCommunityId)
+                if (!group) return null
+                return (
+                  <SpeakerCallPanel
+                    key={group.id}
+                    group={group}
+                    adminFetch={adminFetch}
+                    onSaved={(call) => setCommunities((prev) => prev.map((c) => (c.id === group.id ? { ...c, ...call } : c)))}
+                    onError={(m) => setError(m)}
+                  />
+                )
+              })()}
 
               <div className="mb-5 flex flex-wrap items-center gap-3">
                 <div className="flex flex-wrap gap-1 rounded-xl border border-neutral-800 bg-neutral-900/60 p-1">
@@ -4757,6 +4773,15 @@ export default function AdminPage() {
                 setActiveTab("communities")
                 if (mine) handleEditCommunity(mine)
               }}
+              openSpeakerCall={() => {
+                // The call's own panel, at the top of the Speakers tab: focus its box.
+                setActiveTab("speakers")
+                setTimeout(() => {
+                  const el = document.getElementById("speaker-call-panel")
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  el?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus({ preventScroll: true })
+                }, 100)
+              }}
               editProfile={openProfileDrawer}
             />
           )}
@@ -5120,13 +5145,6 @@ export default function AdminPage() {
                         kind={editingCommunity.kind}
                         school={editingCommunity.school}
                         onChange={({ kind, school }) => setEditingCommunity({ ...editingCommunity, kind, school })}
-                      />
-                      <SpeakerCallFields
-                        communityId={editingCommunity.id}
-                        open={editingCommunity.speakersOpen}
-                        note={editingCommunity.speakersNote}
-                        question={editingCommunity.speakersQuestion}
-                        onChange={(next) => setEditingCommunity({ ...editingCommunity, ...next })}
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <div>

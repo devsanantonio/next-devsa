@@ -17,7 +17,8 @@ import {
   Globe, 
   Calendar, 
   MapPin, 
-  Loader2
+  Loader2,
+  ChevronDown,
 } from "lucide-react"
 import { 
   LinkedInIcon, 
@@ -160,12 +161,10 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
     return { upcomingEvents: upcoming, pastEvents: past }
   }, [firestoreEvents, isLoadingEvents, slug])
 
-  /* Six, which fits the card without scrolling and is above the median host's
-     total, so most groups show everything and only the busiest need the
-     expander. */
-  const PAST_PREVIEW = 6
-  const [showAllPast, setShowAllPast] = useState(false)
-  const visiblePast = showAllPast ? pastEvents : pastEvents.slice(0, PAST_PREVIEW)
+  /* Past events fold away: six full cards were the tallest thing on the page and
+     pushed the call for speakers out of sight. The heading keeps the count,
+     which is the part that makes it a record. */
+  const [pastOpen, setPastOpen] = useState(false)
   const firstEverDate = pastEvents.length
     ? new Date(pastEvents[pastEvents.length - 1].date)
     : null
@@ -253,12 +252,31 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
               />
             </div>
             <div className="min-w-0">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">
+              {/* The marketing idiom, as on /buildingtogether: this is that page's
+                  detail, not an event page. */}
+              <p className="text-sm md:text-base font-medium text-white/55 uppercase tracking-[0.2em]">
                 Community group
               </p>
               <h1 className="mt-3 text-balance font-sans text-4xl font-black leading-[0.98] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
                 {community.name}
               </h1>
+              {/* While the call is open, say so before anyone scrolls: the button
+                  in the site's own shape and arrow (as on Building Together's hero),
+                  and a plain line saying why it's there. */}
+              {community.speakersOpen && (
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+                  <a
+                    href="#speak"
+                    className="group inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-gray-900 transition-colors duration-200 hover:bg-gray-100 sm:w-auto sm:py-3"
+                  >
+                    Pitch a talk
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </a>
+                  <p className="text-sm text-white/60">
+                    <span className="font-semibold text-white/85">Open call for speakers.</span> First talks welcome.
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -273,13 +291,12 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
             transition={{ duration: 0.5 }}
           >
 
-            {/* Section heads are the mono idiom, as on the event page. They
-                were bold sans at roughly the size of the copy they
-                introduced, which is no separation at all. */}
+            {/* Section heads are the marketing eyebrow (design-system skill): this
+                page belongs to /buildingtogether. They were the event page's mono
+                idiom, which made it read as a different, smaller system. */}
             <div>
-              <h2 className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-gray-400">
+              <h2 className="mb-5 text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">
                 About
-                <span aria-hidden className="h-px flex-1 bg-gray-200" />
               </h2>
               <p className="whitespace-pre-wrap text-[17px] leading-[1.75] text-gray-600">
                 {community.description}
@@ -288,9 +305,8 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
 
             {/* Links section */}
             <div className="mt-12">
-              <h2 className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-gray-400">
+              <h2 className="mb-5 text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">
                 Connect
-                <span aria-hidden className="h-px flex-1 bg-gray-200" />
               </h2>
               <div className="flex flex-wrap gap-3">
                 {community.website && (
@@ -298,7 +314,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900 hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900"
                   >
                     <Globe className="h-4 w-4" />
                     Website
@@ -310,7 +326,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.meetup}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#ED1C40] hover:text-white hover:border-[#ED1C40] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#ED1C40] hover:text-white hover:border-[#ED1C40]"
                   >
                     <MeetupIcon className="h-4 w-4" />
                     Meetup
@@ -322,7 +338,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.luma}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#f59e0b] hover:text-white hover:border-[#f59e0b] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#f59e0b] hover:text-white hover:border-[#f59e0b]"
                   >
                     <Calendar className="h-4 w-4" />
                     Luma
@@ -334,7 +350,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                   href={community.discord || DEVSA_DISCORD}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2] hover:scale-105"
+                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2]"
                 >
                   <DiscordIcon className="h-4 w-4" />
                   Discord
@@ -345,7 +361,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900 hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -359,7 +375,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-linear-to-br hover:from-[#833AB4] hover:via-[#E1306C] hover:to-[#F77737] hover:text-white hover:border-transparent hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-linear-to-br hover:from-[#833AB4] hover:via-[#E1306C] hover:to-[#F77737] hover:text-white hover:border-transparent"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
@@ -373,7 +389,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#0A66C2] hover:text-white hover:border-[#0A66C2] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#0A66C2] hover:text-white hover:border-[#0A66C2]"
                   >
                     <LinkedInIcon className="h-4 w-4" />
                     LinkedIn
@@ -385,7 +401,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.youtube}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]"
                   >
                     <YouTubeIcon className="h-4 w-4" />
                     YouTube
@@ -397,7 +413,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.twitch}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#9146FF] hover:text-white hover:border-[#9146FF]"
                   >
                     <TwitchIcon className="h-4 w-4" />
                     Twitch
@@ -409,7 +425,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]"
                   >
                     <FacebookIcon className="h-4 w-4" />
                     Facebook
@@ -421,7 +437,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
                     href={community.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900 hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900"
                   >
                     <GitHubIcon className="h-4 w-4" />
                     GitHub
@@ -440,28 +456,19 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
             className="mt-8"
           >
             {/* Upcoming Events */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm mb-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div 
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ef426f]/10"
-                >
-                  <Calendar className="h-5 w-5 text-[#ef426f]" />
-                </div>
-                <h2 className="text-xl font-bold tracking-tight text-gray-900">Upcoming Events</h2>
-              </div>
+            <div className="mt-4 border-t border-gray-200 pt-12">
+              <h2 className="mb-5 text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">Upcoming events</h2>
 
               {isLoadingEvents ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                 </div>
               ) : upcomingEvents.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl">
-                  <Calendar className="h-10 w-10 mx-auto text-gray-300 mb-3" />
-                  <p className="text-base font-medium text-gray-500">No upcoming events scheduled</p>
-                  <p className="text-sm text-gray-400 mt-1">Check back later or join their Meetup for updates</p>
-                </div>
+                <p className="text-[17px] leading-[1.7] text-gray-600">
+                  Nothing on the calendar yet. Check back, or follow them through the links above.
+                </p>
               ) : (
-                <div className="space-y-4">
+                <div>
                   {upcomingEvents.map((event, index) => (
                     <EventCard 
                       key={event.id} 
@@ -474,73 +481,60 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
               )}
             </div>
 
-            {/* Past Events */}
-            {pastEvents.length > 0 && (
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
-                {/* The count, stated.
+            {/* The call for speakers sits between what's next and what's past, while
+                it's open (lib/speaker-calls.ts). */}
+            {community.speakersOpen && (
+              <div id="speak" className="mt-16 scroll-mt-24 border-t border-gray-200 pt-12">
+                <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">Call for speakers</p>
+                <h2 className="mt-5 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-4xl lg:text-5xl">
+                  Give a talk <span className="font-light italic text-gray-400">at</span> {community.name}.
+                </h2>
+                <p className="mt-5 max-w-xl whitespace-pre-wrap text-[17px] leading-[1.7] text-gray-600">
+                  {community.speakersNote ||
+                    "Have something to share? First talks are welcome. Tell the organizers what you'd like to cover, and they'll reach out when there's a night that fits."}
+                </p>
+                <div className="mt-8">
+                  <SpeakerCallForm communityId={community.id} groupName={community.name} question={community.speakersQuestion} />
+                </div>
+              </div>
+            )}
 
-                    The heading was "Past Events" over a list of five, which
-                    reads as leftovers. The number and the start date are what
-                    make it a record: twenty-four events going back to a date
-                    two years ago is evidence of a group that shows up, and it
-                    is the strongest argument this site can make for a group
-                    publishing its calendar here rather than only to its own
-                    channel. */}
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                    Past Events
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {pastEvents.length} event{pastEvents.length !== 1 ? "s" : ""} on the
-                    community calendar
+            {/* Past Events, folded. The count is the heading, so the record shows
+                without the list: N events going back to a date is the evidence of a
+                group that shows up, and the strongest case for publishing here. */}
+            {pastEvents.length > 0 && (
+              <div className="mt-16 border-t border-gray-200 pt-12">
+                <h2 className="mb-3 text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">Past events</h2>
+                <button
+                  type="button"
+                  onClick={() => setPastOpen((v) => !v)}
+                  aria-expanded={pastOpen}
+                  aria-controls="past-events"
+                  className="group flex w-full items-center justify-between gap-4 text-left"
+                >
+                  <span className="text-[17px] leading-[1.7] text-gray-600">
+                    <span className="font-semibold text-gray-900">{pastEvents.length} event{pastEvents.length !== 1 ? "s" : ""}</span> on the community calendar
                     {firstEverDate
                       ? `, going back to ${firstEverDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`
                       : ""}
                     .
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  {visiblePast.map((event, index) => (
-                    <EventCard 
-                      key={event.id} 
-                      event={event} 
-                      isUpcoming={false}
-                      index={index}
-                    />
-                  ))}
-                </div>
-                {pastEvents.length > PAST_PREVIEW && (
-                  <button
-                    onClick={() => setShowAllPast((v) => !v)}
-                    className="mt-5 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
-                  >
-                    {showAllPast
-                      ? "Show fewer"
-                      : `Show all ${pastEvents.length} events`}
-                  </button>
+                  </span>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-gray-900">
+                    {pastOpen ? "Hide" : "Show"}
+                    <ChevronDown className={`h-4 w-4 transition-transform ${pastOpen ? "rotate-180" : ""}`} />
+                  </span>
+                </button>
+                {pastOpen && (
+                  <div id="past-events" className="mt-6">
+                    {pastEvents.map((event, index) => (
+                      <EventCard key={event.id} event={event} isUpcoming={false} index={index} />
+                    ))}
+                  </div>
                 )}
               </div>
             )}
           </motion.div>
 
-          {/* The group's call for speakers, while its organizers have it open (lib/speaker-calls.ts).
-              Built like the closing ask below it, eyebrow and heading, so it reads as part of the page
-              rather than a widget dropped in. #speak is the link organizers share. */}
-          {community.speakersOpen && (
-            <div id="speak" className="mt-14 scroll-mt-24 border-t border-gray-200 pt-10">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400">Call for speakers</p>
-              <h2 className="mt-4 text-balance font-sans text-2xl font-black leading-[1.1] tracking-[-0.02em] text-gray-900 sm:text-3xl">
-                Speak at {community.name}.
-              </h2>
-              <p className="mt-4 max-w-xl whitespace-pre-wrap text-[17px] leading-[1.7] text-gray-600">
-                {community.speakersNote ||
-                  "Have something to share? First talks are welcome. Tell the organizers what you'd like to cover, and they'll reach out when there's a night that fits."}
-              </p>
-              <div className="mt-8">
-                <SpeakerCallForm communityId={community.id} groupName={community.name} question={community.speakersQuestion} />
-              </div>
-            </div>
-          )}
 
           {/* The closing ask.
 
@@ -566,12 +560,12 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
             initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-14 border-t border-gray-200 pt-10"
+            className="mt-16 border-t border-gray-200 pt-12"
           >
-            <p className="font-mono text-[11px] uppercase tracking-widest text-gray-400">
+            <p className="text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">
               One calendar
             </p>
-            <h2 className="mt-4 text-balance font-sans text-2xl font-black leading-[1.1] tracking-[-0.02em] text-gray-900 sm:text-3xl">
+            <h2 className="mt-5 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-4xl lg:text-5xl">
               {community.name} is one of the groups
               <br className="hidden sm:block" /> publishing to it.
             </h2>
@@ -626,11 +620,8 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
       initial={{ y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className={`group relative rounded-xl border p-4 sm:p-5 transition-all duration-300 ${
-        isUpcoming
-          ? "border-gray-200 bg-gray-50 hover:border-gray-300 hover:shadow-md"
-          : `border-gray-100 bg-gray-50/50 ${eventLink ? "hover:border-gray-300 hover:bg-gray-50" : ""}`
-      }`}
+      // A row under a rule, like the site's other lists, not a grey box.
+      className="group relative border-t border-gray-200 py-5"
     >
       {/* Past events are reachable now.
 
@@ -649,7 +640,7 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
       {eventLink && !isUpcoming && (
         <Link
           href={eventLink}
-          className="absolute inset-0 z-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-300"
+          className="absolute inset-0 z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
           aria-label={`${event.title} — past event`}
         />
       )}
@@ -670,9 +661,8 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
               })}
             </time>
             {isUpcoming && index === 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white bg-[#ef426f]">
-                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                Next Up
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#c2304f]">
+                Next up
               </span>
             )}
           </div>
@@ -699,7 +689,7 @@ function EventCard({ event, isUpcoming, index }: EventCardProps) {
         {eventLink && isUpcoming && (
           <Link
             href={eventLink}
-            className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-bold text-white transition-all hover:scale-105"
+            className="shrink-0 inline-flex items-center justify-center rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
           >
             View Details →
           </Link>

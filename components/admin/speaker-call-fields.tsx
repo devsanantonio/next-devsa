@@ -4,7 +4,8 @@ import { ExternalLink } from "lucide-react"
 import { SPEAKER_CALL_LIMITS as L } from "@/lib/speaker-calls"
 
 /**
- * The group's call for speakers, in the community editor (lib/speaker-calls.ts).
+ * The group's call for speakers (lib/speaker-calls.ts), in SpeakerCallPanel at the
+ * top of the organizer's Speakers tab.
  * Open, the group page shows a "Speak at …" form and /give-a-talk lists the group;
  * talks land in this organizer's Speakers tab. Saved with the rest of the form.
  */
