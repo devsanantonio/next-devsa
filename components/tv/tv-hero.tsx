@@ -47,11 +47,22 @@ const CHANNELS = [
   { provider: "AT&T", logo: "/tv/att-dark.svg", w: 86, h: 35, number: "99" },
 ]
 
+/**
+ * The mark arrives as the DEVSA logo and becomes the DEVSA TV mark, the same
+ * morph as the DEVSA TV trailer and social video: the logo's three bars slant
+ * away into the clapper's stripes, the arm rises, SA gives way to TV a letter
+ * at a time, and it claps. Once, on load.
+ *
+ * Every layer's resting style is the finished DEVSA TV mark, and the motion
+ * lives only in keyframes that run under prefers-reduced-motion:
+ * no-preference. So reduced motion, or CSS failing, shows the finished mark.
+ * The morph's layers (the logo's bars, SA) rest at opacity 0 for that reason.
+ */
 function ClapperMark() {
   return (
     <svg
       viewBox="-24.7 -267 764.4 823.4"
-      className="h-auto w-full"
+      className="h-auto w-full overflow-visible"
       role="img"
       aria-label="The DEVSA TV mark: the DEVSA logo drawn as a film clapperboard"
     >
@@ -64,7 +75,7 @@ function ClapperMark() {
           <path fill="#ff8200" d="M520,0 h150 l-46,91.9 h-150 Z" />
         </g>
       </g>
-      <g>
+      <g className="tv-stripe">
         <rect x="0" y="0" width="735.7" height="91.9" rx="14" fill="#2b2b2b" />
         <path fill="#00b2a9" d="M196,0 h150 l-46,91.9 h-150 Z" />
         <path fill="#ef426f" d="M358,0 h150 l-46,91.9 h-150 Z" />
@@ -73,6 +84,12 @@ function ClapperMark() {
         <circle cx="38" cy="26" r="11" fill="#eeeeee" />
         <circle cx="38" cy="66" r="11" fill="#eeeeee" />
         <circle cx="98" cy="66" r="11" fill="#eeeeee" />
+      </g>
+      {/* The DEVSA logo's own bars, which slant away as the clapper's come in. */}
+      <g className="tv-bars" style={{ opacity: 0, transformBox: "fill-box", transformOrigin: "50% 50%" }}>
+        <rect fill="#ef426f" x="250.3" width="235" height="91.9" />
+        <path fill="#00b2a9" d="M235,0H30.6C13.8,0,0,13.8,0,30.6v61.3h235V0Z" />
+        <path fill="#ff8200" d="M705,0h-204.5v91.9h235.1V30.6c0-16.9-13.8-30.6-30.7-30.6h0Z" />
       </g>
       <g transform="translate(0 0.6)">
         <path d="M0,107.3h735.7v413.8c0,16.8-13.8,30.7-30.7,30.7H30.6c-16.9,0-30.6-13.8-30.6-30.7V107.3Z" fill="#0a0a0a" />
@@ -84,11 +101,14 @@ function ClapperMark() {
           d="M352.5,459.8c0,9.2,6.1,15.3,15.3,15.3h245.2c9.2,0,15.3-6.1,15.3-15.3v-46c0-9.2-6.1-15.3-15.3-15.3h-245.3c-9.2,0-15.3,6.1-15.3,15.3v46h0Z"
           fill="#eeeeee"
         />
+        {/* SA, from the DEVSA logo: shown only while the morph runs. */}
+        <g className="tv-sa" style={{ opacity: 0 }} transform="translate(0 -0.6)">
+          <path fill="#eeeeee" d="M370.3,359.6c-11.3-8.5-17.2-20.8-17.8-36.8l49.2,1.1c.5,8.5,4.2,12.8,11,13,2.5,0,4.6-.5,6.4-1.6,1.8-1.1,2.7-3,2.7-5.5,0-3.5-1.7-6.3-5.4-8.6-3.7-2.2-9.5-4.8-17.4-7.8-9.4-3.5-17.1-7-23.2-10.3-6.1-3.3-11.3-8.1-15.6-14.3-4.3-6.2-6.3-14.1-5.9-23.7.2-9.6,2.9-17.7,8-24.3s12-11.6,20.6-14.9c8.6-3.3,18.3-4.8,29-4.6,18.1.4,32.3,4.9,42.8,13.5,10.5,8.6,15.8,20.5,16,35.6l-49.9-1.1c0-4.2-1-7.2-2.9-9-1.9-1.9-4.2-2.8-7-2.9-2,0-3.6.6-4.8,1.9s-2,3.1-2,5.5c0,3.3,1.7,6.1,5.3,8.4,3.6,2.2,9.5,5,17.5,8.2,9.2,3.7,16.8,7.2,22.8,10.5,6,3.3,11.1,7.9,15.4,13.7,4.3,5.8,6.4,13,6.2,21.6-.2,9-2.6,17.1-7.2,24.1-4.6,7.1-11.2,12.5-19.8,16.3-8.6,3.8-18.7,5.6-30.4,5.4-17.7-.4-32.1-4.9-43.4-13.4h0Z" />
+          <path fill="#eeeeee" d="M573.3,348.2l-48.5-.3-7.3,22-47.9-.3,54.1-145.2,52.6.3,52.2,145.8-48.1-.3-7.1-22h0ZM561.4,318l-13.6-40.3-12.7,40.6,26.3-.3h0Z" />
+        </g>
         <g transform="translate(348.7 370.2)">
-          <path
-            fill="#eeeeee"
-            d="M44.47 0V-113.33H2.05V-145.5H127.26V-113.33H84.84V0Z M181.36 0 128.9 -145.5H169.89L204.31 -45.49L238.74 -145.5H279.73L226.86 0Z"
-          />
+          <path className="tv-t" fill="#eeeeee" d="M44.47 0V-113.33H2.05V-145.5H127.26V-113.33H84.84V0Z" />
+          <path className="tv-v" fill="#eeeeee" d="M181.36 0 128.9 -145.5H169.89L204.31 -45.49L238.74 -145.5H279.73L226.86 0Z" />
         </g>
       </g>
     </svg>
@@ -112,14 +132,26 @@ export function TvHero() {
   return (
     <section className="relative overflow-hidden bg-[#161616]" data-bg-type="dark">
       {/* The clap: open, shut on the beat, open again. Once, on load. */}
+      {/* The morph, then the clap. Resting styles are the finished mark; see ClapperMark. */}
       <style>{`
-        @keyframes tv-clap {
-          0%, 55% { transform: rotate(-13deg); }
-          68% { transform: rotate(0deg); }
-          100% { transform: rotate(-13deg); }
+        @keyframes tv-bars { from { opacity: 1; transform: none } to { opacity: 0; transform: skewX(-26deg) scaleX(.86) } }
+        @keyframes tv-fade-in { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes tv-fade-out { from { opacity: 1 } to { opacity: 0 } }
+        @keyframes tv-arm {
+          0% { opacity: 0; transform: rotate(0deg) }
+          18% { opacity: 1; transform: rotate(-13deg) }
+          74% { opacity: 1; transform: rotate(-13deg) }
+          80% { transform: rotate(0deg) }
+          86% { transform: rotate(0deg) }
+          100% { opacity: 1; transform: rotate(-13deg) }
         }
         @media (prefers-reduced-motion: no-preference) {
-          .tv-arm { animation: tv-clap 1.6s cubic-bezier(.6, 0, .3, 1) .4s 1 both; }
+          .tv-bars { animation: tv-bars .65s cubic-bezier(.5, 0, .5, 1) .5s both; }
+          .tv-stripe { animation: tv-fade-in .45s ease-out .65s both; }
+          .tv-arm { animation: tv-arm 3.1s cubic-bezier(.4, 0, .3, 1) .7s both; }
+          .tv-sa { animation: tv-fade-out .3s ease-out 1.5s both; }
+          .tv-t { animation: tv-fade-in .12s ease-out 1.95s both; }
+          .tv-v { animation: tv-fade-in .12s ease-out 2.2s both; }
         }
       `}</style>
 
@@ -128,8 +160,20 @@ export function TvHero() {
       <div className="page-shell flex flex-col pt-12 pb-10 md:pt-20 lg:min-h-[min(calc(100svh-3rem),56rem)] lg:pt-16">
         <div className="grid flex-1 items-center gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           {/* The mark leads on a phone, where there is no room beside anything. */}
-          <div className="order-first mx-auto w-full max-w-[200px] sm:max-w-[240px] lg:order-last lg:max-w-[400px]">
+          <div className="relative order-first mx-auto w-full max-w-[200px] sm:max-w-[240px] lg:order-last lg:max-w-[400px]">
             <ClapperMark />
+            {/* Faint scanlines on the mark's side only, the retro-TV texture of the
+                trailer, kept off the copy so the text reads at full contrast.
+                Static, so reduced motion has nothing to stop. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-[18%]"
+              style={{
+                backgroundImage: "repeating-linear-gradient(to bottom, rgba(255,255,255,.045) 0 2px, transparent 2px 5px)",
+                maskImage: "radial-gradient(closest-side, black 35%, transparent 100%)",
+                WebkitMaskImage: "radial-gradient(closest-side, black 35%, transparent 100%)",
+              }}
+            />
           </div>
 
           <div className="max-w-2xl">
