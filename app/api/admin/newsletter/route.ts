@@ -5,6 +5,7 @@ import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/re
 import { newsletterConfig, unsubscribeApiUrl, unsubscribePageUrl } from '@/lib/newsletter';
 import { NewsletterEmail } from '@/lib/emails/newsletter';
 import { logActivity } from '@/lib/activity-log';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * The Newsletter tab's composer. Admins and super admins only.
@@ -23,7 +24,7 @@ async function requireAdmin(request: NextRequest) {
   if (!email) return { error: NextResponse.json({ error: 'Sign in required' }, { status: 401 }) };
   const q = await getDb().collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get();
   const role = q.empty ? null : q.docs[0].data().role;
-  if (role !== 'admin' && role !== 'superadmin') {
+  if (!isAdminRole(role)) {
     return { error: NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 }) };
   }
   return { email };

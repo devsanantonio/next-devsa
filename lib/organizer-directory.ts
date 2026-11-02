@@ -16,7 +16,7 @@ export interface DirectoryEntry {
   communityId: string | null;
   /** Every group they run: `communityId`, plus an admin's `organizerOf`. */
   groups: string[];
-  role: 'superadmin' | 'admin' | 'organizer';
+  role: 'admin' | 'organizer';
   name: string;
   photo: string | null;
   title: string | null;

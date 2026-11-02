@@ -205,7 +205,8 @@ function escapeIcs(value: string): string {
     .replace(/\\/g, "\\\\")
     .replace(/;/g, "\\;")
     .replace(/,/g, "\\,")
-    .replace(/\r?\n/g, "\\n")
+    // \r alone too: many calendar apps end a line on it.
+    .replace(/\r\n?|\n/g, "\\n")
 }
 
 /**

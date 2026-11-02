@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { logActivity, diffFields } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Partner, type ApprovedAdmin } from '@/lib/firebase-admin';
+import { isAdminRole } from '@/lib/admin-roles';
 
-// Only admins/superadmins may create, edit, or delete partners.
+// Only admins may create, edit, or delete partners.
 async function requireAdmin(db: FirebaseFirestore.Firestore, adminEmail: string) {
   const adminQuery = await db
     .collection(COLLECTIONS.APPROVED_ADMINS)
@@ -14,7 +15,7 @@ async function requireAdmin(db: FirebaseFirestore.Firestore, adminEmail: string)
   if (adminQuery.empty) return { ok: false as const, status: 403, error: 'Unauthorized - admin access required' };
 
   const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-  if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+  if (!isAdminRole(adminData.role)) {
     return { ok: false as const, status: 403, error: 'Unauthorized - only admins can manage partners' };
   }
   return { ok: true as const };
@@ -211,7 +212,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can reorder' },
         { status: 403 }

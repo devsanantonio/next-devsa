@@ -17,7 +17,7 @@ export interface DirectoryEntry {
   communityId: string | null
   /** Every group they run, including an admin's own groups. */
   groups: string[]
-  role: "superadmin" | "admin" | "organizer"
+  role: "admin" | "organizer"
   name: string
   /** Their uploaded profile photo, or null. Only ever a profiles/ blob (lib/profile-photo.ts). */
   photo: string | null

@@ -191,7 +191,7 @@ The RSVPs tab has community and event filter dropdowns (event options filtered b
 { "subscriptionId": "firestore-doc-id", "adminEmail": "admin@example.com" }
 ```
 
-`admin` or `superadmin` only.
+`admin` only.
 
 ### `DELETE /api/rsvp`
 
@@ -199,6 +199,6 @@ The RSVPs tab has community and event filter dropdowns (event options filtered b
 { "rsvpId": "firestore-doc-id", "adminEmail": "admin@example.com" }
 ```
 
-`admin` or `superadmin` only.
+`admin` only.
 
 Both remove the record from local dashboard state on success rather than refetching. Event and community deletes are *not* admin-only — see `DELETE /api/events` above.

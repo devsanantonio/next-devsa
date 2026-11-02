@@ -8,6 +8,7 @@ import {
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
+import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -73,7 +74,7 @@ export default async function AboutPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "AboutPage",
             name: "About DEVSA",

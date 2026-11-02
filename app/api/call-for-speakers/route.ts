@@ -23,6 +23,8 @@ import { logActivity } from '@/lib/activity-log';
 import { FieldValue } from 'firebase-admin/firestore';
 import type { Community } from '@/lib/firebase-admin';
 import { emailLogoUrl } from '@/lib/email-logo';
+import { isAdminRole } from '@/lib/admin-roles';
+import { PROTECTED_ADMIN_EMAILS } from '@/lib/protected-admins';
 
 const DEFAULT_EVENT_ID = 'aiconference2026';
 
@@ -286,8 +288,9 @@ async function submitToPool(request: NextRequest, body: SpeakerSubmissionRequest
       console.error('Failed to send pool talk thank-you:', emailError);
     }
     try {
-      const supers = await db.collection(COLLECTIONS.APPROVED_ADMINS).where('role', '==', 'superadmin').get();
-      const to = [...new Set(supers.docs.map((d) => String(d.data().email || '').toLowerCase()).filter(Boolean))];
+      // To the site's owner (lib/protected-admins.ts), who routes pool talks. This
+      // went to the `superadmin` role until that role was retired (lib/admin-roles.ts).
+      const to = [...PROTECTED_ADMIN_EMAILS];
       if (to.length) {
         await resend.emails.send({
           from: EMAIL_FROM,
@@ -316,7 +319,7 @@ async function submitToPool(request: NextRequest, body: SpeakerSubmissionRequest
  * a list of where it went. The group's organizers and the speaker are told.
  */
 async function shareTalk(adminEmail: string, adminData: FirebaseFirestore.DocumentData, submissionId: string, communityId: string) {
-  if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+  if (!isAdminRole(adminData.role)) {
     return NextResponse.json({ error: 'Only admins can share talks from the open pool' }, { status: 403 });
   }
   const db = getDb();
@@ -498,7 +501,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can delete speaker submissions' },
         { status: 403 }
@@ -576,7 +579,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+    const isAdmin = isAdminRole(adminData.role);
     if (!isAdmin) {
       const eventIds = await hostedEventIdsFor(adminData.communityId);
       if (!eventIds.includes(submissionDoc.data()?.eventId)) {

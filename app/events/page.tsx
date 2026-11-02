@@ -5,6 +5,7 @@ import { EventsVisitMarker } from "@/components/events/conference-back-link"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 import { GiveATalkSection } from "@/components/events/give-a-talk-section"
 import { listCommunities } from "@/lib/communities"
+import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -93,7 +94,7 @@ export default async function EventsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: "Tech Events & Meetups in San Antonio",

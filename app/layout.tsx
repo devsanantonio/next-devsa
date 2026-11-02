@@ -15,6 +15,7 @@ import { SiteAnalytics } from "@/components/site-analytics"
 import { Suspense } from "react"
 import { LayoutChrome } from "@/components/layout-chrome"
 import { listCommunities } from "@/lib/communities"
+import { jsonLdScript } from "@/lib/json-ld"
 
 /**
  * Oswald — the display face the Startup + Tech Week activations are set in.
@@ -204,7 +205,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLdScript({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "DEVSA",
@@ -264,7 +265,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLdScript({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "DEVSA",

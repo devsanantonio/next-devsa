@@ -15,6 +15,7 @@ import {
   getAccessRequestDeclinedSubject,
 } from '@/lib/emails/access-request-decision';
 import { ALERT_EMAIL } from '@/lib/contact';
+import { isAdminRole } from '@/lib/admin-roles';
 
 interface AccessRequestBody {
   name: string;
@@ -178,7 +179,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can reject access requests' },
         { status: 403 }

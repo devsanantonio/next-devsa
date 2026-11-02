@@ -14,6 +14,7 @@ import {
   getAccessGrantedInternalSubject,
 } from '@/lib/emails/access-granted-internal';
 import { AG_EVENT_ID, AG_NOTIFY_EMAILS } from '@/data/access-granted/2026';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * Volunteer signups for an event's open call.
@@ -194,7 +195,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Delete a volunteer signup. Admin and superadmin only.
+ * Delete a volunteer signup. Admins only.
  *
  * Mirrors the DELETE on /api/call-for-speakers deliberately, including the
  * role check: per the dashboard's permission model, organizers are scoped
@@ -234,7 +235,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can delete volunteer signups' },
         { status: 403 }

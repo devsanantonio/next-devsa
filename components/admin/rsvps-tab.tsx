@@ -216,7 +216,7 @@ export function RsvpsTab({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <h2 className="text-xl font-bold tracking-tight text-white">Event RSVPs</h2>
             <div className="flex flex-wrap items-center gap-3">
-              {/* Community filter — admins/superadmins only (organizers own a single group) */}
+              {/* Community filter — admins only (organizers own a single group) */}
               {isAdmin && (
                 <AdminCombobox
                   className="w-52"

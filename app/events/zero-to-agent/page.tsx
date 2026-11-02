@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { ZeroToAgentResources } from "@/components/events/zero-to-agent-resources"
+import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -81,7 +82,7 @@ export default function ZeroToAgentPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "Event",
             name: "Zero to Agent — Vercel Global Build Week",

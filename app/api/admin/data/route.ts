@@ -3,6 +3,7 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { hostedEventIdsFor } from '@/lib/hosted-events';
 import { toDirectoryEntry, groupsOf, type DirectoryEntry } from '@/lib/organizer-directory';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /** Opted-in profiles only, by name. See lib/organizer-directory.ts for what each entry carries. */
 const directoryFrom = (docs: FirebaseFirestore.QueryDocumentSnapshot[]) =>
@@ -57,8 +58,8 @@ export async function GET(request: NextRequest) {
     // run themselves (see groupsOf). It narrows what comes back to exactly what
     // that group's organizers get; it can never widen anything.
     const view = request.nextUrl.searchParams.get('view');
-    const viewing = view && adminData.role !== 'organizer' && groupsOf(adminData).includes(view) ? view : null;
-    const isAdmin = !viewing && (adminData.role === 'admin' || adminData.role === 'superadmin');
+    const viewing = view && isAdminRole(adminData.role) && groupsOf(adminData).includes(view) ? view : null;
+    const isAdmin = !viewing && (isAdminRole(adminData.role));
     const communityId = viewing ?? adminData.communityId;
 
     // Organizers see none of the sensitive collections, with one deliberate
@@ -152,7 +153,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // `lastLoginAt` is written by /api/admin/auth on each successful check —
-    // see the note there. Only this branch runs for admins and superadmins;
+    // see the note there. Only this branch runs for admins;
     // organizers return `admins: []` above and never see anyone's activity.
     const admins = adminsSnapshot.docs.map(doc => ({
       id: doc.id,

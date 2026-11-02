@@ -80,13 +80,7 @@ The app runs at [http://localhost:3000](http://localhost:3000). [.env.example](.
 
 ### Creating the first admin
 
-On a new deployment, bootstrap the first admin account. This only works once, while no admins exist:
-
-```bash
-curl -X POST https://your-domain.com/api/admin/setup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "your-email@example.com", "secret": "your_admin_setup_secret"}'
-```
+The portal never grants admin; it only adds organizers. On a new deployment, make the first admin by hand: add a document to `approved_admins` in the `devsa` Firestore database with `email` (lowercase), `role: "admin"` and `approvedAt`. Put the site owner's email in [lib/protected-admins.ts](lib/protected-admins.ts) too, so no one can remove or demote them.
 
 ---
 

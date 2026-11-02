@@ -5,7 +5,9 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type Event } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
 import { FieldValue } from 'firebase-admin/firestore';
+import { httpUrl } from '@/lib/safe-url';
 import { defaultEventSlug, invalidCustomSlug, slugTaken } from '@/lib/event-slug';
+import { isAdminRole } from '@/lib/admin-roles';
 
 // Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
       }
       includeAll = true;
       const viewer = admin.docs[0].data();
-      if (viewer.role === 'organizer') draftsOnlyFor = viewer.communityId || '';
+      if (!isAdminRole(viewer.role)) draftsOnlyFor = viewer.communityId || '';
     }
     // One event by its slug: the event page's read. Link-only events answer
     // here, because having the link is the whole of the permission.
@@ -207,6 +209,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
+
+    // Both links render as hrefs, so only http(s) is accepted (lib/safe-url.ts).
+    const safeDetailsUrl = httpUrl(detailsUrl);
+    const safeExternalRsvpUrl = httpUrl(body.externalRsvpUrl);
+    if (safeDetailsUrl === undefined || safeExternalRsvpUrl === undefined) {
+      return NextResponse.json({ error: 'Links must start with http:// or https://' }, { status: 400 });
+    }
     const organizerEmail = await verifiedEmail(request);
 
     // An event needs at least one host — a community, a partner, or DEVSA
@@ -239,8 +248,8 @@ export async function POST(request: NextRequest) {
 
     const adminData = adminQuery.docs[0].data();
 
-    // If organizer role, check community access
-    if (adminData.role === 'organizer' && !isHostedBy({ communityId, partnerId }, adminData.communityId)) {
+    // Anyone who isn't an admin is scoped to their group (lib/admin-roles.ts)
+    if (!isAdminRole(adminData.role) && !isHostedBy({ communityId, partnerId }, adminData.communityId)) {
       return NextResponse.json(
         { error: 'Unauthorized - you can only create events your community hosts' },
         { status: 403 }
@@ -284,8 +293,8 @@ export async function POST(request: NextRequest) {
       ...rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired),
       capacity: capacityField(rsvpEnabled, body.capacity),
       brand: brand || null,
-      detailsUrl: detailsUrl || null,
-      externalRsvpUrl: body.externalRsvpUrl || null,
+      detailsUrl: safeDetailsUrl,
+      externalRsvpUrl: safeExternalRsvpUrl,
       sharedToDiscord: false,
       sharedToLinkedIn: false,
       createdAt: new Date(),
@@ -314,6 +323,13 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
+
+    // Both links render as hrefs, so only http(s) is accepted (lib/safe-url.ts).
+    const safeDetailsUrl = httpUrl(detailsUrl);
+    const safeExternalRsvpUrl = httpUrl(body.externalRsvpUrl);
+    if (safeDetailsUrl === undefined || safeExternalRsvpUrl === undefined) {
+      return NextResponse.json({ error: 'Links must start with http:// or https://' }, { status: 400 });
+    }
     const organizerEmail = await verifiedEmail(request);
 
     if (!eventId || !organizerEmail) {
@@ -351,10 +367,10 @@ export async function PUT(request: NextRequest) {
     const adminData = adminQuery.docs[0].data();
     const eventData = eventDoc.data();
 
-    // If organizer role, check community access
+    // Anyone who isn't an admin is scoped to their group (lib/admin-roles.ts)
     // Any co-host's organizer may edit, and the edit must leave their group among the hosts:
     // an organizer can't hand an event to groups they don't run.
-    if (adminData.role === 'organizer') {
+    if (!isAdminRole(adminData.role)) {
       const after = {
         communityId: typeof communityId === 'string' ? communityId : eventData?.communityId,
         partnerId: typeof partnerId === 'string' ? partnerId : eventData?.partnerId,
@@ -400,8 +416,8 @@ export async function PUT(request: NextRequest) {
       updateData.capacity = capacityField(typeof rsvpEnabled === 'boolean' ? rsvpEnabled : eventData?.rsvpEnabled, body.capacity);
     }
     if (brand !== undefined) updateData.brand = brand || null;
-    if (detailsUrl !== undefined) updateData.detailsUrl = detailsUrl || null;
-    if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = body.externalRsvpUrl || null;
+    if (detailsUrl !== undefined) updateData.detailsUrl = safeDetailsUrl;
+    if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = safeExternalRsvpUrl;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
     if (typeof communityId === 'string') updateData.communityId = communityId;
     if (typeof communityName === 'string') updateData.communityName = communityName;
@@ -494,8 +510,8 @@ export async function DELETE(request: NextRequest) {
     const adminData = adminQuery.docs[0].data();
     const eventData = eventDoc.data();
 
-    // If organizer role, check community access
-    if (adminData.role === 'organizer' && !isHostedBy(eventData ?? {}, adminData.communityId)) {
+    // Anyone who isn't an admin is scoped to their group (lib/admin-roles.ts)
+    if (!isAdminRole(adminData.role) && !isHostedBy(eventData ?? {}, adminData.communityId)) {
       return NextResponse.json(
         { error: 'Unauthorized - you can only delete events your community hosts' },
         { status: 403 }
@@ -549,7 +565,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can audit/fix events' },
         { status: 403 }

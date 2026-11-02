@@ -25,7 +25,6 @@ import {
   Trash2,
   Archive,
   Building2,
-  Database,
   ExternalLink,
   Upload,
   Link as LinkIcon,
@@ -187,7 +186,7 @@ interface Admin {
    * not seen them since this started recording — not that they never signed
    * in, which is a distinction worth remembering for the first weeks.
    *
-   * Only reaches admins and superadmins: organizers get `admins: []`.
+   * Only reaches admins: organizers get `admins: []`.
    */
   lastLoginAt?: string | null
   inDirectory?: boolean
@@ -288,6 +287,8 @@ interface EventRSVP {
 
 import { defaultSlugPreview, invalidCustomSlug } from "@/lib/event-slug-shared"
 import { eventDescriptionToPlainText } from "@/lib/event-markdown"
+import { isAdminRole } from "@/lib/admin-roles"
+import { csvCell } from "@/lib/csv"
 
 type Tab = "overview" | "activity" | "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
@@ -357,12 +358,10 @@ async function adminFetch(input: RequestInfo | URL, init: RequestInit = {}) {
 /** Where the email a sign-in link was sent to waits until the link is opened. */
 const LINK_EMAIL_KEY = "devsa-admin-link-email"
 
-// Protected super admins — cannot be removed or modified. See lib/protected-admins.ts.
+// The site's owner can't be removed or modified; see lib/protected-admins.ts.
 
-// Helper to check if a role has admin-level access
-const hasAdminAccess = (role: string | null | undefined): boolean => {
-  return role === 'superadmin' || role === 'admin'
-}
+// Full access: admin. The same rule as the API (lib/admin-roles.ts).
+const hasAdminAccess = (role: string | null | undefined): boolean => isAdminRole(role)
 
 // Helper to get community name from id
 const getCommunityName = (communityId: string | undefined, communityList?: Community[]): string => {
@@ -377,7 +376,7 @@ const viewStorageKey = (email: string) => `devsa-admin-view:${email.toLowerCase(
 export default function AdminPage() {
   const router = useRouter()
   const [adminEmail, setAdminEmail] = useState("")
-  const [adminRole, setAdminRole] = useState<"superadmin" | "admin" | "organizer" | null>(null)
+  const [adminRole, setAdminRole] = useState<"admin" | "organizer" | null>(null)
   const [adminCommunityId, setAdminCommunityId] = useState<string | null>(null)
   /**
    * Views. An admin or super admin who also runs groups (their profile's
@@ -387,7 +386,7 @@ export default function AdminPage() {
    * this file follows the switch; the account's own role is kept here. The
    * server narrows `/api/admin/data` to match (`?view=`), and never widens it.
    */
-  const [accountRole, setAccountRole] = useState<"superadmin" | "admin" | "organizer" | null>(null)
+  const [accountRole, setAccountRole] = useState<"admin" | "organizer" | null>(null)
   const [accountCommunityId, setAccountCommunityId] = useState<string | null>(null)
   const [ownGroups, setOwnGroups] = useState<string[]>([])
   const [viewGroup, setViewGroup] = useState<string | null>(null)
@@ -566,7 +565,10 @@ export default function AdminPage() {
   const [isDeletingNewsletter, setIsDeletingNewsletter] = useState<string | null>(null)
   const [isRejectingAccess, setIsRejectingAccess] = useState<string | null>(null)
   const [isApprovingAccess, setIsApprovingAccess] = useState<string | null>(null)
-  const [isMigrating, setIsMigrating] = useState(false)
+  // The group each pending request will organize, by request id. The portal only
+  // makes organizers, and an organizer needs a real group (lib/admin-roles.ts);
+  // the request itself carries only the name the person typed.
+  const [approveGroup, setApproveGroup] = useState<Record<string, string>>({})
   const [isSavingCommunity, setIsSavingCommunity] = useState(false)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [useFileUpload, setUseFileUpload] = useState(true)
@@ -1021,7 +1023,7 @@ export default function AdminPage() {
       const partnersData = await partnersRes.json()
 
       if (adminDataRes.ok) {
-        // Only admins/superadmins should see newsletter, access requests, and
+        // Only admins should see newsletter, access requests, and
         // admins data. The API also enforces this; we double-check here.
         const isAdmin = !viewing && (hasAdminAccess(role) || hasAdminAccess(adminRole))
         setNewsletter(isAdmin ? (adminData.newsletter || []) : [])
@@ -1064,7 +1066,7 @@ export default function AdminPage() {
 
       // Fetch RSVPs
       const rsvpsRes = await adminFetch(
-        `/api/rsvp?adminEmail=${encodeURIComponent(email)}${viewing ? `&communityId=${encodeURIComponent(viewing)}` : ""}`
+        `/api/rsvp${viewing ? `?communityId=${encodeURIComponent(viewing)}` : ""}`
       )
       if (rsvpsRes.ok) {
         const rsvpsData = await rsvpsRes.json()
@@ -1103,7 +1105,8 @@ export default function AdminPage() {
    * download and open the same way.
    */
   const handleExportVolunteers = (rows: VolunteerSignup[], scope: string) => {
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+    // lib/csv.ts: quotes doubled, and a leading = + - @ can't run as a formula.
+    const esc = csvCell
     const header = ["Name", "Email", "Org", "Role", "Notes", "Event", "Status", "Submitted"]
     const csv = [
       header.join(","),
@@ -1134,7 +1137,8 @@ export default function AdminPage() {
   const handleExportSpeakers = (rows: SpeakerSubmission[], scope: string) => {
     // Abstracts and bios contain commas and newlines, so every field is quoted
     // and embedded quotes are doubled per RFC 4180.
-    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+    // lib/csv.ts: quotes doubled, and a leading = + - @ can't run as a formula.
+    const cell = csvCell
     const headers = [
       "Name", "Email", "Company", "Talk title", "Format", "Audience level",
       "Considered for", "Abstract", "Bio", "Links", "Accessibility requests",
@@ -1229,6 +1233,13 @@ export default function AdminPage() {
     await fetchData(adminEmail, role ?? undefined, communityId ?? undefined)
   }
 
+  // The chosen group, else the group whose name matches what the person typed.
+  const groupForRequest = (request: AccessRequest) => {
+    if (approveGroup[request.id]) return approveGroup[request.id]
+    const typed = (request.communityOrg || "").trim().toLowerCase()
+    return communities.find((c) => c.name.trim().toLowerCase() === typed)?.id ?? ""
+  }
+
   const handleApproveAccess = async (request: AccessRequest) => {
     setIsApprovingAccess(request.id)
     try {
@@ -1238,7 +1249,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           email: request.email,
           role: "organizer",
-          approverEmail: adminEmail,
+          communityId: groupForRequest(request),
         }),
       })
 
@@ -1762,35 +1773,6 @@ export default function AdminPage() {
       setError("Failed to delete speaker submission")
     } finally {
       setIsDeletingSpeaker(null)
-    }
-  }
-
-  const handleMigrateToDB = async () => {
-    if (!confirm("This will migrate communities and partners from static files to Firestore. Continue?")) return
-    
-    setIsMigrating(true)
-    setError(null)
-    try {
-      const response = await adminFetch("/api/admin/migrate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adminEmail,
-          migrateType: "all",
-        }),
-      })
-
-      const data = await response.json()
-      if (response.ok) {
-        setSuccessMessage(`Migration complete! Communities: ${data.results.communities.migrated} migrated, ${data.results.communities.skipped} skipped. Partners: ${data.results.partners.migrated} migrated, ${data.results.partners.skipped} skipped.`)
-        await fetchData(adminEmail)
-      } else {
-        setError(data.error || "Failed to migrate data")
-      }
-    } catch {
-      setError("Failed to migrate data")
-    } finally {
-      setIsMigrating(false)
     }
   }
 
@@ -2554,13 +2536,10 @@ export default function AdminPage() {
               </div>
               <div className={`min-w-0 flex-1 ${railCollapsed ? "lg:hidden" : ""}`}>
                 <p className="truncate text-sm font-medium text-white">{adminFirstName || adminEmail?.split('@')[0]}</p>
-                <p className={`truncate text-xs ${
-                  adminRole === "superadmin" ? "text-yellow-400" :
-                  adminRole === "admin" ? "text-purple-400" : "text-blue-400"
-                }`}>
+                <p className={`truncate text-xs ${hasAdminAccess(adminRole) ? "text-purple-400" : "text-blue-400"}`}>
                   {viewGroup
                     ? `Organizer · ${getCommunityNameFromState(viewGroup)}`
-                    : adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
+                    : hasAdminAccess(adminRole) ? "Admin" : "Organizer"}
                 </p>
               </div>
               <ChevronDown className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${showUserMenu ? "rotate-180" : ""} ${railCollapsed ? "lg:hidden" : ""}`} />
@@ -2590,13 +2569,11 @@ export default function AdminPage() {
                         ) : null}
                         <p className="text-xs text-neutral-400 truncate">{adminEmail}</p>
                         <span className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          adminRole === "superadmin"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : adminRole === "admin"
+                          hasAdminAccess(adminRole)
                             ? "bg-purple-500/20 text-purple-400"
                             : "bg-blue-500/20 text-blue-400"
                         }`}>
-                          {adminRole === "superadmin" ? "Super Admin" : adminRole === "admin" ? "Admin" : "Organizer"}
+                          {hasAdminAccess(adminRole) ? "Admin" : "Organizer"}
                         </span>
                       </div>
                     </div>
@@ -2624,7 +2601,7 @@ export default function AdminPage() {
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-medium">{group ? getCommunityNameFromState(group) : "DEVSA"}</span>
                               <span className="block truncate text-xs text-neutral-400">
-                                {group ? "Organizer" : accountRole === "superadmin" ? "Super Admin" : "Admin"}
+                                {group ? "Organizer" : "Admin"}
                               </span>
                             </span>
                             {current && <Check className="h-4 w-4 shrink-0 text-[#ef426f]" />}
@@ -2928,7 +2905,8 @@ export default function AdminPage() {
                 const page = Math.min(newsletterPage, pages - 1)
                 const pageRows = filteredNewsletter.slice(page * PAGE, page * PAGE + PAGE)
                 const exportCsv = () => {
-                  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`
+                  // lib/csv.ts: quotes doubled, and a leading = + - @ can't run as a formula.
+    const esc = csvCell
                   const rows = filteredNewsletter.map(sub => {
                     const { community, origin } = describe(sub)
                     return [sub.email, sub.status, origin, community?.name ?? "", new Date(sub.subscribedAt).toISOString().split("T")[0]].map(esc).join(",")
@@ -3380,7 +3358,7 @@ export default function AdminPage() {
                             </span>
                           )}
                         </div>
-                        {/* Deleting a submission is admin/superadmin only on the
+                        {/* Deleting a submission is admin only on the
                             API side, so organizers do not get a button that
                             would only ever return 403. */}
                         {hasAdminAccess(adminRole) && (
@@ -3409,7 +3387,7 @@ export default function AdminPage() {
           {/* Volunteers Tab — the other half of an event's open call. Scoped by
               the API exactly as speakers are: admins see every event, a host
               community's organizers see only their own. Delete is
-              admin/superadmin only, matching every other destructive action
+              admin only, matching every other destructive action
               here. */}
           {activeTab === "volunteers" && (() => {
             const volunteerEvents = Array.from(
@@ -3488,7 +3466,7 @@ export default function AdminPage() {
                           )}
                           <Td><LongText text={volunteer.notes} /></Td>
                           <Td><DateCell value={volunteer.submittedAt} /></Td>
-                          {/* Admin/superadmin only, matching the API. An
+                          {/* Admin only, matching the API. An
                               organizer would only ever get a 403 from it, and
                               this collection is shared across events — one
                               community's organizer must not be able to empty
@@ -3552,14 +3530,24 @@ export default function AdminPage() {
                       return (
                         <Tr key={request.id}>
                           <Td><PrimaryCell title={request.name} sub={<MailLink email={request.email} />} /></Td>
-                          <Td>{request.communityOrg || <span className="text-neutral-400">—</span>}</Td>
+                          <Td>
+                            <span className="block text-neutral-300">{request.communityOrg || "—"}</span>
+                            {/* Which group they'll organize: required before Approve. */}
+                            <AdminCombobox
+                              className="mt-2 min-w-[14rem]"
+                              options={communities.map((c) => ({ value: c.id, label: c.name }))}
+                              value={groupForRequest(request)}
+                              onChange={(v) => setApproveGroup((g) => ({ ...g, [request.id]: v }))}
+                              placeholder="Choose their group"
+                            />
+                          </Td>
                           <Td><DateCell value={request.submittedAt} time /></Td>
                           <Td align="right">
                             <RowActions>
                               <RowAction
                                 tone="success"
                                 onClick={() => handleApproveAccess(request)}
-                                disabled={busy}
+                                disabled={busy || !groupForRequest(request)}
                                 icon={isApprovingAccess === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                               >
                                 {isApprovingAccess === request.id ? "Approving…" : "Approve"}
@@ -3894,7 +3882,7 @@ export default function AdminPage() {
                           </div>
                         )
                       })()}
-                      {/* Community selector - admin/superadmin only */}
+                      {/* Community selector - admin only */}
                       {hasAdminAccess(adminRole) && (
                         <div>
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">
@@ -4630,7 +4618,7 @@ export default function AdminPage() {
           {/* Communities Tab */}
           {activeTab === "overview" && adminRole && (
             <AdminOverview
-              role={adminRole as "superadmin" | "admin" | "organizer"}
+              role={adminRole as "admin" | "organizer"}
               myCommunityId={adminCommunityId}
               communities={communities}
               events={calendar}
@@ -4685,25 +4673,6 @@ export default function AdminPage() {
                     >
                       <Plus className="h-4 w-4" />
                       Create Community
-                    </button>
-                  )}
-                  {adminRole === 'superadmin' && communitiesSource !== 'firestore' && (
-                    <button
-                      onClick={handleMigrateToDB}
-                      disabled={isMigrating}
-                      className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
-                    >
-                      {isMigrating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Migrating...
-                        </>
-                      ) : (
-                        <>
-                          <Database className="h-4 w-4" />
-                          Migrate to Firestore
-                        </>
-                      )}
                     </button>
                   )}
                 </div>

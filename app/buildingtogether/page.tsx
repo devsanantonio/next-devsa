@@ -14,6 +14,7 @@ import { PARTNER_WAY_KEYS, type GetInvolvedPath } from "@/lib/get-involved"
 import { DonationCta } from "@/components/partners/donation-cta"
 import { ScrollToHash } from "@/components/scroll-to-hash"
 import { toCampaignKey } from "@/lib/campaigns"
+import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -127,7 +128,7 @@ export default async function GroupsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: "San Antonio Tech Communities & Partners",

@@ -21,7 +21,7 @@ This used to say `data/` held a static fallback and that adding a record meant w
 
 The lesson worth keeping: a "fallback" that is consulted unconditionally is not a fallback, it is a second source of truth, and it will drift. If you add one, make it fire only on error.
 
-`/api/admin/migrate` no longer writes partners. It used to seed Firestore from the static file, which meant running a migration would resurrect a partner an admin had deliberately deleted. Both halves are no-ops now.
+`/api/admin/migrate` is gone. It used to seed Firestore from the static files, which meant running a migration would resurrect a partner an admin had deliberately deleted; once both halves were no-ops it was deleted, with its button, on 2026-11-01. `/api/admin/setup`, the first-admin bootstrap, went the same day: see the README for making the first admin by hand.
 
 ## Real time is the contract for admin changes
 

@@ -297,7 +297,7 @@ export interface ApprovedAdmin {
    */
   lastLoginAt?: Date;
   approvedBy?: string;
-  role: 'superadmin' | 'admin' | 'organizer';
+  role: 'admin' | 'organizer';
   communityId?: string;
   firstName?: string;
   lastName?: string;
@@ -466,7 +466,7 @@ export interface Event {
    *
    * Opens in a new tab: it is leaving devsa.community.
    */
-  detailsUrl?: string;
+  detailsUrl?: string | null;
   organizerEmail: string;
   source?: 'manual' | 'meetup' | 'luma' | 'eventbrite';
   status?: 'draft' | 'published' | 'cancelled';

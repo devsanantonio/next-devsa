@@ -3,6 +3,7 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { put, del } from '@vercel/blob';
 import { getDb, COLLECTIONS, type ApprovedAdmin } from '@/lib/firebase-admin';
 import { isProfilePhotoUrl, PROFILE_PHOTO_MAX_BYTES, PROFILE_PHOTO_TYPES } from '@/lib/profile-photo';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * `purpose=profile`: the signed-in person's own photo (lib/profile-photo.ts).
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+    const isAdmin = isAdminRole(adminData.role);
 
     if (partnerId !== null) {
       // Partners are admin-managed — there is no organizer scoped to one, so

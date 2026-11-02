@@ -3,11 +3,12 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { buildWeeklyDigestPayload, isEventsDiscordConfigured } from '@/lib/discord';
 import { gatherWeekDigestEvents } from '@/lib/weekly-digest';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * GET — what the next Monday Discord digest will post, without posting it.
  *
- * For the admin Overview. Admins and superadmins only: the digest is DEVSA's
+ * For the admin Overview. Admins only: the digest is DEVSA's
  * channel, not a group's. Reads the same events the cron does
  * (lib/weekly-digest.ts) for the week of the next post: today, if it's Monday
  * before the 15:00 UTC run, otherwise the coming Monday.
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .get();
     const role = adminQuery.empty ? null : adminQuery.docs[0].data().role;
-    if (role !== 'admin' && role !== 'superadmin') {
+    if (!isAdminRole(role)) {
       return NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 });
     }
 

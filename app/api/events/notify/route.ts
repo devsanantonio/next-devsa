@@ -5,6 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { isHostedBy } from '@/lib/event-hosts';
 import { messageWindow } from '@/lib/event-messages';
 import { attendeesOf, formatWhen, formatWhere, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
+import { isAdminRole } from '@/lib/admin-roles';
 import {
   EventChangedEmail,
   EventCancelledEmail,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (!eventDoc.exists) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     const event = eventDoc.data()!;
 
-    const isAdmin = admin.role === 'admin' || admin.role === 'superadmin';
+    const isAdmin = isAdminRole(admin.role);
     if (!isAdmin && !isHostedBy(event, admin.communityId)) {
       return NextResponse.json({ error: 'Unauthorized - not your event' }, { status: 403 });
     }

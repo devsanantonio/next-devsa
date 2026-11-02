@@ -9,6 +9,7 @@ import { type TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import { EventDescription } from "@/components/events/event-description"
 import { Calendar, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
+import { httpUrl } from "@/lib/safe-url"
 import {
   buildCalendarLinks,
   downloadIcs,
@@ -697,7 +698,9 @@ export function EventPageClient({ slug }: EventPageClientProps) {
             )}
 
             {/* RSVP — external registration button */}
-            {!event.rsvpEnabled && event.externalRsvpUrl && eventStatus === "upcoming" && (
+            {/* httpUrl again here, not only on save: a link stored before the API checked
+                it never reaches an href unless it is http(s). */}
+            {!event.rsvpEnabled && httpUrl(event.externalRsvpUrl) && eventStatus === "upcoming" && (
               <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
                 <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-2">Register for this event</h3>
                 <p className="text-sm text-gray-600 mb-4">
@@ -714,7 +717,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   })()} managing registration for this event on an external platform.
                 </p>
                 <a
-                  href={event.externalRsvpUrl}
+                  href={httpUrl(event.externalRsvpUrl) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#ef426f] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-[#d63760] hover:shadow-lg"

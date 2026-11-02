@@ -82,7 +82,12 @@ export function AdminsTab({
   }, [autoOpen, onAutoOpened])
   const [editing, setEditing] = useState<AdminRow | null>(null)
   const [email, setEmail] = useState("")
+  // Set by opening the form, never chosen: adding someone always makes an organizer.
+  // An account that is already an admin opens as one, for its groups, and only the
+  // site's owner gets that far (the server enforces both; lib/admin-roles.ts).
   const [role, setRole] = useState<"admin" | "organizer">("organizer")
+  const owner = isProtectedAdmin(myEmail)
+  const canChange = (admin: AdminRow) => !isProtectedAdmin(admin.email) && (admin.role === "organizer" || owner)
   const [communityId, setCommunityId] = useState("")
   const [groups, setGroups] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -165,7 +170,7 @@ export function AdminsTab({
             className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760]"
           >
             <Plus className="h-4 w-4" />
-            Add Admin
+            Add organizer
           </button>
         }
       />
@@ -194,8 +199,8 @@ export function AdminsTab({
                   />
                 </Td>
                 <Td>
-                  <Pill tone={admin.role === "superadmin" ? "amber" : admin.role === "admin" ? "violet" : "blue"}>
-                    {admin.role === "superadmin" ? "Super admin" : admin.role === "admin" ? "Admin" : "Organizer"}
+                  <Pill tone={admin.role === "organizer" ? "blue" : "violet"}>
+                    {admin.role === "organizer" ? "Organizer" : "Admin"}
                   </Pill>
                 </Td>
                 <Td>
@@ -225,14 +230,14 @@ export function AdminsTab({
                   )}
                 </Td>
                 <Td align="right">
-                  {/* Not for the protected super admins, and you can't remove yourself. */}
+                  {/* Never the site's owner; an admin only for the owner; never yourself to remove. */}
                   <RowActions>
-                    {!isProtectedAdmin(admin.email) && (
+                    {canChange(admin) && (
                       <RowAction onClick={() => startEdit(admin)} icon={<Edit className="h-4 w-4" />}>
                         Edit
                       </RowAction>
                     )}
-                    {admin.email !== myEmail && !isProtectedAdmin(admin.email) && (
+                    {admin.email !== myEmail && canChange(admin) && (
                       <RowAction tone="danger" onClick={() => remove(admin.email)} icon={<Trash2 className="h-4 w-4" />}>
                         Remove
                       </RowAction>
@@ -245,7 +250,7 @@ export function AdminsTab({
         </DataTable>
       )}
 
-      <SlideDrawer open={open} onClose={close} title={editing ? "Edit Admin" : "Add New Admin"}>
+      <SlideDrawer open={open} onClose={close} title={editing ? (role === "admin" ? "Edit admin" : "Edit organizer") : "Add an organizer"}>
         <form onSubmit={save} className="space-y-5">
           <div>
             <label htmlFor="admin-email" className="mb-2 block text-sm font-semibold text-neutral-300">Email Address</label>
@@ -261,21 +266,12 @@ export function AdminsTab({
             />
             {editing && <p className="mt-2 text-xs text-neutral-400">Email cannot be changed</p>}
           </div>
-          <div>
-            <label htmlFor="admin-role" className="mb-2 block text-sm font-semibold text-neutral-300">Role</label>
-            <select
-              id="admin-role"
-              value={role}
-              onChange={(e) => {
-                setRole(e.target.value as "admin" | "organizer")
-                if (e.target.value === "admin") setCommunityId("")
-              }}
-              className={field}
-            >
-              <option value="organizer">Organizer (can only manage their community&apos;s events)</option>
-              <option value="admin">Admin (full access to all features)</option>
-            </select>
-          </div>
+          {/* No role picker: the portal only grants organizer. */}
+          <p className="text-sm text-neutral-400">
+            {role === "admin"
+              ? "Admin · full access. Only the groups they run can be changed here."
+              : "Organizer · can manage their own group's events, RSVPs and speakers."}
+          </p>
           {role === "organizer" ? (
             <div>
               <label htmlFor="admin-community" className="mb-2 block text-sm font-semibold text-neutral-300">Assigned Community *</label>

@@ -2,7 +2,46 @@ import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
 const nextConfig: NextConfig = {
-    images: {
+  // Don't announce the framework in every response.
+  poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Never guess a file's type from its contents.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Other sites get the origin, not the full address.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      {
+        // No page may be framed by another site, so a signed-in admin can't be
+        // tricked into clicking through an invisible /admin (clickjacking).
+        // Except /events/embed, which "Feed and embed" hands out as an iframe, and
+        // the image proxy, whose policy below includes this one.
+        source: "/((?!events/embed|api/image-proxy).*)",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+      {
+        // The image proxy serves files as this site, and an SVG opened directly is
+        // a document, so its responses run no script at all. Set here, not in the
+        // route: a Content-Security-Policy from this file replaces the route's.
+        source: "/api/image-proxy",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox; frame-ancestors 'none'",
+          },
+        ],
+      },
+    ];
+  },
+  images: {
     remotePatterns: [
       {
         protocol: "https",

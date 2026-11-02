@@ -3,10 +3,11 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { logActivity, RESTORABLE, type ActivityKind } from '@/lib/activity-log';
 import { slugTaken } from '@/lib/event-slug';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * The Activity tab: GET the latest changes, POST `{ id }` to restore what a
- * logged delete removed. Admins and super admins only; organizers act within
+ * logged delete removed. Admins only; organizers act within
  * their own group and don't see the portal-wide record.
  */
 async function requireAdmin(request: NextRequest) {
@@ -14,7 +15,7 @@ async function requireAdmin(request: NextRequest) {
   if (!email) return { error: NextResponse.json({ error: 'Sign in required' }, { status: 401 }) };
   const q = await getDb().collection(COLLECTIONS.APPROVED_ADMINS).where('email', '==', email).limit(1).get();
   const role = q.empty ? null : q.docs[0].data().role;
-  if (role !== 'admin' && role !== 'superadmin') {
+  if (!isAdminRole(role)) {
     return { error: NextResponse.json({ error: 'Unauthorized - admin access required' }, { status: 403 }) };
   }
   return { email };

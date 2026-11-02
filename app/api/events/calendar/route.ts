@@ -12,7 +12,9 @@ function escapeICalText(text: string): string {
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
-    .replace(/\n/g, '\\n');
+    // A bare \r ends a line in many calendar apps, so it is escaped too, or a
+    // title could add fields of its own to every subscriber's calendar.
+    .replace(/\r\n?|\n/g, '\\n');
 }
 
 function stripHtml(html: string): string {

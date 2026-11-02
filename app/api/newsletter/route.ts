@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
+import { isAdminRole } from '@/lib/admin-roles';
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,9 +117,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data();
-    if (adminData.role !== 'superadmin' && adminData.role !== 'admin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
-        { error: 'Unauthorized - admin or superadmin role required' },
+        { error: 'Unauthorized - admin role required' },
         { status: 403 }
       );
     }

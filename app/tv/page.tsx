@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { TvHero } from "@/components/tv/tv-hero"
+import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
@@ -52,7 +53,7 @@ export default function TvPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: TITLE,

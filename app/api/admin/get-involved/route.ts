@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /**
  * /get-involved inquiries for the admin portal. Admin and super admin only.
@@ -19,7 +20,7 @@ async function verifyAdmin(db: FirebaseFirestore.Firestore, email: string | null
     .get();
   if (adminQuery.empty) return null;
   const adminData = adminQuery.docs[0].data();
-  if (adminData.role !== 'admin' && adminData.role !== 'superadmin') return null;
+  if (!isAdminRole(adminData.role)) return null;
   return adminData;
 }
 

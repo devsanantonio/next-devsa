@@ -3,6 +3,8 @@ import { EventPageClient } from "./event-page-client"
 import { getDb, COLLECTIONS, type Event } from "@/lib/firebase-admin"
 import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 import { notFound, permanentRedirect } from "next/navigation"
+import { jsonLdScript } from "@/lib/json-ld"
+import { httpUrl } from "@/lib/safe-url"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -292,7 +294,7 @@ function eventJsonLd(
       price: "0",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
-      url: event.externalRsvpUrl || event.url || url,
+      url: httpUrl(event.externalRsvpUrl) || event.url || url,
       validFrom: new Date(
         (event.createdAt as string) || event.date
       ).toISOString(),
@@ -326,7 +328,7 @@ export default async function EventPage({ params }: PageProps) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(eventJsonLd(event, siteUrl)),
+            __html: jsonLdScript(eventJsonLd(event, siteUrl)),
           }}
         />
       )}

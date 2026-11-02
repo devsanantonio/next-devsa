@@ -7,6 +7,8 @@ import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/re
 import { RsvpThankYouEmail, getRsvpThankYouSubject, RsvpWaitlistEmail, getRsvpWaitlistSubject } from '@/lib/emails/rsvp-thank-you';
 import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
 import { isHostedBy } from '@/lib/event-hosts';
+import { isAdminRole } from '@/lib/admin-roles';
+import { csvCell } from '@/lib/csv';
 
 /**
  * The email for one RSVP: the confirmation, the waitlist notice, or the
@@ -144,11 +146,16 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .get();
 
+    // Already registered: answer exactly as a new RSVP would, and send nothing.
+    // A 409 "already registered" told anyone with an address whether that person
+    // was going. The person themselves sees the same confirmation either way.
     if (!existingRsvp.empty) {
-      return NextResponse.json(
-        { error: 'You have already registered for this event' },
-        { status: 409 }
-      );
+      const waitlisted = existingRsvp.docs[0].data().waitlisted === true;
+      return NextResponse.json({
+        success: true,
+        waitlisted,
+        message: waitlisted ? "You're on the waitlist" : 'RSVP submitted successfully',
+      });
     }
 
     const rsvp: EventRSVP = {
@@ -260,7 +267,7 @@ export async function GET(request: NextRequest) {
     let rsvpQuery: FirebaseFirestore.Query = db.collection(COLLECTIONS.EVENT_RSVPS);
     let scopeCommunity: string | null = null;
 
-    if (adminData.role === 'organizer') {
+    if (!isAdminRole(adminData.role)) {
       // Organizers can only see RSVPs for their community
       if (!adminData.communityId) {
         return NextResponse.json(
@@ -296,25 +303,22 @@ export async function GET(request: NextRequest) {
     // If CSV format requested, return CSV
     if (format === 'csv') {
       const headers = ['First Name', 'Last Name', 'Email', 'Event', 'Joined Newsletter', 'Question', 'Answer', 'Submitted At', 'Status', 'Checked In'];
-      // Quotes doubled, and a leading = + - @ neutralized: an answer is free text
-      // from the public, and a spreadsheet would otherwise run it as a formula.
-      const cell = (v: unknown) => {
-        const text = String(v ?? '');
-        return `"${(/^[=+\-@]/.test(text) ? `'${text}` : text).replace(/"/g, '""')}"`;
-      };
+      // Every cell through csvCell (lib/csv.ts): names and emails are typed by the
+      // public too, and only the question and answer used to be guarded.
+      const cell = csvCell;
       const csvRows = [headers.join(',')];
       
       for (const rsvp of rsvps) {
         const r = rsvp as unknown as Omit<EventRSVP, 'submittedAt' | 'checkedInAt'> & { submittedAt: string | null; checkedInAt: string | null };
         const row = [
-          `"${r.firstName}"`,
-          `"${r.lastName}"`,
-          `"${r.email}"`,
-          `"${r.eventSlug}"`,
+          cell(r.firstName),
+          cell(r.lastName),
+          cell(r.email),
+          cell(r.eventSlug),
           r.joinNewsletter ? 'Yes' : 'No',
           cell(r.question),
           cell(r.answer),
-          `"${r.submittedAt}"`,
+          cell(r.submittedAt),
           r.waitlisted ? 'Waitlist' : 'Going',
           r.checkedInAt ? 'Yes' : 'No',
         ];
@@ -373,9 +377,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (adminData.role !== 'superadmin' && adminData.role !== 'admin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
-        { error: 'Unauthorized - admin or superadmin role required' },
+        { error: 'Unauthorized - admin role required' },
         { status: 403 }
       );
     }
@@ -439,7 +443,7 @@ export async function PATCH(request: NextRequest) {
     const eventDoc = await db.collection(COLLECTIONS.EVENTS).doc(rsvp.eventId).get();
     const eventData = eventDoc.data();
 
-    const isAdmin = admin.role === 'admin' || admin.role === 'superadmin';
+    const isAdmin = isAdminRole(admin.role);
     if (!isAdmin && !isHostedBy(eventData ?? { communityId: rsvp.communityId }, admin.communityId)) {
       return NextResponse.json({ error: 'Unauthorized - not your event' }, { status: 403 });
     }

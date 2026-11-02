@@ -4,6 +4,7 @@ import { logActivity, diffFields } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, byDisplayOrder, type Orderable, type Community, type ApprovedAdmin } from '@/lib/firebase-admin';
 import { cleanText } from '@/lib/organizer-directory';
 import { SPEAKER_CALL_LIMITS, plainText } from '@/lib/speaker-calls';
+import { isAdminRole } from '@/lib/admin-roles';
 
 /** A group's type for the organizer directory: student orgs are filtered apart. Anything else is a tech group. */
 const kindOf = (kind: unknown): 'tech' | 'student' => (kind === 'student' ? 'student' : 'tech');
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can create communities' },
         { status: 403 }
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
     const db = getDb();
 
-    // Verify permissions - admin/superadmin can edit any, organizer can only edit their own
+    // Verify permissions - admins can edit any, organizer can only edit their own
     const adminQuery = await db
       .collection(COLLECTIONS.APPROVED_ADMINS)
       .where('email', '==', adminEmail.toLowerCase())
@@ -158,7 +159,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+    const isAdmin = isAdminRole(adminData.role);
     const isOrganizerForCommunity = adminData.role === 'organizer' && adminData.communityId === id;
 
     if (!isAdmin && !isOrganizerForCommunity) {
@@ -258,7 +259,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can delete communities' },
         { status: 403 }
@@ -329,7 +330,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     const adminData = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (adminData.role !== 'admin' && adminData.role !== 'superadmin') {
+    if (!isAdminRole(adminData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can reorder' },
         { status: 403 }

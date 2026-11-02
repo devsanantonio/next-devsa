@@ -216,7 +216,7 @@ function Check1({ ok, children, fix }: { ok: boolean; children: React.ReactNode;
 /* ── the view ───────────────────────────────────────────────────────────── */
 
 export function AdminOverview(props: {
-  role: "superadmin" | "admin" | "organizer"
+  role: "admin" | "organizer"
   myCommunityId: string | null
   communities: OverviewCommunity[]
   events: OverviewEvent[]

@@ -8,6 +8,7 @@ import { AccessApprovedEmail } from '@/lib/emails/access-approved';
 import { cleanText, cleanEmail, cleanLinkedin, groupsOf } from '@/lib/organizer-directory';
 import { isProfilePhotoUrl } from '@/lib/profile-photo';
 import { del } from '@vercel/blob';
+import { isAdminRole } from '@/lib/admin-roles';
 
 // Check if user is an approved admin
 export async function GET(request: NextRequest) {
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
       profileConfirmedAt:
         (adminData.profileConfirmedAt as unknown as { toDate?: () => Date } | undefined)?.toDate?.()?.toISOString() ?? null,
       // An admin's own groups: each is an organizer view in the account menu. Empty for organizers.
-      groups: adminData.role === 'organizer' ? [] : groupsOf(adminData),
+      groups: isAdminRole(adminData.role) ? groupsOf(adminData) : [],
     });
   } catch (error) {
     console.error('Admin check error:', error);
@@ -94,9 +95,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, role, communityId } = body;
     const approverEmail = await verifiedEmail(request);
-    // The groups an admin also runs, set by another admin from Manage Admins. Only
-    // real groups are kept, and only for admin roles: an organizer has one group.
-    const wantsGroups = Array.isArray(body.organizerOf) && role !== 'organizer';
+    // The groups an admin also runs, set by the site's owner from Manage Admins. Only
+    // real groups are kept, and only for an admin: an organizer has one group.
+    const wantsGroups = Array.isArray(body.organizerOf) && role === 'admin';
 
     if (!email || !role || !approverEmail) {
       return NextResponse.json(
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
 
-    // Check if approver is an admin or superadmin
+    // Check the approver is an admin
     const approverQuery = await db
       .collection(COLLECTIONS.APPROVED_ADMINS)
       .where('email', '==', approverEmail.toLowerCase())
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     const approverData = approverQuery.docs[0].data() as ApprovedAdmin;
-    if (approverData.role !== 'admin' && approverData.role !== 'superadmin') {
+    if (!isAdminRole(approverData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can add new admins' },
         { status: 403 }
@@ -131,10 +132,10 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase();
 
-    // Protect super admin from having their role changed
+    // The site's owner (lib/protected-admins.ts) can't be changed by anyone.
     if (isProtectedAdmin(normalizedEmail)) {
       return NextResponse.json(
-        { error: 'Cannot modify super admin account' },
+        { error: "The site owner's account can't be changed" },
         { status: 403 }
       );
     }
@@ -145,6 +146,34 @@ export async function POST(request: NextRequest) {
       .where('email', '==', normalizedEmail)
       .limit(1)
       .get();
+
+    // The portal grants one role: organizer, for a real group. Nobody is made an
+    // admin here, the owner included; that is done in Firestore, deliberately. The
+    // role used to be stored as sent, so a typo became a role the event routes read
+    // as unrestricted. An account that is already an admin can be changed only by
+    // the owner: to edit the groups it runs (role 'admin'), or to make it an
+    // organizer.
+    const targetIsAdmin = !existingQuery.empty && isAdminRole(existingQuery.docs[0].data().role);
+    if (role === 'organizer') {
+      const group = typeof communityId === 'string' && communityId
+        ? await db.collection(COLLECTIONS.COMMUNITIES).doc(communityId).get()
+        : null;
+      if (!group?.exists) {
+        return NextResponse.json({ error: "Choose the group they'll organize" }, { status: 400 });
+      }
+      if (targetIsAdmin && !isProtectedAdmin(approverEmail)) {
+        return NextResponse.json({ error: "Only the site's owner can change an admin's access" }, { status: 403 });
+      }
+    } else if (role === 'admin') {
+      if (!targetIsAdmin) {
+        return NextResponse.json({ error: "Admin access can't be granted from the portal" }, { status: 403 });
+      }
+      if (!isProtectedAdmin(approverEmail)) {
+        return NextResponse.json({ error: "Only the site's owner can change an admin's access" }, { status: 403 });
+      }
+    } else {
+      return NextResponse.json({ error: 'Unknown role' }, { status: 400 });
+    }
 
     let organizerOf: string[] | null = null;
     if (wantsGroups) {
@@ -261,7 +290,7 @@ export async function DELETE(request: NextRequest) {
 
     const db = getDb();
 
-    // Check if approver is an admin or superadmin
+    // Check the approver is an admin
     const approverQuery = await db
       .collection(COLLECTIONS.APPROVED_ADMINS)
       .where('email', '==', approverEmail.toLowerCase())
@@ -276,7 +305,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const approverData = approverQuery.docs[0].data() as ApprovedAdmin;
-    if (approverData.role !== 'admin' && approverData.role !== 'superadmin') {
+    if (!isAdminRole(approverData.role)) {
       return NextResponse.json(
         { error: 'Unauthorized - only admins can remove admins' },
         { status: 403 }
@@ -285,10 +314,10 @@ export async function DELETE(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase();
 
-    // Protect super admin from being removed
+    // The site's owner (lib/protected-admins.ts) can't be removed by anyone.
     if (isProtectedAdmin(normalizedEmail)) {
       return NextResponse.json(
-        { error: 'Cannot remove super admin account' },
+        { error: "The site owner's account can't be removed" },
         { status: 403 }
       );
     }
@@ -308,6 +337,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     const removed = adminQuery.docs[0].data();
+    if (isAdminRole(removed.role) && !isProtectedAdmin(approverEmail)) {
+      return NextResponse.json({ error: "Only the site's owner can remove an admin" }, { status: 403 });
+    }
     await adminQuery.docs[0].ref.delete();
     await logActivity({ actor: approverEmail.toLowerCase(), action: 'removed', kind: 'admin', targetId: adminQuery.docs[0].id, label: normalizedEmail, detail: removed.role + (removed.communityId ? ` · ${removed.communityId}` : '') });
 
@@ -392,7 +424,7 @@ export async function PATCH(request: NextRequest) {
     // The groups an admin also runs. Admins only: an organizer's group is set by
     // whoever approved them, and isn't theirs to widen. Ids must be real groups.
     const me = adminQuery.docs[0].data() as ApprovedAdmin;
-    if (organizerOf !== undefined && me.role !== 'organizer') {
+    if (organizerOf !== undefined && isAdminRole(me.role)) {
       const wanted = Array.isArray(organizerOf)
         ? [...new Set(organizerOf.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0))].slice(0, 10)
         : [];
@@ -415,7 +447,7 @@ export async function PATCH(request: NextRequest) {
       lastName: updateData.lastName ?? null,
       profileImage: updateData.profileImage === null ? null : undefined,
       profileConfirmedAt: updateData.profileConfirmedAt?.toISOString() ?? null,
-      groups: me.role === 'organizer' ? [] : groupsOf({ ...me, ...updateData }),
+      groups: isAdminRole(me.role) ? groupsOf({ ...me, ...updateData }) : [],
     });
   } catch (error) {
     console.error('Update profile error:', error);
