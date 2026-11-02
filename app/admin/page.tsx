@@ -8,6 +8,7 @@ import {
   ArrowLeft, 
   GripVertical,
   Mail, 
+  Send,
   Users, 
   Mic2, 
   UserCheck, 
@@ -59,6 +60,7 @@ import { demoDayInterestLabel } from "@/lib/demo-day"
 import { getInvolvedPathLabel, partnerWayLabel } from "@/lib/get-involved"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
 import { SlideDrawer } from "@/components/admin/slide-drawer"
+import { EventDescription } from "@/components/events/event-description"
 import {
   TabHeader,
   DataTable,
@@ -310,6 +312,8 @@ type GetInvolvedRow = {
   message: string
   status: "new" | "contacted" | "closed"
   submittedAt: string | null
+  /** Replies sent from the drawer, oldest first. */
+  replies?: { at: string | null; by: string; subject: string; message: string; cta?: { label: string; url: string } | null }[]
 }
 
 type DemoDayInquiryRow = {
@@ -611,6 +615,14 @@ export default function AdminPage() {
   const [showNewsletterCommunityDropdown, setShowNewsletterCommunityDropdown] = useState(false)
   const [demoDayInquiries, setDemoDayInquiries] = useState<DemoDayInquiryRow[]>([])
   const [getInvolved, setGetInvolved] = useState<GetInvolvedRow[]>([])
+  // The Get Involved drawer: which inquiry is open, and the reply being written.
+  const [openInquiryId, setOpenInquiryId] = useState<string | null>(null)
+  const [replySubject, setReplySubject] = useState("")
+  const [replyBody, setReplyBody] = useState("")
+  const [replySending, setReplySending] = useState<"test" | "send" | null>(null)
+  // An optional button under the reply: both or neither, checked by the API.
+  const [replyCtaLabel, setReplyCtaLabel] = useState("")
+  const [replyCtaUrl, setReplyCtaUrl] = useState("")
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
   const [editEventCustomCommunityName, setEditEventCustomCommunityName] = useState("")
@@ -1604,6 +1616,7 @@ export default function AdminPage() {
       })
       if (response.ok) {
         setGetInvolved(prev => prev.filter(i => i.id !== inquiryId))
+        setOpenInquiryId((open) => (open === inquiryId ? null : open))
         setSuccessMessage("Inquiry deleted")
       } else {
         const data = await response.json()
@@ -1613,6 +1626,49 @@ export default function AdminPage() {
       setError("Failed to delete inquiry")
     }
   }
+  const openInquiry = (inq: GetInvolvedRow) => {
+    const first = (inq.name || "").trim().split(/\s+/)[0]
+    setOpenInquiryId(inq.id)
+    setReplySubject(inq.subject ? `Re: ${inq.subject}` : "Getting involved with DEVSA")
+    setReplyBody(first ? `Hi ${first},\n\n` : "")
+    setReplyCtaLabel("")
+    setReplyCtaUrl("")
+  }
+
+  // A branded reply through Resend (POST /api/admin/get-involved). A test goes to
+  // you and saves nothing; a real one is kept on the inquiry and logged.
+  const handleSendGetInvolvedReply = async (inq: GetInvolvedRow, test: boolean) => {
+    if (!test && !confirm(`Send this reply to ${inq.email}?`)) return
+    setReplySending(test ? "test" : "send")
+    try {
+      const response = await adminFetch("/api/admin/get-involved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiryId: inq.id, subject: replySubject, message: replyBody, ctaLabel: replyCtaLabel, ctaUrl: replyCtaUrl, test }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        setError(data.error || "Failed to send reply")
+        return
+      }
+      if (test) {
+        setSuccessMessage(`Test sent to ${data.to}`)
+        return
+      }
+      setGetInvolved((prev) =>
+        prev.map((i) => (i.id === inq.id ? { ...i, status: data.status ?? i.status, replies: [...(i.replies ?? []), data.reply] } : i))
+      )
+      setReplyBody("")
+      setReplyCtaLabel("")
+      setReplyCtaUrl("")
+      setSuccessMessage(`Reply sent to ${inq.email}`)
+    } catch {
+      setError("Failed to send reply")
+    } finally {
+      setReplySending(null)
+    }
+  }
+
 
   const handleDeleteDemoDayInquiry = async (inquiryId: string) => {
     if (!confirm("Delete this Confluencia inquiry? This action cannot be undone.")) return
@@ -5910,12 +5966,12 @@ export default function AdminPage() {
               {getInvolved.length === 0 ? (
                 <EmptyState>No inquiries yet.</EmptyState>
               ) : (
-                <DataTable minWidth="min-w-[60rem]">
+                <DataTable>
+                  {/* A list to scan; the whole inquiry, and the reply, open in a drawer. */}
                   <thead>
                     <tr>
                       <Th>From</Th>
                       <Th>Wants to</Th>
-                      <Th>Message</Th>
                       <Th>Received</Th>
                       <Th>Status</Th>
                       <Th align="right"><span className="sr-only">Actions</span></Th>
@@ -5925,59 +5981,44 @@ export default function AdminPage() {
                     {getInvolved.map((inq) => {
                       const who = decodeEntities(inq.organization || inq.name)
                       return (
-                        <Tr key={inq.id} highlight={inq.status === "new"}>
-                          <Td className="w-[15rem]">
-                            <PrimaryCell
-                              title={who}
-                              sub={
-                                <>
-                                  {inq.organization && (
-                                    <div>
-                                      {decodeEntities(inq.name)}
-                                      {inq.title ? `, ${decodeEntities(inq.title)}` : ""}
-                                    </div>
-                                  )}
-                                  <MailLink email={inq.email} />
-                                </>
-                              }
-                            />
+                        <Tr key={inq.id} highlight={inq.status === "new"} onClick={() => openInquiry(inq)}>
+                          <Td className="max-w-[15rem]">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); openInquiry(inq) }}
+                              className="text-left font-medium text-white hover:underline focus:outline-none focus-visible:underline"
+                            >
+                              {who}
+                            </button>
+                            <div className="mt-0.5 text-[13px] text-neutral-400">
+                              {inq.organization && <div>{decodeEntities(inq.name)}</div>}
+                              <div className="truncate" title={inq.email}>{inq.email}</div>
+                            </div>
                           </Td>
                           <Td>
-                            <div className="flex flex-col items-start gap-1.5">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <Pill tone={inq.path === "partner" ? "pink" : inq.path === "sponsor" ? "amber" : "neutral"}>
                                 {getInvolvedPathLabel(inq.path)}
                               </Pill>
                               {inq.way && <span className="text-[13px] text-neutral-400">{partnerWayLabel(inq.way)}</span>}
-                              {inq.event && <span className="text-[13px] text-neutral-400">{decodeEntities(inq.event)}</span>}
-                              {inq.subject && <span className="text-[13px] text-neutral-400">{decodeEntities(inq.subject)}</span>}
                             </div>
+                            <p className="mt-1.5 line-clamp-1 max-w-[22rem] text-[13px] text-neutral-400">
+                              {decodeEntities(inq.subject || inq.event || inq.message)}
+                            </p>
                           </Td>
-                          <Td><LongText text={decodeEntities(inq.message)} /></Td>
                           <Td><DateCell value={inq.submittedAt} time /></Td>
                           <Td>
-                            {/* The app's combobox, floating so the table's scroll can't clip it. */}
-                            <AdminCombobox
-                              floating
-                              className="w-36"
-                              buttonClassName="px-2.5 py-1.5"
-                              ariaLabel={`Status for ${who}`}
-                              options={[
-                                { value: "new", label: "New" },
-                                { value: "contacted", label: "Contacted" },
-                                { value: "closed", label: "Closed" },
-                              ]}
-                              value={inq.status}
-                              onChange={(v) => handleGetInvolvedStatus(inq.id, v as GetInvolvedRow["status"])}
-                            />
+                            <Pill tone={inq.status === "new" ? "amber" : inq.status === "contacted" ? "blue" : "neutral"}>
+                              {inq.status === "new" ? "New" : inq.status === "contacted" ? "Contacted" : "Closed"}
+                            </Pill>
+                            {(inq.replies?.length ?? 0) > 0 && (
+                              <div className="mt-1 text-[12px] text-neutral-400">
+                                {inq.replies!.length} {inq.replies!.length === 1 ? "reply" : "replies"}
+                              </div>
+                            )}
                           </Td>
                           <Td align="right">
-                            <RowActions>
-                              <a
-                                href={`mailto:${inq.email}?subject=${encodeURIComponent("Getting involved with DEVSA")}`}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
-                              >
-                                <Mail className="h-4 w-4" /> Reply
-                              </a>
+                            <div onClick={(e) => e.stopPropagation()}>
                               <RowAction
                                 tone="danger"
                                 onClick={() => handleDeleteGetInvolved(inq.id)}
@@ -5986,7 +6027,7 @@ export default function AdminPage() {
                               >
                                 Delete
                               </RowAction>
-                            </RowActions>
+                            </div>
                           </Td>
                         </Tr>
                       )
@@ -5996,6 +6037,175 @@ export default function AdminPage() {
               )}
             </div>
           )}
+
+          {/* One inquiry in full, with its replies and a branded reply box. */}
+          {(() => {
+            const inq = getInvolved.find((i) => i.id === openInquiryId)
+            if (!inq || !hasAdminAccess(adminRole)) return null
+            const who = decodeEntities(inq.organization || inq.name)
+            const label = "mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-400"
+            const field = "w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+            return (
+              <SlideDrawer open onClose={() => setOpenInquiryId(null)} title={who} subtitle={getInvolvedPathLabel(inq.path)}>
+                <div className="space-y-6">
+                  <dl className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <dt className={label}>From</dt>
+                      <dd className="text-sm text-white">
+                        {decodeEntities(inq.name)}
+                        {inq.title ? `, ${decodeEntities(inq.title)}` : ""}
+                        {inq.organization && <div className="text-neutral-300">{decodeEntities(inq.organization)}</div>}
+                        <div className="mt-0.5"><MailLink email={inq.email} /></div>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={label}>Wants to</dt>
+                      <dd className="text-sm text-white">
+                        {getInvolvedPathLabel(inq.path)}
+                        {inq.way && <div className="text-neutral-300">{partnerWayLabel(inq.way)}</div>}
+                        {inq.event && <div className="text-neutral-300">{decodeEntities(inq.event)}</div>}
+                        {inq.subject && <div className="text-neutral-300">{decodeEntities(inq.subject)}</div>}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={label}>Received</dt>
+                      <dd className="text-sm"><DateCell value={inq.submittedAt} time /></dd>
+                    </div>
+                    <div>
+                      <dt id="gi-status-label" className={label}>Status</dt>
+                      <dd>
+                        <AdminCombobox
+                          floating
+                          className="w-44"
+                          buttonClassName="px-3 py-2"
+                          ariaLabelledby="gi-status-label"
+                          options={[
+                            { value: "new", label: "New" },
+                            { value: "contacted", label: "Contacted" },
+                            { value: "closed", label: "Closed" },
+                          ]}
+                          value={inq.status}
+                          onChange={(v) => handleGetInvolvedStatus(inq.id, v as GetInvolvedRow["status"])}
+                        />
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div>
+                    <p className={label}>Message</p>
+                    <div className="whitespace-pre-wrap rounded-xl border border-neutral-800 bg-neutral-950 p-4 text-[15px] leading-relaxed text-neutral-100">
+                      {decodeEntities(inq.message)}
+                    </div>
+                  </div>
+
+                  {(inq.replies?.length ?? 0) > 0 && (
+                    <div>
+                      <p className={label}>Replies sent</p>
+                      <ul className="space-y-3">
+                        {inq.replies!.map((rep, i) => (
+                          <li key={i} className="rounded-xl border border-neutral-800 p-4">
+                            <div className="flex flex-wrap items-baseline justify-between gap-2 text-[13px] text-neutral-400">
+                              <span className="font-medium text-neutral-200">{rep.subject}</span>
+                              <span>{rep.by} · {rep.at ? new Date(rep.at).toLocaleString() : ""}</span>
+                            </div>
+                            {/* White, like the editor's preview: the same renderer, the same look. */}
+                            <div className="mt-3 rounded-lg bg-white px-4 py-3">
+                              <EventDescription text={rep.message} />
+                              {rep.cta && (
+                                <a href={rep.cta.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-lg bg-[#ef426f] px-4 py-2 text-sm font-semibold text-white">
+                                  {rep.cta.label}
+                                </a>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <form
+                    onSubmit={(e) => { e.preventDefault(); handleSendGetInvolvedReply(inq, false) }}
+                    className="space-y-3 border-t border-neutral-800 pt-6"
+                  >
+                    <p className="text-sm font-semibold text-white">Reply</p>
+                    <p className="text-[13px] text-neutral-400">
+                      Sent from DEVSA in its email design, with their message quoted below yours. Their answer comes back to {adminEmail}.
+                      Use the toolbar for bold, italic, headings, lists and links; Preview shows the formatting.
+                    </p>
+                    <input
+                      aria-label="Subject"
+                      value={replySubject}
+                      onChange={(e) => setReplySubject(e.target.value)}
+                      maxLength={160}
+                      required
+                      className={field}
+                    />
+                    <RichTextEditor
+                      id="gi-reply"
+                      value={replyBody}
+                      onChange={setReplyBody}
+                      placeholder="Write your reply…"
+                      rows={9}
+                      required
+                    />
+                    <fieldset className="rounded-xl border border-neutral-800 p-4">
+                      <legend className="px-1 text-sm font-semibold text-neutral-300">
+                        Add a button <span className="font-normal text-neutral-400">(optional)</span>
+                      </legend>
+                      <p className="mb-3 text-[13px] text-neutral-400">A pink button under your reply, like DEVSA&apos;s other emails. Fill in both or neither.</p>
+                      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                        <input
+                          aria-label="Button text"
+                          value={replyCtaLabel}
+                          onChange={(e) => setReplyCtaLabel(e.target.value)}
+                          maxLength={60}
+                          placeholder="Button text, e.g. Pick a date"
+                          className={field}
+                        />
+                        <input
+                          aria-label="Button link"
+                          type="url"
+                          value={replyCtaUrl}
+                          onChange={(e) => setReplyCtaUrl(e.target.value)}
+                          placeholder="https://"
+                          className={field}
+                        />
+                      </div>
+                    </fieldset>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={replySending !== null || !replyBody.trim() || !replySubject.trim()}
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#ef426f] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d63760] disabled:opacity-50"
+                      >
+                        {replySending === "send" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        Send reply
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSendGetInvolvedReply(inq, true)}
+                        disabled={replySending !== null || !replyBody.trim() || !replySubject.trim()}
+                        className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-200 transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        {replySending === "test" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                        Send me a test
+                      </button>
+                    </div>
+                  </form>
+
+                  <div className="border-t border-neutral-800 pt-6">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGetInvolved(inq.id)}
+                      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" /> Delete this inquiry
+                    </button>
+                  </div>
+                </div>
+              </SlideDrawer>
+            )
+          })()}
 
           {/* Declining an access request: the "request received" email promised an answer either way. */}
           {declineTarget && (

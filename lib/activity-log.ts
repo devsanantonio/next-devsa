@@ -16,7 +16,7 @@
  */
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 
-export type ActivityKind = 'event' | 'community' | 'partner' | 'admin' | 'rsvp' | 'newsletter' | 'access' | 'speaker';
+export type ActivityKind = 'event' | 'community' | 'partner' | 'admin' | 'rsvp' | 'newsletter' | 'access' | 'speaker' | 'inquiry';
 export type ActivityAction = 'created' | 'updated' | 'deleted' | 'restored' | 'sent' | 'approved' | 'declined' | 'removed';
 
 /** Which collection a restorable kind lives in. */

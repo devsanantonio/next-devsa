@@ -78,16 +78,24 @@ export function Th({
 export function Tr({
   children,
   highlight = false,
+  onClick,
 }: {
   children: React.ReactNode
   /** A row that wants attention: new, pending, unread. */
   highlight?: boolean
+  /**
+   * The whole row opens something (a drawer). Mouse only: give the row a real
+   * button too (its title, say) so it opens from the keyboard, and stop clicks
+   * on the row's own buttons from bubbling here.
+   */
+  onClick?: () => void
 }) {
   return (
     <tr
+      onClick={onClick}
       className={`border-b border-neutral-800/70 align-top transition-colors last:border-b-0 hover:bg-neutral-800/30 ${
         highlight ? "bg-amber-500/[0.04] shadow-[inset_3px_0_0_rgb(245_158_11/0.6)]" : ""
-      }`}
+      } ${onClick ? "cursor-pointer" : ""}`}
     >
       {children}
     </tr>

@@ -29,7 +29,7 @@ interface ActivityRow {
   at: string | null
   actor: string
   action: "created" | "updated" | "deleted" | "restored" | "sent" | "approved" | "declined" | "removed"
-  kind: "event" | "community" | "partner" | "admin" | "rsvp" | "newsletter" | "access" | "speaker"
+  kind: "event" | "community" | "partner" | "admin" | "rsvp" | "newsletter" | "access" | "speaker" | "inquiry"
   targetId: string
   label: string
   changes: Record<string, [string, string]> | null
@@ -48,6 +48,7 @@ const KIND_LABEL: Record<ActivityRow["kind"], string> = {
   newsletter: "Newsletter",
   access: "Access request",
   speaker: "Talk",
+  inquiry: "Inquiry",
 }
 
 const ACTION_TONE: Record<ActivityRow["action"], PillTone> = {
