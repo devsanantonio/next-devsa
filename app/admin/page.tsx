@@ -626,6 +626,18 @@ export default function AdminPage() {
   const [showEditEventCommunityDropdown, setShowEditEventCommunityDropdown] = useState(false)
   const [editEventUseCustomCommunity, setEditEventUseCustomCommunity] = useState(false)
   const [editEventCustomCommunityName, setEditEventCustomCommunityName] = useState("")
+  // The event drawer's Registration choice while it can't be read from the event:
+  // "External" picked but no link pasted yet looks the same as "None". null means
+  // read it from the event. Reset whenever the drawer opens on another event or
+  // closes, adjusting state during render (React's documented pattern for state
+  // that follows something else) rather than in an effect.
+  const [eventRegChoice, setEventRegChoice] = useState<"external" | "rsvp" | "none" | null>(null)
+  const regChoiceFor = showEditEvent ? (editingEvent?.id ?? "new") : null
+  const [regChoiceKey, setRegChoiceKey] = useState<string | null>(null)
+  if (regChoiceFor !== regChoiceKey) {
+    setRegChoiceKey(regChoiceFor)
+    setEventRegChoice(null)
+  }
 
   // Helper to get community name from current communities state
   const getCommunityNameFromState = (communityId: string | undefined): string => {
@@ -3890,7 +3902,9 @@ export default function AdminPage() {
                         <X className="h-5 w-5" />
                       </button>
                     </div>
-                    <form onSubmit={handleUpdateEvent} className="flex-1 space-y-5 overflow-y-auto px-6 pt-5">
+                    <form onSubmit={handleUpdateEvent} className="flex-1 space-y-7 overflow-y-auto px-6 pt-6">
+                      <section className="space-y-4">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">Hosts</h4>
                       {/*
                         Organizer: their own group is always a host and can't be removed;
                         they can add or drop co-host groups. Co-hosts' organizers can edit
@@ -3903,7 +3917,7 @@ export default function AdminPage() {
                         const addable = communities.filter((c) => !hostIds.includes(c.id)).sort((a, b) => a.name.localeCompare(b.name))
                         return (
                           <div>
-                            <label id="event-cohost-label" className="block text-sm font-semibold text-neutral-300 mb-2">Hosts</label>
+                            <label id="event-cohost-label" className="block text-sm font-semibold text-neutral-300 mb-2">Groups</label>
                             <div className="mb-2 flex flex-wrap gap-2">
                               {hostIds.map((id) => {
                                 const name = communities.find((c) => c.id === id)?.name || id
@@ -3945,7 +3959,7 @@ export default function AdminPage() {
                       {hasAdminAccess(adminRole) && (
                         <div>
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                            Community <span className="font-normal text-neutral-500">(select one or more)</span>
+                            Groups <span className="font-normal text-neutral-500">(select one or more)</span>
                           </label>
                           <div className="relative">
                             {editEventUseCustomCommunity ? (
@@ -4160,7 +4174,11 @@ export default function AdminPage() {
                         <p className="mt-2 text-xs text-neutral-500">
                           Partners like Tech Bloc or Youth Code Jam co-hosting this event.
                         </p>
-
+                      </div>
+                      <div>
+                        {/* Admins only: "Official" makes DEVSA a host, which is DEVSA's call.
+                            The API drops all three fields from anyone else. */}
+                        {hasAdminAccess(adminRole) && (<>
                         {/* Sits with the partner picker because it answers the
                             same question — who is this event's? — and because
                             the two are easy to confuse. DEVSA is never one of
@@ -4253,7 +4271,11 @@ export default function AdminPage() {
                             </div>
                           </div>
                         )}
+                        </>)}
                       </div>
+                      </section>
+                      <section className="space-y-4 border-t border-neutral-800 pt-7">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">The event</h4>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Event Title
@@ -4266,56 +4288,6 @@ export default function AdminPage() {
                           className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-white focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
                         />
                       </div>
-                      {/* The event's address. Blank on a new event means the
-                          readable default (lib/event-slug.ts), previewed in the
-                          placeholder. Changing an existing one keeps the old
-                          address redirecting. */}
-                      {(() => {
-                        const original = editingEvent.id ? events.find((e) => e.id === editingEvent.id)?.slug : undefined
-                        const typed = (editingEvent.slug || "").trim().toLowerCase()
-                        const preview = editingEvent.unlisted
-                          ? `${defaultSlugPreview(editingEvent.title, "")}-random-code`
-                          : defaultSlugPreview(editingEvent.title, editingEvent.date)
-                        const problem = typed && typed !== original ? invalidCustomSlug(typed) : null
-                        return (
-                          <div>
-                            <label htmlFor="eventSlug" className="block text-sm font-semibold text-neutral-300 mb-2">
-                              Event address {!editingEvent.id && <span className="font-normal text-neutral-400">(optional)</span>}
-                            </label>
-                            <div className="flex items-center rounded-xl border border-neutral-700 bg-neutral-800 focus-within:border-[#ef426f] focus-within:ring-2 focus-within:ring-[#ef426f]/20">
-                              <span className="pl-4 text-sm text-neutral-400 whitespace-nowrap">devsa.community/events/</span>
-                              <input
-                                id="eventSlug"
-                                type="text"
-                                maxLength={80}
-                                value={editingEvent.slug || ""}
-                                onChange={(e) => setEditingEvent({ ...editingEvent, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
-                                placeholder={editingEvent.id ? "" : preview}
-                                className="w-full min-w-0 bg-transparent py-3 pr-4 text-sm text-white placeholder:text-neutral-500 focus:outline-none"
-                              />
-                            </div>
-                            {problem ? (
-                              <p className="mt-2 text-xs text-red-400">{problem}</p>
-                            ) : editingEvent.id && typed && original && typed !== original ? (
-                              <p className="mt-2 text-xs text-amber-300">
-                                The old address, /events/{original}, will keep working and redirect here.
-                              </p>
-                            ) : editingEvent.unlisted && typed && typed !== original ? (
-                              <p className="mt-2 text-xs text-amber-300">
-                                A readable address on a link-only event is easy to guess. Leave it blank to keep a random code.
-                              </p>
-                            ) : (
-                              <p className="mt-2 text-xs text-neutral-400">
-                                {editingEvent.id
-                                  ? "Change it only if you need to; the old address will redirect."
-                                  : editingEvent.unlisted
-                                    ? "Leave blank: link-only events get a random code, so the address can't be guessed."
-                                    : "Leave blank for the address shown, or type your own, like organizer-roundtable."}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      })()}
                       {/* Date and Time - using separate fields for accuracy */}
                       <div className="grid grid-cols-3 gap-3">
                         <div>
@@ -4396,6 +4368,32 @@ export default function AdminPage() {
                           />
                         </div>
                       </div>
+                      {/* Format: three buttons, not a menu, so the choice is visible at a glance. */}
+                      <div>
+                        <p id="event-format-label" className="block text-sm font-semibold text-neutral-300 mb-2">Format</p>
+                        <div role="group" aria-labelledby="event-format-label" className="grid grid-cols-3 gap-2">
+                          {([
+                            ["in-person", "In person"],
+                            ["virtual", "Virtual"],
+                            ["hybrid", "Hybrid"],
+                          ] as const).map(([value, label]) => {
+                            const on = (editingEvent.eventType || "in-person") === value
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                aria-pressed={on}
+                                onClick={() => setEditingEvent({ ...editingEvent, eventType: value })}
+                                className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
+                                  on ? "border-[#ef426f]/60 bg-[#ef426f]/10 text-white" : "border-neutral-700 text-neutral-300 hover:border-neutral-600"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-semibold text-neutral-300 mb-2">
@@ -4424,27 +4422,9 @@ export default function AdminPage() {
                           />
                         </div>
                       </div>
-                      {/* Event Format */}
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                          Event Format
-                        </label>
-                        <AdminCombobox
-                          value={editingEvent.eventType || 'in-person'}
-                          onChange={(v) => setEditingEvent({ ...editingEvent, eventType: v as 'in-person' | 'hybrid' | 'virtual' })}
-                          buttonClassName="rounded-xl px-4 py-3"
-                          options={[
-                            { value: 'in-person', label: 'In-Person' },
-                            { value: 'hybrid', label: 'Hybrid' },
-                            { value: 'virtual', label: 'Virtual' },
-                          ]}
-                        />
-                        <p className="mt-2 text-xs text-neutral-500 leading-relaxed">
-                          {editingEvent.eventType === 'virtual' && 'Attendees will join via an online platform'}
-                          {editingEvent.eventType === 'hybrid' && 'Attendees can join in person or online'}
-                          {(!editingEvent.eventType || editingEvent.eventType === 'in-person') && 'Attendees will meet at the specified location'}
-                        </p>
-                      </div>
+                      </section>
+                      <section className="space-y-4 border-t border-neutral-800 pt-7">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">Details</h4>
                       <div>
                         <label className="block text-sm font-semibold text-neutral-300 mb-2">
                           Description
@@ -4458,9 +4438,17 @@ export default function AdminPage() {
                           darkMode={true}
                         />
                       </div>
-                      {/* The Monday digest's line for this event. Blank falls
-                          back to the description's first sentence, which is
-                          often warm-up rather than what the event is. */}
+                      {/* The Monday digest's line for this event. Blank falls back to the
+                          description's first sentence, which is often warm-up rather than
+                          what the event is. Folded away: 3 of 179 events have one. */}
+                      <details className="group" open={!!editingEvent.summary}>
+                        <summary className="cursor-pointer list-none text-sm font-medium text-neutral-300 hover:text-white">
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                            Add a one-line summary for the Monday Discord post
+                          </span>
+                        </summary>
+                        <div className="mt-3 space-y-2">
                       <div className="space-y-2">
                         <label htmlFor="eventSummary" className="block text-sm font-semibold text-neutral-300">
                           One-line summary <span className="font-normal text-neutral-400">(optional)</span>
@@ -4478,49 +4466,74 @@ export default function AdminPage() {
                           Shown under the title in the Monday post to the DEVSA Discord. Leave it blank to use the description&apos;s first sentence.
                           <span className="float-right tabular-nums">{(editingEvent.summary || "").length}/120</span>
                         </p>
-                      </div>
-                      {/* Registration */}
-                      <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4 space-y-4">
-                        <div>
-                          <label className="text-sm font-semibold text-neutral-300">Registration</label>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            Manage registration through devsa.community or through an external channel.
-                          </p>
-                        </div>
-
-                        {/* Built-in RSVP option */}
-                        <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
-                          editingEvent.rsvpEnabled
-                            ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
-                            : 'border-neutral-700 hover:border-neutral-600'
-                        }`}>
-                          <input
-                            type="radio"
-                            name="editRegistrationType"
-                            checked={editingEvent.rsvpEnabled || false}
-                            onChange={() => setEditingEvent({ ...editingEvent, rsvpEnabled: true, externalRsvpUrl: "" })}
-                            className="mt-0.5 accent-[#ef426f]"
-                          />
-                          <div>
-                            <span className="text-sm font-medium text-white">devsa.community RSVP form</span>
-                            <p className="text-xs text-neutral-500 mt-1">
-                              Collect RSVPs directly on your event page. Attendees register with their name and email.
-                            </p>
                           </div>
-                        </label>
-                        {editingEvent.rsvpEnabled && (
-                          <p className="ml-7 text-xs text-green-400 flex items-center gap-1.5">
-                            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            RSVP form will appear on the event page. You can view and export RSVPs from your dashboard.
-                          </p>
-                        )}
-                        {/* One question of the organizer's own, on the DEVSA
-                            form only — Luma's custom registration question.
-                            Answers show in the RSVPs tab and the CSV. */}
-                        {editingEvent.rsvpEnabled && (
-                          <div className="ml-7 space-y-2">
+                        </div>
+                      </details>
+                      </section>
+                      <section className="space-y-4 border-t border-neutral-800 pt-7">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">Registration</h4>
+                      {/* Registration, as one choice. "None" isn't stored as such: it is
+                          "not RSVP, no link". eventRegChoice remembers "External" while the
+                          link is still empty; see its declaration. */}
+                      {(() => {
+                        const choice = eventRegChoice ?? (editingEvent.rsvpEnabled ? "rsvp" : editingEvent.externalRsvpUrl ? "external" : "none")
+                        const pick = (c: "external" | "rsvp" | "none") => {
+                          setEventRegChoice(c)
+                          if (c === "rsvp") setEditingEvent({ ...editingEvent, rsvpEnabled: true, externalRsvpUrl: "" })
+                          else if (c === "none") setEditingEvent({ ...editingEvent, rsvpEnabled: false, externalRsvpUrl: "" })
+                          else setEditingEvent({ ...editingEvent, rsvpEnabled: false })
+                        }
+                        return (
+                          <div className="space-y-4">
+                            <div role="radiogroup" aria-label="Registration" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                              {([
+                                ["external", "External link", "Luma, Meetup, Eventbrite"],
+                                ["rsvp", "RSVP here", "on devsa.community"],
+                                ["none", "None", "no registration"],
+                              ] as const).map(([value, label, sub]) => {
+                                const on = choice === value
+                                return (
+                                  <button
+                                    key={value}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={on}
+                                    onClick={() => pick(value)}
+                                    className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                                      on ? "border-[#ef426f]/60 bg-[#ef426f]/10" : "border-neutral-700 hover:border-neutral-600"
+                                    }`}
+                                  >
+                                    <span className="block text-sm font-medium text-white">{label}</span>
+                                    <span className="block text-xs text-neutral-400">{sub}</span>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                            {choice === "external" && (
+                              <div>
+                                <input
+                              type="url"
+                              value={editingEvent.externalRsvpUrl || ""}
+                              onChange={(e) => setEditingEvent({ ...editingEvent, externalRsvpUrl: e.target.value })}
+                              placeholder="https://eventbrite.com/e/your-event"
+                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                            />
+                                <p className="mt-2 text-xs text-neutral-400">The event page&apos;s RSVP button opens this link.</p>
+                              </div>
+                            )}
+                            {choice === "rsvp" && (
+                              <>
+                                <p className="text-xs text-neutral-400">
+                                  Attendees register on the event page with their name and email. See and export RSVPs in the RSVPs tab.
+                                </p>
+                                <details className="group" open={!!(editingEvent.rsvpQuestion || editingEvent.capacity)}>
+                                  <summary className="cursor-pointer list-none text-sm font-medium text-neutral-300 hover:text-white">
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                                      More RSVP options: a question of your own, a capacity
+                                    </span>
+                                  </summary>
+                          <div className="mt-3 space-y-2">
                             <label htmlFor="rsvpQuestion" className="block text-sm font-medium text-neutral-300">
                               Your own question <span className="font-normal text-neutral-400">(optional)</span>
                             </label>
@@ -4567,86 +4580,114 @@ export default function AdminPage() {
                               Once it&apos;s full, new sign-ups join a waitlist. Move people up from the RSVPs tab; each one gets an email saying they&apos;re in.
                             </p>
                           </div>
-                        )}
-
-                        {/* External RSVP option */}
-                        <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
-                          !editingEvent.rsvpEnabled
-                            ? 'border-[#ef426f]/50 bg-[#ef426f]/5'
-                            : 'border-neutral-700 hover:border-neutral-600'
-                        }`}>
-                          <input
-                            type="radio"
-                            name="editRegistrationType"
-                            checked={!editingEvent.rsvpEnabled}
-                            onChange={() => setEditingEvent({ ...editingEvent, rsvpEnabled: false })}
-                            className="mt-0.5 accent-[#ef426f]"
-                          />
-                          <div>
-                            <span className="text-sm font-medium text-white">External registration</span>
-                            <p className="text-xs text-neutral-500 mt-1">
-                              Link to an external registration page (Eventbrite, Lu.ma, Meetup, etc.). An RSVP button will appear on the event page.
-                            </p>
+                                </details>
+                              </>
+                            )}
                           </div>
-                        </label>
-                        {!editingEvent.rsvpEnabled && (
-                          <div className="ml-7">
-                            <input
-                              type="url"
-                              value={editingEvent.externalRsvpUrl || ""}
-                              onChange={(e) => setEditingEvent({ ...editingEvent, externalRsvpUrl: e.target.value })}
-                              placeholder="https://eventbrite.com/e/your-event"
-                              className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
-                            />
-                            <p className="mt-2 text-xs text-neutral-500">
-                              Optional — leave blank if you don&apos;t need a registration button on the event page.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                        )
+                      })()}
+                      </section>
+                      <section className="space-y-4 border-t border-neutral-800 pt-7">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">Publishing</h4>
+                      {/* Visibility, as one menu: Status (draft) and Link only (unlisted)
+                          were two controls for one question, who can see this. Link only is
+                          Luma's "private": the page, RSVP and share poster work for anyone
+                          with the link, and every list leaves it out (lib/event-visibility.ts). */}
                       <div>
-                        <label id="event-status-label" className="block text-sm font-semibold text-neutral-300 mb-2">
-                          Status
+                        <label id="event-visibility-label" className="block text-sm font-semibold text-neutral-300 mb-2">
+                          Visibility
                         </label>
                         <AdminCombobox
                           floating
-                          ariaLabelledby="event-status-label"
-                          buttonClassName="rounded-xl py-3 px-4 text-base"
+                          ariaLabelledby="event-visibility-label"
+                          buttonClassName="rounded-xl py-3 px-4"
                           options={[
-                            { value: "published", label: "Published" },
-                            { value: "draft", label: "Draft" },
+                            { value: "published", label: "Published: on the calendar" },
+                            { value: "link", label: "Link only: hidden from every list" },
+                            { value: "draft", label: "Draft: only in the admin" },
                           ]}
-                          value={editingEvent.status}
-                          onChange={(v) => setEditingEvent({ ...editingEvent, status: v })}
+                          value={editingEvent.status === "draft" ? "draft" : editingEvent.unlisted ? "link" : "published"}
+                          onChange={(v) =>
+                            setEditingEvent({
+                              ...editingEvent,
+                              status: v === "draft" ? "draft" : "published",
+                              unlisted: v === "link",
+                            })
+                          }
                         />
-                        <p className="mt-2 text-xs text-neutral-500">
-                          Draft events are only visible in the admin dashboard
+                        <p className="mt-2 text-xs text-neutral-400">
+                          {editingEvent.status === "draft"
+                            ? "Nobody outside the admin can see it until you publish it."
+                            : editingEvent.unlisted
+                              ? "Only people with the link can find it: kept off the calendar, the feeds and subscriptions, the Discord digest, group pages and search engines. RSVP still works. Not a password: anyone you forward the link to can open it."
+                              : "On the community calendar, the feeds, the Discord digest and the group's page."}
                         </p>
                       </div>
-                      {/* Luma's "private": the page, RSVP and share poster work
-                          for anyone with the link, and every list leaves it out.
-                          See lib/event-visibility.ts for the surfaces. */}
-                      <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
-                        editingEvent.unlisted
-                          ? "border-[#00b2a9]/50 bg-[#00b2a9]/5"
-                          : "border-neutral-700 hover:border-neutral-600"
-                      }`}>
-                        <input
-                          type="checkbox"
-                          checked={editingEvent.unlisted === true}
-                          onChange={(e) => setEditingEvent({ ...editingEvent, unlisted: e.target.checked })}
-                          className="mt-0.5 accent-[#00b2a9]"
-                        />
-                        <div>
-                          <span className="text-sm font-medium text-white">Link only (private)</span>
-                          <p className="text-xs text-neutral-400 mt-1">
-                            Only people with the link can find it. Kept off the public calendar,
-                            the feeds and calendar subscriptions, the Discord digest, the
-                            group pages and search engines. RSVP still works. Not a password:
-                            anyone you forward the link to can open it.
-                          </p>
+                      {/* The address, folded: most events keep the readable default.
+                          Admins only; the API ignores it from anyone else. */}
+                      {hasAdminAccess(adminRole) && (
+                      <details className="group" open={!!(editingEvent.slug && !editingEvent.id)}>
+                        <summary className="cursor-pointer list-none text-sm font-medium text-neutral-300 hover:text-white">
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                            Customize the link
+                          </span>
+                        </summary>
+                        <div className="mt-3">
+                      {/* The event's address. Blank on a new event means the
+                          readable default (lib/event-slug.ts), previewed in the
+                          placeholder. Changing an existing one keeps the old
+                          address redirecting. */}
+                      {(() => {
+                        const original = editingEvent.id ? events.find((e) => e.id === editingEvent.id)?.slug : undefined
+                        const typed = (editingEvent.slug || "").trim().toLowerCase()
+                        const preview = editingEvent.unlisted
+                          ? `${defaultSlugPreview(editingEvent.title, "")}-random-code`
+                          : defaultSlugPreview(editingEvent.title, editingEvent.date)
+                        const problem = typed && typed !== original ? invalidCustomSlug(typed) : null
+                        return (
+                          <div>
+                            <label htmlFor="eventSlug" className="block text-sm font-semibold text-neutral-300 mb-2">
+                              Event address {!editingEvent.id && <span className="font-normal text-neutral-400">(optional)</span>}
+                            </label>
+                            <div className="flex items-center rounded-xl border border-neutral-700 bg-neutral-800 focus-within:border-[#ef426f] focus-within:ring-2 focus-within:ring-[#ef426f]/20">
+                              <span className="pl-4 text-sm text-neutral-400 whitespace-nowrap">devsa.community/events/</span>
+                              <input
+                                id="eventSlug"
+                                type="text"
+                                maxLength={80}
+                                value={editingEvent.slug || ""}
+                                onChange={(e) => setEditingEvent({ ...editingEvent, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
+                                placeholder={editingEvent.id ? "" : preview}
+                                className="w-full min-w-0 bg-transparent py-3 pr-4 text-sm text-white placeholder:text-neutral-500 focus:outline-none"
+                              />
+                            </div>
+                            {problem ? (
+                              <p className="mt-2 text-xs text-red-400">{problem}</p>
+                            ) : editingEvent.id && typed && original && typed !== original ? (
+                              <p className="mt-2 text-xs text-amber-300">
+                                The old address, /events/{original}, will keep working and redirect here.
+                              </p>
+                            ) : editingEvent.unlisted && typed && typed !== original ? (
+                              <p className="mt-2 text-xs text-amber-300">
+                                A readable address on a link-only event is easy to guess. Leave it blank to keep a random code.
+                              </p>
+                            ) : (
+                              <p className="mt-2 text-xs text-neutral-400">
+                                {editingEvent.id
+                                  ? "Change it only if you need to; the old address will redirect."
+                                  : editingEvent.unlisted
+                                    ? "Leave blank: link-only events get a random code, so the address can't be guessed."
+                                    : "Leave blank for the address shown, or type your own, like organizer-roundtable."}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })()}
                         </div>
-                      </label>
+                      </details>
+                      )}
+                      </section>
                       <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-neutral-800 bg-neutral-900/95 px-6 py-4 backdrop-blur">
                         <button
                           type="button"

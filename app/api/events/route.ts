@@ -256,10 +256,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // "Official DEVSA event" makes DEVSA a host and unlocks activation branding and
+    // the external details link, so it is DEVSA's to give: admins only. From anyone
+    // else all three are dropped, whatever the request says.
+    const official = isAdminRole(adminData.role) && isOfficial === true;
+
     // The address: the organizer's own if given, else a readable default.
     // See lib/event-slug.ts.
     let slug: string;
-    const customSlug = typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
+    // A custom address is admins only: it's for DEVSA's own flyers and QR codes, and
+    // left open it let anyone claim a name like the-model-2027 before DEVSA did.
+    // From anyone else it is ignored and the readable default is used.
+    const customSlug = isAdminRole(adminData.role) && typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
     if (customSlug) {
       const problem = invalidCustomSlug(customSlug);
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });
@@ -288,12 +296,12 @@ export async function POST(request: NextRequest) {
       status: status === 'draft' ? 'draft' : 'published',
       eventType: eventType || 'in-person',
       rsvpEnabled: rsvpEnabled || false,
-      isOfficial: isOfficial || false,
+      isOfficial: official,
       unlisted: unlisted === true,
       ...rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired),
       capacity: capacityField(rsvpEnabled, body.capacity),
-      brand: brand || null,
-      detailsUrl: safeDetailsUrl,
+      brand: official ? brand || null : null,
+      detailsUrl: official ? safeDetailsUrl : null,
       externalRsvpUrl: safeExternalRsvpUrl,
       sharedToDiscord: false,
       sharedToLinkedIn: false,
@@ -409,14 +417,17 @@ export async function PUT(request: NextRequest) {
     if (typeof summary === 'string') updateData.summary = summaryField(summary);
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
-    if (typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
+    // Admins only (see POST): an organizer can neither make an event official nor
+    // take that, its branding or its details link off one.
+    const mayOfficial = isAdminRole(adminData.role);
+    if (mayOfficial && typeof isOfficial === 'boolean') updateData.isOfficial = isOfficial;
     if (typeof unlisted === 'boolean') updateData.unlisted = unlisted;
     if (typeof rsvpEnabled === 'boolean') Object.assign(updateData, rsvpQuestionFields(rsvpEnabled, rsvpQuestion, rsvpQuestionRequired));
     if (typeof rsvpEnabled === 'boolean' || body.capacity !== undefined) {
       updateData.capacity = capacityField(typeof rsvpEnabled === 'boolean' ? rsvpEnabled : eventData?.rsvpEnabled, body.capacity);
     }
-    if (brand !== undefined) updateData.brand = brand || null;
-    if (detailsUrl !== undefined) updateData.detailsUrl = safeDetailsUrl;
+    if (mayOfficial && brand !== undefined) updateData.brand = brand || null;
+    if (mayOfficial && detailsUrl !== undefined) updateData.detailsUrl = safeDetailsUrl;
     if (typeof body.externalRsvpUrl === 'string') updateData.externalRsvpUrl = safeExternalRsvpUrl;
     if (eventType && ['in-person', 'hybrid', 'virtual'].includes(eventType)) updateData.eventType = eventType;
     if (typeof communityId === 'string') updateData.communityId = communityId;
@@ -425,7 +436,8 @@ export async function PUT(request: NextRequest) {
 
     // A new address. The old one goes into slugHistory, which the event page
     // redirects from, so links already shared keep working.
-    const newSlug = typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
+    // Admins only, as on create: an organizer's edit never changes the address.
+    const newSlug = isAdminRole(adminData.role) && typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
     if (newSlug && newSlug !== eventData?.slug) {
       const problem = invalidCustomSlug(newSlug);
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });
