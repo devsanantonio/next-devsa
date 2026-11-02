@@ -1,11 +1,72 @@
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, App, type Credential } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth as getAdminAuth, Auth as AdminAuth } from 'firebase-admin/auth';
+import { ExternalAccountClient, type BaseExternalAccountClient } from 'google-auth-library';
+import { getVercelOidcToken } from '@vercel/oidc';
 
 let adminAuthInstance: AdminAuth | null = null;
 
 let app: App | null = null;
 let firestoreInstance: Firestore | null = null;
+
+/*
+ * Two ways to reach Firebase, chosen by the environment:
+ *
+ * Keyless, when the four GCP_* variables are set (Vercel, from 2026-11-01). The
+ * deployment's own Vercel OIDC token is exchanged with Google for credentials
+ * that expire within the hour, through the `vercel` Workload Identity pool in
+ * GCP project media-analytics-proxy, impersonating the same service account
+ * the key belongs to. The pool's provider accepts only project v0-nextdevsa on
+ * the devsa team. No long-lived secret exists for this path.
+ *
+ *   GCP_PROJECT_NUMBER                     532183698348
+ *   GCP_WORKLOAD_IDENTITY_POOL_ID          vercel
+ *   GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID vercel
+ *   GCP_SERVICE_ACCOUNT_EMAIL              analytics-reader@media-analytics-proxy.iam.gserviceaccount.com
+ *
+ * The key, GOOGLE_SERVICE_ACCOUNT_KEY, otherwise: local development, and any
+ * environment without the variables above.
+ *
+ * Firebase Admin's Firestore accepts only a key or application-default
+ * credentials, so in keyless mode Firestore is built directly with the auth
+ * client; the app gets a matching credential for Auth.
+ */
+const KEYLESS = {
+  projectNumber: process.env.GCP_PROJECT_NUMBER,
+  poolId: process.env.GCP_WORKLOAD_IDENTITY_POOL_ID,
+  providerId: process.env.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID,
+  serviceAccount: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
+};
+const PROJECT_ID = 'media-analytics-proxy';
+const isKeyless = () => Object.values(KEYLESS).every(Boolean);
+
+let keylessClient: BaseExternalAccountClient | null = null;
+function getKeylessClient(): BaseExternalAccountClient {
+  if (keylessClient) return keylessClient;
+  const client = ExternalAccountClient.fromJSON({
+    type: 'external_account',
+    audience: `//iam.googleapis.com/projects/${KEYLESS.projectNumber}/locations/global/workloadIdentityPools/${KEYLESS.poolId}/providers/${KEYLESS.providerId}`,
+    subject_token_type: 'urn:ietf:params:oauth:token-type:jwt',
+    token_url: 'https://sts.googleapis.com/v1/token',
+    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${KEYLESS.serviceAccount}:generateAccessToken`,
+    subject_token_supplier: { getSubjectToken: () => getVercelOidcToken() },
+  });
+  if (!client) throw new Error('Could not build the keyless Google credential');
+  client.scopes = ['https://www.googleapis.com/auth/cloud-platform'];
+  keylessClient = client;
+  return client;
+}
+
+/** The keyless client as a Firebase Admin credential, for Auth. */
+const keylessCredential = (): Credential => ({
+  async getAccessToken() {
+    const client = getKeylessClient();
+    const { token } = await client.getAccessToken();
+    if (!token) throw new Error('Keyless Google credential returned no access token');
+    const expiry = client.credentials.expiry_date;
+    return { access_token: token, expires_in: expiry ? Math.max(0, Math.floor((expiry - Date.now()) / 1000)) : 3600 };
+  },
+});
 
 // Initialize Firebase Admin SDK lazily
 function getFirebaseApp(): App {
@@ -18,19 +79,24 @@ function getFirebaseApp(): App {
     return app;
   }
 
+  if (isKeyless()) {
+    app = initializeApp({ credential: keylessCredential(), projectId: PROJECT_ID });
+    return app;
+  }
+
   const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  
+
   if (!serviceAccountKey) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY environment variable is not set');
+    throw new Error('Firebase is not configured: set GOOGLE_SERVICE_ACCOUNT_KEY, or the four GCP_* variables for keyless access');
   }
 
   try {
     const serviceAccount = JSON.parse(serviceAccountKey);
-    
+
     app = initializeApp({
       credential: cert(serviceAccount),
     });
-    
+
     return app;
   } catch (error) {
     console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', error);
@@ -44,7 +110,12 @@ export function getDb(): Firestore {
   if (firestoreInstance) {
     return firestoreInstance;
   }
-  
+
+  if (isKeyless()) {
+    firestoreInstance = new Firestore({ projectId: PROJECT_ID, databaseId: 'devsa', authClient: getKeylessClient() });
+    return firestoreInstance;
+  }
+
   const firebaseApp = getFirebaseApp();
   firestoreInstance = getFirestore(firebaseApp, 'devsa');
   return firestoreInstance;

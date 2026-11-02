@@ -84,6 +84,12 @@ Unsubscribe lands on `/newsletter/unsubscribe`, which asks for a click rather th
 
 `lib/activity-log.ts` writes `activity_log` from every route that changes what people see: events, groups, partners, admin access, access requests, RSVP deletes, newsletter sends. A delete keeps the record it removed, and the **Activity** tab (admins only) restores it under its old id. A new write route should call `logActivity` after its write succeeds.
 
+## The server reaches Firebase without a key
+
+Since 2026-11-01 the server authenticates to Google with Workload Identity Federation, not a service-account key. Each Vercel deployment's OIDC token is exchanged for short-lived credentials through the `vercel` pool in GCP project `media-analytics-proxy` (owned by jesseovr@gmail.com), impersonating `analytics-reader@…`, the same account the key belonged to. The pool's provider accepts only project `v0-nextdevsa` on the `devsa` team. `lib/firebase-admin.ts` takes this path whenever the four `GCP_*` variables are set, and falls back to `GOOGLE_SERVICE_ACCOUNT_KEY` only when they are not.
+
+Firebase Admin's Firestore accepts only a key or application-default credentials, so in keyless mode `getDb()` builds Firestore directly with the auth client. The service account has `roles/datastore.owner` and no Firebase Auth admin role; the app only calls `verifyIdToken`, which needs none.
+
 ## Firestore uses a NAMED database
 
 `getDb()` opens `getFirestore(app, 'devsa')`. There is also a `(default)` database in the same project holding an unrelated app's data — `crm_*`, `blog_posts`, a 4-document `events` collection.
