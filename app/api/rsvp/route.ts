@@ -3,6 +3,7 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { logActivity } from '@/lib/activity-log';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { RsvpThankYouEmail, getRsvpThankYouSubject, RsvpWaitlistEmail, getRsvpWaitlistSubject } from '@/lib/emails/rsvp-thank-you';
 import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
@@ -74,16 +75,29 @@ async function sendRsvpEmail(
   }
 }
 
+// Caps on what the public types. The first name goes into the confirmation email,
+// which is sent to whatever address was entered.
+const MAX_LEN = { name: 100, email: 200 } as const;
+
 // Submit an RSVP (public endpoint)
 export async function POST(request: NextRequest) {
   try {
+    // Every RSVP emails the address entered, so it is rate limited as well as
+    // bot-checked. Generous, because people RSVP at the door on the venue's wifi.
+    const limit = rateLimit(`rsvp:${getClientIp(request)}`, 20, 60_000);
+    if (!limit.success) return rateLimitResponse(limit.resetMs);
+
     const { isBot } = await checkBotId();
     if (isBot) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const body = await request.json();
-    const { eventId, eventSlug, firstName, lastName, email, joinNewsletter, answer } = body;
+    const { eventId, eventSlug, joinNewsletter, answer } = body;
+    const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+    const firstName = text(body.firstName, MAX_LEN.name);
+    const lastName = text(body.lastName, MAX_LEN.name);
+    const email = text(body.email, MAX_LEN.email);
     /*
      * communityId used to be required here, which meant an event hosted only by
      * partners — or by DEVSA with a partner, and no community group — could

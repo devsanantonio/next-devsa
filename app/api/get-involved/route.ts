@@ -25,7 +25,7 @@ const clean = (value: unknown, max: number): string =>
  * Readable only by admins and super admins, through /api/admin/get-involved.
  */
 export async function POST(request: NextRequest) {
-  const limit = rateLimit(getClientIp(request), 5, 60_000);
+  const limit = rateLimit(`get-involved:${getClientIp(request)}`, 5, 60_000);
   if (!limit.success) return rateLimitResponse(limit.resetMs);
 
   try {

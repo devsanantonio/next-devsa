@@ -256,7 +256,7 @@ function talkFields(body: SpeakerSubmissionRequest) {
  * shares it with a group (shareTalk). The super admins hear about each one.
  */
 async function submitToPool(request: NextRequest, body: SpeakerSubmissionRequest) {
-  const limit = rateLimit(getClientIp(request), 5, 60_000);
+  const limit = rateLimit(`speakers:${getClientIp(request)}`, 5, 60_000);
   if (!limit.success) return rateLimitResponse(limit.resetMs);
   if (body.shareConsent !== true) {
     return NextResponse.json({ error: 'Tick the box so we can share your talk with the groups it fits.' }, { status: 400 });
@@ -400,7 +400,7 @@ async function shareTalk(adminEmail: string, adminData: FirebaseFirestore.Docume
  * organizers. Text is stored plain and capped (plainText), never HTML-encoded.
  */
 async function submitToGroup(request: NextRequest, body: SpeakerSubmissionRequest) {
-  const limit = rateLimit(getClientIp(request), 5, 60_000);
+  const limit = rateLimit(`speakers:${getClientIp(request)}`, 5, 60_000);
   if (!limit.success) return rateLimitResponse(limit.resetMs);
 
   const communityId = typeof body.communityId === 'string' ? body.communityId.trim() : '';

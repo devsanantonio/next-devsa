@@ -37,6 +37,12 @@ interface RateLimitResult {
  * @param maxRequests - Max requests allowed in the window
  * @param windowMs - Time window in milliseconds
  */
+/**
+ * `identifier` is the bucket: pass the route with the IP (`rsvp:${ip}`), never the
+ * IP alone. Every route once passed the bare IP, so they shared one budget: five
+ * RSVPs in a minute locked the same person out of the speaker, volunteer, donate
+ * and Get Involved forms until the minute passed.
+ */
 export function rateLimit(
   identifier: string,
   maxRequests: number,

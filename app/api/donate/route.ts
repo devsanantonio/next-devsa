@@ -5,7 +5,7 @@ import { CAMPAIGNS, toCampaignKey } from "@/lib/campaigns";
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
-  const limit = rateLimit(ip, 5, 60 * 1000);
+  const limit = rateLimit(`donate:${ip}`, 5, 60 * 1000);
   if (!limit.success) return rateLimitResponse(limit.resetMs);
 
   try {

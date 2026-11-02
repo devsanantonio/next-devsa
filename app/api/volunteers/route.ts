@@ -57,7 +57,7 @@ interface VolunteerRequest {
 export async function POST(request: NextRequest) {
   try {
     // Cheap local checks first, then the network calls.
-    const limit = rateLimit(getClientIp(request), 5, 60_000);
+    const limit = rateLimit(`volunteers:${getClientIp(request)}`, 5, 60_000);
     if (!limit.success) return rateLimitResponse(limit.resetMs);
 
     const { isBot } = await checkBotId();
