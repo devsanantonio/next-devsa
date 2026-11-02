@@ -6,7 +6,7 @@ import { centralDayKey, centralWeekDayKeys, upcomingWeekDayKeys } from "@/lib/ev
 import { loadBrandFonts, loadBrandMonoFonts } from "@/lib/og-fonts"
 import { BRAND_GRADIENT_STOPS, DevsaLogoMark, LOGO_COLORS } from "@/lib/og-brand"
 import { eventCardFromData, eventHosts } from "@/lib/og-event"
-import { TXLF, TXLF_DAY_KEYS, TXLF_NAVY, TXLF_ORANGE } from "@/data/txlf"
+import { TXLF, TXLF_NAVY, TXLF_ORANGE, txlfDayIn } from "@/data/txlf"
 
 export const runtime = "nodejs"
 
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
 
   // Texas Linux Fest, the calendar's featured event, is not a Firestore record, so
   // it is added here as the calendar adds it: once, on its first day in this week.
-  const txlfDay = TXLF_DAY_KEYS.find((k) => inWeek.has(k))
+  const txlfDay = txlfDayIn(inWeek)
   const txlfCard = txlfDay
     ? [
         {

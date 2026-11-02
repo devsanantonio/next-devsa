@@ -2,6 +2,7 @@ import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { isListed } from '@/lib/event-visibility';
 import { centralDayKey, centralWeekDayKeys } from '@/lib/event-week';
 import type { DigestEvent } from '@/lib/discord';
+import { TXLF, txlfDayIn } from '@/data/txlf';
 
 /**
  * This week's events, as the Monday Discord digest posts them: published,
@@ -65,6 +66,24 @@ export async function gatherWeekDigestEvents(now: Date = new Date()): Promise<{ 
       return weekKeys.has(centralDayKey(at));
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Texas Linux Fest, the calendar's featured event, is not a Firestore record.
+  // Added on the same day and by the same rule as the weekly graphic, so the
+  // card's count and the graphic attached to it agree.
+  const txlfDay = txlfDayIn(weekKeys);
+  if (txlfDay) {
+    events.push({
+      title: TXLF.name,
+      slug: 'texas-linux-fest',
+      href: TXLF.href,
+      date: `${txlfDay}T08:00:00-06:00`,
+      when: 'Nov 6–7',
+      venue: TXLF.location,
+      communityName: 'Texas Linux Fest',
+      summary: "The state's community-run Linux and open source conference. DEVSA is a community partner.",
+    });
+    events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
 
   return { events, week: [...weekKeys][0] };
 }

@@ -61,3 +61,13 @@ describe("buildWeeklyDigestPayload", () => {
     expect(embed.description).not.toContain("more this week")
   })
 })
+
+describe("featured events in the digest", () => {
+  it("links off-site and shows the date range in place of a time", () => {
+    const value = fieldsOf([
+      { title: "Texas Linux Festival 2026", slug: "texas-linux-fest", href: "https://2026.texaslinuxfest.org/", when: "Nov 6–7", date: "2026-11-06T08:00:00-06:00", venue: "Austin, TX" },
+    ]).fields[0].value
+    expect(value).toContain("📍 Nov 6–7 · **[Texas Linux Festival 2026](https://2026.texaslinuxfest.org/)**")
+    expect(value).not.toContain("<t:")
+  })
+})

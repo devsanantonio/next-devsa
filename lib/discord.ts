@@ -40,6 +40,10 @@ export interface DigestEvent {
   description?: string;
   /** The organizer's own line for the digest; wins over the first sentence. */
   summary?: string;
+  /** A featured event that is not a Firestore record links to its own site. */
+  href?: string;
+  /** Shown in place of the start time, for a multi-day event ("Nov 6–7"). */
+  when?: string;
 }
 
 /** Emerald, matching the "happening" state on the calendar. */
@@ -127,7 +131,9 @@ function eventLine(event: DigestEvent, siteUrl: string, withTeaser: boolean): st
     event.eventType === 'virtual' ? '💻' : event.eventType === 'hybrid' ? '🔀' : '📍';
   const where = event.venue || event.location;
 
-  let line = `${emoji} <t:${unixTs}:t> · **[${event.title}](${siteUrl}/events/${event.slug})**`;
+  const when = event.when ? escapeDiscord(event.when) : `<t:${unixTs}:t>`;
+  const href = event.href || `${siteUrl}/events/${event.slug}`;
+  let line = `${emoji} ${when} · **[${event.title}](${href})**`;
   const under = [event.communityName && `**${event.communityName}**`, where]
     .filter(Boolean)
     .join(' · ');

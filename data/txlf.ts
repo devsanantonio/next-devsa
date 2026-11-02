@@ -1,8 +1,9 @@
 /**
  * Texas Linux Fest 2026, the calendar's featured event. It is not a Firestore
  * record, so every surface that lists the week's events has to add it by hand:
- * the calendar (components/events/featured-txlf.tsx) and the weekly social
- * graphic (app/api/og/week/social). Both read from here, so the two agree.
+ * the calendar (components/events/featured-txlf.tsx), the weekly social graphic
+ * (app/api/og/week/social) and the Monday Discord digest (lib/weekly-digest.ts).
+ * All three read from here, so they agree.
  *
  * DEVSA is a community partner, not the host.
  */
@@ -29,3 +30,14 @@ export const TXLF = {
 export const TXLF_NAVY = "#002070"
 export const TXLF_PAPER = "#f0f0f0"
 export const TXLF_ORANGE = "#ff6600"
+
+/**
+ * The day Texas Linux Fest is listed on in a given week, or null if the
+ * festival is not in it: its first day inside the week, once, the way the
+ * calendar pins it. The weekly social graphic and the Monday Discord digest
+ * both use this, so the two always count the same events.
+ */
+export function txlfDayIn(weekKeys: Iterable<string>): string | null {
+  const week = new Set(weekKeys)
+  return TXLF_DAY_KEYS.find((k) => week.has(k)) ?? null
+}
