@@ -321,7 +321,7 @@ export default async function LocalhostPage() {
             <ul className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
               {PUBLISHERS.map((p) => (
                 <li key={p.name}>
-                  <a href={p.href} className="group flex h-full flex-col justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors duration-200 hover:border-gray-300 hover:bg-white">
+                  <a href={p.href} target="_blank" rel="noopener noreferrer" className="group flex h-full flex-col justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors duration-200 hover:border-gray-300 hover:bg-white">
                     <span className="text-sm font-medium leading-snug text-gray-900">{p.name}</span>
                     <span className="font-mono text-[11px] leading-relaxed text-gray-600 group-hover:text-gray-900">{p.tags}</span>
                     {(() => {
