@@ -115,12 +115,14 @@ export function TvHero() {
             programming on{" "}
             {/* Logo and comma kept together, so the comma never starts a line on a phone. */}
             <span className="whitespace-nowrap">
+              {/* TVSA's letters without the "PUBLIC" line under them (2026-11-01). The
+                  slot is shorter than the old lockup's so the letters stay the same size. */}
               <Image
-                src="/tv/tvsa-dark.png"
+                src="/tv/tvsa.png"
                 alt="TVSA"
-                width={845}
-                height={365}
-                className="ml-1 inline-block h-[1.85em] w-auto -translate-y-[0.1em] align-middle"
+                width={858}
+                height={292}
+                className="ml-1 inline-block h-[1.5em] w-auto -translate-y-[0.08em] align-middle"
               />
               ,
             </span>{" "}

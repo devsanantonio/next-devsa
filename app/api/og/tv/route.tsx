@@ -18,7 +18,7 @@ export const runtime = "nodejs"
 export async function GET() {
   const [fonts, tvsa] = await Promise.all([
     loadBrandFonts(),
-    readFile(path.join(process.cwd(), "public", "tv", "tvsa-dark.png")),
+    readFile(path.join(process.cwd(), "public", "tv", "tvsa.png")),
   ])
   const tvsaSrc = `data:image/png;base64,${tvsa.toString("base64")}`
   const muted = "#a1a1aa"
@@ -58,7 +58,7 @@ export async function GET() {
             </span>
             <div style={{ display: "flex", alignItems: "center", marginTop: 26, gap: 16 }}>
               <span style={{ fontSize: 24, fontWeight: 500, color: muted }}>On</span>
-              <img src={tvsaSrc} height={62} width={Math.round((62 * 845) / 365)} alt="TVSA" />
+              <img src={tvsaSrc} height={50} width={Math.round((50 * 858) / 292)} alt="TVSA" />
               <span style={{ fontSize: 24, fontWeight: 500, color: muted }}>Spectrum 20 · Grande 19 · AT&T 99</span>
             </div>
           </div>

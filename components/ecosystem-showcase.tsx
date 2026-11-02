@@ -119,7 +119,9 @@ function LogoTile({ logo }: { logo: LogoItem }) {
  * It showed the first six partners in display order, a sample. Now it names
  * the partnerships DEVSA most wants seen: PyTexas (PySanAntonio), BSides,
  * Geekdom (where the events happen), learnOPENtech, Texas Linux Fest, Tech
- * Bloc, Youth Code Jam and The Creative Futures.
+ * Bloc, Youth Code Jam and TVSA, the City's public access channel, which
+ * carries DEVSA's programming (it replaced The Creative Futures on 2026-11-01;
+ * that partner is still on Building Together).
  *
  * Ids rather than records, and still read from /api/partners: a partner
  * deleted in the admin drops out of this row on the next load, and the full
@@ -133,7 +135,7 @@ const SPOTLIGHT_PARTNER_IDS = [
   "txlf",
   "tech-bloc",
   "youth-code-jam",
-  "the-creative-futures",
+  "tvsa",
 ]
 
 export function EcosystemShowcase() {
