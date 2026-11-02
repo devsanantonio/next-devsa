@@ -1,10 +1,20 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { ArrowUpRight, Check, Copy } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 /**
  * The /localhost hero: text on the left, the city on the right.
+ *
+ * Rebuilt 2026-11-01 because it was busy: a five-line paragraph with five
+ * links, a terminal quickstart box and a button under a three-line headline.
+ * Then rebuilt again the same day, as a different hero rather than a tidier
+ * one: localhost:210 is the title (it was an eyebrow over a three-line
+ * headline), the hook is the problem it answers ("Seven APIs. No one place to
+ * find them."), and the dot map is
+ * the hero's full-bleed ground from lg up instead of a square beside the copy.
+ * The three experiments run along the bottom edge as the map's legend. The
+ * quickstart lives in "Your turn" on the page.
  *
  * The right is San Antonio drawn from its open data, one dot per real place:
  * a building from Bexar County's 1896 maps (teal), a construction permit the
@@ -31,24 +41,20 @@ type Hero = {
 const COLORS = ["#00b2a9", "#ef426f", "#ff8200"]
 /** How many dots of each layer to draw: enough to read as the city, few enough to animate smoothly. */
 const PER_LAYER = [4500, 4500, 6098]
-/** The County starter: it prints which acequias ran near Geekdom, then writes a map. */
-const QUICKSTART = "git clone https://github.com/devsanantonio/localhost\ncd localhost/starters/acequias\npython3 main.py"
-/** The three sources with a piece below, named in the hero's first line; each name jumps to its piece. */
-const SECTIONS = [
-  { href: "#bexar-county", label: "Bexar County" },
-  { href: "#city", label: "the City of San Antonio" },
-  { href: "#via", label: "VIA Metropolitan Transit" },
+/**
+ * The three experiments, as the hero's index. Each dot is its layer's color on
+ * the map beside it, so the list is also the map's legend: the County's 1896
+ * buildings are teal, the City's permits pink, VIA's stops orange.
+ */
+const EXPERIMENTS = [
+  { href: "#bexar-county", title: "Follow the water", source: "Bexar County", when: "1718 → today" },
+  { href: "#city", title: "Watch downtown get built", source: "City of San Antonio", when: "Since 2025" },
+  { href: "#via", title: "Outrun the 4", source: "VIA Metropolitan Transit", when: "Right now" },
 ]
 
 export function LocalhostHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [data, setData] = useState<Hero | null>(null)
-  const [copied, setCopied] = useState(false)
-  async function copyQuickstart() {
-    await navigator.clipboard.writeText(QUICKSTART)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
 
   useEffect(() => {
     fetch("/localhost/hero.json").then((r) => r.json()).then(setData).catch(() => {})
@@ -79,8 +85,11 @@ export function LocalhostHero() {
       for (const L of layers) for (let k = 0; k < L.length; k += 2) { all[0].push(L[k]); all[1].push(L[k + 1]) }
       const pct = (a: number[], q: number) => a.sort((x, y) => x - y)[Math.floor(q * (a.length - 1))]
       const [bx0, bx1, by0, by1] = [pct(all[0], 0.01), pct(all[0], 0.99), pct(all[1], 0.01), pct(all[1], 0.99)]
-      const s = Math.min((W * 0.94) / ((bx1 - bx0) * data!.aspect), (H * 0.94) / (by1 - by0))
-      const ox = (W - (bx1 - bx0) * data!.aspect * s) / 2 - bx0 * data!.aspect * s
+      // As the hero's full-bleed ground (lg up) the city sits right of center, clear of the
+      // title; stacked on a phone it is centered in its own square.
+      const wide = W >= 1024
+      const s = Math.min((W * (wide ? 0.6 : 0.94)) / ((bx1 - bx0) * data!.aspect), (H * 0.94) / (by1 - by0))
+      const ox = W * (wide ? 0.68 : 0.5) - ((bx1 - bx0) * data!.aspect * s) / 2 - bx0 * data!.aspect * s
       const oy = (H - (by1 - by0) * s) / 2 - by0 * s
       const counts = layers.map((L, c) => Math.min(PER_LAYER[c], L.length / 2))
       n = counts.reduce((a, b) => a + b, 0)
@@ -192,83 +201,85 @@ export function LocalhostHero() {
 
 
   return (
-    <section className="relative" data-bg-type="dark">
-      <div className="page-shell pt-28 pb-16 md:pt-32">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
-          <div className="min-w-0">
+    <section className="relative isolate flex flex-col overflow-hidden lg:block" data-bg-type="dark">
+      {/* The city, as the hero's ground from lg up; a square under the words on a phone.
+          Behind everything, so the pointer can scatter it across the full width: the
+          copy above it lets clicks through except on its links. */}
+      <canvas
+        ref={canvasRef}
+        className="order-last block aspect-square w-full touch-none lg:absolute lg:inset-0 lg:-z-10 lg:aspect-auto lg:h-full"
+        role="img"
+        aria-label="San Antonio drawn in dots: buildings from 1896, construction permits since 2025 and bus stops, from the city's open data"
+      />
+      {/* Dark under the words, clear over the city. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-[5] hidden lg:block"
+        style={{ background: "linear-gradient(to right, #0a0a0a 0%, rgba(10,10,10,0.85) 30%, rgba(10,10,10,0) 55%)" }}
+      />
+
+      <div className="page-shell pointer-events-none relative flex flex-col pt-20 md:pt-24 lg:min-h-[min(calc(100svh-3rem),60rem)] lg:pb-10">
+        <div className="flex flex-1 flex-col justify-center">
+          {/* The name is the title. It is a port and an area code at once, which is the
+              whole idea, so it gets the size the joke needs. */}
+          <h1>
             {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
             <img
               src="/branding/localhost/localhost-210-wordmark-dark.svg"
               alt="localhost:210"
-              className="h-7 w-auto md:h-9"
+              className="h-14 w-auto sm:h-20 lg:h-28 xl:h-32"
             />
-            <h1 className="mt-6 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
-              Every developer has a localhost.{" "}
-              <span className="font-light italic text-white/50">This one is San Antonio.</span>
-            </h1>
-            {/* One paragraph: the hook (checkable: seven agencies, all free, none needs a key), the
-                problem (they're scattered), and what the project is. "Seven of them" jumps to the list in
-                the Build section; the three with a piece below are named last, as the experiments' sources. The wordmark and the headline already carry the port-and-area-code joke, the
-                quickstart below says "clone it". */}
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
-              <span className="font-semibold text-white">San Antonio has an API.</span>{" "}
-              <a href="#publishers" className="font-semibold text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white">
-                Seven of them.
-              </a>{" "}
-              Free, no key required, and spread across as many websites, so almost nobody finds them all.{" "}
-              <span className="font-semibold text-white">localhost:210</span> is DEVSA&apos;s starter kit for every one,
-              and below, three small experiments with{" "}
-              {SECTIONS.map((s, i) => (
-                <span key={s.href}>
-                  {i === 2 ? " and " : i === 1 ? ", " : ""}
-                  <a href={s.href} className="text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white">
-                    {s.label}
-                  </a>
-                </span>
-              ))}{" "}
-              to see what&apos;s in there.
-            </p>
-            {/* The first five minutes, shown rather than described: no sign-up, no keys, one file. */}
-            <div className="mt-6 max-w-xl overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]">
-              <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">No sign-up, no keys, Python 3.9+</p>
-                <button
-                  type="button"
-                  onClick={copyQuickstart}
-                  className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 hover:text-white"
-                >
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "Copied" : "Copy"}
-                </button>
-              </div>
-              <pre className="overflow-x-auto px-4 py-3 font-mono text-[12px] leading-relaxed text-white/80">
-                {QUICKSTART.split("\n").map((line) => (
-                  <span key={line} className="block">
-                    <span className="select-none text-[#ff8200]">$ </span>
-                    {line}
-                  </span>
-                ))}
-              </pre>
-            </div>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <a
-                href="https://github.com/devsanantonio/localhost"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
-              >
-                Get the starters <ArrowUpRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-          <figure className="min-w-0">
-            <canvas
-              ref={canvasRef}
-              className="block aspect-square w-full touch-none lg:aspect-[1/0.95]"
-              role="img"
-              aria-label="San Antonio drawn in dots: buildings from 1896, construction permits since 2025 and bus stops, from the city's open data"
-            />
-          </figure>
+          </h1>
+          {/* The hook is the problem localhost:210 answers: San Antonio's open data is
+              free and keyless but scattered across seven publishers, with no one place
+              that lists them. The title above is the answer: the bridge to every agency
+              publishing it. (The comparison to DEVSA as the bridge between the city's
+              tech groups came out: it trailed the hook.) "Agencies", never "partners": DEVSA is affiliated with none
+              of them, and the page says so. Not "a starter for each source": there are
+              six starters for seven publishers. The experiments are the row below, so
+              the sentence stops at the bridge. */}
+          {/* One lead paragraph under the title, as the conference pages do it: the hook
+              opens it in white, then the bridge. The hook was set at display size for a
+              while and competed with the title. */}
+          <p className="mt-8 max-w-xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
+            <span className="font-semibold text-white">Seven APIs. No one place to find them.</span>{" "}
+            localhost:210 is the bridge to{" "}
+            <a
+              href="#publishers"
+              className="pointer-events-auto text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
+            >
+              all of San Antonio&apos;s open data
+            </a>
+            .
+          </p>
+          <a
+            href="https://github.com/devsanantonio/localhost"
+            className="pointer-events-auto mt-8 inline-flex w-fit items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+          >
+            Get the starters <ArrowUpRight className="h-4 w-4" />
+          </a>
         </div>
 
+        {/* The three experiments, along the bottom edge: each dot is its layer's color on
+            the map, so the row is also the map's legend. */}
+        <div className="mt-12 lg:mt-10">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">Three small experiments, to see what&apos;s in there</p>
+          <ol className="mt-4 grid border-t border-white/10 lg:grid-cols-3 lg:gap-8">
+            {EXPERIMENTS.map((e, i) => (
+              <li key={e.href} className="border-b border-white/10 lg:border-b-0">
+                <a href={e.href} className="group pointer-events-auto flex items-start gap-3 py-4">
+                  <span aria-hidden className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: COLORS[i] }} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold text-white underline-offset-4 group-hover:underline">{e.title}</span>
+                    <span className="mt-0.5 block text-sm text-white/55">
+                      {e.source} · {e.when}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   )

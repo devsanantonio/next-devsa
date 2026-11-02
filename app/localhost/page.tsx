@@ -12,8 +12,10 @@ import via from "@/public/localhost/via-route-4.json"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 const TITLE = "localhost:210 — Build With San Antonio's Open Data"
+// Leads with the hero's hook: seven APIs and no one place to find them, which is
+// what localhost:210 answers. The three pieces are experiments, not products.
 const DESCRIPTION =
-  "San Antonio has an API. Follow the water through three centuries of downtown, watch the City permit what's being built, and race a real VIA bus up San Pedro. Built on open data from Bexar County, the City of San Antonio, VIA and four more San Antonio agencies. A DEVSA project."
+  "San Antonio has seven open-data APIs and no one place to find them. localhost:210 is the bridge to every agency publishing them: search all seven at once, and three small experiments to see what's in there: follow the water through three centuries of downtown, watch the City permit what's being built, and race a real VIA bus up San Pedro. A DEVSA project."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -83,7 +85,7 @@ const IDEAS = [
   { slug: "permits-near-you", source: "City of San Antonio", title: "The wait.", body: "A new $18 million building at 425 San Pedro Ave waited 785 days for its permits. Which kinds of work wait longest, and where?" },
 ]
 
-/** Who publishes San Antonio's open data. The first three have a piece above; the rest are why the hero says seven. */
+/** Who publishes San Antonio's open data. The first three have a piece above; the first seven are the hero's "Seven APIs". USGS is the federal extra, labeled as such. */
 const PUBLISHERS = [
   { name: "Bexar County", href: "https://gis-bexar.opendata.arcgis.com", tags: "1718 · 1896 · census · districts" },
   { name: "City of San Antonio", href: "https://data.sanantonio.gov", tags: "permits · 311 · bonds · streets" },
@@ -92,7 +94,7 @@ const PUBLISHERS = [
   { name: "Alamo Area MPO", href: "https://aampo-openmap-nexus-mpo.hub.arcgis.com", tags: "road projects · flood risk · bikes" },
   { name: "Opportunity Home San Antonio", href: `${REPO}/blob/main/SOURCES.md#opportunity-home-san-antonio`, tags: "housing · low water crossings" },
   { name: "Edwards Aquifer Authority", href: "https://data.edwardsaquifer.org", tags: "aquifer level · springflow" },
-  { name: "USGS", href: "https://waterdata.usgs.gov", tags: "live creek gauges, every 15 min" },
+  { name: "USGS", href: "https://waterdata.usgs.gov", tags: "federal · live creek gauges, every 15 min" },
 ]
 
 /** Real output from `python3 main.py --find flood` in starters/peek, October 29, 2026: the first lines of 33. */
@@ -260,12 +262,14 @@ export default function LocalhostPage() {
           {/* Shown, not described: peek searching every publisher for one word. Real output, trimmed. */}
           <div className="mt-10 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a]">
             <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">starters/peek</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">starters/peek · no sign-up, no keys, Python 3.9+</p>
               <a href={`${REPO}/tree/main/starters/peek`} className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/70 hover:text-white">
                 Open it <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
             </div>
             <pre className="overflow-x-auto px-5 py-4 font-mono text-[12px] leading-relaxed text-white/70">
+              {/* The clone, which the hero's quickstart box used to show. */}
+              <span className="text-[#ff8200]">$</span> <span className="text-white">git clone {REPO} &amp;&amp; cd localhost/starters/peek</span>{"\n\n"}
               <span className="text-[#ff8200]">$</span> <span className="text-white">python3 main.py --find flood</span>{"\n"}
               <span className="text-white/50">33 public layers mention &quot;flood&quot;, newest first</span>{"\n"}
               {PEEK_FLOOD.map(([date, who, title]) => (
@@ -282,7 +286,9 @@ export default function LocalhostPage() {
           {/* Who publishes what, as tiles: a name and a few words each. The full story is SOURCES.md. */}
           <div id="publishers" className="mt-10 scroll-mt-24">
             <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-              <p className={eyebrowLight}>Who publishes what</p>
+              {/* Says the count, because the hero's "Seven APIs" links here and there are
+                  eight tiles: USGS is federal, not one of San Antonio's seven. */}
+              <p className={eyebrowLight}>Who publishes what: San Antonio&apos;s seven, plus USGS</p>
               <a href={`${REPO}/blob/main/SOURCES.md`} className="font-mono text-[11px] uppercase tracking-widest text-gray-600 hover:text-gray-900">
                 What each has, and its terms: SOURCES.md
               </a>
@@ -330,19 +336,23 @@ export default function LocalhostPage() {
             </ol>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <a href={ISSUES} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-800">
+          {/* One button and three quiet links, where there were four buttons in a row: the
+              first issue is the way in; the others are what comes after. */}
+          <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <a href={ISSUES} className="inline-flex w-fit items-center justify-center gap-2 rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-800">
               Pick up a good first issue <ArrowUpRight className="h-4 w-4" />
             </a>
-            <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
-              Add yours to the showcase <ArrowUpRight className="h-4 w-4" />
-            </a>
-            <a href="/discord" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
-              Show it in #build-and-tell
-            </a>
-            <Link href="/events" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50">
-              Build with people: find a meetup
-            </Link>
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <a href={`${REPO}/blob/main/SHOWCASE.md`} className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition-colors hover:text-gray-900 hover:decoration-gray-900">
+                Add yours to the showcase
+              </a>
+              <a href="/discord" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition-colors hover:text-gray-900 hover:decoration-gray-900">
+                Show it in #build-and-tell
+              </a>
+              <Link href="/events" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition-colors hover:text-gray-900 hover:decoration-gray-900">
+                Find a meetup
+              </Link>
+            </div>
           </div>
         </div>
       </section>
