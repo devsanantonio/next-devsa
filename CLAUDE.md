@@ -88,13 +88,13 @@ Unsubscribe lands on `/newsletter/unsubscribe`, which asks for a click rather th
 
 Since 2026-11-01 the server authenticates to Google with Workload Identity Federation, not a service-account key. Each Vercel deployment's OIDC token is exchanged for short-lived credentials through the `vercel` pool in GCP project `media-analytics-proxy` (owned by jesseovr@gmail.com), impersonating `devsa-site@…`, an account whose only permission is `roles/datastore.user` conditioned to the `devsa` database. The pool's provider accepts only project `v0-nextdevsa` on the `devsa` team. `lib/firebase-admin.ts` takes this path whenever the four `GCP_*` variables are set, and falls back to `GOOGLE_SERVICE_ACCOUNT_KEY` only when they are not.
 
-Firebase Admin's Firestore accepts only a key or application-default credentials, so in keyless mode `getDb()` builds Firestore directly with the auth client. `devsa-site` has no Firebase Auth admin role; the app only calls `verifyIdToken`, which needs none. The old key's account, `analytics-reader`, owned the whole project's Firestore, including the `(default)` database of a retired CRM; DEVSA no longer uses it.
+Firebase Admin's Firestore accepts only a key or application-default credentials, so in keyless mode `getDb()` builds Firestore directly with the auth client. `devsa-site` has no Firebase Auth admin role; the app only calls `verifyIdToken`, which needs none. The old key's account, `analytics-reader`, owned the whole project's Firestore; DEVSA no longer uses it, both its keys were disabled on 2026-11-01, and no copy of either is in Vercel or `.env.local`. Delete the keys and the account after a quiet week. Vercel Blob is keyless the same way: `@vercel/blob` 2.8+ authenticates with the deployment's OIDC token and `BLOB_STORE_ID`, and `BLOB_READ_WRITE_TOKEN` is gone.
 
 ## Firestore uses a NAMED database
 
-`getDb()` opens `getFirestore(app, 'devsa')`. There is also a `(default)` database in the same project holding an unrelated app's data — `crm_*`, `blog_posts`, a 4-document `events` collection.
+`getDb()` opens the `devsa` database, and it is the project's only one. A `(default)` database held a retired CRM's data (`crm_*`, `blog_posts`, a 4-document `events`); the CRM had long since moved to its own Firebase project, and on 2026-11-01 `(default)` was exported to `gs://media-analytics-proxy-crm-archive/default-2026-11-01` (2,368 documents) and deleted.
 
-Any script written against this data must pass `'devsa'` explicitly. `getFirestore(app)` connects to `(default)` without erroring and returns zero for every DEVSA collection, which reads as "empty" rather than "wrong database". This has already produced one false all-clear in this repo.
+Any script written against this data must still pass `'devsa'` explicitly. `getFirestore(app)` asks for `(default)`, which now doesn't exist, and before that it connected without erroring and returned zero for every DEVSA collection, which read as "empty" rather than "wrong database". That produced one false all-clear in this repo. The site's account, `devsa-site`, can't reach any other database anyway.
 
 Two things that survived and look like they shouldn't:
 

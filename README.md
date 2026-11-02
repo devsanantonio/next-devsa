@@ -26,18 +26,28 @@ DEVSA's work is the rooms: getting the people who build San Antonio tech into th
 | `/events/the-model` | The Model: creatives, founders and builders in the same room |
 | `/events/zero-to-agent` | Zero to Agent, San Antonio's part of Vercel's global build week |
 
-**The community calendar (`/events`).** Every group's events in one list, with a page per event at `/events/[slug]`, RSVPs, and calendar subscriptions for Google, Apple and Outlook. It's how people find the rooms, DEVSA's and everyone else's.
+**The community calendar (`/events`).** Every group's events in one list, with a page per event at `/events/[slug]`, RSVPs (with a waitlist past capacity, and a reminder email the day before), and calendar subscriptions for Google, Apple and Outlook. It's how people find the rooms, DEVSA's and everyone else's. `/events/embed` is the same calendar for other sites to embed in an iframe, and the only page that may be framed.
+
+**Give a talk (`/give-a-talk`).** Every group currently looking for speakers, in one place, beside an open form for anyone who doesn't know which group their talk fits. Organizers open their group's call from the admin, which adds a talk form to the group's page (`/buildingtogether/[slug]#speak`); talks to the open pool reach DEVSA, which shares each one with a group that fits, with the speaker's consent.
 
 **Building Together (`/buildingtogether`).** The 25 community groups and the partners who back the work, with a page for each at `/buildingtogether/[slug]`. It also explains how DEVSA helps a group put something on (DEVSA doesn't run your event; it finds the room, the people who can teach, and access to a network of builders), and takes **donations** at `#donate`, through Stripe.
 
 **About (`/about`).** Where DEVSA came from, and the volunteer board that runs it.
 
+**localhost (`/localhost`, short link `/210`).** Three small pieces made from San Antonio's open data, to get people curious about what the City, Bexar County, VIA and other agencies publish: following the water through three centuries of downtown, the City's building permits on a map, and a game racing a real VIA bus up San Pedro. The data is fetched live or shipped as files in [public/localhost/](public/localhost/); the reusable starter is the separate [localhost](https://github.com/devsanantonio/localhost) repo.
+
+**DEVSA TV (`/tv`).** DEVSA programming coming to TVSA, San Antonio's public access channel, in December 2026 (Spectrum 20, Grande 19, AT&T 99), and to DEVSA's YouTube.
+
 **Also in here:**
 
-- **Discord automation.** Two Vercel crons in [vercel.json](vercel.json): the Monday digest of the week's events (`/api/events/weekly-digest`), and weekday prompts in the Discord (`/api/discord/prompts`: a question or poll in #vibe-chat, Build-and-tell Friday in #build-and-tell).
+- **Three Vercel crons** in [vercel.json](vercel.json): the Monday digest of the week's events in the Discord (`/api/events/weekly-digest`), weekday prompts there (`/api/discord/prompts`: a question or poll in #vibe-chat, Build-and-tell Friday in #build-and-tell), and the daily day-before reminder to everyone who RSVP'd (`/api/events/reminders`).
 - **A public events feed.** RSS at `/api/events/feed`, with a schema and an iCalendar subscription. It's documented, with examples, in [community-calendar-api](https://github.com/devsanantonio/community-calendar-api).
 - **[llms.txt](app/llms.txt)** for AI agents that read the site.
-- **Admin (`/admin`).** Where organizers manage events, groups, partners and admins. Access is by approved email, recorded in Firestore.
+- **Admin (`/admin`).** Where organizers run their group and DEVSA runs the site. Sign in with Google or an emailed link; access is an approved email in Firestore, with one of two roles:
+  - **organizer:** their own group's events, RSVPs, speakers and listing. Anyone can request access from `/signin`; an admin approves it and picks the group they'll run. The portal only ever grants this role.
+  - **admin:** everything, including partners, the open pool of talks, the newsletter and Manage Admins. Admins are made by hand (see below), and only the site's owner can change or remove one.
+
+  Every change is logged in the **Activity** tab, and deletes can be restored from it. The newsletter composer stays hidden until its unsubscribe secret and postal address are set; see [CLAUDE.md](CLAUDE.md).
 - **`/coworking-space`**, a thank-you to Geekdom and the volunteers who kept the coworking space open. The space closed in September 2026.
 
 ---
@@ -49,7 +59,7 @@ DEVSA's work is the rooms: getting the people who build San Antonio tech into th
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animation:** [Motion](https://motion.dev/), [Three.js](https://threejs.org/), [Paper shaders](https://github.com/paper-design/shaders)
 - **Database:** [Google Firestore](https://firebase.google.com/docs/firestore)
-- **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google OAuth + email/password
+- **Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) — Google sign-in and emailed sign-in links
 - **Email:** [Resend](https://resend.com/)
 - **Bot protection:** [Vercel BotID](https://vercel.com/docs/botid)
 - **Donations:** [Stripe](https://stripe.com/)
@@ -64,7 +74,9 @@ DEVSA's work is the rooms: getting the people who build San Antonio tech into th
 
 - [Node.js](https://nodejs.org/) 20.9+
 - [pnpm](https://pnpm.io/)
-- A Firebase project with Firestore and Authentication enabled, for anything that reads events, groups or partners
+- For anything that reads events, groups or partners, access to Firebase, one of two ways:
+  - **DEVSA's own:** a Vercel account on the `devsa` team. The server reaches Firebase keylessly: with the four `GCP_*` variables from [.env.example](.env.example) set, it exchanges your Vercel CLI login for short-lived Google credentials. Run `vercel login` and `vercel link` once. No service-account key is needed, or exists.
+  - **Your own:** a Firebase project with Firestore (a database named `devsa`) and Authentication, and a service-account key in `GOOGLE_SERVICE_ACCOUNT_KEY`.
 
 ### Setup
 
