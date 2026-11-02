@@ -6,7 +6,7 @@ import { FollowTheWater } from "@/components/localhost/follow-the-water"
 import { OutrunThe4 } from "@/components/localhost/outrun-the-4"
 import { WatchItGetBuilt } from "@/components/localhost/watch-it-get-built"
 import { LayerCatalog } from "@/components/localhost/layer-catalog"
-import { getCatalog, getChanges, getStatus } from "@/lib/localhost-data"
+import { getCatalog, getStatus } from "@/lib/localhost-data"
 import community from "@/public/localhost/community.json"
 import permits from "@/public/localhost/permits.json"
 import via from "@/public/localhost/via-route-4.json"
@@ -175,8 +175,8 @@ const shortDay = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })
 
 export default async function LocalhostPage() {
-  // The repo's weekly check: catalog counts, what changed, which sources answered. Each can be null.
-  const [catalog, changes, status] = await Promise.all([getCatalog(), getChanges(), getStatus()])
+  // The repo's weekly check: catalog counts and which sources answered. Each can be null.
+  const [catalog, status] = await Promise.all([getCatalog(), getStatus()])
   const checkedOn = status ? shortDay(status.checked_at.slice(0, 10)) : ""
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
@@ -363,28 +363,10 @@ export default async function LocalhostPage() {
                 Rebuilt every Monday, and in the repo as{" "}
                 <a href={`${REPO}/blob/main/data/catalog.json`} className="font-mono text-[0.9em] text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">data/catalog.json</a>.
               </p>
-              <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              {/* One column: the list is newest first, so it already shows what changed. A
+                  separate "recently updated" column beside it repeated the same layers. */}
+              <div className="mt-6 max-w-3xl">
                 <LayerCatalog publishers={Object.entries(catalog.by_publisher).map(([name, count]) => ({ name, count }))} />
-                {changes && changes.changes.length > 0 && (
-                  <div>
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-gray-600">Updated in the last two weeks</p>
-                    <ul className="mt-3 divide-y divide-gray-200 border-y border-gray-200">
-                      {changes.changes.slice(0, 8).map((c) => (
-                        <li key={c.url}>
-                          <a href={c.url} target="_blank" rel="noopener noreferrer" className="group block py-3">
-                            <span className="block truncate text-sm font-medium text-gray-900 group-hover:underline">
-                              {c.title.replace(/_/g, " ")}
-                              {c.change === "new" && <span className="ml-2 font-mono text-[10px] uppercase tracking-widest text-[#d6335c]">new</span>}
-                            </span>
-                            <span className="mt-0.5 block text-xs text-gray-600">
-                              {c.publisher} · {shortDay(c.modified)}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             </div>
           )}

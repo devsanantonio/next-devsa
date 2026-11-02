@@ -17,7 +17,8 @@ import { AdminCombobox } from "@/components/admin/admin-combobox"
  */
 type Row = { t: string; p: string; u: string; m: string }
 
-const SHOW = 40
+// Eight at a time: enough to see the shape of a search without the list taking over the page.
+const PAGE = 8
 
 const day = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })
@@ -28,6 +29,9 @@ export function LayerCatalog({ publishers }: { publishers: { name: string; count
   const [failed, setFailed] = useState(false)
   const [q, setQ] = useState("")
   const [who, setWho] = useState("")
+  const [shown, setShown] = useState(PAGE)
+  // A new search starts back at one page.
+  useEffect(() => setShown(PAGE), [q, who])
 
   useEffect(() => {
     const el = ref.current
@@ -88,13 +92,13 @@ export function LayerCatalog({ publishers }: { publishers: { name: string; count
         {failed
           ? "The catalog didn't load. It's also in the repo as data/catalog.json."
           : rows
-            ? `${matches.length.toLocaleString()} of ${rows.length.toLocaleString()} layers${matches.length > SHOW ? `, the ${SHOW} newest shown` : ""}`
+            ? `${matches.length.toLocaleString()} of ${rows.length.toLocaleString()} layers, newest first`
             : "Loading the catalog…"}
       </p>
 
       {rows && matches.length > 0 && (
         <ul className="mt-3 divide-y divide-gray-200 border-y border-gray-200">
-          {matches.slice(0, SHOW).map((r) => (
+          {matches.slice(0, shown).map((r) => (
             <li key={r.u}>
               <a href={r.u} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-4 py-3">
                 <span className="min-w-0 flex-1">
@@ -108,6 +112,15 @@ export function LayerCatalog({ publishers }: { publishers: { name: string; count
             </li>
           ))}
         </ul>
+      )}
+      {rows && matches.length > shown && (
+        <button
+          type="button"
+          onClick={() => setShown((n) => n + PAGE * 3)}
+          className="mt-4 text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 hover:text-gray-900 hover:decoration-gray-900"
+        >
+          Show more ({(matches.length - shown).toLocaleString()} left)
+        </button>
       )}
       {rows && matches.length === 0 && <p className="mt-3 text-sm text-gray-600">Nothing matches. Try one word.</p>}
     </div>
