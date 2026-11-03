@@ -14,7 +14,7 @@ import { ArrowUpRight } from "lucide-react"
  * find them."), and the dot map is
  * the hero's full-bleed ground from lg up instead of a square beside the copy.
  * The three experiments run along the bottom edge as the map's legend. The
- * quickstart lives in "Your turn" on the page.
+ * quickstart lives in the repo's README.
  *
  * The right is San Antonio drawn from its open data, one dot per real place:
  * a building from Bexar County's 1896 maps (teal), a construction permit the
@@ -46,10 +46,12 @@ const PER_LAYER = [4500, 4500, 6098]
  * the map beside it, so the list is also the map's legend: the County's 1896
  * buildings are teal, the City's permits pink, VIA's stops orange.
  */
+// Each experiment is a different kind of open data, and the label says which: what the
+// three have in common is San Antonio, not the kind of data.
 const EXPERIMENTS = [
-  { href: "#bexar-county", title: "Follow the water", source: "Bexar County", when: "1718 → today" },
-  { href: "#city", title: "Watch downtown get built", source: "City of San Antonio", when: "Since 2025" },
-  { href: "#via", title: "Outrun the 4", source: "VIA Metropolitan Transit", when: "Right now" },
+  { href: "#via", title: "Outrun the 4", source: "VIA Metropolitan Transit", kind: "A transit schedule, right now", color: "#ff8200" },
+  { href: "#city", title: "Watch downtown get built", source: "City of San Antonio", kind: "Public records, since 2025", color: "#ef426f" },
+  { href: "#bexar-county", title: "Follow the water", source: "Bexar County", kind: "Historic maps, 1718 → today", color: "#00b2a9" },
 ]
 
 export function LocalhostHero() {
@@ -244,12 +246,12 @@ export function LocalhostHero() {
             <span className="font-semibold text-white">Seven APIs. No one place to find them.</span>{" "}
             localhost:210 is the bridge to{" "}
             <a
-              href="#publishers"
+              href="https://github.com/devsanantonio/localhost/blob/main/SOURCES.md"
               className="pointer-events-auto text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
             >
               all of San Antonio&apos;s open data
             </a>
-            .
+            , and to the people who want to explore it.
           </p>
           <a
             href="https://github.com/devsanantonio/localhost"
@@ -264,14 +266,14 @@ export function LocalhostHero() {
         <div className="mt-12 lg:mt-10">
           <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">Three small experiments, to see what&apos;s in there</p>
           <ol className="mt-4 grid border-t border-white/10 lg:grid-cols-3 lg:gap-8">
-            {EXPERIMENTS.map((e, i) => (
+            {EXPERIMENTS.map((e) => (
               <li key={e.href} className="border-b border-white/10 lg:border-b-0">
                 <a href={e.href} className="group pointer-events-auto flex items-start gap-3 py-4">
-                  <span aria-hidden className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: COLORS[i] }} />
+                  <span aria-hidden className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: e.color }} />
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold text-white underline-offset-4 group-hover:underline">{e.title}</span>
                     <span className="mt-0.5 block text-sm text-white/55">
-                      {e.source} · {e.when}
+                      {e.kind} · {e.source}
                     </span>
                   </span>
                 </a>

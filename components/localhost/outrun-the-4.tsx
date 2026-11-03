@@ -274,7 +274,7 @@ export function OutrunThe4() {
   const [result, setResult] = useState<Result | null>(null)
   const [best, setBest] = useState(0)
   const [copied, setCopied] = useState(false)
-  const control = useRef<{ start: () => void; jump: () => void; release: () => void; duck: (on: boolean) => void } | null>(null)
+  const control = useRef<{ start: () => void; jump: () => void; release: () => void; duck: (on: boolean) => void; stop: () => void } | null>(null)
 
   useEffect(() => {
     fetch("/localhost/via-route-4.json")
@@ -741,6 +741,14 @@ export function OutrunThe4() {
       duck(on) {
         ducking = on && running
       },
+      // Back to the start screen, mid-run: the run isn't scored.
+      stop() {
+        if (!running) return
+        running = false
+        reset()
+        setPhase("ready")
+        kick()
+      },
     }
 
     const io = new IntersectionObserver(([e]) => {
@@ -789,6 +797,9 @@ export function OutrunThe4() {
     } else if (e.key === "ArrowDown" || e.key === "s") {
       e.preventDefault()
       control.current?.duck(true)
+    } else if (e.key === "Escape" && phase === "running") {
+      e.preventDefault()
+      control.current?.stop()
     }
   }
   const onKeyUp = (e: React.KeyboardEvent) => {
@@ -848,7 +859,7 @@ export function OutrunThe4() {
             control.current?.duck(false)
           }}
           className="relative cursor-pointer touch-manipulation select-none [-webkit-touch-callout:none] overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a] outline-none focus-visible:border-neutral-500"
-          aria-label="Outrun the 4. Press space or tap to start and to jump; hold to jump higher. Press down, or hold the bottom of the game, to duck."
+          aria-label="Outrun the 4. Press space or tap to start and to jump; hold to jump higher. Press down, or hold the bottom of the game, to duck. Escape stops."
         >
           <canvas
             ref={canvasRef}
@@ -856,6 +867,15 @@ export function OutrunThe4() {
             role="img"
             aria-label="A runner on the sidewalk racing a Route 4 bus up Navarro and San Pedro, drawn as a dot-matrix sign with an amber headsign across the top"
           />
+          {phase === "running" && (
+            <button
+              type="button"
+              onClick={() => control.current?.stop()}
+              className="absolute bottom-2 right-2 rounded-md border border-white/15 bg-black/70 px-2.5 py-1 font-mono text-[11px] uppercase tracking-widest text-white/70 transition-colors hover:border-white/40 hover:text-white"
+            >
+              Stop<span className="hidden sm:inline"> · Esc</span>
+            </button>
+          )}
           {!data && <div className="absolute inset-0 flex items-center justify-center font-mono text-xs text-white/50">Loading VIA&apos;s schedule…</div>}
           {data && pick && phase !== "running" && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/55 p-4">

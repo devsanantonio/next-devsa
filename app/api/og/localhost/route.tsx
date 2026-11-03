@@ -14,7 +14,7 @@ export async function GET() {
     (
       <OgCard
         title={["Seven APIs.", "No one place to find them."]}
-        hook="San Antonio's open data is spread across seven publishers. localhost:210 is the bridge to all of them: search all seven at once, and three small experiments to see what's in there."
+        hook="San Antonio's open data is spread across seven publishers. localhost:210 brings all seven together in one open repo, with three small experiments to see what's in there."
         footer="localhost:210 · Build with San Antonio's open data"
         url="devsa.community/localhost"
       />
