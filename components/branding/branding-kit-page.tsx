@@ -5,6 +5,18 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { conferences } from "@/data/conferences"
 import { ConferenceMark } from "@/components/events/conference-mark"
+import {
+  AUDIENCE,
+  MISSION,
+  PROBLEM_STATEMENT,
+  SHORT_DESCRIPTION,
+  TAGLINE,
+  VALUE_PROPOSITION,
+  VOICE_TRAITS,
+  WORD_RULES,
+  WRITING_DO,
+  WRITING_DONT,
+} from "@/lib/brand-voice"
 
 const ORIGINAL_LOGO_SVG = "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.svg"
 const ORIGINAL_LOGO_PNG = "https://devsa-assets.s3.us-east-2.amazonaws.com/devsa-logo.png"
@@ -565,82 +577,38 @@ export function BrandingKitPage() {
           Consistent messaging guidelines for representing DEVSA across channels.
         </p>
 
+        {/* Every line here comes from lib/brand-voice.ts, which /branding/voice.md
+            also serves, so the page people copy from and the file agents read
+            can't disagree. Edit the voice there, not here. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
             <h3 className="text-sm font-medium text-white mb-4">Core Messages</h3>
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Tagline</p>
-                <p className="text-white font-medium">Find Your People. Build Your Future.</p>
+                <p className="text-white font-medium">{TAGLINE}</p>
               </div>
-              {/* Who DEVSA is for, named the way the site names them. Until
-                  November 2026 the kit called them "San Antonio's tech
-                  community" and the About page "San Antonio tech", which name
-                  an industry, not the people in it. */}
-              <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Audience</p>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  San Antonio&apos;s learners and builders: students and career-changers, developers and engineers, designers, founders and creatives. Name the people, not the industry. Not &quot;San Antonio tech&quot;.
-                </p>
-              </div>
-              <div>
-                {/* This is the copy other people paste into their own
-                    materials, so it is the last place a retired line should
-                    survive — and it held two of them. The mission read "DEVSA
-                    bridges the gap between passionate builders, local
-                    partners, and the growing tech ecosystem", which is the
-                    sentence the site's own metadata dropped for naming no
-                    technology and describing any community organization. The
-                    value proposition read "Your direct connection to the tech
-                    community", retired from the title for the same reason, and
-                    counted the groups by hand at 20+ against twenty-three.
-
-                    Both now say what the site says. If the positioning moves
-                    again, this is the page that hands the old version to
-                    everybody else. */}
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Mission</p>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA connects San Antonio&apos;s learners and builders: one calendar, one public directory, one channel to follow, and one room a few times a year, governed by a volunteer board.
-                </p>
-              </div>
-              {/* For grant forms and outreach. The same words as the problem
-                  statement that opens /about; change them there and here
-                  together. */}
-              <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Short description</p>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is community infrastructure for San Antonio&apos;s learners and builders: the shared calendar, the public directory, the channel to follow and the rooms where they find each other.
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Problem statement</p>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  San Antonio is one of the largest cities in the country, and it has never lacked people who build things. What it lacks is anything that connects them. Its tech groups run their own meetups, on their own calendars, for their own audiences, and most of them can&apos;t see each other. A student finishing a program, a developer new to the city, an engineer deciding whether to stay: none of them has one place to find the people doing the work they want to do. People stay where they&apos;ve found their people, and a city that can&apos;t show its builders to each other has a harder time keeping them.
-                </p>
-                <p className="mt-2 text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is the community infrastructure for that first part: a shared calendar every group publishes to, a public directory anyone can search, one channel to follow for the groups that have none of their own, and a few rooms a year where all of it meets. A volunteer board runs it as a 501(c)(3), and the groups that use it still run themselves.
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Value Proposition</p>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  The rooms where San Antonio&apos;s learners and builders find each other: DEVSA&apos;s conferences and the meetups of 25 community groups, from Python and Linux to AI, security, game dev and UX. One calendar makes every room easy to find, and nothing on it is a sales pitch.
-                </p>
-              </div>
+              {[
+                { label: "Audience", text: [AUDIENCE] },
+                { label: "Mission", text: [MISSION] },
+                { label: "Short description", text: [SHORT_DESCRIPTION] },
+                { label: "Problem statement", text: PROBLEM_STATEMENT },
+                { label: "Value Proposition", text: [VALUE_PROPOSITION] },
+              ].map(({ label, text }) => (
+                <div key={label}>
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">{label}</p>
+                  {text.map((t, i) => (
+                    <p key={i} className={`text-neutral-400 text-sm leading-relaxed${i > 0 ? " mt-2" : ""}`}>{t}</p>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
             <h3 className="text-sm font-medium text-white mb-4">Brand Voice</h3>
             <div className="space-y-3">
-              {[
-                { trait: "Plain and honest", desc: "Say the modest fact, and let the real one land. No sales pitch" },
-                { trait: "Welcoming", desc: "Inclusive and approachable — everyone belongs" },
-                { trait: "Technical", desc: "We speak developer — but keep it accessible" },
-                { trait: "Community-first", desc: "People and connections over products" },
-                { trait: "Action-oriented", desc: "Build, ship, contribute — not just talk" },
-                { trait: "Local pride", desc: "Rooted in San Antonio, Alamo City energy" },
-              ].map(({ trait, desc }) => (
+              {VOICE_TRAITS.map(({ trait, desc }) => (
                 <div key={trait} className="flex gap-3">
                   <span className="text-[#ef426f] text-sm font-medium shrink-0 w-28">{trait}</span>
                   <span className="text-neutral-400 text-sm">{desc}</span>
@@ -650,6 +618,29 @@ export function BrandingKitPage() {
           </div>
         </div>
 
+        <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30 mb-8">
+          <h3 className="text-sm font-medium text-white mb-1">Word Choices</h3>
+          <p className="text-neutral-500 text-sm mb-4">Each of these has been gotten wrong at least once.</p>
+          <div className="divide-y divide-neutral-800/60">
+            {WORD_RULES.map(({ write, notThis, why }) => (
+              <div key={write} className="grid gap-1 py-3 md:grid-cols-[14rem_1fr] md:gap-6">
+                <div className="text-sm">
+                  <p className="text-white">{write}</p>
+                  <p className="text-neutral-400 line-through decoration-neutral-600">{notThis}</p>
+                </div>
+                <p className="text-neutral-400 text-sm leading-relaxed">{why}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-neutral-400">
+            For a writing tool or an agent, the same rules are at{" "}
+            <a href="/branding/voice.md" className="text-white underline decoration-neutral-600 underline-offset-4 hover:decoration-white">
+              /branding/voice.md
+            </a>
+            .
+          </p>
+        </div>
+
         {/* Writing examples */}
         <div className="border border-neutral-800/50 rounded-2xl p-6 bg-neutral-900/30">
           <h3 className="text-sm font-medium text-white mb-4">Writing Style</h3>
@@ -657,20 +648,13 @@ export function BrandingKitPage() {
             <div>
               <p className="text-xs text-emerald-400 uppercase tracking-wider mb-2">Do</p>
               <ul className="text-sm text-neutral-400 space-y-2">
-                <li>&quot;The next Alamo Python meetup is on the calendar&quot;</li>
-                <li>&quot;25 tech groups, one calendar&quot;</li>
-                <li>&quot;Find the room for what you&apos;re into&quot;</li>
-                <li>&quot;For San Antonio&apos;s learners and builders&quot;</li>
+                {WRITING_DO.map((d) => <li key={d}>{d}</li>)}
               </ul>
             </div>
             <div>
               <p className="text-xs text-red-400 uppercase tracking-wider mb-2">Don&apos;t</p>
               <ul className="text-sm text-neutral-400 space-y-2">
-                <li>&quot;Leverage synergies in the innovation ecosystem&quot;</li>
-                <li>&quot;We are the premier technology organization&quot;</li>
-                <li>&quot;Disrupting the future of tech in Texas&quot;</li>
-                <li>&quot;San Antonio tech&quot; as a name for the people DEVSA serves</li>
-                <li>&quot;Join us at…&quot; for an event DEVSA lists but doesn&apos;t host</li>
+                {WRITING_DONT.map((d) => <li key={d}>{d}</li>)}
               </ul>
             </div>
           </div>
