@@ -15,14 +15,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 // Leads with what DEVSA is (the phrase /about's hero and story introduce),
 // then what a funder checks: nonprofit status, since when, and who runs it.
 const SHORT =
-  "Civic infrastructure for San Antonio tech: one calendar, one directory, one channel and a few rooms a year. A 501(c)(3) since 2024: its story, board and record."
+  "Community infrastructure for San Antonio's learners and builders: one calendar, one directory, one channel and a few rooms a year. A 501(c)(3) since 2024."
 
 export const metadata: Metadata = {
-  title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
+  title: "About DEVSA — For San Antonio's Learners and Builders",
   description: SHORT,
   alternates: { canonical: "/about" },
   openGraph: {
-    title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
+    title: "About DEVSA — For San Antonio's Learners and Builders",
     description: SHORT,
     url: `${siteUrl}/about`,
     siteName: "DEVSA",
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
         url: `${siteUrl}/api/og/about`,
         width: 1200,
         height: 630,
-        alt: "About DEVSA — a Discord server in 2023, a 501(c)(3) in 2024",
+        alt: "About DEVSA — community infrastructure for San Antonio's learners and builders",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About DEVSA — Civic Infrastructure for San Antonio Tech",
+    title: "About DEVSA — For San Antonio's Learners and Builders",
     description: SHORT,
     images: [`${siteUrl}/api/og/about`],
     creator: "@devsatx",

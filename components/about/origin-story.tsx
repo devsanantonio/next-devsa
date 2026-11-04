@@ -142,29 +142,35 @@ export function AboutHero() {
             About DEVSA
           </p>
           <h1 className="mt-5 font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
-            <span className="block">A Discord Server <span className="whitespace-nowrap">in 2023.</span></span>
-            <span className="block">
-              <span className="font-light italic text-white/55">
-                A 501(c)(3) in
-              </span>{" "}
-              2024.
+            {/* Leads with what DEVSA is. Until November 2026 the headline was
+                its history, "A Discord Server in 2023. A 501(c)(3) in 2024.";
+                that story is still true and still told, one line down, where
+                the modest start sets up the claim instead of standing in for
+                it. */}
+            <span className="block">Community infrastructure</span>
+            <span className="block text-balance font-light italic text-white/55">
+              for learners and builders.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-pretty text-xl font-light leading-[1.45] text-white/70 md:text-2xl lg:max-w-[46rem]">
-            {/* Introduces the phrase the story below explains: civic
-                infrastructure, then what it does, what it is and who governs
-                it. "Connects" carries the verb the homepage's bridge and
-                Building Together's "anywhere they could see each other" say
-                in their own words; without it, beside a partner that calls
-                itself an advocacy organization, "civic infrastructure" alone
-                can read as policy work, which a 501(c)(3) should not be
-                mistaken for.
-                text-pretty and the non-breaking space keep "board" from
-                landing alone on the last line at laptop and monitor widths. */}
-            Civic infrastructure that connects the people building San
-            Antonio tech: one calendar, one public directory, one channel to
-            follow, and one room a few times a year, governed by a
-            volunteer&nbsp;board.
+            {/* What the headline's phrase means, in one breath. The phrase was
+                "civic infrastructure" until November 2026; "community" says
+                whose it is, and doesn't read as policy work beside a partner
+                that calls itself an advocacy organization. "Learners and
+                builders" is who DEVSA is for, as the branding kit's Audience
+                line says: wider than developers, and not "San Antonio tech",
+                which names an industry. "Connects" carries the verb the
+                homepage's bridge and Building Together's "anywhere they could
+                see each other" say in their own words.
+                The city is here rather than in the headline, which ran four
+                lines on a phone with it. No history and no group count: the
+                stats directly below give the Discord start, the 501(c)(3) and
+                the number of groups. The non-breaking space keeps "board" from
+                landing alone on the last line. */}
+            One calendar, one directory and a few rooms a year, connecting
+            San&nbsp;Antonio&apos;s community groups, their organizers and their
+            partners. <span className="whitespace-nowrap">A 501(c)(3),</span> run
+            by a volunteer&nbsp;board.
           </p>
         </div>
       </div>
@@ -258,8 +264,8 @@ export function FoundingFacts({
  * first paragraph used to be "The city had meetups…", which said the local
  * half of this; the statement that replaced it adds the city-scale stake (a
  * city that cannot show its builders to each other has a harder time keeping
- * them) and names DEVSA as civic infrastructure, the phrase a funder reads
- * as public good rather than as a product. Everything in it is checkable:
+ * them) and names DEVSA as community infrastructure: something the groups
+ * share and lean on, not a product. Everything in it is checkable:
  * San Antonio is the seventh-largest US city, the count comes from the live
  * directory, and the four things listed all exist. No borrowed statistics.
  *
@@ -285,7 +291,7 @@ export function OriginProse({ communityCount }: { communityCount?: number }) {
           </p>
           <p>
             DEVSA is the{" "}
-            <strong className="font-semibold text-gray-900">civic infrastructure</strong>{" "}
+            <strong className="font-semibold text-gray-900">community infrastructure</strong>{" "}
             for that first part: a shared calendar every group publishes to, a
             public directory anyone can search, one channel to follow for the
             groups that have none of their own, and a few rooms a year where

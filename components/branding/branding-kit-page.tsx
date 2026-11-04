@@ -245,7 +245,7 @@ export function BrandingKitPage() {
           Branding Kit
         </h1>
         <p className="text-neutral-400 text-lg max-w-[96rem] leading-relaxed">
-          Official brand guidelines for DEVSA — San Antonio&apos;s tech community.
+          Official brand guidelines for DEVSA, community infrastructure for San Antonio&apos;s learners and builders.
           Use these assets for press, partnerships, events, and community collaborations.
         </p>
       </section>
@@ -255,15 +255,15 @@ export function BrandingKitPage() {
         <div className="border border-neutral-800/50 rounded-2xl p-8 bg-neutral-900/30">
           <h2 className="text-xl font-semibold text-white mb-4">About DEVSA</h2>
           <p className="text-neutral-400 text-sm leading-relaxed mb-3">
-            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> nonprofit that connects the people building San Antonio
-            tech: one calendar, one public directory, one channel to follow, and one room a few times a year,
+            DEVSA is a <span className="text-[#ef426f] font-medium">501(c)(3)</span> nonprofit that connects San Antonio&apos;s learners and
+            builders: one calendar, one public directory, one channel to follow, and one room a few times a year,
             governed by a volunteer board. The groups that use it still run themselves.
           </p>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Our tagline: <span className="text-white font-medium">&quot;Find Your People. Build Your Future.&quot;</span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Tech Community", "Nonprofit", "San Antonio", "Conferences", "Community Calendar", "Open Source"].map((tag) => (
+            {["Learners & Builders", "Nonprofit", "San Antonio", "Conferences", "Community Calendar", "Open Source"].map((tag) => (
               <span key={tag} className="px-3 py-1 text-xs text-neutral-400 bg-white/5 border border-neutral-800/50 rounded-full">
                 {tag}
               </span>
@@ -573,6 +573,16 @@ export function BrandingKitPage() {
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Tagline</p>
                 <p className="text-white font-medium">Find Your People. Build Your Future.</p>
               </div>
+              {/* Who DEVSA is for, named the way the site names them. Until
+                  November 2026 the kit called them "San Antonio's tech
+                  community" and the About page "San Antonio tech", which name
+                  an industry, not the people in it. */}
+              <div>
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Audience</p>
+                <p className="text-neutral-400 text-sm leading-relaxed">
+                  San Antonio&apos;s learners and builders: students and career-changers, developers and engineers, designers, founders and creatives. Name the people, not the industry. Not &quot;San Antonio tech&quot;.
+                </p>
+              </div>
               <div>
                 {/* This is the copy other people paste into their own
                     materials, so it is the last place a retired line should
@@ -590,7 +600,7 @@ export function BrandingKitPage() {
                     everybody else. */}
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Mission</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA connects the people building San Antonio tech: one calendar, one public directory, one channel to follow, and one room a few times a year, governed by a volunteer board.
+                  DEVSA connects San Antonio&apos;s learners and builders: one calendar, one public directory, one channel to follow, and one room a few times a year, governed by a volunteer board.
                 </p>
               </div>
               {/* For grant forms and outreach. The same words as the problem
@@ -599,7 +609,7 @@ export function BrandingKitPage() {
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Short description</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is civic infrastructure for San Antonio&apos;s tech community: the shared calendar, the public directory, the channel to follow and the rooms where its builders find each other.
+                  DEVSA is community infrastructure for San Antonio&apos;s learners and builders: the shared calendar, the public directory, the channel to follow and the rooms where they find each other.
                 </p>
               </div>
               <div>
@@ -608,13 +618,13 @@ export function BrandingKitPage() {
                   San Antonio is one of the largest cities in the country, and it has never lacked people who build things. What it lacks is anything that connects them. Its tech groups run their own meetups, on their own calendars, for their own audiences, and most of them can&apos;t see each other. A student finishing a program, a developer new to the city, an engineer deciding whether to stay: none of them has one place to find the people doing the work they want to do. People stay where they&apos;ve found their people, and a city that can&apos;t show its builders to each other has a harder time keeping them.
                 </p>
                 <p className="mt-2 text-neutral-400 text-sm leading-relaxed">
-                  DEVSA is the civic infrastructure for that first part: a shared calendar every group publishes to, a public directory anyone can search, one channel to follow for the groups that have none of their own, and a few rooms a year where all of it meets. A volunteer board runs it as a 501(c)(3), and the groups that use it still run themselves.
+                  DEVSA is the community infrastructure for that first part: a shared calendar every group publishes to, a public directory anyone can search, one channel to follow for the groups that have none of their own, and a few rooms a year where all of it meets. A volunteer board runs it as a 501(c)(3), and the groups that use it still run themselves.
                 </p>
               </div>
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Value Proposition</p>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  The rooms where San Antonio&apos;s builders find each other: DEVSA&apos;s conferences and the meetups of 25 community groups, from Python and Linux to AI, security, game dev and UX. One calendar makes every room easy to find, and nothing on it is a sales pitch.
+                  The rooms where San Antonio&apos;s learners and builders find each other: DEVSA&apos;s conferences and the meetups of 25 community groups, from Python and Linux to AI, security, game dev and UX. One calendar makes every room easy to find, and nothing on it is a sales pitch.
                 </p>
               </div>
             </div>
@@ -650,6 +660,7 @@ export function BrandingKitPage() {
                 <li>&quot;The next Alamo Python meetup is on the calendar&quot;</li>
                 <li>&quot;25 tech groups, one calendar&quot;</li>
                 <li>&quot;Find the room for what you&apos;re into&quot;</li>
+                <li>&quot;For San Antonio&apos;s learners and builders&quot;</li>
               </ul>
             </div>
             <div>
@@ -658,6 +669,7 @@ export function BrandingKitPage() {
                 <li>&quot;Leverage synergies in the innovation ecosystem&quot;</li>
                 <li>&quot;We are the premier technology organization&quot;</li>
                 <li>&quot;Disrupting the future of tech in Texas&quot;</li>
+                <li>&quot;San Antonio tech&quot; as a name for the people DEVSA serves</li>
                 <li>&quot;Join us at…&quot; for an event DEVSA lists but doesn&apos;t host</li>
               </ul>
             </div>

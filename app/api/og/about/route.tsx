@@ -5,15 +5,16 @@ import { loadBrandFonts } from "@/lib/og-fonts"
 export const runtime = "nodejs"
 
 /**
- * About DEVSA.
+ * About DEVSA. Leads with what DEVSA is, as the page's hero does; the
+ * history that used to be the title is the second line of the hook.
  */
 export async function GET() {
   const fonts = await loadBrandFonts()
   return new ImageResponse(
     (
       <OgCard
-        title={["A Discord server in 2023.", "A 501(c)(3) in 2024."]}
-        hook="Civic infrastructure for San Antonio tech: one calendar, one directory, one channel and a few rooms a year, governed by a volunteer board."
+        title={["Community infrastructure", "for San Antonio's learners and builders."]}
+        hook="One calendar, one directory, one channel and a few rooms a year. A Discord server in 2023, a 501(c)(3) since 2024, governed by a volunteer board."
         footer="A 501(c)(3) nonprofit in San Antonio, Texas"
       />
     ),

@@ -29,7 +29,7 @@ export async function buildLlmsText({ full }: { full: boolean }): Promise<string
 
   sections.push(`# DEVSA
 
-> DEVSA is civic infrastructure for San Antonio's tech community: the shared calendar, the public directory, the channel to follow and the rooms where its builders find each other. It is a 501(c)(3) nonprofit (EIN 99-2066455) governed by a volunteer board, based in San Antonio, Texas.`)
+> DEVSA is community infrastructure for San Antonio's learners and builders: the shared calendar, the public directory, the channel to follow and the rooms where they find each other. It is a 501(c)(3) nonprofit (EIN 99-2066455) governed by a volunteer board, based in San Antonio, Texas.`)
 
   sections.push(`## The problem it addresses
 
@@ -53,7 +53,7 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 - **Students and parents**: student groups such as ACM UTSA and UTSA CyberJedis are in the directory, alongside youth and workforce programs among DEVSA's partners.
 - **Community organizers**: publish events to the calendar and run a page in the directory (organizer access: ${SITE}/signin).
 - **Employers, partners and sponsors**: reach the engineers, analysts, designers and students doing the work, not only the executives.
-- **Funders and the public sector**: DEVSA is civic infrastructure for the city's tech talent, shared and public.`)
+- **Funders and the public sector**: DEVSA is community infrastructure for the city's learners and builders, shared and public.`)
 
   sections.push(`## How to get involved
 

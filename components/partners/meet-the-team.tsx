@@ -25,17 +25,22 @@ export function MeetTheTeam() {
             <p className="text-sm md:text-base font-medium text-white/40 uppercase tracking-[0.2em]">
               Meet the Team
             </p>
-            <h2 className="font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
+            <h2 className="text-balance font-sans text-white leading-[0.95] text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.02em]">
               A 501(c)(3) Nonprofit{" "}
               <span className="text-white/50 font-light italic">
                 Built for
               </span>{" "}
-              the Active Builders.
+              Learners and Builders.
             </h2>
           </div>
 
           <div className="space-y-6 max-w-3xl mt-8">
-            {/* "Built for the Active Builders", not "Built on Education".
+            {/* "Built for Learners and Builders" (November 2026), the audience
+                the About hero and the branding kit's Audience line name. It
+                was "Built for the Active Builders", which narrowed the hero's
+                audience back down one section later. "Learners" claims who
+                DEVSA is for, not that it teaches them: the teaching is the
+                groups', as below. Before that it was "Built on Education".
             
                 The headline said education and the paragraph said "through
                 education workshops, events, and resources" — the one claim
