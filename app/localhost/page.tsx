@@ -79,14 +79,15 @@ const REPO = "https://github.com/devsanantonio/localhost"
 
 /**
  * The project, as the six steps from a dataset to an answer, for the page's ending. Each step
- * links where it lives in the repo. `status` is honest about what exists: "early" has a first
- * version, "next" isn't built. When a step ships, give it a path and drop its status, here and
+ * links where it lives. `status` is honest about what exists: "new" works but hasn't been
+ * used much yet, "next" isn't built. When a step ships, give it a path and drop its status, here and
  * in the repo README's "How it works", which tells the same story.
  */
-const STEPS: { step: string; what: string; path?: string; href?: string; status?: "early" | "next" }[] = [
+// `href` is relative to the localhost repo, or a full URL for a step that lives in another repo.
+const STEPS: { step: string; what: string; path?: string; href?: string; status?: "new" | "next" }[] = [
   { step: "Find", what: "Every dataset all seven publish, in one list, rebuilt every Monday", path: "data/", href: "tree/main/data" },
   { step: "Fetch", what: "A small program for each agency, run against the live source every week", path: "starters/", href: "tree/main/starters" },
-  { step: "Ask", what: "A question in plain English, to an agent that picks the right programs", path: "starters/mcp/", href: "tree/main/starters/mcp", status: "early" },
+  { step: "Ask", what: "A question in plain English, to an agent that picks the right programs", path: "agent-patterns/ask-your-data/", href: "https://github.com/devsanantonio/agent-patterns/tree/main/ask-your-data", status: "new" },
   { step: "Run", what: "Any code the agent writes, run in a sandbox, never on your machine", status: "next" },
   { step: "Show", what: "The answer, with the code that made it and the agency it came from", status: "next" },
   { step: "Return", what: "What you build goes in the showcase; what's wrong with the data goes back to the agencies", path: "SHOWCASE.md", href: "blob/main/SHOWCASE.md" },
@@ -273,7 +274,7 @@ export default function LocalhostPage() {
           </div>
 
           {/* The project, drawn as the repo: six steps, each linked to the folder it lives in, or
-              marked early or next. */}
+              marked new or next. */}
           <div className="min-w-0 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a] text-white">
             <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
               <p className="truncate font-mono text-[12px] text-white/80">devsanantonio/localhost</p>
@@ -294,7 +295,7 @@ export default function LocalhostPage() {
                       <span className="mt-1 block font-mono text-[11px]">
                         {s.path && <span className="text-white/50">{s.path}</span>}
                         {s.path && s.status && <span className="text-white/50"> · </span>}
-                        {s.status && <span className={`uppercase tracking-widest ${s.status === "early" ? "text-[#00b2a9]" : "text-white/50"}`}>{s.status}</span>}
+                        {s.status && <span className={`uppercase tracking-widest ${s.status === "new" ? "text-[#00b2a9]" : "text-white/50"}`}>{s.status}</span>}
                       </span>
                     </span>
                   </>
@@ -303,7 +304,7 @@ export default function LocalhostPage() {
                 return (
                   <li key={s.step}>
                     {s.href ? (
-                      <a href={`${REPO}/${s.href}`} className={`group ${row}`}>{body}</a>
+                      <a href={s.href.startsWith("https://") ? s.href : `${REPO}/${s.href}`} className={`group ${row}`}>{body}</a>
                     ) : (
                       <div className={row}>{body}</div>
                     )}
