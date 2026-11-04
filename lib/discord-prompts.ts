@@ -11,8 +11,10 @@
  *
  * The pick is a pure function of the San Antonio date, so there is no state to
  * keep and a retried cron posts the same thing rather than skipping ahead. Two
- * questions a week through 62 is about seven months before one repeats; polls
- * run fifteen weeks, Friday prompts twelve. Seasons (SEASONS, below) take
+ * questions a week through 82 is about ten months before one repeats; polls
+ * run about sixteen weeks, Friday prompts sixteen. Since November 2026 each bank
+ * alternates its general list with a builder list (agents, open source, open
+ * data, secrets), so the crowds share the week. Seasons (SEASONS, below) take
  * over for New Year, Fiesta, Halloween and Día de los Muertos, Thanksgiving
  * week and the holidays, and pause the general banks rather than skipping
  * through them, so the order in each list is the order things post.
@@ -50,8 +52,86 @@ export const TOPICS: readonly { emoji: string; name: string; question: string }[
   { emoji: '🚀', name: 'Startups', question: 'What’s a startup idea you’d build if you knew it couldn’t fail?' },
 ];
 
-export const QUESTIONS: readonly string[] = [
-  ...TOPICS.map((t) => t.question),
+/**
+ * Questions for people building with AI agents, open source and open data: secrets and OIDC,
+ * the five Before you build questions from devsanantonio/agent-patterns, software factories and
+ * the harness around a model, and the workflows in the open-source eve templates (a coding agent
+ * opening pull requests, incident response by hypothesis, a repo's weekly digest, a council of
+ * models, memory you can edit, read-only data access, a bot that knows when to stay quiet). Each
+ * is about a pattern, not a product, so every group can answer it. Grouped by theme and dealt
+ * out one theme at a time, so no week is all one subject, then woven into QUESTIONS below.
+ */
+const BUILDER_THEMES: readonly (readonly string[])[] = [
+  // Secrets, keys and OIDC
+  [
+    'What’s the oldest API key still working in your stack? Don’t paste it, just tell us how old.',
+    'Ever committed a secret by accident? How did you find out, and what did you do next?',
+    'If you could delete one long-lived key from your setup this week, which one, and what’s stopping you?',
+  ],
+  // Before you build (agent-patterns)
+  [
+    'What’s one task you do that’s 90% copy-paste and 10% judgment call? That 10% is where an agent still needs you.',
+    'Would you let an AI agent send an email for you without approving it first? Where do you draw the line?',
+    'Before you automate something, how would you know it worked? What would you count?',
+    'Who really owns the workflow you’d automate first? A name, not “the team”.',
+    'New to AI agents? What’s the one thing you’d want explained first? Someone here can help.',
+  ],
+  // Software factories and the harness
+  [
+    'Writing code got fast. What’s the slowest part of shipping for you now?',
+    'What does the setup around your AI model look like: the prompts, tools and checks you’ve built up?',
+    'What’s one check you’d never let an AI agent skip?',
+    'If agents wrote most of your code, what would you spend your day doing instead?',
+  ],
+  // Workflows from the open-source agent templates
+  [
+    'Would you merge a pull request an AI agent opened? What would you check first?',
+    'When production breaks, what’s your first hypothesis, and how do you prove or rule it out?',
+    'If an agent summarized your repo’s week, what would you want it to tell you?',
+    'Would you trust one AI model’s answer, or ask three and compare? When does a second opinion matter?',
+    'What should an AI assistant remember about you, and what should it forget?',
+    'Would you give an AI agent read access to your database? What would you lock down first?',
+    'A good bot knows when to stay quiet. Which bot or integration talks too much?',
+    'Where in your stack should an agent have to ask before it acts?',
+    'Which starter template or example repo taught you the most, and what did you change first?',
+    'What’s a workflow you copied from someone else’s repo and still use?',
+  ],
+  // San Antonio's open data (devsa.community/localhost)
+  [
+    'If you could ask San Antonio’s open data one question in plain English, what would it be?',
+    'Which public dataset would you trust an AI agent to answer from, and which would you double-check yourself?',
+  ],
+];
+
+export const BUILDER_QUESTIONS: readonly string[] = roundRobin(BUILDER_THEMES);
+
+/** Takes one item from each list in turn, skipping lists that have run out. */
+function roundRobin<T>(lists: readonly (readonly T[])[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < Math.max(...lists.map((l) => l.length)); i++) {
+    for (const l of lists) if (i < l.length) out.push(l[i]);
+  }
+  return out;
+}
+
+/** Alternates two lists, starting with `a`, until both run out. */
+function weave<T>(a: readonly T[], b: readonly T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (i < a.length) out.push(a[i]);
+    if (i < b.length) out.push(b[i]);
+  }
+  return out;
+}
+
+/**
+ * The general questions, in posting order after the two that went out in October and
+ * November 2026. Trimmed in November 2026 of trivia that taught nothing (snacks, browser
+ * extensions, terminal prompts, project names), of prompts that invite arguments rather than
+ * answers, and of near-duplicates.
+ */
+const GENERAL_QUESTIONS: readonly string[] = [
+  ...TOPICS.slice(2).map((t) => t.question),
   'What’s the worst bug you ever shipped, and how long did it take to find?',
   'What was the first programming language you learned, and would you recommend it to someone starting today?',
   'What’s one tool you’d defend to the death?',
@@ -59,10 +139,7 @@ export const QUESTIONS: readonly string[] = [
   'What’s the best piece of advice a more experienced developer ever gave you?',
   'What’s something you learned this month that you wish you’d known a year ago?',
   'Which error message has haunted you the most?',
-  'If you could only keep one browser extension, which one stays?',
-  'What’s your go-to snack or drink for a long coding session?',
   'What’s the most useful thing you’ve built just for yourself?',
-  'What’s a tech opinion you hold that most people would disagree with?',
   'What got you into tech in the first place?',
   'What’s the best talk or meetup session you’ve been to, and what stuck with you?',
   'Describe what you’re working on right now in five words.',
@@ -71,20 +148,15 @@ export const QUESTIONS: readonly string[] = [
   'Which keyboard shortcut changed your life?',
   'What’s a concept that took you forever to understand, and what finally made it click?',
   'What’s on your desk right now? Setup photos welcome.',
-  'What do you name things when you don’t know what to call them yet?',
-  'What would you build with a month off and no deadlines?',
   'What’s the best documentation you’ve ever read?',
   'What did you get wrong in your first technical interview?',
   'What’s a small win from this week? Tests passing count.',
-  'Which side project name are you proudest of?',
   'What’s a skill outside of coding that made you a better developer?',
   'If you could mentor your day-one self, what’s the first thing you’d say?',
   'What’s your debugging ritual when nothing makes sense?',
   'What’s the strangest place you’ve written or run code?',
   'What’s one repo, newsletter or channel you’d tell every new builder to follow?',
   'What’s something you broke in production, and what did it teach you?',
-  'What does your terminal prompt look like? Screenshots encouraged.',
-  'What’s a tech trend you’re tired of hearing about?',
   'What’s a tech trend you think people are sleeping on?',
   'What’s the last thing you looked up that you’ve already looked up a hundred times?',
   'If your codebase were a San Antonio landmark, which one would it be?',
@@ -102,40 +174,89 @@ export const QUESTIONS: readonly string[] = [
   'What’s a San Antonio problem you’d love to see someone build a fix for?',
   'Who in the San Antonio tech community helped you along the way? Give them a shoutout.',
   'What’s one thing San Antonio’s tech scene does better than anywhere else?',
-  'Which kind of company, campus or organization would you love to see host a meetup?',
+  'Which campus, company or space would you love to see a meetup in?',
   'Group organizers: what’s coming up that people here should know about?',
   'What talk would you give at a San Antonio meetup if someone asked you tomorrow?',
-  // San Antonio's open data (devsa.community/localhost). Appended so the rotation's earlier days don't move.
+  // San Antonio's open data (devsa.community/localhost)
   'There are over 1,500 public map layers about San Antonio. What would you search for first?',
   'If you could put any two San Antonio datasets on one map, which two, and what would you look for?',
   'What’s a question about San Antonio you think the city’s open data could answer?',
   'Have you ever built something with public data? Share it, even if it was a spreadsheet.',
 ];
 
-export const POLLS: readonly DiscordPoll[] = [
-  // The video's question, answered with the server's own onboarding roles.
-  // Discord allows exactly ten answers.
+/**
+ * Posting order. The first two already posted (Oct 19 and Nov 4, 2026) and stay first; after
+ * them the general questions alternate with BUILDER_QUESTIONS, so neither crowd waits months.
+ */
+export const QUESTIONS: readonly string[] = [
+  TOPICS[0].question,
+  TOPICS[1].question,
+  ...weave(GENERAL_QUESTIONS, BUILDER_QUESTIONS),
+];
+
+/**
+ * Polls for people building with agents, open source and open data, from the same themes as
+ * BUILDER_QUESTIONS. Woven into POLLS below.
+ */
+export const BUILDER_POLLS: readonly DiscordPoll[] = [
+  // Leads on its own on Nov 5, 2026, so from the next week each Thursday poll matches
+  // Wednesday's question: secrets with secrets, agents with agents.
   {
-    question: 'What are you into?',
-    answers: [
-      'Python',
-      'AI & Agents',
-      'Security & Hacking',
-      'Cloud & DevOps',
-      'Data',
-      'Web & .NET',
-      'Game Dev & Unity',
-      'Design & UX',
-      'Linux & Open Source',
-      'Startups',
-    ],
+    question: 'Ever leaked a secret?',
+    answers: ['Never', 'Caught it before I pushed', 'Pushed it, rotated it fast', 'Found out the hard way'],
   },
-  { question: 'Tabs or spaces?', answers: ['Tabs', 'Spaces', 'Whatever the formatter says'] },
+  {
+    question: 'How do your side projects handle secrets?',
+    answers: ['A .env file', 'My host’s environment variables', 'A secrets manager or vault', 'Short-lived tokens (OIDC), no keys', 'Hardcoded. No judgment.'],
+  },
+  {
+    question: 'How do you use AI agents today?',
+    answers: ['Not yet', 'Chat only', 'In my editor', 'Running on their own', 'I build agents'],
+  },
+  {
+    question: 'Where’s your bottleneck now?',
+    answers: ['Writing code', 'Reviewing code', 'Testing', 'Knowing what to build', 'Deploying'],
+  },
+  {
+    question: 'An AI agent opened a pull request on your repo. You…',
+    answers: ['Review it like any other', 'Review it twice as hard', 'Merge if the tests pass', 'Close it'],
+  },
+  {
+    question: 'Whose San Antonio open data would you explore first?',
+    answers: ['City of San Antonio', 'Bexar County', 'VIA', 'San Antonio River Authority', 'Alamo Area MPO', 'Opportunity Home', 'Edwards Aquifer Authority'],
+  },
+  {
+    question: 'Would you let an AI agent post for you without approval?',
+    answers: ['Never', 'Only in private channels', 'Once it earns my trust', 'It already does'],
+  },
+  {
+    question: 'How do you start a new project?',
+    answers: ['From scratch', 'A starter template', 'Copying my last project', 'An AI scaffold'],
+  },
+  {
+    question: 'One AI model or a council of them?',
+    answers: ['One model I trust', 'Ask a few and compare', 'Depends on the stakes', 'I ask a person'],
+  },
+  {
+    question: 'OIDC or rotating keys?',
+    answers: ['OIDC, nothing stored', 'Rotate on a schedule', 'Rotate when something leaks', 'What’s OIDC?'],
+  },
+  {
+    question: 'Which agent would you build first?',
+    answers: ['Code reviewer', 'Incident responder', 'Repo maintainer', 'Content drafter', 'Data analyst', 'Personal assistant'],
+  },
+];
+
+/**
+ * The general polls after the two that already posted. Trimmed in November 2026 of polls with
+ * nothing to talk about after voting (dark mode, browser tabs, where you work) and of three
+ * food polls down to the meetup one.
+ */
+const GENERAL_POLLS: readonly DiscordPoll[] = [
   {
     question: 'What’s your editor?',
     answers: ['VS Code', 'Cursor', 'A JetBrains IDE', 'Vim or Neovim', 'Emacs', 'Something else'],
   },
-  { question: 'Dark mode or light mode?', answers: ['Dark', 'Light', 'Follows the system'] },
   {
     question: 'When do you do your best work?',
     answers: ['Early morning', 'Afternoon', 'Late night', 'Whenever the deadline is'],
@@ -148,7 +269,6 @@ export const POLLS: readonly DiscordPoll[] = [
     question: 'Where’s your code right now?',
     answers: ['Committed and pushed', 'Committed, not pushed', 'Uncommitted changes', 'Don’t ask'],
   },
-  { question: 'How many browser tabs do you have open?', answers: ['Under 10', '10 to 30', '30 to 100', 'I’ve lost count'] },
   {
     question: 'What do you reach for first when you’re stuck?',
     answers: ['The docs', 'A search engine', 'An AI assistant', 'A rubber duck', 'A friend or coworker'],
@@ -158,10 +278,6 @@ export const POLLS: readonly DiscordPoll[] = [
     answers: ['Side project', 'Hackathon', 'Meetup or workshop', 'Touching grass'],
   },
   { question: 'What do you name your main branch?', answers: ['main', 'master', 'trunk', 'I’ve never checked'] },
-  {
-    question: 'What’s fueling your coding?',
-    answers: ['Coffee', 'Tea', 'An energy drink', 'Water, I’m hydrated'],
-  },
   {
     question: 'Which would you rather fix?',
     answers: ['A CSS layout bug', 'A race condition', 'A flaky test', 'A timezone bug'],
@@ -201,17 +317,6 @@ export const POLLS: readonly DiscordPoll[] = [
     answers: ['Newsletters', 'Podcasts', 'YouTube', 'Social media', 'This Discord'],
   },
   {
-    question: 'Best hackathon food?',
-    answers: ['Pizza', 'Breakfast tacos', 'Chips and salsa', 'Whatever’s free'],
-  },
-  {
-    question: 'Where do you work best?',
-    answers: ['At home', 'In an office', 'At a coffee shop', 'Anywhere with good Wi-Fi'],
-  },  {
-    question: 'How many events on the DEVSA calendar have you been to this year?',
-    answers: ['None yet', 'One or two', 'Three to five', 'Six or more'],
-  },
-  {
     question: 'Where in San Antonio should there be more tech events?',
     answers: ['Downtown', 'North side', 'South side', 'East side', 'West side', 'Online'],
   },
@@ -225,7 +330,39 @@ export const POLLS: readonly DiscordPoll[] = [
   },
 ];
 
-export const BUILD_PROMPTS: readonly string[] = [
+/** Posting order: the one that posted (Nov 3, 2026), then builder and general polls, alternating. */
+export const POLLS: readonly DiscordPoll[] = [
+  // The video's question, answered with the server's own onboarding roles.
+  // Discord allows exactly ten answers.
+  {
+    question: 'What are you into?',
+    answers: [
+      'Python',
+      'AI & Agents',
+      'Security & Hacking',
+      'Cloud & DevOps',
+      'Data',
+      'Web & .NET',
+      'Game Dev & Unity',
+      'Design & UX',
+      'Linux & Open Source',
+      'Startups',
+    ],
+  },
+  // From Nov 5, 2026: builder polls on Thursdays, to match Wednesday's builder question, and
+  // general polls on Tuesdays. "Tabs or spaces?" was queued for Nov 5 and moves to Nov 10.
+  ...weave(BUILDER_POLLS, [{ question: 'Tabs or spaces?', answers: ['Tabs', 'Spaces', 'Whatever the formatter says'] }, ...GENERAL_POLLS]),
+];
+
+/** Build-and-tell prompts for the same themes. Woven into BUILD_PROMPTS below. */
+export const BUILDER_BUILD: readonly string[] = [
+  'Forked a template or starter this week? Show what you changed to make it yours, and why.',
+  'Built or tried an AI agent this week? Show it, and tell us where a person still signs off.',
+  'Built something with San Antonio’s open data? Show us, even if it’s one chart.',
+  'Replaced a stored key with something safer this week? Show the before and after, minus the key.',
+];
+
+const GENERAL_BUILD: readonly string[] = [
   'What did you ship this week? A feature, a fix, a first commit. Small counts.',
   'Show us something you built this week. Half-finished counts.',
   'What’s working now that wasn’t working on Monday?',
@@ -239,6 +376,9 @@ export const BUILD_PROMPTS: readonly string[] = [
   'Opened a pull request this week? Link it and tell us what it does.',
   'Show us your work in progress. Unfinished is the point.',
 ];
+
+/** Posting order: the first general prompt goes out Nov 6, 2026, then the two lists alternate. */
+export const BUILD_PROMPTS: readonly string[] = weave(GENERAL_BUILD, BUILDER_BUILD);
 
 /**
  * Seasons take over the rotation while they run, then hand it back.
