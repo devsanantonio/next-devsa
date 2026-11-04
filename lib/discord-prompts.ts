@@ -350,8 +350,16 @@ export const POLLS: readonly DiscordPoll[] = [
     ],
   },
   // From Nov 5, 2026: builder polls on Thursdays, to match Wednesday's builder question, and
-  // general polls on Tuesdays. "Tabs or spaces?" was queued for Nov 5 and moves to Nov 10.
-  ...weave(BUILDER_POLLS, [{ question: 'Tabs or spaces?', answers: ['Tabs', 'Spaces', 'Whatever the formatter says'] }, ...GENERAL_POLLS]),
+  // general polls on Tuesdays. Buy or build takes Tuesday Nov 10; "Tabs or spaces?", queued for
+  // Nov 5, follows on Nov 17. Buy or build describes both and endorses neither: no product named.
+  ...weave(BUILDER_POLLS, [
+    {
+      question: 'For coding agents, would you rather buy or build?',
+      answers: ['Buy a product', 'Build on an open framework', 'Both', 'Neither yet'],
+    },
+    { question: 'Tabs or spaces?', answers: ['Tabs', 'Spaces', 'Whatever the formatter says'] },
+    ...GENERAL_POLLS,
+  ]),
 ];
 
 /** Build-and-tell prompts for the same themes. Woven into BUILD_PROMPTS below. */
