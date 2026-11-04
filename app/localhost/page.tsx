@@ -77,14 +77,19 @@ const eyebrow = "font-mono text-[11px] uppercase tracking-widest text-white/50"
 const h2 = "mt-4 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-4xl lg:text-5xl"
 const REPO = "https://github.com/devsanantonio/localhost"
 
-/** What's in the repo, for the page's ending. Paths are real; keep them in step with the repo. */
-const REPO_PATHS = [
-  { path: "starters/", href: "tree/main/starters", what: "Eleven small programs, at least one for every publisher" },
-  { path: "data/", href: "tree/main/data", what: "Every public dataset, in one list, rebuilt every Monday" },
-  { path: "SOURCES.md", href: "blob/main/SOURCES.md", what: "Who publishes what, and how to ask for it" },
-  { path: "ATTRIBUTION.md", href: "blob/main/ATTRIBUTION.md", what: "Each agency's terms, and the credit line to use" },
-  { path: "starters/mcp/", href: "tree/main/starters/mcp", what: "Bring your own agent: Claude Code, Codex" },
-  { path: "SHOWCASE.md", href: "blob/main/SHOWCASE.md", what: "What people built. Add yours" },
+/**
+ * The project, as the six steps from a dataset to an answer, for the page's ending. Each step
+ * links where it lives in the repo. `status` is honest about what exists: "early" has a first
+ * version, "next" isn't built. When a step ships, give it a path and drop its status, here and
+ * in the repo README's "How it works", which tells the same story.
+ */
+const STEPS: { step: string; what: string; path?: string; href?: string; status?: "early" | "next" }[] = [
+  { step: "Find", what: "Every dataset all seven publish, in one list, rebuilt every Monday", path: "data/", href: "tree/main/data" },
+  { step: "Fetch", what: "A small program for each agency, run against the live source every week", path: "starters/", href: "tree/main/starters" },
+  { step: "Ask", what: "A question in plain English, to an agent that picks the right programs", path: "starters/mcp/", href: "tree/main/starters/mcp", status: "early" },
+  { step: "Run", what: "Any code the agent writes, run in a sandbox, never on your machine", status: "next" },
+  { step: "Show", what: "The answer, with the code that made it and the agency it came from", status: "next" },
+  { step: "Return", what: "What you build goes in the showcase; what's wrong with the data goes back to the agencies", path: "SHOWCASE.md", href: "blob/main/SHOWCASE.md" },
 ]
 
 
@@ -230,11 +235,11 @@ export default function LocalhostPage() {
         </BuildYourOwn>
       </section>
 
-      {/* The ending closes the hook. The hero says seven APIs and no one place to find them; the
-          experiments show three. This says where all seven come together, the repo, and how to start:
-          the same first step every experiment above took. It ends on the loop back to the agencies,
-          because using the data and telling them what's wrong with it is how it gets better. One
-          light section, one link out. Counts that change weekly (datasets) stay out of the copy. */}
+      {/* The ending closes the hook and says where the project is going. The hero says seven APIs
+          and no one place to find them; the experiments show three. This lays the project out as six
+          steps from a dataset to an answer you can check, says plainly which exist, and ends on the
+          endgame: not an app DEVSA ships, but a habit, with what people find going back to the
+          agencies. One light section, one link out. Counts that change weekly stay out of the copy. */}
       <section id="repo" className="scroll-mt-24 bg-white py-16 text-gray-900 md:py-24" data-bg-type="light">
         <div className="page-shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
           <div>
@@ -243,12 +248,12 @@ export default function LocalhostPage() {
             </p>
             <h2 className="mt-4 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-4xl lg:text-5xl">
               Seven APIs.{" "}
-              <span className="font-light italic text-gray-500">One place to start.</span>
+              <span className="font-light italic text-gray-500">Answers you can check.</span>
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-gray-600">
-              Each experiment above began the same way: one small program asking one agency one question. The
-              localhost repo has one for every publisher, a list of every dataset they put out, rebuilt each week,
-              and the rules for using each one. Clone it, run one, see what&apos;s in there.
+              Every experiment above took the same steps: find the data, fetch it, ask it something, show the
+              answer. The localhost repo does the first two for all seven agencies today. Next is an agent you can
+              ask in plain English, which writes the code to answer, runs it somewhere safe, and shows its work.
             </p>
             <a
               href={REPO}
@@ -256,32 +261,56 @@ export default function LocalhostPage() {
             >
               Open it on GitHub <ArrowUpRight className="h-4 w-4" />
             </a>
-            <p className="mt-8 max-w-xl border-l-2 border-[#ff8200] pl-4 text-sm leading-relaxed text-gray-600">
-              <span className="font-semibold text-gray-900">Found something wrong?</span> A broken link, a stale
-              dataset, a field that doesn&apos;t mean what it says.{" "}
+            <p className="mt-8 max-w-xl border-l-2 border-[#ff8200] pl-4 text-base leading-relaxed text-gray-600">
+              <span className="font-semibold text-gray-900">Where this is going:</span> anyone in San Antonio can ask
+              their city&apos;s data a question, get an answer they can check, and the problems they find make it
+              back to the people who publish it. Found one already?{" "}
               <a href={`${REPO}/issues`} className="text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900">
                 Open an issue
               </a>
-              . It&apos;s the most useful thing we can pass back to the people who publish the data.
+              .
             </p>
           </div>
 
-          {/* The repo, drawn as what it is: a folder. Each row is a real path, linked. */}
+          {/* The project, drawn as the repo: six steps, each linked to the folder it lives in, or
+              marked early or next. */}
           <div className="min-w-0 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a] text-white">
             <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
               <p className="truncate font-mono text-[12px] text-white/80">devsanantonio/localhost</p>
               <p className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-white/50">Public · MIT</p>
             </div>
-            <ul className="divide-y divide-neutral-800">
-              {REPO_PATHS.map((r) => (
-                <li key={r.path}>
-                  <a href={`${REPO}/${r.href}`} className="group grid gap-1 px-5 py-3.5 sm:grid-cols-[10rem_1fr] sm:gap-x-4">
-                    <span className="font-mono text-[13px] text-[#ff8200] group-hover:underline">{r.path}</span>
-                    <span className="text-sm text-white/70 group-hover:text-white">{r.what}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <ol className="divide-y divide-neutral-800">
+              {STEPS.map((s, i) => {
+                const body = (
+                  <>
+                    <span className="flex items-baseline gap-3">
+                      <span className="font-mono text-[11px] text-white/50">{String(i + 1).padStart(2, "0")}</span>
+                      <span className={`font-mono text-[13px] ${s.status === "next" ? "text-white/60" : "text-[#ff8200] group-hover:underline"}`}>
+                        {s.step.toLowerCase()}
+                      </span>
+                    </span>
+                    <span className="min-w-0">
+                      <span className={`block text-sm ${s.status === "next" ? "text-white/60" : "text-white/75 group-hover:text-white"}`}>{s.what}</span>
+                      <span className="mt-1 block font-mono text-[11px]">
+                        {s.path && <span className="text-white/50">{s.path}</span>}
+                        {s.path && s.status && <span className="text-white/50"> · </span>}
+                        {s.status && <span className={`uppercase tracking-widest ${s.status === "early" ? "text-[#00b2a9]" : "text-white/50"}`}>{s.status}</span>}
+                      </span>
+                    </span>
+                  </>
+                )
+                const row = "grid gap-1 px-5 py-3.5 sm:grid-cols-[7rem_1fr] sm:gap-x-4"
+                return (
+                  <li key={s.step}>
+                    {s.href ? (
+                      <a href={`${REPO}/${s.href}`} className={`group ${row}`}>{body}</a>
+                    ) : (
+                      <div className={row}>{body}</div>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
             <p className="overflow-x-auto whitespace-nowrap border-t border-neutral-800 px-5 py-3.5 font-mono text-[12px] text-white/70">
               <span className="select-none text-[#ff8200]">$ </span>git clone {REPO}
             </p>
