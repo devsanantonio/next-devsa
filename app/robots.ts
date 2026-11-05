@@ -8,6 +8,9 @@ import type { MetadataRoute } from "next"
  * crawler honors robots.txt for, and the community calendar's public feed and
  * iCal subscription, the one source built for an assistant asked "what's on in
  * San Antonio tech this week?".
+ *
+ * /slides/ is closed too: event decks are made for a room, sometimes before
+ * what they announce is public, and each also says noindex itself.
  */
 const PUBLIC = ["/", "/api/og/", "/api/events/feed", "/api/events/calendar"]
 
@@ -19,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: PUBLIC,
-        disallow: ["/api/", "/admin/", "/signin/"],
+        disallow: ["/api/", "/admin/", "/signin/", "/slides/"],
       },
       {
         userAgent: [
@@ -36,7 +39,7 @@ export default function robots(): MetadataRoute.Robots {
           "Cohere-ai",
         ],
         allow: [...PUBLIC, "/llms.txt", "/llms-full.txt"],
-        disallow: ["/api/", "/admin/", "/signin/"],
+        disallow: ["/api/", "/admin/", "/signin/", "/slides/"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

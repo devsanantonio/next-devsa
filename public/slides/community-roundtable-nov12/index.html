@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Community Roundtable</title>
+<!--
+  DEVSA Community Roundtable, Thursday November 12, 2026, at Geekdom.
+  Runs offline: open this file in Chrome, press F for full screen.
+
+  Next          → , Space, Page Down, Enter, or click anywhere else
+  Back          ← , Page Up, Backspace, or click the left third of the screen
+  Group picker  G  (on the roundtable: jump to whichever group is next in the room)
+  Full screen   F
+  Start over    Home   ·   Clear the roundtable's "done" marks: Shift+R
+
+  Before the night: update CONFIG below (Discord count, roundtable order).
+-->
+<style>
+@font-face{font-family:Geist;font-weight:300;src:url(assets/fonts/Geist-Light.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:300;font-style:italic;src:url(assets/fonts/Geist-LightItalic.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:400;src:url(assets/fonts/Geist-Regular.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:500;src:url(assets/fonts/Geist-Medium.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:700;src:url(assets/fonts/Geist-Bold.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:900;src:url(assets/fonts/Geist-Black.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:500;src:url(assets/fonts/GeistMono-Medium.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:700;src:url(assets/fonts/GeistMono-Bold.woff2) format("woff2")}
+
+:root{
+  --teal:#00b2a9;--pink:#ef426f;--orange:#ff8200;
+  --ink:#000;--card:#171717;--line:#262626;
+  --cream:#f4f1eb;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden}
+body{color:#fff;font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body.idle{cursor:none}
+
+/* A 1920x1080 stage, scaled to whatever screen it lands on. */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#000}
+
+/* ---------- the living network ---------- */
+#net{position:absolute;left:0;top:0;width:1200px;height:900px;transform-origin:0 0;
+  transition:transform 1.4s var(--ease),opacity 1.1s var(--ease);will-change:transform,opacity}
+#net svg{display:block;width:1200px;height:900px;overflow:visible}
+#net .node{transition:opacity .6s var(--ease)}
+#net .hubline{transition:stroke-opacity .6s,stroke-width .6s}
+#net.spotting .node{opacity:.22}
+#net.spotting .node.on{opacity:1}
+#net.spotting .hubline{stroke-opacity:.12}
+#net.spotting .hubline.on{stroke-opacity:1;stroke-width:3}
+#net.spotting .node.done{opacity:.5}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .7s var(--ease)}
+.slide.on{opacity:1;pointer-events:auto}
+.slide .in{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+.slide.on .in{opacity:1;transform:none}
+
+.pad{position:absolute;left:140px;right:140px;top:120px;bottom:120px}
+.eyebrow{font-size:26px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.h1{font-size:150px;font-weight:900;line-height:.95;letter-spacing:-.03em}
+.h2{font-size:104px;font-weight:900;line-height:.95;letter-spacing:-.02em;text-wrap:balance}
+.mute{font-weight:300;font-style:italic;color:rgba(255,255,255,.5)}
+.pink{color:var(--pink)}
+.lede{font-size:40px;line-height:1.35;color:rgba(255,255,255,.78);text-wrap:pretty}
+.body{font-size:32px;line-height:1.4;color:rgba(255,255,255,.75);text-wrap:pretty}
+.mono{font-family:"Geist Mono",monospace;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.card{border:1px solid var(--line);background:var(--card);border-radius:16px}
+.ask{border-left:6px solid var(--orange);padding:8px 0 8px 32px;font-size:38px;font-weight:700;line-height:1.3}
+.ask small{display:block;font-size:28px;font-weight:400;color:rgba(255,255,255,.65);margin-top:6px}
+.qr{background:#fff;border-radius:16px;padding:14px;width:220px;height:220px}
+.qr img{display:block;width:100%;height:100%}
+.url{font-family:"Geist Mono",monospace;font-weight:500;font-size:26px;color:rgba(255,255,255,.75);letter-spacing:.02em}
+.facts{display:grid;gap:0}
+.facts .row{display:grid;grid-template-columns:220px 1fr;gap:32px;padding:20px 0;border-top:1px solid var(--line);align-items:baseline}
+.facts .row:first-child{border-top:0}
+.facts .k{font-size:22px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.facts .v{font-size:36px;font-weight:700;line-height:1.25}
+.facts .v small{font-weight:400;color:rgba(255,255,255,.65);font-size:30px}
+
+#stripe{position:absolute;left:0;right:0;bottom:0;height:12px;display:flex;z-index:5}
+#stripe div{flex:1}
+#logo{position:absolute;left:140px;top:72px;width:112px;z-index:4;transition:opacity .6s}
+
+/* ---------- roundtable spotlight ---------- */
+.spot{position:absolute;left:730px;top:150px;width:460px;height:460px;border-radius:50%;
+  background:#151515;border:2px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;z-index:6;
+  transform-origin:50% 50%;transition:transform 1s var(--ease),opacity .6s var(--ease);
+  box-shadow:0 0 0 18px rgba(255,255,255,.03),0 0 160px rgba(239,66,111,.25)}
+.spot img{width:74%;height:74%;object-fit:contain}
+.spot.fill img{width:100%;height:100%;object-fit:cover}
+.spot.white img{filter:brightness(0) invert(1)}
+.veil{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .8s;background:radial-gradient(ellipse 1100px 760px at 50% 62%,rgba(0,0,0,.88) 30%,rgba(0,0,0,0) 72%)}
+.veil.on{opacity:1}
+.spotname{position:absolute;left:0;right:0;top:668px;text-align:center;font-size:92px;font-weight:900;letter-spacing:-.025em;line-height:1;z-index:6;
+  opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .7s var(--ease)}
+.spotname.on{opacity:1;transform:none;transition-delay:.45s}
+.spotmeta{position:absolute;left:0;right:0;top:800px;text-align:center;z-index:6;opacity:0;transition:opacity .6s .7s}
+.spotmeta.on{opacity:1}
+.spotmeta .prompts{font-size:34px;color:rgba(255,255,255,.7)}
+.spotmeta .prompts b{color:#fff;font-weight:700}
+.spotmeta .prompts i{font-style:normal;color:rgba(255,255,255,.3);margin:0 22px}
+.spotmeta .count{margin-top:26px;font-size:22px;color:rgba(255,255,255,.5)}
+
+/* ---------- picker ---------- */
+#picker{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.92);display:none;padding:90px 140px}
+#picker.on{display:block}
+#picker .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:22px;margin-top:40px}
+#picker button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 8px;border-radius:16px;border:1px solid var(--line);background:var(--card)}
+#picker button:hover{border-color:#404040}
+#picker button.done{opacity:.35}
+#picker .disc{width:110px;height:110px;border-radius:50%;background:#151515;display:grid;place-items:center;overflow:hidden}
+#picker .disc img{width:76%;height:76%;object-fit:contain}
+#picker .disc.fill img{width:100%;height:100%;object-fit:cover}
+#picker .disc.white img{filter:brightness(0) invert(1)}
+#picker .nm{font-size:19px;font-weight:500;text-align:center;line-height:1.2;color:rgba(255,255,255,.85)}
+
+#hud{position:absolute;right:40px;bottom:36px;z-index:30;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.5);opacity:0;transition:opacity .4s}
+body:not(.idle) #hud{opacity:1}
+
+/* ---------- per-slide pieces ---------- */
+.bar{height:22px;border-radius:11px;background:#1d1d1d;overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:11px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange));transition:width 2.2s var(--ease) .5s}
+.cardgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.cardgrid .card{padding:30px 36px 32px}
+.cardgrid h3{font-size:40px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.cardgrid p{margin-top:14px;font-size:27px;line-height:1.4;color:rgba(255,255,255,.7)}
+.cardgrid .n{font-family:"Geist Mono",monospace;font-size:22px;color:var(--orange);margin-bottom:18px;display:block}
+.fan{position:relative;width:740px;height:760px;margin-left:0}
+.fan img{position:absolute;width:390px;border-radius:16px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6);transition:transform 1.1s var(--ease),opacity .8s;opacity:0}
+.slide.on .fan img{opacity:1}
+.list{list-style:none}
+.list li{position:relative;padding:20px 0 20px 46px;border-top:1px solid var(--line);font-size:34px;line-height:1.3}
+.list li:first-child{border-top:0}
+.list li::before{content:"";position:absolute;left:0;top:34px;width:16px;height:16px;border-radius:50%;background:var(--c,var(--teal))}
+.list li small{display:block;font-size:26px;color:rgba(255,255,255,.6);margin-top:4px}
+
+/* DEVSA TV slide: the /tv hero. The mark needs #161616; it vanishes on black. */
+.slide.tvs{background:#161616}
+.tvfacts{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;border-top:1px solid rgba(255,255,255,.1);padding-top:30px;margin-top:28px}
+.tvfacts dt{display:flex;align-items:center;height:58px}
+.tvfacts dt img{width:auto;display:block}
+.tvfacts dd{margin-top:10px;font-size:68px;font-weight:900;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tvfacts dd.sub{margin-top:6px;font-size:24px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.55)}
+@keyframes tv-bars{from{opacity:1;transform:none}to{opacity:0;transform:skewX(-26deg) scaleX(.86)}}
+@keyframes tv-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes tv-fade-out{from{opacity:1}to{opacity:0}}
+@keyframes tv-arm{0%{opacity:0;transform:rotate(0deg)}18%{opacity:1;transform:rotate(-13deg)}74%{opacity:1;transform:rotate(-13deg)}80%{transform:rotate(0deg)}86%{transform:rotate(0deg)}100%{opacity:1;transform:rotate(-13deg)}}
+.slide.on .tv-bars{animation:tv-bars .65s cubic-bezier(.5,0,.5,1) .9s both}
+.slide.on .tv-stripe{animation:tv-fade-in .45s ease-out 1.05s both}
+.slide.on .tv-arm{animation:tv-arm 3.1s cubic-bezier(.4,0,.3,1) 1.1s both}
+.slide.on .tv-sa{animation:tv-fade-out .3s ease-out 1.9s both}
+.slide.on .tv-t{animation:tv-fade-in .12s ease-out 2.35s both}
+.slide.on .tv-v{animation:tv-fade-in .12s ease-out 2.6s both}
+
+.list.mail{margin-top:6px}
+.list.mail li{font-size:27px;padding:8px 0 8px 38px}
+.list.mail li::before{top:19px;width:14px;height:14px}
+.list.mail li small{font-size:21px;margin-top:0}
+/* Discord: the bridge, three steps on one line */
+.bridge{list-style:none;position:relative;margin-top:34px;padding-left:0}
+.bridge::before{content:"";position:absolute;left:17px;top:22px;bottom:40px;width:3px;border-radius:2px;background:linear-gradient(var(--teal),var(--pink),var(--orange))}
+.bridge li{position:relative;padding:0 0 26px 66px}
+.bridge li::before{content:"";position:absolute;left:4px;top:6px;width:30px;height:30px;border-radius:50%;background:#000;border:6px solid var(--c)}
+.bridge b{display:block;font-size:36px;font-weight:700;line-height:1.2}
+.bridge small{display:block;margin-top:4px;font-size:25px;color:rgba(255,255,255,.62)}
+/* Give a talk: the page's open calls and its open-pool form */
+.rulelabel{display:flex;align-items:center;gap:20px;font-size:20px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.rulelabel::after{content:"";flex:1;height:1px;background:var(--line)}
+.calls{list-style:none;margin-top:18px;border-top:1px solid var(--line)}
+.calls li{display:flex;align-items:center;gap:24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.calls .tile{width:80px;height:80px;flex-shrink:0;border-radius:14px;background:#151515;border:1px solid var(--line);display:grid;place-items:center}
+.calls .tile img{width:60px;height:60px;object-fit:contain}
+.calls .nm{display:block;font-size:34px;font-weight:700;line-height:1.15}
+.calls .note{margin-top:2px;font-size:23px;color:rgba(255,255,255,.62);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.calls .go{display:block;margin-top:4px;font-size:23px;font-weight:600;color:var(--teal)}
+.calls .none{font-size:28px;color:rgba(255,255,255,.7);line-height:1.4;padding:24px 0;display:block}
+.pool{padding:28px 36px 28px}
+.pool h3{margin-top:10px;font-size:40px;font-weight:900;letter-spacing:-.02em;line-height:1.05}
+.pool .sub{margin-top:8px;font-size:21px;line-height:1.45;color:rgba(255,255,255,.65)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;margin-top:18px}
+.fgrid .wide{grid-column:1/3}
+.fgrid label{display:block;font-size:17px;font-weight:600;color:rgba(255,255,255,.75);margin-bottom:6px}
+.fgrid i{display:block;height:44px;border-radius:10px;background:#0a0a0a;border:1px solid #2e2e2e;font-style:normal;font-size:18px;line-height:42px;padding:0 16px;color:rgba(255,255,255,.4)}
+.fgrid i.ta{height:64px;line-height:1.4;padding-top:10px}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chips b{font-weight:500;font-size:17px;padding:8px 14px;border-radius:10px;border:1px solid #2e2e2e;background:#0a0a0a;color:rgba(255,255,255,.8)}
+.consent{display:flex;gap:14px;align-items:center;margin-top:16px;font-size:16px;line-height:1.45;color:rgba(255,255,255,.7)}
+.consent .box{width:22px;height:22px;border-radius:5px;background:var(--pink);flex-shrink:0;position:relative}
+.consent .box::after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.send{flex-shrink:0;background:#fff;color:#111;font-size:19px;font-weight:700;padding:13px 22px;border-radius:12px}
+/* DreamWeek: headline and quote against their "15 years" art, one rule under both */
+.dw{display:flex;flex-direction:column}
+.dwtop{flex:1;display:grid;grid-template-columns:1fr 600px;gap:100px;align-items:center}
+.dwart{display:block;width:100%;height:auto}
+.dwbottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.16);padding-top:28px}
+.dwstats{display:flex;gap:64px;font-size:24px;color:rgba(255,255,255,.65)}
+.dwstats b{display:block;font-size:48px;font-weight:900;color:#fff;letter-spacing:-.01em;line-height:1.1}
+/* Admin portal: the organizer Overview, at TV size (about 1.6x the portal's own) */
+.ovlist{margin-top:26px}
+.ovlist li{font-size:27px;padding:12px 0 12px 38px}
+.ovlist li::before{top:24px;width:14px;height:14px}
+.ov{border:1px solid #2e2e2e;border-radius:16px;overflow:hidden;background:#0a0a0a;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.ovbar{display:flex;align-items:center;gap:9px;padding:13px 18px;background:#1a1a1a;border-bottom:1px solid #262626}
+.ovbar i{width:13px;height:13px;border-radius:50%}
+.ovbar span{margin-left:16px;font-family:"Geist Mono",monospace;font-size:17px;color:rgba(255,255,255,.55);background:#0f0f0f;border:1px solid #262626;border-radius:8px;padding:5px 14px}
+.ovbody{display:flex}
+.ovrail{width:64px;border-right:1px solid #1f1f1f;padding:20px 0;display:flex;flex-direction:column;align-items:center;gap:18px}
+.ovrail b{width:28px;height:28px;border-radius:8px;background:#1f1f1f}
+.ovrail b.on{background:#ef426f}
+.ovmain{flex:1;padding:22px 26px 26px}
+.ovh{font-size:34px;font-weight:700;letter-spacing:-.01em}
+.ovgrid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-top:16px}
+.ovt{border:1px solid #262626;background:rgba(23,23,23,.6);border-radius:12px;padding:16px 18px}
+.ovt header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ovt h4{font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#a3a3a3}
+.ovt header a{font-size:17px;font-weight:500;color:#d4d4d4}
+.ovev{list-style:none}
+.ovev li{display:grid;grid-template-columns:182px 1fr auto;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid #262626}
+.ovev li:first-child{border-top:0}
+.ovev span{font-size:15px;white-space:nowrap;color:#a3a3a3;font-variant-numeric:tabular-nums}
+.ovev b{font-size:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ovev em{font-style:normal;font-size:17px;color:#d4d4d4;white-space:nowrap}
+.ovev s{text-decoration:none;display:inline-block;margin-left:6px;font-size:14px;font-weight:600;padding:2px 9px;border-radius:999px;background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.3)}
+.ovact{display:flex;flex-direction:column;gap:9px}
+.ovact b{display:block;font-size:18px;font-weight:600;padding:11px 14px;border-radius:9px;border:1px solid #404040;color:#e5e5e5}
+.ovact b.pri{background:#ef426f;border-color:#ef426f;color:#fff}
+.ovchk{list-style:none}
+.ovchk li{position:relative;display:flex;align-items:center;padding:7px 0 7px 32px;font-size:19px;color:#d4d4d4}
+.ovchk li.no{color:#fff}
+.ovchk li::before{position:absolute;left:0;font-size:20px;font-weight:700}
+.ovchk li.ok::before{content:"✓";color:#34d399}
+.ovchk li.no::before{content:"✕";color:#fcd34d}
+.ovchk li a{margin-left:auto;font-size:17px;color:#d4d4d4}
+.ovbig{font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1;margin-top:8px}
+.ovnote{margin-top:10px;font-size:18px;line-height:1.45;color:#a3a3a3}
+.geek{background:radial-gradient(ellipse at 50% 40%,#1d1a16 0%,#0c0b0a 70%)}
+.inc{columns:2;column-gap:24px;list-style:none;font-size:24px;line-height:1.7;color:rgba(255,255,255,.8)}
+.inc li{break-inside:avoid}
+.inc li::before{content:"·";color:var(--cream);margin-right:12px;opacity:.6}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="net"></div>
+  <img id="logo" src="assets/devsa-alt-logo.svg" alt="DEVSA">
+
+  <!-- 0 · Title -->
+  <section class="slide" data-pose="hero">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+      <p class="eyebrow in" style="--i:0">Thursday, November 12 · Geekdom</p>
+      <h1 class="h1 in" style="--i:1;margin-top:34px;font-size:128px">Community<br><span class="pink">Roundtable.</span></h1>
+      <p class="lede in" style="--i:2;margin-top:40px;font-weight:300;font-style:italic;color:rgba(255,255,255,.6);font-size:52px">Every group. One room.</p>
+      <p class="mono in" style="--i:3;position:absolute;bottom:110px;font-size:24px;color:rgba(255,255,255,.75)">devsa.community</p>
+    </div>
+  </section>
+
+  <!-- 1 · Tonight -->
+  <section class="slide" data-pose="side">
+    <div class="pad" style="top:210px">
+      <p class="eyebrow in" style="--i:0">Tonight</p>
+      <h2 class="h2 in" style="--i:1;margin-top:28px">Three parts, <span class="mute">one room.</span></h2>
+      <div style="margin-top:70px;max-width:1240px">
+        <div class="facts">
+          <div class="row in" style="--i:2;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">01</span><span class="v" style="font-size:46px">DEVSA updates<br><small>TVSA · DreamWeek · Discord · Give a talk · Admin portal</small></span></div>
+          <div class="row in" style="--i:3;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">02</span><span class="v" style="font-size:46px">Geekdom Club<br><small>Geekdom's members-only club</small></span></div>
+          <div class="row in" style="--i:4;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">03</span><span class="v" style="font-size:46px">The roundtable<br><small>Every group, one at a time</small></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Part one -->
+  <section class="slide" data-pose="section">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+      <p class="eyebrow in" style="--i:0">Part one</p>
+      <h2 class="h1 in" style="--i:1;margin-top:30px;font-size:170px">DEVSA <span class="mute">updates.</span></h2>
+    </div>
+  </section>
+
+  <!-- 3 · DEVSA TV: the /tv page's hero (components/tv/tv-hero.tsx), at TV size -->
+  <section class="slide tvs" data-pose="hidden" data-logo="off">
+    <div class="pad" style="top:80px;bottom:56px;display:flex;flex-direction:column">
+      <div style="flex:1;display:grid;grid-template-columns:1.6fr 1fr;gap:90px;align-items:center">
+        <div>
+          <h2 class="in" style="--i:0;font-size:104px;font-weight:900;line-height:.95;letter-spacing:-.02em;white-space:nowrap">DEVSA is coming<br>to <span style="font-weight:300;font-style:italic;color:rgba(255,255,255,.55)">your</span> TV.</h2>
+          <p class="in" style="--i:1;margin-top:36px;font-size:35px;line-height:1.45;color:rgba(255,255,255,.7);max-width:1000px"><b style="font-weight:600;color:#fff">From the meetup room to your living room.</b> The groups, speakers and builders DEVSA connects, on <span style="white-space:nowrap"><img src="assets/tv/tvsa.png" alt="TVSA" style="display:inline-block;height:.78em;width:auto;vertical-align:baseline;transform:translateY(.04em)">,</span> San&nbsp;Antonio's public access channel, starting this December.</p>
+        </div>
+        <div class="in" style="--i:1;position:relative;width:100%;max-width:440px;justify-self:center">
+          <svg
+      viewBox="-24.7 -267 764.4 823.4"
+      style="display:block;width:100%;height:auto;overflow:visible"
+      role="img"
+      aria-label="The DEVSA TV mark: the DEVSA logo drawn as a film clapperboard"
+    >
+      <g class="tv-arm" style="transform-box:view-box;transform-origin:0px -8px;transform:rotate(-13deg)">
+        <g transform="translate(0 -99.9)">
+          <rect x="0" y="0" width="735.7" height="91.9" rx="14" fill="#2b2b2b" />
+          <path fill="#00b2a9" d="M196,0 h150 l-46,91.9 h-150 Z" />
+          <path fill="#ef426f" d="M358,0 h150 l-46,91.9 h-150 Z" />
+          <path fill="#ff8200" d="M520,0 h150 l-46,91.9 h-150 Z" />
+        </g>
+      </g>
+      <g class="tv-stripe">
+        <rect x="0" y="0" width="735.7" height="91.9" rx="14" fill="#2b2b2b" />
+        <path fill="#00b2a9" d="M196,0 h150 l-46,91.9 h-150 Z" />
+        <path fill="#ef426f" d="M358,0 h150 l-46,91.9 h-150 Z" />
+        <path fill="#ff8200" d="M520,0 h150 l-46,91.9 h-150 Z" />
+        <rect x="0" y="0" width="136" height="91.9" rx="14" fill="#0a0a0a" />
+        <circle cx="38" cy="26" r="11" fill="#eeeeee" />
+        <circle cx="38" cy="66" r="11" fill="#eeeeee" />
+        <circle cx="98" cy="66" r="11" fill="#eeeeee" />
+      </g>
+      <g class="tv-bars" style="opacity:0;transform-box:fill-box;transform-origin:50% 50%">
+        <rect fill="#ef426f" x="250.3" width="235" height="91.9" />
+        <path fill="#00b2a9" d="M235,0H30.6C13.8,0,0,13.8,0,30.6v61.3h235V0Z" />
+        <path fill="#ff8200" d="M705,0h-204.5v91.9h235.1V30.6c0-16.9-13.8-30.6-30.7-30.6h0Z" />
+      </g>
+      <g transform="translate(0 0.6)">
+        <path d="M0,107.3h735.7v413.8c0,16.8-13.8,30.7-30.7,30.7H30.6c-16.9,0-30.6-13.8-30.6-30.7V107.3Z" fill="#0a0a0a" />
+        <path
+          d="M193.1,320.3l-95,95c-7.7,7.7-7.7,18.4,0,24.5l27.6,27.6c7.7,7.7,18.4,7.7,24.5,0l134.9-134.9c6.8-5.6,7.7-15.7,2.1-22.4-.6-.8-1.3-1.5-2.1-2.1l-134.9-134.9c-6.1-6.1-18.4-6.1-24.5,0l-27.6,27.6c-7.7,6.1-7.7,16.9,0,24.5l95,95h0Z"
+          fill="#eeeeee"
+        />
+        <path
+          d="M352.5,459.8c0,9.2,6.1,15.3,15.3,15.3h245.2c9.2,0,15.3-6.1,15.3-15.3v-46c0-9.2-6.1-15.3-15.3-15.3h-245.3c-9.2,0-15.3,6.1-15.3,15.3v46h0Z"
+          fill="#eeeeee"
+        />
+        <g class="tv-sa" style="opacity:0" transform="translate(0 -0.6)">
+          <path fill="#eeeeee" d="M370.3,359.6c-11.3-8.5-17.2-20.8-17.8-36.8l49.2,1.1c.5,8.5,4.2,12.8,11,13,2.5,0,4.6-.5,6.4-1.6,1.8-1.1,2.7-3,2.7-5.5,0-3.5-1.7-6.3-5.4-8.6-3.7-2.2-9.5-4.8-17.4-7.8-9.4-3.5-17.1-7-23.2-10.3-6.1-3.3-11.3-8.1-15.6-14.3-4.3-6.2-6.3-14.1-5.9-23.7.2-9.6,2.9-17.7,8-24.3s12-11.6,20.6-14.9c8.6-3.3,18.3-4.8,29-4.6,18.1.4,32.3,4.9,42.8,13.5,10.5,8.6,15.8,20.5,16,35.6l-49.9-1.1c0-4.2-1-7.2-2.9-9-1.9-1.9-4.2-2.8-7-2.9-2,0-3.6.6-4.8,1.9s-2,3.1-2,5.5c0,3.3,1.7,6.1,5.3,8.4,3.6,2.2,9.5,5,17.5,8.2,9.2,3.7,16.8,7.2,22.8,10.5,6,3.3,11.1,7.9,15.4,13.7,4.3,5.8,6.4,13,6.2,21.6-.2,9-2.6,17.1-7.2,24.1-4.6,7.1-11.2,12.5-19.8,16.3-8.6,3.8-18.7,5.6-30.4,5.4-17.7-.4-32.1-4.9-43.4-13.4h0Z" />
+          <path fill="#eeeeee" d="M573.3,348.2l-48.5-.3-7.3,22-47.9-.3,54.1-145.2,52.6.3,52.2,145.8-48.1-.3-7.1-22h0ZM561.4,318l-13.6-40.3-12.7,40.6,26.3-.3h0Z" />
+        </g>
+        <g transform="translate(348.7 370.2)">
+          <path class="tv-t" fill="#eeeeee" d="M44.47 0V-113.33H2.05V-145.5H127.26V-113.33H84.84V0Z" />
+          <path class="tv-v" fill="#eeeeee" d="M181.36 0 128.9 -145.5H169.89L204.31 -45.49L238.74 -145.5H279.73L226.86 0Z" />
+        </g>
+      </g>
+    </svg>
+          <div aria-hidden style="pointer-events:none;position:absolute;inset:-18%;background-image:repeating-linear-gradient(to bottom,rgba(255,255,255,.045) 0 2px,transparent 2px 5px);-webkit-mask-image:radial-gradient(closest-side,black 35%,transparent 100%);mask-image:radial-gradient(closest-side,black 35%,transparent 100%)"></div>
+        </div>
+      </div>
+      <dl class="in tvfacts" style="--i:3">
+        <div><dt><img src="assets/tv/spectrum-dark.svg" alt="Spectrum" style="height:42px"></dt><dd>20</dd></div>
+        <div><dt><img src="assets/tv/grande-dark.svg" alt="Grande" style="height:60px"></dt><dd>19</dd></div>
+        <div><dt><img src="assets/tv/att-dark.svg" alt="AT&amp;T" style="height:56px"></dt><dd>99</dd></div>
+        <div><dt style="gap:14px;font-size:30px;font-weight:600;color:#fff"><svg viewBox="0 0 24 24" style="height:40px;width:auto"><path fill="#fff" d="M9.545 15.568V8.432L15.818 12z"/><path fill="#ff0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.930-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>YouTube</dt><dd>@devsatx</dd><dd class="sub">Every episode</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 4 · DreamWeek -->
+  <section class="slide" data-pose="hidden">
+    <div class="pad dw" style="top:190px;bottom:84px">
+      <div class="dwtop">
+        <div>
+          <p class="eyebrow in" style="--i:0">DreamWeek 2027 · San&nbsp;Antonio</p>
+          <h2 class="h2 in" style="--i:1;margin-top:26px;font-size:94px;white-space:nowrap">DEVSA is helping<br>activate <span class="mute">DreamTech.</span></h2>
+          <p class="lede in" style="--i:2;margin-top:40px;font-size:34px;color:rgba(255,255,255,.75)">“Technology, media, AI, cybersecurity, digital culture, innovation, and access.”</p>
+          <p class="in" style="--i:2;margin-top:12px;font-size:24px;color:rgba(255,255,255,.55)">How DreamWeek describes the DreamTech category</p>
+        </div>
+        <img class="in dwart" style="--i:1" src="assets/ext/dreamweek-chevrons.png" alt="DreamWeek: 15 years of connecting">
+      </div>
+      <div class="dwbottom in" style="--i:4">
+        <div class="dwstats"><span><b>17</b> days</span><span><b>250+</b> events</span><span><b>Jan 15–31</b> 2027</span></div>
+        <div style="display:flex;gap:22px;align-items:center"><span class="url" style="font-size:22px">dreamweek.org</span><div class="qr" style="width:120px;height:120px;padding:8px"><img src="assets/qr/dreamweek.svg" alt=""></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Discord -->
+  <section class="slide" data-pose="hidden" data-enter="discord">
+    <div class="pad" style="top:180px;display:grid;grid-template-columns:860px 1fr;gap:110px">
+      <div>
+        <p class="eyebrow in" style="--i:0;display:flex;align-items:center;gap:22px"><img src="assets/ext/discord-mark.svg" alt="" style="height:64px;display:block">Discord</p>
+        <h2 class="h2 in" style="--i:1;margin-top:24px">Almost <span class="mute">1,000.</span></h2>
+        <div class="in" style="--i:2;margin-top:60px">
+          <div style="display:flex;align-items:baseline;gap:24px"><span id="dcount" style="font-size:210px;font-weight:900;letter-spacing:-.04em;line-height:.9">0</span><span style="font-size:34px;color:rgba(255,255,255,.65)">members<br><span id="dasof" style="font-size:26px;color:rgba(255,255,255,.5)"></span></span></div>
+          <div class="bar" style="margin-top:40px"><i id="dbar"></i></div>
+          <div style="display:flex;justify-content:space-between;margin-top:14px" class="url"><span>0</span><span id="dleft" style="color:rgba(255,255,255,.75)"></span><span>1,000</span></div>
+        </div>
+        <div class="in" style="--i:4;margin-top:60px;display:flex;gap:32px;align-items:center">
+          <div class="qr" style="width:190px;height:190px"><img src="assets/qr/discord.svg" alt=""></div>
+          <div class="ask" style="border-color:var(--teal)">Bring your members in.<small class="url" style="font-size:26px">devsa.community/discord</small></div>
+        </div>
+      </div>
+      <div style="padding-top:16px">
+        <p class="eyebrow in" style="--i:2">At 1,000: Discoverable</p>
+        <h3 class="in" style="--i:2;margin-top:22px;font-size:80px;font-weight:900;line-height:.95;letter-spacing:-.02em">The bridge<br>gets <span class="mute">longer.</span></h3>
+        <p class="body in" style="--i:3;margin-top:24px;font-size:29px">Discoverable puts DEVSA's public channels where people already look: web search.</p>
+        <ol class="bridge in" style="--i:4">
+          <li style="--c:var(--teal)"><b>Someone in San&nbsp;Antonio searches</b><small>for help with Python, AI, security, game dev</small></li>
+          <li style="--c:var(--pink)"><b>Finds a real answer</b><small>in one of DEVSA's public channels</small></li>
+          <li style="--c:var(--orange)"><b>Walks into your room</b><small>your group's next meetup, in <span style="white-space:nowrap">#community-calendar</span></small></li>
+        </ol>
+        <p class="in" style="--i:5;margin-top:30px;font-size:22px;line-height:1.5;color:rgba(255,255,255,.55)">Also a public server page and channel summaries. Answers show in search from mid-December, without names or avatars.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · Give a talk: the /give-a-talk page's two halves, groups with open calls and the open-pool form -->
+  <section class="slide" data-pose="hidden" data-enter="talk">
+    <div class="pad" style="top:196px;bottom:50px">
+      <p class="eyebrow in" style="--i:0">Give a talk</p>
+      <h2 class="h2 in" style="--i:1;margin-top:20px;font-size:84px;white-space:nowrap">Give a talk. <span class="mute">First talks welcome.</span></h2>
+      <div style="display:grid;grid-template-columns:1fr 880px;gap:70px;margin-top:40px">
+        <div class="in" style="--i:2">
+          <p class="rulelabel">Groups looking for speakers</p>
+          <ul class="calls" id="calls"></ul>
+          <div style="display:flex;gap:26px;align-items:center;margin-top:30px">
+            <div class="qr" style="width:150px;height:150px;padding:10px"><img src="assets/qr/give-a-talk.svg" alt=""></div>
+            <p style="font-size:24px;line-height:1.45;color:rgba(255,255,255,.65)">Run one of the groups? Open a call<br>from the Speakers tab in the portal.<br><span class="url" style="font-size:22px">devsa.community/give-a-talk</span></p>
+          </div>
+        </div>
+        <div class="card in pool" style="--i:3">
+          <p class="eyebrow" style="font-size:19px;color:var(--pink)">Open to any group</p>
+          <h3>Not sure where your talk fits?</h3>
+          <p class="sub">Tell us about it. DEVSA knows the organizers of every group on the calendar, and we'll share your talk with the ones it fits.</p>
+          <div class="fgrid">
+            <div><label>Your name</label><i></i></div>
+            <div><label>Email</label><i></i></div>
+            <div><label>Talk title</label><i></i></div>
+            <div><label>LinkedIn, GitHub or personal site</label><i>https://</i></div>
+            <div class="wide"><label>Format</label><span class="chips"><b>Lightning talk (5–10 min)</b><b>Talk (20–30 min)</b><b>Workshop or demo</b></span></div>
+            <div class="wide"><label>What's the talk about?</label><i class="ta">A few sentences: what you'll cover, and what people will leave with.</i></div>
+          </div>
+          <div class="consent"><span class="box"></span><span style="flex:1">OK to share my talk, name and email with the organizers of the groups it might fit. DEVSA emails me each time it's shared.</span><span class="send">Send your talk</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Admin portal: the organizer's Overview (components/admin/admin-overview.tsx), redrawn with example data -->
+  <section class="slide" data-pose="hidden">
+    <div class="pad" style="top:196px;bottom:60px;display:grid;grid-template-columns:500px 1fr;gap:70px">
+      <div>
+        <p class="eyebrow in" style="--i:0">Admin portal</p>
+        <h2 class="h2 in" style="--i:1;margin-top:24px;font-size:76px">Your group, <span class="mute">run from one place.</span></h2>
+        <p class="body in" style="--i:2;margin-top:28px;font-size:28px">Sign in and the Overview shows what your group needs this week.</p>
+        <ul class="list in ovlist" style="--i:3">
+          <li style="--c:var(--teal)">Member directory</li>
+          <li style="--c:var(--pink)">Events, co-hosts and link-only nights</li>
+          <li style="--c:var(--orange)">RSVPs, capacity and a waitlist</li>
+          <li style="--c:var(--teal)">Check-in at the door</li>
+          <li style="--c:var(--pink)">Your own call for speakers</li>
+        </ul>
+        <p class="url in" style="--i:4;margin-top:22px;font-size:22px">devsa.community/admin</p>
+      </div>
+      <div class="in" style="--i:2">
+        <div class="ov">
+          <div class="ovbar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>devsa.community/admin</span></div>
+          <div class="ovbody">
+            <div class="ovrail"><b class="on"></b><b></b><b></b><b></b><b></b><b></b></div>
+            <div class="ovmain">
+              <p class="ovh">Overview</p>
+              <div class="ovgrid">
+                <section class="ovt span2">
+                  <header><h4>Next up</h4><a>Your events →</a></header>
+                  <ul class="ovev">
+                    <li><span>Thu, Nov 19, 6:30 PM</span><b>Monthly meetup</b><em>38 / 40</em></li>
+                    <li><span>Sat, Dec 5, 10:00 AM</span><b>Build session</b><em>12 RSVPs</em></li>
+                    <li><span>Thu, Dec 17, 6:30 PM</span><b>Demo night</b><em>40 / 40 <s>Full</s> <s>6 waiting</s></em></li>
+                    <li><span>Thu, Jan 21, 6:30 PM</span><b>Monthly meetup</b><em>9 RSVPs</em></li>
+                  </ul>
+                </section>
+                <section class="ovt">
+                  <header><h4>Quick actions</h4></header>
+                  <div class="ovact"><b class="pri">Check in: Monthly meetup</b><b class="pri">+ Add an event</b><b>Edit your group</b><b>Open a call for speakers</b><b>Edit your profile</b></div>
+                </section>
+                <section class="ovt span2">
+                  <header><h4>Your group's page</h4><a>See it live ↗</a></header>
+                  <ul class="ovchk">
+                    <li class="ok">A logo</li>
+                    <li class="ok">A description people can decide from</li>
+                    <li class="ok">At least one place to find you (3 linked)</li>
+                    <li class="no">A way to join: Discord, Meetup or Luma<a>Edit →</a></li>
+                    <li class="ok">Something on the calendar</li>
+                  </ul>
+                </section>
+                <section class="ovt">
+                  <header><h4>Turnout</h4><a>RSVPs →</a></header>
+                  <p class="ovbig">71%</p>
+                  <p class="ovnote">of the people who RSVP'd came, across the events you checked people in at.</p>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:14px;font-size:20px;color:rgba(255,255,255,.5)">The Overview an organizer sees, redrawn with example data.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Cards + email -->
+  <section class="slide" data-pose="faint" data-enter="fan">
+    <div class="pad" style="top:110px;display:grid;grid-template-columns:740px 1fr;gap:80px">
+      <div class="fan" id="fan">
+        <img src="assets/cards/confidential-computing-leveraging-bootable-containers-general-meeting-muw5fewt.png" alt="">
+        <img src="assets/cards/threat-modeling-python-ai-applications-nov-3.png" alt="">
+        <img src="assets/cards/unfiltered-cafecito-mv33swan.png" alt="">
+      </div>
+      <div>
+        <p class="eyebrow in" style="--i:0">Every event</p>
+        <h2 class="h2 in" style="--i:1;margin-top:22px;font-size:68px">A card for every event, <span class="mute">and the emails after it.</span></h2>
+        <p class="body in" style="--i:2;margin-top:18px;font-size:26px">The card is drawn from the event: your logo, the title, the date and the venue, ready for Instagram and Discord.</p>
+        <p class="eyebrow in" style="--i:3;margin-top:28px;font-size:20px;color:var(--teal)">Powered by Resend · sent automatically</p>
+        <ul class="list mail in" style="--i:3">
+          <li style="--c:var(--teal)">The RSVP confirmation<small>Date, time and place, in San Antonio time</small></li>
+          <li style="--c:var(--teal)">The waitlist, when the room is full<small>And "you're in" when you move someone up</small></li>
+          <li style="--c:var(--teal)">A reminder the day before<small>Once per person, never to the waitlist</small></li>
+        </ul>
+        <p class="eyebrow in" style="--i:4;margin-top:18px;font-size:20px;color:var(--pink)">Sent when you choose</p>
+        <ul class="list mail in" style="--i:4">
+          <li style="--c:var(--pink)">A change or a cancellation<small>Showing the old and new date, time or place</small></li>
+          <li style="--c:var(--pink)">Your own message to everyone going<small>From your name, replies come to you</small></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Geekdom Club -->
+  <section class="slide geek" data-pose="hidden" data-logo="off">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+      <div class="in" style="--i:0;display:flex;align-items:flex-end;gap:48px">
+        <img src="assets/ext/geekdom-club-white.svg" alt="Geekdom" style="height:330px;display:block">
+        <span style="font-size:188px;font-weight:500;letter-spacing:-.02em;line-height:1;color:#fff;transform:translateY(-62px)">club</span>
+      </div>
+      <p class="in" style="--i:2;margin-top:60px;font-size:46px;font-weight:300;font-style:italic;color:rgba(255,255,255,.72)">Where San Antonio's founders and builders find their room.</p>
+    </div>
+  </section>
+
+  <!-- 10 · Part three -->
+  <section class="slide" data-pose="section">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+      <p class="eyebrow in" style="--i:0">Part three</p>
+      <h2 class="h1 in" style="--i:1;margin-top:30px;font-size:170px">The <span class="mute">roundtable.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:56px">When your logo comes up:</p>
+      <p class="in" style="--i:3;margin-top:18px;font-size:46px;font-weight:700">Who you are <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What's coming up <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What you need</p>
+    </div>
+  </section>
+
+  <!-- 11 · The roundtable -->
+  <section class="slide" data-pose="center" data-mode="roundtable" data-logo="off">
+    <div class="veil" id="veil"></div>
+    <p class="mono in" id="rtidle" style="--i:2;position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:24px;color:rgba(255,255,255,.6)">Every group. <span style="color:var(--teal)">One room.</span></p>
+  </section>
+
+  <!-- 12 · Close -->
+  <section class="slide" data-pose="hero">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+      <p class="eyebrow in" style="--i:0">Thank you</p>
+      <h2 class="h1 in" style="--i:1;margin-top:30px;font-size:108px">DEVSA is<br><span class="pink">that connection.</span></h2>
+      <ul class="list in" style="--i:2;margin-top:50px;max-width:760px">
+        <li style="--c:var(--teal);font-size:30px;padding:14px 0 14px 40px">Nominate a speaker for DEVSA TV</li>
+        <li style="--c:var(--pink);font-size:30px;padding:14px 0 14px 40px">Get spotlighted in DreamTech, January 15–31</li>
+        <li style="--c:var(--orange);font-size:30px;padding:14px 0 14px 40px">Bring your members to the Discord</li>
+        <li style="--c:var(--teal);font-size:30px;padding:14px 0 14px 40px">Open a call for speakers</li>
+      </ul>
+      <p class="in" style="--i:3;margin-top:36px;font-size:26px;color:rgba(255,255,255,.6)">Thanks to Geekdom, our partner, for the room.</p>
+      <p class="mono in" style="--i:4;position:absolute;bottom:110px;font-size:24px;color:rgba(255,255,255,.75)">devsa.community</p>
+    </div>
+  </section>
+
+  <div id="picker">
+    <p class="eyebrow">Who's next? <span style="color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:none;font-size:22px">&nbsp;· click a group · Esc to close</span></p>
+    <div class="grid" id="pgrid"></div>
+  </div>
+  <div id="stripe"><div style="background:var(--teal)"></div><div style="background:var(--pink)"></div><div style="background:var(--orange)"></div></div>
+  <div id="hud"></div>
+</div>
+
+<script>
+// ===================== CONFIG: update before the night =====================
+const CONFIG = {
+  // The Discord slide reads the live count from DEVSA's public invite when the deck
+  // opens and again when the slide comes up. These are only the fallback, for when
+  // the venue has no internet.
+  discordInvite: "cvHHzThrEw",
+  discordMembers: 891,
+  discordAsOf: "November 4",
+}
+let discordLive = null   // set once Discord answers
+async function fetchDiscord() {
+  try {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000)
+    const r = await fetch(`https://discord.com/api/v10/invites/${CONFIG.discordInvite}?with_counts=true`, { signal: ctl.signal })
+    clearTimeout(t)
+    const n = (await r.json()).approximate_member_count
+    if (Number.isFinite(n) && n > 0) {
+      const changed = discordLive !== n
+      discordLive = n
+      // already on the Discord slide when the answer arrives: swap in the live number
+      if (changed && typeof idx !== "undefined" && slides[idx].dataset.enter === "discord") {
+        $("#dcount").textContent = n.toLocaleString(); $("#dasof").textContent = "right now"
+        $("#dleft").textContent = n >= 1000 ? "Goal reached" : `${(1000 - n).toLocaleString()} to go`
+        $("#dbar").style.width = Math.min(100, n / 10) + "%"
+      }
+    }
+  } catch (e) {}
+  return discordLive
+}
+fetchDiscord()
+// The 25 groups in the directory, plus SAYP. Roundtable order follows this list;
+// G opens a picker if the room goes in a different order.
+// fill: logo is a full square tile (cropped to the circle). white: logo drawn white.
+const GROUPS = [
+  { name: "DEF CON Group", logo: "g0.png" },
+  { name: "Alamo City AI", logo: "g1.png" },
+  { name: "ACM UTSA", logo: "g2.png" },
+  { name: "UTSA CyberJedis", logo: "g3.png" },
+  { name: "Alamo Tech Collective", logo: "g4.png" },
+  { name: "ACM San Antonio", logo: "g5.png" },
+  { name: "Alamo Python", logo: "g6.png" },
+  { name: "Linux San Antonio", logo: "g7.png" },
+  { name: "AWS User Group", logo: "g8.png" },
+  { name: "Greater Gaming Society", logo: "g9.png" },
+  { name: ".NET User Group", logo: "g10.png" },
+  { name: "Google Developer Group", logo: "g11.png" },
+  { name: "Geeks && {...}", logo: "g12.png" },
+  { name: "SAHA", logo: "g13.png" },
+  { name: "AITX", logo: "g14.png", node: "g14-mark.png" },
+  { name: "Alamo Agents", logo: "g15.png", white: true },
+  { name: "Datanauts", logo: "g16.png" },
+  { name: "Alamo City Locksport", logo: "g17-2026.png" },
+  { name: "OWASP San Antonio", logo: "g18.png" },
+  { name: "Alamo Regional Data Alliance", logo: "g19.png" },
+  { name: "Unreal Engine SA", logo: "g21.png" },
+  { name: "Red Hat User Group", logo: "g22.png" },
+  { name: "UXSA", logo: "g23.png" },
+  { name: "Latinas in Tech", logo: "g24.png" },
+  { name: "Alamo City Unity User Group", logo: "g25.svg" },
+  { name: "San Antonio Young Professionals", logo: "../ext/sayp-logo.jpg", fill: true },
+]
+// ===========================================================================
+
+const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [...r.querySelectorAll(q)]
+const stage = $("#stage"), netEl = $("#net"), slides = $$(".slide")
+const logoSrc = (g, forNode) => "assets/logos/" + ((forNode && g.node) || g.logo)
+
+// ---------- fit the 1920x1080 stage to the screen ----------
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080)
+  stage.style.transform = `translate(${-960 * s}px,${-540 * s}px) scale(${s})`
+}
+addEventListener("resize", fit); fit()
+
+// ---------- the network: same geometry as the TV graphic, one more node ----------
+const VW = 640, VH = 480, CX = VW / 2, CY = VH / 2, R = 23, N = GROUPS.length
+const C = ["#00b2a9", "#ef426f", "#ff8200"]
+const inner = Math.min(N, Math.max(3, Math.round(N * .36)))
+const base = GROUPS.map((_, i) => {
+  const isI = i < inner, cnt = isI ? inner : N - inner, k = isI ? i : i - inner
+  const a = (k / cnt) * Math.PI * 2 + (isI ? .35 : 0) + Math.sin(i * 7.3) * .08
+  const rx = isI ? 128 : 262, ry = isI ? 100 : 196
+  return [CX + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * .04), CY + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * .04)]
+})
+const LINKS = []
+for (let i = 0; i < inner && inner + i * 2 < N; i++) LINKS.push([i, inner + Math.round((i / inner) * (N - inner))])
+for (let i = inner; i + 1 < N; i += 3) LINKS.push([i, i + 1])
+
+const NS = "http://www.w3.org/2000/svg"
+const svg = document.createElementNS(NS, "svg")
+svg.setAttribute("viewBox", `0 0 ${VW} ${VH}`)
+svg.innerHTML = `<defs><clipPath id="nc"><circle r="${R - 5}"/></clipPath><clipPath id="ncf"><circle r="${R - 1}"/></clipPath>
+  <filter id="nw"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
+  <radialGradient id="glow"><stop offset="0" stop-color="#ef426f" stop-opacity=".35"/><stop offset="1" stop-color="#ef426f" stop-opacity="0"/></radialGradient></defs>`
+const gLinks = document.createElementNS(NS, "g"), gHub = document.createElementNS(NS, "g"), gPulse = document.createElementNS(NS, "g"), gNodes = document.createElementNS(NS, "g")
+svg.append(gLinks, gHub, gPulse, gNodes)
+const linkEls = LINKS.map(() => { const l = document.createElementNS(NS, "line"); l.setAttribute("stroke", "#fff"); l.setAttribute("stroke-opacity", ".16"); l.setAttribute("stroke-width", "1.05"); gLinks.append(l); return l })
+const hubEls = GROUPS.map((_, i) => { const l = document.createElementNS(NS, "line"); l.setAttribute("class", "hubline"); l.setAttribute("stroke", C[i % 3]); l.setAttribute("stroke-opacity", ".65"); l.setAttribute("stroke-width", "1.4"); gHub.append(l); return l })
+const nodeEls = GROUPS.map((g, i) => {
+  const n = document.createElementNS(NS, "g"); n.setAttribute("class", "node")
+  const r = g.fill ? R - 1 : R - 6
+  n.innerHTML = `<circle r="${R}" fill="#151515" stroke="#2c2c2c"/><image href="${logoSrc(g, true)}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="${g.fill ? "xMidYMid slice" : "xMidYMid meet"}" clip-path="url(#${g.fill ? "ncf" : "nc"})"${g.white ? ' filter="url(#nw)"' : ""}/>`
+  gNodes.append(n); return n
+})
+const hub = document.createElementNS(NS, "g")
+hub.innerHTML = `<circle id="hubglow" r="90" fill="url(#glow)"/><circle r="58" fill="#000"/><image href="assets/devsa-logo.svg" x="-42" y="-32" width="84" height="64"/>`
+hub.setAttribute("transform", `translate(${CX} ${CY})`)
+svg.append(hub)
+netEl.append(svg)
+
+// pulses travelling out from the hub along the spokes
+const pulses = Array.from({ length: 9 }, (_, k) => {
+  const c = document.createElementNS(NS, "circle"); c.setAttribute("r", "2.6"); gPulse.append(c)
+  return { el: c, to: (k * 7) % N, t0: -k * .45, dur: 2.2 + (k % 3) * .4 }
+})
+const pos = base.map((p) => [...p])
+function frame(ms) {
+  const t = ms / 1000
+  for (let i = 0; i < N; i++) {
+    pos[i][0] = base[i][0] + Math.sin(t * .42 + i * 1.7) * 4.2
+    pos[i][1] = base[i][1] + Math.cos(t * .35 + i * 2.1) * 4.2
+    nodeEls[i].setAttribute("transform", `translate(${pos[i][0].toFixed(2)} ${pos[i][1].toFixed(2)})`)
+    const h = hubEls[i]; h.setAttribute("x1", CX); h.setAttribute("y1", CY); h.setAttribute("x2", pos[i][0].toFixed(2)); h.setAttribute("y2", pos[i][1].toFixed(2))
+  }
+  LINKS.forEach(([a, b], k) => { const l = linkEls[k]; l.setAttribute("x1", pos[a][0]); l.setAttribute("y1", pos[a][1]); l.setAttribute("x2", pos[b][0]); l.setAttribute("y2", pos[b][1]) })
+  for (const p of pulses) {
+    let u = (t - p.t0) / p.dur
+    if (u >= 1) { p.t0 = t; p.to = Math.floor(Math.random() * N); u = 0 }
+    if (u < 0) { p.el.setAttribute("opacity", 0); continue }
+    const e = 1 - Math.pow(1 - u, 2)
+    p.el.setAttribute("cx", CX + (pos[p.to][0] - CX) * e); p.el.setAttribute("cy", CY + (pos[p.to][1] - CY) * e)
+    p.el.setAttribute("fill", C[p.to % 3]); p.el.setAttribute("opacity", (Math.sin(u * Math.PI) * .95).toFixed(3))
+  }
+  $("#hubglow").setAttribute("r", (86 + Math.sin(t * 1.3) * 10).toFixed(1))
+  requestAnimationFrame(frame)
+}
+requestAnimationFrame(frame)
+
+// network poses: where it sits on each kind of slide (base size 1200x900)
+const POSES = {
+  hero: { x: 960, y: 175, s: .82, o: 1 },
+  side: { x: 1180, y: 250, s: .82, o: .32 },
+  section: { x: 360, y: 430, s: 1.07, o: .26 },
+  faint: { x: 1480, y: 560, s: 1, o: .12 },
+  hidden: { x: 1480, y: 560, s: 1, o: 0 },
+  center: { x: 342, y: 40, s: 1.05, o: 1 },
+}
+let pose = POSES.hero
+function setPose(p) { pose = p; netEl.style.transform = `translate(${p.x}px,${p.y}px) scale(${p.s})`; netEl.style.opacity = p.o }
+
+// ---------- roundtable ----------
+let done = new Set(), rtHist = [], current = -1, spotEls = null
+try { done = new Set(JSON.parse(sessionStorage.getItem("rt-done") || "[]")) } catch (e) {}
+const save = () => { try { sessionStorage.setItem("rt-done", JSON.stringify([...done])) } catch (e) {} }
+// a node's center and diameter on the stage, under the roundtable pose
+function nodeOnStage(i) {
+  const k = 1200 / VW, p = POSES.center
+  return { x: p.x + pos[i][0] * k * p.s, y: p.y + pos[i][1] * k * p.s, d: R * 2 * k * p.s }
+}
+function clearSpot(animate = true) {
+  if (!spotEls) return
+  const { disc, name, meta, i } = spotEls
+  name.classList.remove("on"); meta.classList.remove("on")
+  const n = nodeOnStage(i)
+  disc.style.transform = `translate(${n.x - 960}px,${n.y - 380}px) scale(${n.d / 460})`
+  disc.style.opacity = animate ? "0" : "0"
+  setTimeout(() => { disc.remove(); name.remove(); meta.remove() }, animate ? 1000 : 0)
+  spotEls = null
+}
+function spotlight(i) {
+  clearSpot()
+  current = i
+  const g = GROUPS[i], sl = slides[11]
+  nodeEls.forEach((n, k) => { n.classList.toggle("on", k === i); n.classList.toggle("done", done.has(k) && k !== i) })
+  hubEls.forEach((h, k) => h.classList.toggle("on", k === i))
+  netEl.classList.add("spotting"); netEl.style.opacity = .55
+  $("#rtidle").style.opacity = 0; $("#veil").classList.add("on")
+  const disc = document.createElement("div"); disc.className = "spot" + (g.fill ? " fill" : "") + (g.white ? " white" : "")
+  disc.innerHTML = `<img src="${logoSrc(g)}" alt="">`
+  const n = nodeOnStage(i)
+  disc.style.transition = "none"
+  disc.style.transform = `translate(${n.x - 960}px,${n.y - 380}px) scale(${n.d / 460})`
+  const name = document.createElement("div"); name.className = "spotname"; name.textContent = g.name
+  const meta = document.createElement("div"); meta.className = "spotmeta"
+  const total = GROUPS.length, seen = done.size + (done.has(i) ? 0 : 1)
+  meta.innerHTML = `<div class="prompts"><b>Who you are</b><i>·</i><b>What's coming up</b><i>·</i><b>What you need</b></div><div class="count mono">${seen} of ${total}</div>`
+  sl.append(disc, name, meta)
+  disc.getBoundingClientRect()
+  disc.style.transition = ""
+  requestAnimationFrame(() => { disc.style.transform = "none"; name.classList.add("on"); meta.classList.add("on") })
+  spotEls = { disc, name, meta, i }
+  done.add(i); save()
+}
+function unspot() {
+  clearSpot(); current = -1
+  netEl.classList.remove("spotting"); netEl.style.opacity = pose.o
+  nodeEls.forEach((n) => n.classList.remove("on", "done")); hubEls.forEach((h) => h.classList.remove("on"))
+  $("#rtidle").style.opacity = ""; $("#veil").classList.remove("on")
+}
+function rtNext() {
+  const k = GROUPS.findIndex((_, i) => !done.has(i))
+  if (k < 0) return false
+  rtHist.push(k); spotlight(k); return true
+}
+function rtBack() {
+  if (!rtHist.length) return false
+  const k = rtHist.pop(); done.delete(k); save()
+  if (rtHist.length) { const prev = rtHist[rtHist.length - 1]; done.delete(prev); spotlight(prev) } else unspot()
+  return true
+}
+
+// picker
+function buildPicker() {
+  $("#pgrid").innerHTML = GROUPS.map((g, i) => `<button data-i="${i}" class="${done.has(i) ? "done" : ""}"><span class="disc${g.fill ? " fill" : ""}${g.white ? " white" : ""}"><img src="${logoSrc(g)}" alt=""></span><span class="nm">${g.name.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span></button>`).join("")
+}
+$("#picker").addEventListener("click", (e) => {
+  e.stopPropagation()
+  const b = e.target.closest("button"); if (!b) return
+  const i = +b.dataset.i
+  closePicker()
+  if (idx !== RT) go(RT)
+  done.delete(i); rtHist.push(i); spotlight(i)
+})
+const openPicker = () => { buildPicker(); $("#picker").classList.add("on") }
+const closePicker = () => $("#picker").classList.remove("on")
+
+
+// ---------- Give a talk: groups with an open call ----------
+// Read live from devsa.community when the deck can reach it; these are the open
+// calls as of November 4, for when it can't (no wifi, or opened from disk).
+const CALLS_FALLBACK = [
+  { name: "Alamo Python" },
+  { name: "Linux San Antonio" },
+  { name: "Google Developer Group" },
+]
+let callsLive = null
+async function fetchCalls() {
+  try {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000)
+    // Same-origin only: the site's API doesn't answer other origins, so from a
+    // file on disk there is nothing to ask and the list above stands.
+    if (location.protocol === "file:") return
+    const r = await fetch("/api/communities", { signal: ctl.signal })
+    clearTimeout(t)
+    const d = await r.json(), list = (d.communities || d).filter((c) => c.speakersOpen)
+    callsLive = list.map((c) => ({ name: c.name.trim(), note: c.speakersNote || "", logo: c.logo }))
+    renderCalls()
+  } catch (e) {}
+}
+function renderCalls() {
+  const list = callsLive || CALLS_FALLBACK, el = $("#calls")
+  if (!el) return
+  const esc = (x) => String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+  if (!list.length) { el.innerHTML = '<li><span class="none">No group has an open call right now. Send your talk to the open pool, and DEVSA will find the group it fits.</span></li>'; return }
+  el.innerHTML = list.slice(0, 4).map((c) => {
+    const g = GROUPS.find((x) => x.name.toLowerCase() === c.name.toLowerCase())
+    const src = g ? logoSrc(g) : c.logo
+    const cls = g && g.white ? ' style="filter:brightness(0) invert(1)"' : ""
+    return `<li><span class="tile">${src ? `<img src="${esc(src)}" alt=""${cls}>` : ""}</span><span><span class="nm">${esc(c.name)}</span>${c.note ? `<span class="note">${esc(c.note)}</span>` : ""}<span class="go">Speak at ${esc(c.name)} ↗</span></span></li>`
+  }).join("") + (list.length > 4 ? `<li><span class="note" style="font-size:24px">and ${list.length - 4} more on devsa.community/give-a-talk</span></li>` : "")
+}
+fetchCalls()
+
+// ---------- slide control ----------
+let idx = 0
+const RT = slides.findIndex((s) => s.dataset.mode === "roundtable")
+const ENTER = {
+  talk() { renderCalls(); fetchCalls() },
+  discord() {
+    fetchDiscord()   // refresh in the background for the next time the slide shows
+    const live = discordLive != null
+    const target = live ? discordLive : CONFIG.discordMembers, el = $("#dcount"), t0 = performance.now(), from = Math.round(target * .7)
+    $("#dasof").textContent = live ? "right now" : "as of " + CONFIG.discordAsOf
+    $("#dleft").textContent = target >= 1000 ? "Goal reached" : `${(1000 - target).toLocaleString()} to go`
+    $("#dbar").style.width = "0"; requestAnimationFrame(() => requestAnimationFrame(() => ($("#dbar").style.width = Math.min(100, target / 10) + "%")))
+    const step = (now) => { if (!live && discordLive != null) return; if (slides[idx].dataset.enter !== "discord") return; const u = Math.min(1, (now - t0 - 500) / 1800); const e = u < 0 ? 0 : 1 - Math.pow(1 - u, 3); el.textContent = Math.round(from + (target - from) * e).toLocaleString(); if (u < 1) requestAnimationFrame(step) }
+    el.textContent = from.toLocaleString(); requestAnimationFrame(step)
+  },
+  fan() {
+    const imgs = $$("#fan img"), out = [[-10, 0, 150], [0, 170, 70], [9, 330, 180]]
+    imgs.forEach((im, k) => { im.style.transitionDelay = 200 + k * 160 + "ms"; im.style.transform = `translate(${out[k][1]}px,${out[k][2]}px) rotate(${out[k][0]}deg)` })
+  },
+}
+function leave(i) {
+  if (i === 8) $$("#fan img").forEach((im) => { im.style.transitionDelay = "0ms"; im.style.transform = "translate(200px,80px) rotate(0)" })
+  if (i === RT) { unspot(); rtHist = [] }
+}
+function go(n) {
+  n = Math.max(0, Math.min(slides.length - 1, n))
+  if (n === idx && slides[n].classList.contains("on")) return
+  // Arriving at the roundtable from the slide before it starts a fresh round. The
+  // memory of who has spoken is only for a reload in the middle of the roundtable;
+  // kept across runs, a finished round left nobody to spotlight and → skipped it.
+  if (n === RT && idx === RT - 1) { done.clear(); rtHist = []; save() }
+  leave(idx)
+  slides.forEach((s, k) => s.classList.toggle("on", k === n))
+  idx = n
+  const s = slides[n]
+  setPose(POSES[s.dataset.pose] || POSES.faint)
+  $("#logo").style.opacity = s.dataset.logo === "off" ? 0 : 1
+  if (s.dataset.enter) ENTER[s.dataset.enter]()
+  $("#hud").textContent = `${n + 1} / ${slides.length}`
+  window.history.replaceState(null, "", location.pathname + location.search + "#" + n)
+}
+function next() {
+  if ($("#picker").classList.contains("on")) return
+  if (idx === RT && rtNext()) return
+  go(idx + 1)
+}
+function back() {
+  if ($("#picker").classList.contains("on")) return closePicker()
+  if (idx === RT && rtBack()) return
+  go(idx - 1)
+}
+addEventListener("keydown", (e) => {
+  const k = e.key
+  if (["ArrowRight", " ", "PageDown", "Enter", "ArrowDown"].includes(k)) { e.preventDefault(); next() }
+  else if (["ArrowLeft", "PageUp", "Backspace", "ArrowUp"].includes(k)) { e.preventDefault(); back() }
+  else if (k === "Escape") closePicker()
+  else if (k === "g" || k === "G") { $("#picker").classList.contains("on") ? closePicker() : openPicker() }
+  else if (k === "f" || k === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}) }
+  else if (k === "Home") go(0)
+  else if (k === "R" && e.shiftKey) { done.clear(); rtHist = []; save(); if (idx === RT) unspot() }
+})
+// Click the left third of the screen to go back, anywhere else to go forward.
+stage.addEventListener("click", (e) => (e.clientX < innerWidth / 3 ? back() : next()))
+let idleT; const wake = () => { document.body.classList.remove("idle"); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add("idle"), 2000) }
+addEventListener("mousemove", wake); wake()
+
+const start = parseInt(location.hash.slice(1), 10)
+go(Number.isFinite(start) ? start : 0)
+</script>
+</body>
+</html>
