@@ -106,6 +106,8 @@ export function EventPageClient({ slug }: EventPageClientProps) {
   const [copied, setCopied] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [hasHistory, setHasHistory] = useState(false)
+  // Host logos measured wider than tall once loaded; those get the wide tile.
+  const [wideLogos, setWideLogos] = useState<Set<string>>(new Set())
 
   // Track whether the user navigated here from within the app
   useEffect(() => {
@@ -829,9 +831,12 @@ export function EventPageClient({ slug }: EventPageClientProps) {
               </h2>
               {hostCards.map((comm) => {
                 const isPartner = comm.kind === 'partner'
-                // A partner without a square mark shows its full logo in a
-                // wide tile, so a wordmark is contained rather than cropped.
-                const wideLogo = isPartner && !comm.mark
+                // Every host gets the same square tile unless its logo is
+                // actually a wordmark. This used to assume any partner without
+                // a square `mark` was wide, so PyTexas's square Texas logo sat
+                // in a 128px tile beside Alamo Python's 48px one. The logo's
+                // own shape decides now, measured when it loads.
+                const wideLogo = !comm.mark && wideLogos.has(comm.id)
                 return (
             <div key={comm.id} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center gap-4 mb-5">
@@ -841,7 +846,12 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                     alt={comm.name}
                     fill
                     className="object-contain p-1"
-                    sizes={wideLogo ? '128px' : '48px'}
+                    sizes="128px"
+                    onLoad={(e) => {
+                      const img = e.currentTarget
+                      if (img.naturalWidth > img.naturalHeight * 1.4 && !wideLogos.has(comm.id))
+                        setWideLogos((s) => new Set(s).add(comm.id))
+                    }}
                   />
                 </div>
                 <h3 className="text-xl font-bold tracking-[-0.01em] text-gray-900 sm:text-2xl">About {comm.name}</h3>
