@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@900&family=Geist+Mono:wght@700&display=block" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:320px;height:320px;background:transparent;overflow:hidden;font-family:Geist,sans-serif;-webkit-font-smoothing:antialiased}
+  .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  /* die-cut: a white outline so every sticker reads in light and dark themes */
+  .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+  /* the text badge: a black tile with the logo's three tabs across the top */
+  .badge{background:#0b0b0b;border-radius:30px;padding:26px 22px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden}
+  .tabs{position:absolute;left:0;right:0;top:0;height:12px;display:flex;gap:5px}
+  .tabs i{flex:1}
+  .w{font-weight:900;text-transform:uppercase;letter-spacing:-.04em;line-height:.9;color:#fff;text-align:center;white-space:nowrap}
+  .m{font-family:"Geist Mono",monospace;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75);font-size:15px}
+</style></head>
+<body><div class="c" id="c"></div>
+<script src="../shared/devsa-prompt.js"></script>
+<script>
+  const T = '#00b2a9', P = '#ef426f', O = '#ff8200'
+  const q = new URLSearchParams(location.search), k = q.get('k'), f = +(q.get('f') || 0)
+  const tabs = `<div class="tabs"><i style="background:${T}"></i><i style="background:${P}"></i><i style="background:${O}"></i></div>`
+  const chev = (c = T) => window.DEVSA_PROMPT.chevron(c)
+  const cur = (on = true) => `<span style="${window.DEVSA_PROMPT.cursorCSS(P)};visibility:${on ? 'visible' : 'hidden'}"></span>`
+  const badge = (inner, w = 286) => `<div class="cut"><div class="badge" style="width:${w}px">${tabs}${inner}</div></div>`
+  const CRIT = '<path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/>'
+  const A = '../shared/assets/'
+  const S = {
+    mark: () => `<img class="cut" src="${A}devsa-logo.svg" style="width:270px">`,
+    // WELCOME types itself at the prompt (frames 0-7), then the cursor blinks (8-11)
+    welcome: () => {
+      const word = 'WELCOME', n = Math.min(f, word.length)
+      const on = f < word.length ? true : f % 2 === 0
+      return badge(`<div class="w" style="font-size:42px;margin-top:6px">${chev()}${word.slice(0, n)}${cur(on)}<span style="visibility:hidden">${word.slice(n)}</span></div><div class="m">to devsa</div>`)
+    },
+    // the logo's prompt, cursor blinking
+    prompt: () => `<div class="cut" style="background:#0b0b0b;border-radius:40px;padding:56px 44px">${window.DEVSA_PROMPT.standalone(T, f % 2 === 0 ? P : 'transparent').replace('<svg ', '<svg style="width:200px;display:block" ')}</div>`,
+    shipit: () => badge(`<div class="w" style="font-size:78px;margin-top:6px">Ship</div><div class="w" style="font-size:78px;color:${O}">it.</div>`),
+    lgtm: () => badge(`<div class="w" style="font-size:86px;color:${T};margin-top:6px">LGTM</div><div class="m">looks good to me</div>`),
+    seeyou: () => badge(`<div class="w" style="font-size:52px;margin-top:6px">See you</div><div class="w" style="font-size:66px;color:${P}">there.</div>`),
+    critter: () => `<svg class="cut" viewBox="0 0 24 24" width="260" height="260" fill="#c4b5fd">${CRIT}</svg>`,
+    // Access Granted's own loop, unlocked and glowing; the PNG cut carries Startup Week's name
+    padlock: () => `<div class="cut" style="width:280px;height:280px;border-radius:50%;overflow:hidden;background:#000"><img src="lock-crop.png" style="width:100%;height:100%;object-fit:cover"></div>`,
+    pymascot: () => `<img class="cut" src="${A}mascot-sticker.webp" style="height:296px">`,
+    // PySanAntonio's own wordmark on a black pill: its navy "py" would vanish in dark mode. Its brand, so no DEVSA tabs.
+    pywordmark: () => `<div class="cut" style="background:#0b0b0b;border-radius:34px;padding:40px 30px;width:296px;display:flex;justify-content:center"><img src="${A}conf-2-trim.png" style="width:236px"></div>`,
+    // the alt logo: its black window gets an edge from the die-cut outline
+    altlogo: () => `<img class="cut" src="${A}devsa-alt-logo.svg" style="width:262px">`,
+    mhth: () => `<div class="cut" style="width:280px;height:280px;border-radius:50%;overflow:hidden;background:#000"><img src="mhth-crop.png" style="width:100%;height:100%;object-fit:cover"></div>`,
+  }
+  document.getElementById('c').innerHTML = S[k]()
+</script></body></html>

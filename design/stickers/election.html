@@ -1,0 +1,55 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@900&family=Geist+Mono:wght@700&display=block" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:320px;height:320px;background:transparent;overflow:hidden;font-family:Geist,sans-serif;-webkit-font-smoothing:antialiased}
+  .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  /* die-cut: a white outline so every sticker reads in light and dark themes */
+  .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+  /* a GIF has one-bit transparency, so its frames drop the soft shadow and keep the white edge */
+  .gif .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff)}
+  /* the text badge: a black tile with the logo's three tabs across the top */
+  .badge{background:#0b0b0b;border-radius:30px;padding:26px 22px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden}
+  .tabs{position:absolute;left:0;right:0;top:0;height:12px;display:flex;gap:5px}
+  .tabs i{flex:1}
+  .w{font-weight:900;text-transform:uppercase;letter-spacing:-.04em;line-height:.9;color:#fff;text-align:center;white-space:nowrap}
+  .m{font-family:"Geist Mono",monospace;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75);font-size:15px}
+</style></head>
+<body><div class="c" id="c"></div>
+<!-- Election Day, 2026-11-03. Nonpartisan on purpose: they say you voted, never how. -->
+<script src="../shared/devsa-prompt.js"></script>
+<script>
+  const T = '#00b2a9', P = '#ef426f', O = '#ff8200'
+  const q = new URLSearchParams(location.search), k = q.get('k'), f = +(q.get('f') || 0)
+  const tabs = `<div class="tabs"><i style="background:${T}"></i><i style="background:${P}"></i><i style="background:${O}"></i></div>`
+  const chev = (c = T) => window.DEVSA_PROMPT.chevron(c)
+  const cur = (on = true) => `<span style="${window.DEVSA_PROMPT.cursorCSS(P)};visibility:${on ? 'visible' : 'hidden'}"></span>`
+  const badge = (inner, w = 286) => `<div class="cut"><div class="badge" style="width:${w}px">${tabs}${inner}</div></div>`
+  const CRIT = '<path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/>'
+  const A = '../shared/assets/'
+  if (q.get('gif')) document.body.classList.add('gif')
+  // typed: the word types itself at the prompt, then the cursor blinks. f counts frames.
+  const typed = (word, sub) => {
+    const n = Math.min(f, word.length), on = f <= word.length ? true : Math.floor(f / 4) % 2 === 0
+    return badge(`<div class="w" style="font-size:44px;margin-top:8px">${chev()}${word.slice(0, n)}${cur(on)}<span style="visibility:hidden">${word.slice(n)}</span></div><div class="m">${sub}</div>`, 292)
+  }
+  const S = {
+    voted: () => typed('I voted', 'san antonio · nov 3'),
+    vote: () => typed('Yo voté', 'san antonio · 3 nov'),
+    // stamp: lands big and tilted, settles, holds
+    stamp: () => {
+      const k = [[1, -10, 0], [1, -10, 1], [.95, -7, 1], [.86, -3, 1], [.92, -4, 1], [.9, -4, 1]][Math.min(f, 5)]
+      return `<div style="transform:scale(${k[0]}) rotate(${k[1]}deg);opacity:${k[2]}">${badge(`<div class="w" style="font-size:88px;margin-top:8px">I</div><div class="w" style="font-size:70px;color:${P}">voted.</div><div class="m" style="margin-top:4px">devsa · satx</div>`, 282)}</div>`
+    },
+    // ok: the command, the answer, the status
+    ok: () => {
+      const cmd = 'vote', n = Math.min(f, cmd.length)
+      const big = f >= 6, ok = f >= 9, on = Math.floor(f / 4) % 2 === 0
+      return badge(`<div class="m" style="align-self:flex-start;font-size:20px;color:#fff;margin-top:6px">$ ${cmd.slice(0, n)}${f < 6 ? cur(on) : ''}</div>
+        <div class="w" style="font-size:64px;visibility:${big ? 'visible' : 'hidden'}">I voted</div>
+        <div class="m" style="align-self:flex-end;font-size:20px;color:${T};visibility:${ok ? 'visible' : 'hidden'}">✓ 200 OK</div>`, 292)
+    },
+  }
+  document.getElementById('c').innerHTML = S[k]()
+</script></body></html>

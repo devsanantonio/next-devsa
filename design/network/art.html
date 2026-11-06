@@ -1,0 +1,74 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;600;800;900&family=Geist+Mono:wght@500;700&display=block" rel="stylesheet">
+<style>
+/* The community network as art: Instagram, YouTube, poster and shirt from one
+   drawing. Same geometry as components/community-network.tsx on the site. */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--teal:#00b2a9;--pink:#ef426f;--orange:#ff8200}
+body{background:#000;color:#fff;font-family:Geist,sans-serif;overflow:hidden;position:relative}
+.mono{font-family:"Geist Mono",monospace;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.h{font-weight:900;letter-spacing:-.035em;line-height:.95}
+.lt{font-weight:300;font-style:italic;letter-spacing:-.02em;color:rgba(255,255,255,.6)}
+#stripe{position:absolute;left:0;right:0;bottom:0;display:flex}#stripe div{flex:1}
+.abs{position:absolute}
+</style></head><body><div id="c"></div>
+<script src="groups.js"></script>
+<script>
+const F = new URLSearchParams(location.search).get('f') || 'ig'
+const A = '../../public/slides/community-roundtable-nov12/'
+const G = window.DATA.groups.map((g, i) => (i === 14 ? 'assets/logos/g14-mark.png' : g.logo))
+const C = ['#00b2a9', '#ef426f', '#ff8200']
+// the network as an SVG of a given width; viewBox 640x480 like the site
+function net(width, opts = {}) {
+  const W = 640, H = 480, cx = W / 2, cy = H / 2, R = 23, n = G.length
+  const inner = Math.min(n, Math.max(3, Math.round(n * .36)))
+  const pts = G.map((_, i) => {
+    const isI = i < inner, cnt = isI ? inner : n - inner, k = isI ? i : i - inner
+    const a = (k / cnt) * Math.PI * 2 + (isI ? .35 : 0) + Math.sin(i * 7.3) * .08
+    const rx = isI ? 128 : 262, ry = isI ? 100 : 196
+    return [cx + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * .04), cy + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * .04)]
+  })
+  const L = []
+  for (let i = 0; i < inner && inner + i * 2 < n; i++) L.push([i, inner + Math.round((i / inner) * (n - inner))])
+  for (let i = inner; i + 1 < n; i += 3) L.push([i, i + 1])
+  const sw = opts.sw || 1.4
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${width}" style="display:block;overflow:visible"><defs><clipPath id="nc"><circle r="${R - 5}"/></clipPath><filter id="nw"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter></defs>`
+  // solid: print-safe, no transparency — each color pre-mixed onto a black shirt
+  const faint = opts.solid ? 'stroke="#2e2e2e"' : 'stroke="#fff" stroke-opacity=".16"'
+  const hub = (i) => opts.solid ? `stroke="${['#00837c', '#b03455', '#bc6200'][i % 3]}"` : `stroke="${C[i % 3]}" stroke-opacity=".65"`
+  L.forEach(([a, b]) => s += `<line x1="${pts[a][0]}" y1="${pts[a][1]}" x2="${pts[b][0]}" y2="${pts[b][1]}" ${faint} stroke-width="${sw * .75}"/>`)
+  pts.forEach(([x, y], i) => s += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" ${hub(i)} stroke-width="${sw}"/>`)
+  pts.forEach(([x, y], i) => s += `<g transform="translate(${x} ${y})"><circle r="${R}" fill="${opts.solid ? '#1c1c1c' : '#151515'}" stroke="${opts.solid ? '#333' : '#2c2c2c'}"/><image href="${A}${G[i]}" x="${-(R - 6)}" y="${-(R - 6)}" width="${(R - 6) * 2}" height="${(R - 6) * 2}" preserveAspectRatio="xMidYMid meet" clip-path="url(#nc)"${i === 15 ? ' filter="url(#nw)"' : ''}/></g>`)
+  s += `<circle cx="${cx}" cy="${cy}" r="58" fill="#000"/><image href="${A}assets/devsa-logo.svg" x="${cx - 42}" y="${cy - 32}" width="84" height="64" preserveAspectRatio="xMidYMid meet"/></svg>`
+  return s
+}
+const stripe = (h) => `<div id="stripe" style="height:${h}px"><div style="background:var(--teal)"></div><div style="background:var(--pink)"></div><div style="background:var(--orange)"></div></div>`
+const SZ = { ig: [1080, 1350], yt: [1920, 1080], poster: [1800, 2400], shirt: [1500, 1800] }[F]
+document.body.style.width = SZ[0] + 'px'; document.body.style.height = SZ[1] + 'px'
+let html = ''
+if (F === 'ig') html = `
+  <div class="abs h" style="left:80px;top:96px;font-size:76px">San Antonio never<br>lacked builders.</div>
+  <div class="abs lt" style="left:82px;top:270px;font-size:40px">What it lacked was anything connecting them.</div>
+  <div class="abs" style="left:40px;top:360px">${net(1000)}</div>
+  <div class="abs h" style="left:80px;top:1130px;font-size:76px">DEVSA is <span style="color:var(--pink)">that connection.</span></div>
+  <div class="abs mono" style="left:82px;top:1232px;font-size:22px;color:rgba(255,255,255,.75)">devsa.community</div>${stripe(14)}`
+if (F === 'yt') html = `
+  <div class="abs h" style="left:110px;top:300px;font-size:84px">San Antonio never<br>lacked builders.</div>
+  <div class="abs lt" style="left:112px;top:500px;font-size:42px">What it lacked was anything<br>connecting them.</div>
+  <div class="abs h" style="left:110px;top:650px;font-size:84px">DEVSA is<br><span style="color:var(--pink)">that connection.</span></div>
+  <div class="abs mono" style="left:112px;top:870px;font-size:24px;color:rgba(255,255,255,.75)">devsa.community</div>
+  <div class="abs" style="left:900px;top:150px">${net(960)}</div>${stripe(14)}`
+if (F === 'poster') html = `
+  <div class="abs h" style="left:130px;top:170px;font-size:150px">San Antonio<br>never lacked<br>builders.</div>
+  <div class="abs lt" style="left:134px;top:660px;font-size:62px">What it lacked was anything connecting them.</div>
+  <div class="abs" style="left:60px;top:800px">${net(1680, { sw: 1.2 })}</div>
+  <div class="abs h" style="left:130px;top:2040px;font-size:120px">DEVSA is <span style="color:var(--pink)">that connection.</span></div>
+  <div class="abs mono" style="left:134px;top:2190px;font-size:30px;line-height:1.7;color:rgba(255,255,255,.75)">One calendar · one directory · one channel · a few rooms a year<br><span style="color:var(--teal)">devsa.community</span></div>${stripe(24)}`
+if (F === 'shirt') html = `
+  <div class="abs" style="left:30px;top:120px">${net(1440, { sw: 1.3, solid: true })}</div>
+  <div class="abs mono" style="left:0;right:0;top:1300px;text-align:center;font-size:44px;color:#fff">Find your people.</div>
+  <div class="abs mono" style="left:0;right:0;top:1370px;text-align:center;font-size:44px;color:var(--teal)">Build your future.</div>`
+document.getElementById('c').innerHTML = html
+if (F === 'shirt') document.body.style.background = 'transparent'
+window.ready = true
+</script></body></html>

@@ -1,0 +1,5 @@
+const path=require('path'),fs=require('fs'),os=require('os')
+const puppeteer=require(process.env.PUPPETEER_CORE || 'puppeteer-core')
+;(async()=>{const prof=fs.mkdtempSync(path.join(os.tmpdir(),'devsa-rec-'))
+const br=await puppeteer.launch({executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new',userDataDir:prof,args:['--allow-file-access-from-files']})
+try{for(const [f,w,h,dsf] of [['ig',1080,1350,1],['yt',1920,1080,1],['poster',1800,2400,3],['shirt',1500,1800,3]]){const p=await br.newPage();p.on('pageerror',e=>console.log('ERR',e.message));await p.setViewport({width:w,height:h,deviceScaleFactor:dsf});await p.goto('file://'+path.join(__dirname,'art.html')+'?f='+f,{waitUntil:'networkidle0'});await p.evaluate(()=>document.fonts.ready);await new Promise(r=>setTimeout(r,500));await p.screenshot({path:path.join(process.argv[2]||'.',f+'.png'),omitBackground:f==='shirt'});await p.close();console.log('rendered',f)}}finally{await br.close();fs.rmSync(prof,{recursive:true,force:true})}})()

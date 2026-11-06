@@ -1,0 +1,244 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@900&family=Geist+Mono:wght@500;700&display=block" rel="stylesheet">
+<!-- Election Day stickers, 2026-11-03. Nonpartisan on purpose: they say you voted, never how.
+     Borrowed from jh3y's sticker demos: the holo foil that slides as it catches the light, and the
+     glitter die-cut edge. Papel picado and the City's line icons make them San Antonio's. -->
+<style>
+  *{margin:0;padding:0}
+  html,body{background:transparent;overflow:hidden}
+  svg{display:block}
+  .icon *{stroke-width:1.35px}
+</style></head>
+<body><div id="c"></div>
+<script>
+const T = '#00b2a9', P = '#ef426f', O = '#ff8200', K = '#0b0b0b'
+const q = new URLSearchParams(location.search), k = q.get('k'), f = +(q.get('f') || 0), N = +(q.get('n') || 24)
+const t = f / N, TAU = Math.PI * 2
+const SANS = 'font-family="Geist" font-weight="900"', MONO = 'font-family="Geist Mono" font-weight="700"'
+
+// A die-cut edge. glitter=true is jh3y's sparkle border: silver with white and pastel flecks that
+// re-seed every other frame so it twinkles; otherwise a plain white edge. Both are hard-edged, since
+// a GIF has one-bit transparency.
+const cut = (id, r, glitter) => `<filter id="${id}" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="${r}" result="d"/>
+  ${glitter ? `
+  <feFlood flood-color="#c9ced6" result="base"/>
+  <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="1" seed="${1 + Math.floor(f / 2)}" result="n1"/>
+  <feColorMatrix in="n1" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 9 -4.5" result="w"/>
+  <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="1" seed="${40 + Math.floor(f / 2)}" result="n2"/>
+  <feColorMatrix in="n2" values="0 0 0 0 1  0 0 0 0 .62  0 0 0 0 .86  0 0 0 9 -4.8" result="pk"/>
+  <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="1" seed="${80 + Math.floor(f / 2)}" result="n3"/>
+  <feColorMatrix in="n3" values="0 0 0 0 .55  0 0 0 0 1  0 0 0 0 .95  0 0 0 9 -4.8" result="tl"/>
+  <feMerge result="g"><feMergeNode in="base"/><feMergeNode in="w"/><feMergeNode in="pk"/><feMergeNode in="tl"/></feMerge>
+  <feComposite in="g" in2="d" operator="in" result="edge"/>` : `
+  <feFlood flood-color="#fff"/><feComposite in2="d" operator="in" result="edge"/>`}
+  <feMerge><feMergeNode in="edge"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>`
+
+// Holo foil: a pastel rainbow that slides one full period per loop, with a white sheen crossing it.
+const holo = (id, w, h) => `
+<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${w}" y2="${h}" spreadMethod="repeat" gradientTransform="translate(${w * t} ${h * t})">
+  <stop offset="0" stop-color="#ff9ecf"/><stop offset=".17" stop-color="#ffd59e"/><stop offset=".33" stop-color="#fff3a1"/>
+  <stop offset=".5" stop-color="#a6f5cf"/><stop offset=".67" stop-color="#9ed4ff"/><stop offset=".83" stop-color="#c9a8ff"/><stop offset="1" stop-color="#ff9ecf"/>
+</linearGradient>
+<linearGradient id="${id}s" gradientUnits="userSpaceOnUse" x1="${-w + 2 * w * t * 1.5}" y1="0" x2="${-w + 2 * w * t * 1.5 + w * .5}" y2="${h * .5}">
+  <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+</linearGradient>`
+
+const tabs = (x, y, w, h = 12) => {
+  const g = 5, iw = (w - 2 * g) / 3
+  return [T, P, O].map((c, i) => `<rect x="${x + i * (iw + g)}" y="${y}" width="${iw}" height="${h}" fill="${c}"/>`).join('')
+}
+
+// ---- papel picado ---------------------------------------------------------------------------
+// One flag per letter on a sagging string, each swinging on its own phase. The cut pattern is
+// real holes (the photo behind shows through, as it would through tissue paper); the letters are
+// white so they read on any photo.
+function papel(word, sub) {
+  const letters = [...word], fw = 70, gap = 7, n = letters.length
+  const W = n * (fw + gap) + 50, H = 222, x0 = 25, sag = 16
+  const ty = (x) => { const u = (x - 8) / (W - 16); return 26 + 4 * sag * u * (1 - u) }
+  const colors = [P, O, T]
+  let defs = '', flags = ''
+  letters.forEach((ch, i) => {
+    const cx = x0 + i * (fw + gap) + fw / 2, top = ty(cx), h = 112, w = fw
+    const a = 5.5 * Math.sin(TAU * t + i * .9)
+    // body: folded top strip, scalloped bottom
+    let zig = ''
+    const teeth = 7
+    for (let j = 0; j <= teeth * 2; j++) zig += ` L ${(w / 2 - (j * w) / (teeth * 2)).toFixed(1)} ${j % 2 ? h : h - 9}`
+    const body = `M ${-w / 2} 5 H ${w / 2} V ${h - 9}${zig} Z`
+    // holes: a row of dots under the fold, diamonds in the corners, a band of tiny triangles above the teeth
+    let holes = ''
+    for (let j = 0; j < 6; j++) holes += `<circle cx="${-w / 2 + 9 + j * ((w - 18) / 5)}" cy="15" r="2.6" fill="#000"/>`
+    for (const [dx, dy] of [[-1, 0], [1, 0]]) {
+      holes += `<path d="M ${dx * (w / 2 - 11)} 25 l 5 6 l -5 6 l -5 -6 z" fill="#000"/>`
+      holes += `<path d="M ${dx * (w / 2 - 11)} ${h - 31} l 5 6 l -5 6 l -5 -6 z" fill="#000"/>`
+    }
+    for (let j = 0; j < 7; j++) { const xx = -w / 2 + 7 + j * ((w - 14) / 6); holes += `<path d="M ${xx - 3} ${h - 16} l 3 -5 l 3 5 z" fill="#000"/>` }
+    if (ch === ' ') holes += `<g fill="#000" transform="translate(0 ${h / 2 - 2})"><circle cx="-8" cy="0" r="7.5"/><circle cx="8" cy="0" r="7.5"/><circle cx="0" cy="-8" r="7.5"/><circle cx="0" cy="8" r="7.5"/></g>`
+    defs += `<mask id="m${i}" maskUnits="userSpaceOnUse" x="${-w}" y="-10" width="${w * 2}" height="${h + 20}"><path d="${body}" fill="#fff"/>${holes}</mask>`
+    const c = colors[i % 3]
+    flags += `<g transform="translate(${cx} ${top}) rotate(${a.toFixed(2)})">
+      <path d="${body}" fill="${c}" mask="url(#m${i})"/>
+      <rect x="${-w / 2}" y="-4" width="${w}" height="9" rx="2" fill="${c}"/>
+      <rect x="${-w / 2}" y="-4" width="${w}" height="9" rx="2" fill="#000" opacity=".18"/>
+      ${ch === ' ' ? '' : `<text x="0" y="${h / 2 + 19}" text-anchor="middle" font-size="54" ${SANS} fill="#fff">${ch}</text>`}
+    </g>`
+  })
+  const string = `<path d="M 8 ${ty(8)} Q ${W / 2} ${26 + 2 * sag} ${W - 8} ${ty(W - 8)}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 8 ${ty(8)} Q ${W / 2} ${26 + 2 * sag} ${W - 8} ${ty(W - 8)}" fill="none" stroke="${K}" stroke-width="1.2" stroke-linecap="round"/>`
+  const label = sub ? `<g filter="url(#c)"><rect x="${W / 2 - 120}" y="${H - 46}" width="240" height="36" rx="18" fill="${K}"/>
+    <text x="${W / 2}" y="${H - 22.5}" text-anchor="middle" font-size="14" letter-spacing="2.2" ${MONO} fill="#fff">${sub}</text></g>` : ''
+  return { W, H, svg: `<defs>${defs}${cut('c', 4)}</defs>${string}${flags}${label}` }
+}
+
+// ---- ascii --------------------------------------------------------------------------------
+// A terminal badge. The pixel letters decode out of random glyphs, each cell locking in on its own
+// frame, then the prompt answers.
+const FONT = {
+  I: ['###', '.#.', '.#.', '.#.', '###'], V: ['#...#', '#...#', '#...#', '.#.#.', '..#..'],
+  O: ['.###.', '#...#', '#...#', '#...#', '.###.'], T: ['#####', '..#..', '..#..', '..#..', '..#..'],
+  E: ['####', '#...', '###.', '#...', '####'], D: ['####.', '#...#', '#...#', '#...#', '####.'], ' ': ['..', '..', '..', '..', '..'],
+}
+function ascii() {
+  const W = 560, H = 290
+  const word = 'I VOTED', rows = ['', '', '', '', '']
+  ;[...word].forEach((ch, i) => FONT[ch].forEach((r, y) => (rows[y] += (i ? '.' : '') + r)))
+  const cols = rows[0].length, cw = 13.4, lh = 19.5, gx = W / 2 - (cols * cw) / 2, gy = 112
+  const GL = '01<>/\\{}[]*+=%$&#@?!'
+  let rnd = 7, cells = ''
+  const R = () => ((rnd = (rnd * 16807) % 2147483647) / 2147483647)
+  rows.forEach((r, y) => [...r].forEach((c, x) => {
+    const lock = 2 + Math.floor(R() * 12), on = c === '#'
+    const seedc = GL[Math.floor(R() * GL.length)], flick = GL[(x * 7 + y * 3 + f * 5) % GL.length]
+    let ch, fill
+    if (!on) { ch = '.'; fill = 'rgba(255,255,255,.13)' }
+    else if (f >= lock) { ch = '#'; fill = '#fff' }
+    else { ch = f % 2 ? flick : seedc; fill = (x + y + f) % 3 === 0 ? T : (x + f) % 3 === 1 ? P : O }
+    cells += `<text x="${gx + x * cw + cw / 2}" y="${gy + y * lh}" text-anchor="middle" font-size="25" ${MONO} fill="${fill}">${ch.replace('<', '&lt;').replace('>', '&gt;').replace('&', ch === '&' ? '&amp;' : '&')}</text>`
+  }))
+  const done = f >= 15, blink = Math.floor(f / 3) % 2 === 0
+  const prompt = `<text x="38" y="66" font-size="15" ${MONO} fill="rgba(255,255,255,.75)">guest@devsa ~ % <tspan fill="#fff">vote</tspan></text>`
+  const ok = done ? `<text x="38" y="${gy + 5 * lh + 26}" font-size="15" ${MONO} fill="${T}">✓ ballot cast · satx · nov 3<tspan fill="${P}" opacity="${blink ? 1 : 0}"> ▍</tspan></text>`
+                  : `<text x="38" y="${gy + 5 * lh + 26}" font-size="15" ${MONO} fill="rgba(255,255,255,.6)">decoding${'.'.repeat(1 + (f % 3))}</text>`
+  return { W, H, svg: `<defs>${cut('c', 5)}<clipPath id="r"><rect x="16" y="16" width="${W - 32}" height="${H - 32}" rx="26"/></clipPath></defs>
+    <g filter="url(#c)"><rect x="16" y="16" width="${W - 32}" height="${H - 32}" rx="26" fill="${K}"/>
+    <g clip-path="url(#r)">${tabs(16, 16, W - 32)}</g></g>${prompt}${cells}${ok}` }
+}
+
+// ---- holo starburst -------------------------------------------------------------------------
+// The classic "I voted" burst, in foil, with a glitter edge.
+function burst() {
+  const W = 400, H = 400, cx = 200, cy = 200, n = 26
+  let pts = ''
+  for (let i = 0; i < n * 2; i++) { const r = i % 2 ? 150 : 172, a = (i / (n * 2)) * TAU - Math.PI / 2; pts += `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)} ` }
+  return { W, H, svg: `<defs>${holo('h', W, H)}${cut('g', 7, true)}</defs>
+    <g filter="url(#g)"><polygon points="${pts}" fill="url(#h)"/></g>
+    <polygon points="${pts}" fill="url(#hs)"/>
+    <circle cx="${cx}" cy="${cy}" r="128" fill="none" stroke="${K}" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+    <text x="${cx}" y="${cy + 24}" text-anchor="middle" font-size="54" ${SANS} fill="${K}" letter-spacing="-2">I VOTED</text>
+    <text x="${cx}" y="${cy + 60}" text-anchor="middle" font-size="13" letter-spacing="2.6" ${MONO} fill="${K}" opacity=".8">SAN ANTONIO · NOV 3</text>
+    ${tabs(cx - 52, cy - 62, 104, 9)}` }
+}
+
+// ---- City icons -----------------------------------------------------------------------------
+// The City's line icons, inked black on a DEVSA-colored tile with a glitter edge.
+function iconSticker(kind) {
+  const W = 380, H = 400, svgText = window.ICON || ''
+  const vb = (svgText.match(/viewBox="([^"]+)"/) || [, '0 0 30 30'])[1].split(/\s+/).map(Number)
+  const inner = svgText.replace(/<\?xml[^>]*>/, '').replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/#231f20/g, K)
+  const ih = 196, s = ih / vb[3], iw = vb[2] * s, ix = W / 2 - iw / 2, iy = 56
+  let art = '', extra = '', bg = kind === 'bell' ? O : T
+  if (kind === 'bell') {
+    // the bell swings; "dings" flare at each end of the swing
+    const a = 16 * Math.sin(TAU * t), side = Math.sign(a), strong = Math.abs(a) > 12
+    art = `<g transform="rotate(${a.toFixed(2)} ${W / 2} ${iy})"><svg class="icon" x="${ix}" y="${iy}" width="${iw}" height="${ih}" viewBox="${vb.join(' ')}" overflow="visible">${inner}</svg></g>`
+    if (strong) for (const d of [0, 1, 2]) extra += `<path d="M ${W / 2 + side * (iw / 2 + 18 + d * 12)} ${iy + 60 + d * 4} q ${side * 10} ${-22} 0 ${-44}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" transform="rotate(${side * (-10 + d * 14)} ${W / 2} ${iy + 120})"/>`
+  } else {
+    // the Tower of the Americas: its beacon blinks pink, and three sparkles twinkle in turn
+    const blink = Math.floor(f / 3) % 2 === 0
+    art = `<svg class="icon" x="${ix}" y="${iy}" width="${iw}" height="${ih}" viewBox="${vb.join(' ')}">${inner}</svg>`
+    extra = `<circle cx="${ix + 10.7 * s}" cy="${iy + .5 * s}" r="${blink ? 9 : 5}" fill="${blink ? P : '#fff'}" stroke="${K}" stroke-width="3"/>`
+    ;[[70, 92], [312, 130], [292, 52]].forEach(([x, y], i) => {
+      const sc = .55 + .45 * Math.max(0, Math.sin(TAU * t + i * 2.1))
+      extra += `<path transform="translate(${x} ${y}) scale(${sc.toFixed(2)})" d="M0 -16 C2 -4 4 -2 16 0 C4 2 2 4 0 16 C-2 4 -4 2 -16 0 C-4 -2 -2 -4 0 -16Z" fill="#fff" stroke="${K}" stroke-width="2.5"/>`
+    })
+  }
+  const label = kind === 'bell' ? 'I VOTED' : 'I VOTED'
+  const sub = kind === 'bell' ? 'YO VOTÉ · SATX' : 'SAN ANTONIO · NOV 3'
+  return { W, H, svg: `<defs>${holo('h', W, H)}${cut('g', 7, true)}</defs>
+    <g filter="url(#g)"><rect x="20" y="20" width="${W - 40}" height="${H - 40}" rx="44" fill="${bg}"/></g>
+    <rect x="20" y="20" width="${W - 40}" height="${H - 40}" rx="44" fill="url(#hs)"/>
+    ${extra}${art}
+    <rect x="44" y="${H - 116}" width="${W - 88}" height="76" rx="20" fill="${K}"/>
+    ${tabs(44 + 18, H - 116, W - 88 - 36, 7)}
+    <text x="${W / 2}" y="${H - 66}" text-anchor="middle" font-size="40" ${SANS} fill="url(#h)" letter-spacing="-1.5">${label}</text>
+    <text x="${W / 2}" y="${H - 48}" text-anchor="middle" font-size="11" letter-spacing="2.4" ${MONO} fill="rgba(255,255,255,.75)">${sub}</text>` }
+}
+
+const S = {
+  papel: () => papel('I VOTED', 'SAN ANTONIO · NOV 3'),
+  papeles: () => papel('YO VOTÉ', 'SAN ANTONIO · 3 NOV'),
+  ascii, burst,
+  bell: () => iconSticker('bell'),
+  tower: () => iconSticker('tower'),
+  pixel,
+}
+
+// ---- pixel ballot box -------------------------------------------------------------------------
+// The October pixel sticker, brought into this set: the ballot with its pixel check drops through
+// the slot, the box bounces and throws pixel sparks, and a fresh ballot comes down for the loop.
+// "I VOTED" stays in pixels, in holo foil.
+function pixel() {
+  const W = 400, H = 400, X = 22, Y = 22, TW = W - 44, TH = H - 44
+  const px = (cells, x0, y0, s, fill, gapr = 0.12) => {
+    let r = ''
+    cells.forEach((row, y) => [...row].forEach((c, x) => {
+      if (c === '#') r += `<rect x="${(x0 + x * s).toFixed(1)}" y="${(y0 + y * s).toFixed(1)}" width="${(s * (1 - gapr)).toFixed(1)}" height="${(s * (1 - gapr)).toFixed(1)}" fill="${fill}"/>`
+    }))
+    return r
+  }
+  // ballot: drops in over frames 4-11, gone 12-15, a new one falls from above 16-23
+  const BOX_TOP = 172, REST = 112, bw = 78, bh = 74
+  let by
+  if (f < 4) by = REST
+  else if (f < 12) by = REST + ((f - 3) / 8) ** 1.6 * (BOX_TOP + 6 - REST)
+  else if (f < 16) by = BOX_TOP + 20
+  else by = 40 - bh + ((f - 15) / 8) ** .7 * (REST - (40 - bh))
+  const CHECK = ['......#', '.....##', '#...##.', '##.##..', '.###...']
+  const ballot = `<g clip-path="url(#above)"><rect x="${W / 2 - bw / 2}" y="${by}" width="${bw}" height="${bh}" fill="#fff"/>
+    ${px(CHECK, W / 2 - 3.5 * 7.4, by + 12, 7.4, T, 0)}</g>`
+  const bounce = f >= 12 && f < 16 ? [1.06, 1.03, 0.99, 1][f - 12] : 1
+  const box = `<g transform="translate(${W / 2} ${BOX_TOP + 45}) scale(${bounce}) translate(${-W / 2} ${-(BOX_TOP + 45)})">
+    <rect x="${W / 2 - 92}" y="${BOX_TOP}" width="184" height="92" fill="#fff"/>
+    <rect x="${W / 2 - 80}" y="${BOX_TOP + 12}" width="160" height="68" fill="${K}"/>
+    <rect x="${W / 2 - 80}" y="${BOX_TOP + 12}" width="160" height="8" fill="#5f5f5f"/>
+    ${[T, P, O].map((c, i) => `<rect x="${W / 2 - 66 + i * 46}" y="${BOX_TOP + 44}" width="40" height="10" fill="${c}"/>`).join('')}
+  </g>`
+  // pixel sparks on the bounce
+  let sparks = ''
+  if (f >= 12 && f < 17) {
+    const d = (f - 11) * 9
+    ;[[-1, -1, T], [1, -1, P], [-1, .2, O], [1, .2, T]].forEach(([sx, sy, c]) => {
+      const x = W / 2 + sx * (100 + d), y = BOX_TOP + 30 + sy * (14 + d * .6)
+      sparks += `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${c}"/><rect x="${x - 5 + sx * 14}" y="${y - 5 + sy * 10}" width="6" height="6" fill="${c}"/>`
+    })
+  }
+  const rows = ['', '', '', '', '']
+  ;[...'I VOTED'].forEach((ch, i) => FONT[ch].forEach((r, y) => (rows[y] += (i ? '.' : '') + r)))
+  const s = 8.5, tx = W / 2 - (rows[0].length * s) / 2
+  return { W, H, svg: `<defs>${holo('h', W, H)}${cut('g', 7, true)}
+      <clipPath id="tile"><rect x="${X}" y="${Y}" width="${TW}" height="${TH}" rx="40"/></clipPath>
+      <clipPath id="above"><rect x="${X}" y="${Y}" width="${TW}" height="${BOX_TOP + 8 - Y}"/></clipPath></defs>
+    <g filter="url(#g)"><rect x="${X}" y="${Y}" width="${TW}" height="${TH}" rx="40" fill="${K}"/></g>
+    <g clip-path="url(#tile)">${tabs(X, Y, TW, 13)}${ballot}${box}${sparks}
+      ${px(rows, tx, 292, s, 'url(#h)', 0.04)}
+      <text x="${W / 2}" y="${H - 44}" text-anchor="middle" font-size="13" letter-spacing="2.6" ${MONO} fill="rgba(255,255,255,.75)">SAN ANTONIO · NOV 3</text>
+    </g>` }
+}
+const out = S[k]()
+document.getElementById('c').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${out.W}" height="${out.H}" viewBox="0 0 ${out.W} ${out.H}">${out.svg}</svg>`
+window.SIZE = [out.W, out.H]
+</script></body></html>

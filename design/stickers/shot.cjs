@@ -1,0 +1,10 @@
+const path=require('path'),fs=require('fs'),os=require('os')
+const puppeteer=require(process.env.PUPPETEER_CORE || 'puppeteer-core')
+;(async()=>{const prof=fs.mkdtempSync(path.join(os.tmpdir(),'devsa-rec-'))
+const br=await puppeteer.launch({executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new',userDataDir:prof,args:['--allow-file-access-from-files']})
+try{const out=process.argv[2];fs.mkdirSync(out+'/frames',{recursive:true});const p=await br.newPage();await p.setViewport({width:320,height:320})
+const shot=async(k,f,file)=>{await p.goto('file://'+path.join(__dirname,'stickers.html')+`?k=${k}&f=${f}`,{waitUntil:'networkidle0'});await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));await p.screenshot({path:file,omitBackground:true})}
+for(const k of ['mark','shipit','lgtm','seeyou','critter','padlock','pymascot','mhth']) await shot(k,0,`${out}/${k}.png`)
+for(let f=0;f<12;f++) await shot('welcome',f,`${out}/frames/welcome-${String(f).padStart(2,'0')}.png`)
+for(let f=0;f<2;f++) await shot('prompt',f,`${out}/frames/prompt-${f}.png`)
+}finally{await br.close();fs.rmSync(prof,{recursive:true,force:true})}})()
