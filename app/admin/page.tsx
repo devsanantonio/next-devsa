@@ -83,6 +83,7 @@ import { ActivityTab } from "@/components/admin/activity-tab"
 import { RsvpsTab } from "@/components/admin/rsvps-tab"
 import { AdminsTab } from "@/components/admin/admins-tab"
 import { SpeakerCallPanel } from "@/components/admin/speaker-call-panel"
+import { SpeakerCallDrawer } from "@/components/admin/speaker-call-drawer"
 import { isPoolTalk } from "@/lib/speaker-calls"
 import { GroupPicker } from "@/components/admin/group-picker"
 import { PROFILE_PHOTO_MAX_BYTES, squareProfilePhoto } from "@/lib/profile-photo"
@@ -392,6 +393,8 @@ export default function AdminPage() {
    * server narrows `/api/admin/data` to match (`?view=`), and never widens it.
    */
   const [accountRole, setAccountRole] = useState<"admin" | "organizer" | null>(null)
+  /** The Overview's "Open a call for speakers" drawer (components/admin/speaker-call-drawer.tsx). */
+  const [showSpeakerCallDrawer, setShowSpeakerCallDrawer] = useState(false)
   const [accountCommunityId, setAccountCommunityId] = useState<string | null>(null)
   const [ownGroups, setOwnGroups] = useState<string[]>([])
   const [viewGroup, setViewGroup] = useState<string | null>(null)
@@ -4818,15 +4821,9 @@ export default function AdminPage() {
                 setActiveTab("rsvps")
               }}
               todayKey={overviewToday}
-              openSpeakerCall={() => {
-                // The call's own panel, at the top of the Speakers tab: focus its box.
-                setActiveTab("speakers")
-                setTimeout(() => {
-                  const el = document.getElementById("speaker-call-panel")
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  el?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus({ preventScroll: true })
-                }, 100)
-              }}
+              // Opens the call right here (SpeakerCallDrawer). It used to switch to the
+              // Speakers tab and focus an unticked checkbox, which organizers missed.
+              openSpeakerCall={() => setShowSpeakerCallDrawer(true)}
               editProfile={openProfileDrawer}
             />
           )}
@@ -6393,6 +6390,18 @@ export default function AdminPage() {
             </div>
           )}
 
+          <SpeakerCallDrawer
+            open={showSpeakerCallDrawer}
+            onClose={() => setShowSpeakerCallDrawer(false)}
+            group={communities.find((c) => c.id === adminCommunityId) ?? null}
+            adminFetch={adminFetch}
+            onSaved={(call) => {
+              setCommunities((prev) => prev.map((c) => (c.id === adminCommunityId ? { ...c, ...call } : c)))
+              setSuccessMessage("Your call for speakers is open. Talk ideas will arrive in your Speakers tab.")
+            }}
+            onError={(m) => setError(m)}
+          />
+
           {/* Your profile: name and the organizer directory fields. Opened from the account menu or the Communities tab. */}
           <SlideDrawer
             open={showProfileDrawer}
@@ -6402,6 +6411,17 @@ export default function AdminPage() {
             widthClass="max-w-xl"
           >
             <form onSubmit={saveProfile} className="space-y-5">
+              {/* The directory switch leads the drawer. It sat under every other field, and
+                  organizers opening "Add yourself to the directory" couldn't find it. */}
+              <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                <input type="checkbox" checked={profileDraft.inDirectory} onChange={(e) => setProfileDraft({ ...profileDraft, inDirectory: e.target.checked })} className="mt-1 h-4 w-4 accent-[#ef426f]" />
+                <span>
+                  <span className="block text-sm font-semibold text-white">Show me in the organizer directory</span>
+                  <span className="mt-1 block text-sm text-neutral-400">
+                    Signed-in organizers see your name, role, email and LinkedIn on the Communities tab. It&apos;s never shown on the public site.
+                  </span>
+                </span>
+              </label>
               <div className="flex items-center gap-4">
                 <Avatar
                   name={[profileDraft.firstName, profileDraft.lastName].filter(Boolean).join(" ") || adminEmail}
@@ -6481,6 +6501,18 @@ export default function AdminPage() {
                   <p className="mt-1.5 text-xs text-neutral-400">So the next lead can be lined up before you go.</p>
                 </div>
               )}
+              {/* An organizer's group is set by whoever approved them, so it's shown, not
+                  picked. Admins choose theirs below ("Groups you run"). */}
+              {accountRole === "organizer" && (
+                <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                  <p className="text-sm font-semibold text-white">
+                    Your group: {communities.find((c) => c.id === accountCommunityId)?.name || "not assigned yet"}
+                  </p>
+                  <p className="mt-1 text-sm text-neutral-400">
+                    Set when your access was approved. Run another group too, or need this changed? Reply to your approval email or message a DEVSA admin.
+                  </p>
+                </div>
+              )}
               {accountRole && accountRole !== "organizer" && (
                 <fieldset>
                   <legend className="block text-sm font-semibold text-neutral-300 mb-1">Groups you run</legend>
@@ -6495,15 +6527,6 @@ export default function AdminPage() {
                   />
                 </fieldset>
               )}
-              <label className="flex items-start gap-3 rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
-                <input type="checkbox" checked={profileDraft.inDirectory} onChange={(e) => setProfileDraft({ ...profileDraft, inDirectory: e.target.checked })} className="mt-1 h-4 w-4 accent-[#ef426f]" />
-                <span>
-                  <span className="block text-sm font-semibold text-white">Show me in the organizer directory</span>
-                  <span className="mt-1 block text-sm text-neutral-400">
-                    Signed-in organizers see your name, role, email and LinkedIn on the Communities tab. It&apos;s never shown on the public site.
-                  </span>
-                </span>
-              </label>
               {profileError && <p className="text-sm text-red-400">{profileError}</p>}
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={isSavingProfile} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d63760] transition-colors disabled:opacity-50">
