@@ -1,9 +1,13 @@
-import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf } from "./layout"
+import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf, C } from "./layout"
+import { calendarButtons, gettingThere, type EventExtras } from "./event-extras"
 
 /**
  * The day-before reminder to everyone who RSVP'd, from the daily cron
  * (/api/events/reminders). Each RSVP gets it once: the cron stamps `remindedAt`.
  * Short on purpose: it's a nudge with the details, read on a phone.
+ *
+ * It carries the add-to-calendar links and the organizer's "Getting there" note
+ * (lib/emails/event-extras.ts), since this is the mail people open on the way.
  */
 export function EventReminderEmail({
   firstName,
@@ -12,6 +16,7 @@ export function EventReminderEmail({
   when,
   where,
   eventUrl,
+  extras,
 }: {
   firstName: string
   eventTitle: string
@@ -19,6 +24,7 @@ export function EventReminderEmail({
   when: string
   where: string
   eventUrl: string
+  extras: EventExtras
 }): string {
   return emailShell({
     title: `Tomorrow: ${esc(eventTitle)}`,
@@ -27,8 +33,10 @@ export function EventReminderEmail({
       ${eyebrow("See you tomorrow")}
       ${heading(`${esc(eventTitle)} is tomorrow, ${firstNameOf(firstName)}.`)}
       ${panel(rows([["When", esc(when)], ["Where", esc(where)], ["Hosted by", esc(hostName)]]), { label: "Your event" })}
+      ${gettingThere(extras.arrivalNote)}
+      ${calendarButtons(extras)}
       ${paragraph("Plans changed? Reply to this email so the organizers can plan for the room.")}
-      ${button(eventUrl, "View the event")}
+      ${button(eventUrl, "View the event", C.border)}
     `,
   })
 }

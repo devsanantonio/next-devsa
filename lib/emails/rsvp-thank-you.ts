@@ -9,7 +9,9 @@ import {
   esc,
   firstNameOf,
   SITE,
+  C,
 } from "./layout"
+import { calendarButtons, gettingThere, type EventExtras } from "./event-extras"
 
 interface RsvpThankYouEmailProps {
   firstName: string
@@ -21,6 +23,8 @@ interface RsvpThankYouEmailProps {
   eventUrl?: string
   /** Moved up from the waitlist: the same confirmation, saying a spot opened. */
   fromWaitlist?: boolean
+  /** Getting there and the calendar links (lib/emails/event-extras.ts). */
+  extras?: EventExtras
 }
 
 /**
@@ -35,6 +39,7 @@ export function RsvpThankYouEmail({
   communityName,
   eventUrl,
   fromWaitlist,
+  extras,
 }: RsvpThankYouEmailProps): string {
   return emailShell({
     title: `You're registered for ${esc(eventTitle)}`,
@@ -56,8 +61,9 @@ export function RsvpThankYouEmail({
         ])}`,
         { label: "Your event" }
       )}
+      ${extras ? `${gettingThere(extras.arrivalNote)}${calendarButtons(extras)}` : ""}
       ${paragraph("Can&rsquo;t make it after all, or have a question? Reply to this email.")}
-      ${button(eventUrl || `${SITE}/events`, "View the event")}
+      ${button(eventUrl || `${SITE}/events`, "View the event", extras ? C.border : undefined)}
     `,
   })
 }

@@ -21,3 +21,14 @@ export function messageWindow(
   if (sentCount >= MESSAGE_LIMIT) return { open: false, reason: `This event has had its ${MESSAGE_LIMIT} messages` }
   return { open: true }
 }
+
+/**
+ * The day-before reminder is skipped once an organizer has messaged the
+ * attendees. Every message carries the event's details and add-to-calendar
+ * links, so the people going already have it in their calendars; a reminder on
+ * top would be a second email about the same evening.
+ */
+export function remindersSuppressed(event: { messages?: unknown[] | null }): boolean {
+  return (event.messages?.length ?? 0) > 0
+}
+

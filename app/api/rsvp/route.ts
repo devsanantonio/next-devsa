@@ -10,6 +10,7 @@ import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
 import { isHostedBy } from '@/lib/event-hosts';
 import { isAdminRole } from '@/lib/admin-roles';
 import { csvCell } from '@/lib/csv';
+import { eventExtrasFor } from '@/lib/event-emails';
 
 /**
  * The email for one RSVP: the confirmation, the waitlist notice, or the
@@ -68,7 +69,8 @@ async function sendRsvpEmail(
       to: rsvp.email,
       replyTo: EMAIL_REPLY_TO,
       subject: kind === 'waitlisted' ? getRsvpWaitlistSubject(title) : getRsvpThankYouSubject(title, kind === 'promoted'),
-      html: kind === 'waitlisted' ? RsvpWaitlistEmail(props) : RsvpThankYouEmail({ ...props, fromWaitlist: kind === 'promoted' }),
+      // A seat gets the calendar links and the getting-there note; the waitlist doesn't have a seat to plan around.
+      html: kind === 'waitlisted' ? RsvpWaitlistEmail(props) : RsvpThankYouEmail({ ...props, fromWaitlist: kind === 'promoted', extras: eventData?.slug && eventData?.date ? eventExtrasFor(rsvp.eventSlug, eventData) : undefined }),
     });
   } catch (emailError) {
     console.error('Failed to send RSVP email:', emailError);

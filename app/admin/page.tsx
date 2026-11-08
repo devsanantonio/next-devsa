@@ -226,6 +226,7 @@ interface CalendarEvent {
   capacity?: number | null
   messages?: { at: string; by: string; subject: string; sent: number }[]
   summary?: string | null
+  arrivalNote?: string | null
   isOfficial?: boolean
   unlisted?: boolean
   /** Addresses this event used before; its page redirects from them. */
@@ -1413,6 +1414,7 @@ export default function AdminPage() {
       rsvpQuestion: "",
       rsvpQuestionRequired: false,
       summary: "",
+      arrivalNote: "",
       isOfficial: false,
       unlisted: false,
       brand: "",
@@ -1456,6 +1458,7 @@ export default function AdminPage() {
             : editingEvent.venue || editingEvent.address || editingEvent.location,
           description: editingEvent.description,
           summary: editingEvent.summary || "",
+          arrivalNote: editingEvent.arrivalNote || "",
           status: editingEvent.status,
           eventType: editingEvent.eventType,
           rsvpEnabled: editingEvent.rsvpEnabled === true,
@@ -4489,6 +4492,34 @@ export default function AdminPage() {
                           <span className="float-right tabular-nums">{(editingEvent.summary || "").length}/120</span>
                         </p>
                           </div>
+                        </div>
+                      </details>
+                      {/* Parking, entrance, floor. Shown under the address on the event page
+                          and in the day-before reminder, where people read it on the way. */}
+                      <details className="group" open={!!editingEvent.arrivalNote}>
+                        <summary className="cursor-pointer list-none text-sm font-medium text-neutral-300 hover:text-white">
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                            Add getting-there details (parking, entrance)
+                          </span>
+                        </summary>
+                        <div className="mt-3 space-y-2">
+                          <label htmlFor="eventArrivalNote" className="block text-sm font-semibold text-neutral-300">
+                            Getting there <span className="font-normal text-neutral-400">(optional)</span>
+                          </label>
+                          <textarea
+                            id="eventArrivalNote"
+                            rows={3}
+                            maxLength={280}
+                            value={editingEvent.arrivalNote || ""}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, arrivalNote: e.target.value })}
+                            placeholder="e.g. Park at City Tower Garage next door. Take the elevator to the 3rd floor."
+                            className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-3 px-4 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20"
+                          />
+                          <p className="text-xs text-neutral-400">
+                            Shown under the address on the event page and in the reminder email the day before.
+                            <span className="float-right tabular-nums">{(editingEvent.arrivalNote || "").length}/280</span>
+                          </p>
                         </div>
                       </details>
                       </section>

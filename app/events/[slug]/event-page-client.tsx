@@ -45,6 +45,8 @@ interface Event {
   location: string
   venue?: string
   address?: string
+  /** How to arrive (parking, entrance, floor), from the admin's "Getting there" field. */
+  arrivalNote?: string | null
   description: string
   url?: string
   communityId: string
@@ -520,6 +522,14 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                 <p className="mt-2.5 text-xl font-semibold leading-snug text-white">
                   {event.location}
                 </p>
+              )}
+              {/* Parking, entrance, floor: the organizer's "Getting there" note.
+                  The same text goes out in the day-before reminder email. */}
+              {event.arrivalNote && (
+                <div className="mt-4 max-w-md">
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">Getting there</p>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-white/80">{event.arrivalNote}</p>
+                </div>
               )}
             </div>
           </div>

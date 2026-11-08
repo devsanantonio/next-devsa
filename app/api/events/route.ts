@@ -8,6 +8,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { httpUrl } from '@/lib/safe-url';
 import { defaultEventSlug, invalidCustomSlug, slugTaken } from '@/lib/event-slug';
 import { isAdminRole } from '@/lib/admin-roles';
+import { sanitizeInput } from '@/lib/sanitize';
 
 // Helper to build community lookup map from Firestore
 async function buildCommunityLookup(db: FirebaseFirestore.Firestore) {
@@ -199,6 +200,12 @@ export async function GET(request: NextRequest) {
   }
 }
 /** The digest's one-liner, normalized for storage: plain, single-line, 120 characters at most. */
+/** The "Getting there" note: plain text, at most 280 characters, null when empty. */
+function arrivalNoteField(note: unknown): string | null {
+  if (typeof note !== 'string') return null;
+  return sanitizeInput(note.replace(/\s+/g, ' ').trim().slice(0, 280)) || null;
+}
+
 function summaryField(summary: unknown): string | null {
   if (typeof summary !== 'string') return null;
   return summary.replace(/\s+/g, ' ').trim().slice(0, 120) || null;
@@ -208,7 +215,7 @@ function summaryField(summary: unknown): string | null {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
+    const { title, date, endTime, location, venue, address, description, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, status, eventType, rsvpEnabled, unlisted, rsvpQuestion, rsvpQuestionRequired, summary, arrivalNote } = body;
 
     // Both links render as hrefs, so only http(s) is accepted (lib/safe-url.ts).
     const safeDetailsUrl = httpUrl(detailsUrl);
@@ -289,6 +296,7 @@ export async function POST(request: NextRequest) {
       address: address || '',
       description,
       summary: summaryField(summary),
+      arrivalNote: arrivalNoteField(arrivalNote),
       communityId: communityId || '',
       ...(communityName ? { communityName } : {}),
       ...(partnerId ? { partnerId } : {}),
@@ -330,7 +338,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired, summary } = body;
+    const { eventId, title, date, endTime, location, venue, address, description, status, eventType, rsvpEnabled, communityId, communityName, partnerId, isOfficial, brand, detailsUrl, unlisted, rsvpQuestion, rsvpQuestionRequired, summary, arrivalNote } = body;
 
     // Both links render as hrefs, so only http(s) is accepted (lib/safe-url.ts).
     const safeDetailsUrl = httpUrl(detailsUrl);
@@ -415,6 +423,7 @@ export async function PUT(request: NextRequest) {
     if (description) updateData.description = description;
     // A string, even an empty one, is an edit: clearing the field clears it.
     if (typeof summary === 'string') updateData.summary = summaryField(summary);
+    if (typeof arrivalNote === 'string') updateData.arrivalNote = arrivalNoteField(arrivalNote);
     if (status && (status === 'published' || status === 'draft')) updateData.status = status;
     if (typeof rsvpEnabled === 'boolean') updateData.rsvpEnabled = rsvpEnabled;
     // Admins only (see POST): an organizer can neither make an event official nor

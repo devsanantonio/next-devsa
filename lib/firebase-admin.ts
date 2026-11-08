@@ -519,6 +519,12 @@ export interface Event {
    */
   summary?: string | null;
   /**
+   * How to arrive: parking, which entrance, which floor. Plain text, at most
+   * 280 characters; null when unset. Shown on the event page beside the
+   * address and in the day-before reminder email.
+   */
+  arrivalNote?: string | null;
+  /**
    * An activation with a design system of its own — see lib/event-brands.ts.
    *
    * Keyed by name rather than carrying colors, because these are identities

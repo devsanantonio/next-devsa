@@ -170,6 +170,34 @@ export function RsvpsTab({
   const [messageTarget, setMessageTarget] = useState<{ eventId: string; title: string; going: number } | null>(null)
   const [messageDraft, setMessageDraft] = useState({ subject: "", message: "" })
   const [isMessaging, setIsMessaging] = useState(false)
+  /** The rendered email, shown before anything is sent. Cleared when the draft changes. */
+  const [messagePreview, setMessagePreview] = useState<{ subject: string; html: string; canSend: boolean; reason: string | null } | null>(null)
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  const previewAttendeeMessage = async () => {
+    if (!messageTarget) return
+    setIsPreviewing(true)
+    try {
+      const res = await adminFetch("/api/events/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: messageTarget.eventId, kind: "message", preview: true, ...messageDraft }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        onError(data.error || "Couldn't build the preview")
+        return
+      }
+      setMessagePreview({ subject: data.subject, html: data.html, canSend: data.canSend, reason: data.reason })
+    } catch {
+      onError("Couldn't build the preview")
+    } finally {
+      setIsPreviewing(false)
+    }
+  }
+  const closeMessage = () => {
+    setMessageTarget(null)
+    setMessagePreview(null)
+  }
   const sendAttendeeMessage = async () => {
     if (!messageTarget) return
     setIsMessaging(true)
@@ -185,6 +213,7 @@ export function RsvpsTab({
         return
       }
       setMessageTarget(null)
+      setMessagePreview(null)
       setMessageDraft({ subject: "", message: "" })
       onSuccess(
         data.configured === false
@@ -399,9 +428,12 @@ export function RsvpsTab({
                           type="button"
                           onClick={() => {
                             setMessageDraft({ subject: "", message: "" })
+                            setMessagePreview(null)
                             setMessageTarget({ eventId, title: eventTitle, going: going.length })
                           }}
-                          disabled={!gate.open || going.length === 0}
+                          // Opens before the window so a message can be written and previewed early;
+                          // the preview says when it can go, and Send stays off until then.
+                          disabled={going.length === 0 || messagesSent >= MESSAGE_LIMIT}
                           title={gate.open ? `${MESSAGE_LIMIT - messagesSent} of ${MESSAGE_LIMIT} left for this event` : gate.reason}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-600 px-2.5 py-1.5 text-xs font-semibold text-neutral-200 transition-colors hover:bg-neutral-700/60 disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -536,56 +568,94 @@ export function RsvpsTab({
         )
       })()}
 
-      {/* Message attendees: subject and note, to everyone going (not the waitlist). */}
+      {/* Message attendees: subject and note, to everyone going (not the waitlist).
+          Two steps: write, then Preview renders the exact email (the same HTML
+          Resend sends) in a frame, and Send is only offered from there. */}
       {messageTarget && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="message-title">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              sendAttendeeMessage()
-            }}
-            className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
-          >
-            <h3 id="message-title" className="text-lg font-bold text-white">
-              Message the {messageTarget.going} {messageTarget.going === 1 ? "person" : "people"} going
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-              For {messageTarget.title}. It goes from DEVSA with your name on it, and replies come to you. Each event gets {MESSAGE_LIMIT}, from three days before to a week after.
-            </p>
-            <label htmlFor="message-subject" className="mt-4 block text-sm font-semibold text-neutral-300">Subject</label>
-            <input
-              id="message-subject"
-              required
-              maxLength={120}
-              value={messageDraft.subject}
-              onChange={(e) => setMessageDraft({ ...messageDraft, subject: e.target.value })}
-              placeholder="Slides and the recording"
-              className="mt-2 w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-            />
-            <label htmlFor="message-body" className="mt-4 block text-sm font-semibold text-neutral-300">Message</label>
-            <textarea
-              id="message-body"
-              required
-              rows={6}
-              maxLength={3000}
-              value={messageDraft.message}
-              onChange={(e) => setMessageDraft({ ...messageDraft, message: e.target.value })}
-              placeholder="Thanks for coming out last night. The slides are here: …"
-              className="mt-2 w-full resize-y rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-            />
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <button
-                type="submit"
-                disabled={isMessaging}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
-              >
-                {isMessaging ? <Loader2 className="h-4 w-4 animate-spin" /> : `Send to ${messageTarget.going}`}
-              </button>
-              <button type="button" onClick={() => setMessageTarget(null)} disabled={isMessaging} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
-                Cancel
-              </button>
+          {!messagePreview ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                previewAttendeeMessage()
+              }}
+              className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
+            >
+              <h3 id="message-title" className="text-lg font-bold text-white">
+                Message the {messageTarget.going} {messageTarget.going === 1 ? "person" : "people"} going
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                For {messageTarget.title}. It goes from DEVSA with your name on it, and replies come to you. Each event gets {MESSAGE_LIMIT}, from three days before to a week after.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                The email includes the event&apos;s details, its getting-there note and add-to-calendar buttons, so sending one <strong className="text-white">replaces the automatic day-before reminder</strong>.
+              </p>
+              <label htmlFor="message-subject" className="mt-4 block text-sm font-semibold text-neutral-300">Subject</label>
+              <input
+                id="message-subject"
+                required
+                maxLength={120}
+                value={messageDraft.subject}
+                onChange={(e) => setMessageDraft({ ...messageDraft, subject: e.target.value })}
+                placeholder="Slides and the recording"
+                className="mt-2 w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+              />
+              <label htmlFor="message-body" className="mt-4 block text-sm font-semibold text-neutral-300">Message</label>
+              <textarea
+                id="message-body"
+                required
+                rows={6}
+                maxLength={3000}
+                value={messageDraft.message}
+                onChange={(e) => setMessageDraft({ ...messageDraft, message: e.target.value })}
+                placeholder="Thanks for coming out last night. The slides are here: …"
+                className="mt-2 w-full resize-y rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+              />
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="submit"
+                  disabled={isPreviewing}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
+                >
+                  {isPreviewing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Preview the email"}
+                </button>
+                <button type="button" onClick={closeMessage} disabled={isPreviewing} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex max-h-[92vh] w-full max-w-2xl flex-col rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
+              <h3 id="message-title" className="text-lg font-bold text-white">Preview</h3>
+              <p className="mt-1 text-sm text-neutral-300">
+                <span className="text-neutral-400">Subject:</span> {messagePreview.subject}
+              </p>
+              <p className="mt-1 text-xs text-neutral-400">Addressed to you here; each person going gets it with their own name.</p>
+              {/* sandbox: the email's links can't navigate the admin, and nothing in it runs. */}
+              <iframe
+                title="Email preview"
+                srcDoc={messagePreview.html}
+                sandbox=""
+                className="mt-4 min-h-[420px] w-full flex-1 rounded-xl border border-neutral-700 bg-[#0a0a0a]"
+              />
+              {!messagePreview.canSend && messagePreview.reason && (
+                <p className="mt-3 text-sm text-amber-300">{messagePreview.reason}, so it can&apos;t be sent yet.</p>
+              )}
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={sendAttendeeMessage}
+                  disabled={isMessaging || !messagePreview.canSend}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
+                >
+                  {isMessaging ? <Loader2 className="h-4 w-4 animate-spin" /> : `Send to ${messageTarget.going}`}
+                </button>
+                <button type="button" onClick={() => setMessagePreview(null)} disabled={isMessaging} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
+                  Back to edit
+                </button>
+              </div>
             </div>
-          </form>
+          )}
         </div>
       )}
     </>

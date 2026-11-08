@@ -1,4 +1,5 @@
-import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf, SITE } from "./layout"
+import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf, SITE, C } from "./layout"
+import { calendarButtons, gettingThere, type EventExtras } from "./event-extras"
 
 /**
  * Emails to the people who RSVP'd, when an organizer changes an event or calls
@@ -24,6 +25,7 @@ export function EventChangedEmail({
   where,
   note,
   eventUrl,
+  extras,
 }: {
   firstName: string
   eventTitle: string
@@ -33,6 +35,8 @@ export function EventChangedEmail({
   where: string
   note?: string | null
   eventUrl: string
+  /** The calendar links for the new time, and the getting-there note. */
+  extras?: EventExtras
 }): string {
   return emailShell({
     title: `${esc(eventTitle)} has changed`,
@@ -47,8 +51,9 @@ export function EventChangedEmail({
         { label: "What changed" }
       )}
       ${panel(rows([["When", esc(when)], ["Where", esc(where)]]), { label: "Where to be now" })}
+      ${extras ? `${gettingThere(extras.arrivalNote)}${calendarButtons(extras)}` : ""}
       ${paragraph("Your RSVP still stands. Can&rsquo;t make the new time? Reply and let us know.")}
-      ${button(eventUrl, "View the event")}
+      ${button(eventUrl, "View the event", extras ? C.border : undefined)}
     `,
   })
 }
@@ -102,6 +107,7 @@ export function EventMessageEmail({
   subject,
   message,
   eventUrl,
+  extras,
 }: {
   firstName: string
   eventTitle: string
@@ -110,6 +116,8 @@ export function EventMessageEmail({
   subject: string
   message: string
   eventUrl: string
+  /** Getting there and the calendar links, so an update about the night carries them. */
+  extras?: EventExtras
 }): string {
   const paragraphs = message
     .split(/\n{2,}/)
@@ -126,8 +134,9 @@ export function EventMessageEmail({
       ${paragraph(`Hi ${firstNameOf(firstName)},`)}
       ${paragraphs}
       ${paragraph(`${esc(senderName)}<br /><span style="opacity: 0.7;">${esc(hostName)}</span>`)}
+      ${extras ? `${gettingThere(extras.arrivalNote)}${calendarButtons(extras)}` : ""}
       ${paragraph("You&rsquo;re getting this because you RSVP&rsquo;d. Reply to reach the organizers directly.")}
-      ${button(eventUrl, "View the event")}
+      ${button(eventUrl, "View the event", extras ? C.border : undefined)}
     `,
   })
 }

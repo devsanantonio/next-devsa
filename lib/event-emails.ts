@@ -8,6 +8,8 @@
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/resend';
 import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
+import { buildCalendarLinks } from '@/lib/event-display';
+import type { EventExtras } from '@/lib/emails/event-extras';
 
 export const SITE_URL = 'https://www.devsa.community';
 
@@ -98,3 +100,22 @@ export async function sendToAttendees(
   }
   return { sent, configured: true };
 }
+
+/**
+ * The calendar links and "Getting there" note for an event's attendee emails
+ * (see lib/emails/event-extras.ts). The Google link is built by the same
+ * function the event page uses; the .ics is served by /api/events/ics.
+ */
+export function eventExtrasFor(id: string, event: FirebaseFirestore.DocumentData): EventExtras {
+  const eventUrl = `${SITE_URL}/events/${event.slug}`;
+  const { googleUrl } = buildCalendarLinks(
+    { id, slug: event.slug, title: event.title, date: event.date, endTime: event.endTime, location: event.location || formatWhere(event), description: event.description || '', url: eventUrl },
+    SITE_URL,
+  );
+  return {
+    googleCalendarUrl: googleUrl,
+    icsUrl: `${SITE_URL}/api/events/ics?slug=${encodeURIComponent(event.slug)}`,
+    arrivalNote: event.arrivalNote ?? null,
+  };
+}
+

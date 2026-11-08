@@ -4,7 +4,7 @@ import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { isHostedBy } from '@/lib/event-hosts';
 import { messageWindow } from '@/lib/event-messages';
-import { attendeesOf, formatWhen, formatWhere, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
+import { attendeesOf, eventExtrasFor, formatWhen, formatWhere, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
 import { isAdminRole } from '@/lib/admin-roles';
 import {
   EventChangedEmail,
@@ -70,20 +70,35 @@ export async function POST(request: NextRequest) {
       if (!subject || !message) return NextResponse.json({ error: 'A subject and a message are both needed' }, { status: 400 });
 
       const gate = messageWindow(event.date, event.messages?.length ?? 0, Date.now());
+      const senderName = [admin.firstName, admin.lastName].filter(Boolean).join(' ') || 'The organizers';
+      const hostName = await hostNameFor(event);
+      const eventUrl = `${SITE_URL}/events/${event.slug}`;
+      const extras = eventExtrasFor(eventId, event);
+
+      // preview: the exact email, addressed to the sender, and nothing sent. The
+      // admin shows it in a frame before the Send button, so organizers see what
+      // their attendees will get, calendar links and getting-there note included.
+      if (body.preview === true) {
+        const going = (await attendeesOf(eventId)).filter((a) => !a.waitlisted).length;
+        return NextResponse.json({
+          subject: getEventMessageSubject(subject, event.title),
+          html: EventMessageEmail({ firstName: admin.firstName || 'there', eventTitle: event.title, hostName, senderName, subject, message, eventUrl, extras }),
+          going,
+          canSend: gate.open && going > 0,
+          reason: !gate.open ? gate.reason : going === 0 ? "Nobody has RSVP'd yet" : null,
+        });
+      }
       if (!gate.open) return NextResponse.json({ error: gate.reason }, { status: 400 });
 
       const going = (await attendeesOf(eventId)).filter((a) => !a.waitlisted);
       if (going.length === 0) return NextResponse.json({ error: 'Nobody has RSVP\'d yet' }, { status: 400 });
 
-      const senderName = [admin.firstName, admin.lastName].filter(Boolean).join(' ') || 'The organizers';
       const replyTo = admin.contactEmail || admin.email;
-      const hostName = await hostNameFor(event);
-      const eventUrl = `${SITE_URL}/events/${event.slug}`;
       const { sent, configured } = await sendToAttendees(
         going,
         (a) => ({
           subject: getEventMessageSubject(subject, event.title),
-          html: EventMessageEmail({ firstName: a.firstName, eventTitle: event.title, hostName, senderName, subject, message, eventUrl }),
+          html: EventMessageEmail({ firstName: a.firstName, eventTitle: event.title, hostName, senderName, subject, message, eventUrl, extras }),
         }),
         replyTo
       );
@@ -139,6 +154,7 @@ export async function POST(request: NextRequest) {
         where: formatWhere(event),
         note,
         eventUrl,
+        extras: eventExtrasFor(eventId, event),
       }),
     }));
     return NextResponse.json({ sent: sent.length, total: attendees.length, configured, changes });
