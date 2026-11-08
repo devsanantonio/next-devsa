@@ -1,4 +1,5 @@
 import { panel, button, esc, C } from "./layout"
+import { arrivalNoteRuns } from "@/lib/arrival-note"
 
 /**
  * The parts every attendee email shares about getting to the event: the
@@ -17,7 +18,10 @@ export interface EventExtras {
 
 export function gettingThere(note?: string | null): string {
   if (!note) return ""
-  return panel(`<p style="margin: 0; font-size: 15px; line-height: 1.6; color: ${C.text};">${esc(note)}</p>`, {
+  const html = arrivalNoteRuns(note)
+    .map((run) => (run.bold ? `<strong style="color: #ffffff;">${esc(run.text)}</strong>` : esc(run.text)))
+    .join("")
+  return panel(`<p style="margin: 0; font-size: 15px; line-height: 1.6; color: ${C.text};">${html}</p>`, {
     label: "Getting there",
     accent: C.teal,
   })

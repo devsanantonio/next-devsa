@@ -9,6 +9,7 @@ import { type TechCommunity } from "@/data/communities"
 import Image from "next/image"
 import { EventDescription } from "@/components/events/event-description"
 import { Calendar, ArrowLeft, ExternalLink, Globe, Loader2, Check, Link2 } from "lucide-react"
+import { arrivalNoteRuns } from "@/lib/arrival-note"
 import { httpUrl } from "@/lib/safe-url"
 import {
   buildCalendarLinks,
@@ -523,16 +524,22 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                   {event.location}
                 </p>
               )}
-              {/* Parking, entrance, floor: the organizer's "Getting there" note.
-                  The same text goes out in the day-before reminder email. */}
-              {event.arrivalNote && (
-                <div className="mt-4 max-w-md">
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-white/55">Getting there</p>
-                  <p className="mt-1.5 text-[15px] leading-relaxed text-white/80">{event.arrivalNote}</p>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* The organizer's "Getting there" note (parking, entrance, floor), on a
+              row of its own under both columns. Inside the location column it
+              made that column three times the height of the date column, and the
+              pair stopped reading as a pair. Starts at the page's left gutter,
+              like everything else in the hero; the teal edge matches the note's
+              box in the emails. */}
+          {event.arrivalNote && (
+            <p className="mt-8 max-w-3xl border-l-2 border-[#00b2a9] pl-4 text-[15px] leading-relaxed text-white/70">
+              {arrivalNoteRuns(event.arrivalNote).map((run, i) =>
+                run.bold ? <strong key={i} className="font-semibold text-white">{run.text}</strong> : <span key={i}>{run.text}</span>,
+              )}
+            </p>
+          )}
         </div>
       </section>
 
