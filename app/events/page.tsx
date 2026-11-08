@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import { ConferencePortfolio } from "@/components/events/conference-portfolio"
-import { FeaturedTxlf } from "@/components/events/featured-txlf"
 import { EventsVisitMarker } from "@/components/events/conference-back-link"
 import { CommunityEventsSection } from "@/components/events/community-events-section"
 import { GiveATalkSection } from "@/components/events/give-a-talk-section"
@@ -129,12 +128,9 @@ export default async function EventsPage() {
           Passed as a slot so the calendar never has to know what is currently
           featured — that rotates, and the page is what decides.
 
-          Texas Linux Fest holds it now — the first thing in this slot that
-          DEVSA does not run. It is a community partnership, and the card says
-          so rather than letting a prominent band imply we host it.
-
-          FeaturedSastw is still in components/events/, unwired, as
-          FeaturedDevsaEvent and FeaturedZeroToAgent were before it. SASTW is
+          Nothing holds it now (emptied 2026-11-08). Texas Linux Fest held it
+          last; FeaturedTxlf, FeaturedSastw, FeaturedDevsaEvent and
+          FeaturedZeroToAgent are all still in components/events/, unwired. SASTW is
           annual and startup-week-band.tsx notes what to move when 2027 is
           dated. To change what is featured, change what is passed here. */}
       {/* Records that the calendar has been seen this session, so a conference
@@ -143,10 +139,7 @@ export default async function EventsPage() {
           dropping them at the top of the list. Renders nothing. */}
       <EventsVisitMarker />
       <main className="min-h-screen bg-white text-gray-900">
-        <CommunityEventsSection
-          communityCount={communityCount}
-          featured={<FeaturedTxlf variant="strip" />}
-        />
+        <CommunityEventsSection communityCount={communityCount} />
         {/* Its own section, after the calendar and before the conferences: the people reading
             the calendar are the next speakers, and the network is every group they could speak to. */}
         <GiveATalkSection />
