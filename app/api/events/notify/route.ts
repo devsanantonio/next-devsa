@@ -3,14 +3,16 @@ import { verifiedEmail } from '@/lib/admin-auth';
 import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { isHostedBy } from '@/lib/event-hosts';
-import { messageWindow } from '@/lib/event-messages';
-import { attendeesOf, eventExtrasFor, formatWhen, formatWhere, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
+import { alreadyReceived, defaultKind, eventDay, messageWindow, replacesReminder, TEMPLATE_BLANKS, type MessageKind } from '@/lib/event-messages';
+import { attendeesOf, eventExtrasFor, formatWhen, formatWhere, hostLogoFor, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
 import { isAdminRole } from '@/lib/admin-roles';
 import {
   EventChangedEmail,
   EventCancelledEmail,
   EventMessageEmail,
+  EventDetailsEmail,
   getEventMessageSubject,
+  getEventDetailsSubject,
   getEventChangedSubject,
   getEventCancelledSubject,
   type EventChange,
@@ -25,13 +27,14 @@ import {
  *
  *   { eventId, kind: 'changed', previous: { date, endTime, venue, address, location }, note? }
  *   { eventId, kind: 'cancelled', note? }   (sent before the DELETE, while the event exists)
- *   { eventId, kind: 'message', subject, message }
+ *   { eventId, kind: 'message', type: 'details', note?, rsvpIds? }
+ *   { eventId, kind: 'message', type: 'before' | 'after', subject, message, rsvpIds? }
+ *   either with preview: true to get the rendered email back and send nothing
  *
- * A message is the organizers' own note to the people going (not the
- * waitlist): slides, a parking change, the recording. It opens three days
- * before the event and closes seven days after, two per event, so it can't
- * become a mailing list built from one RSVP. It goes from DEVSA with the
- * sender as reply-to and their name on it.
+ * A message goes to the people going (never the waitlist), or to the ones in
+ * rsvpIds. Each kind reaches a person at most once, and its window is in
+ * lib/event-messages.ts; anyone who already has that kind is skipped, not an
+ * error. It goes from DEVSA with the sender as reply-to and their name on it.
  *
  * For a change, what changed is worked out here from `previous` against the
  * saved event. If nothing an attendee would act on changed, it sends nothing.
@@ -65,49 +68,72 @@ export async function POST(request: NextRequest) {
     }
 
     if (kind === 'message') {
+      const now = Date.now();
+      const type: MessageKind = body.type === 'details' || body.type === 'before' || body.type === 'after' ? body.type : defaultKind(event.date, now);
       const subject = typeof body.subject === 'string' ? body.subject.replace(/\s+/g, ' ').trim().slice(0, 120) : '';
       const message = typeof body.message === 'string' ? body.message.trim().slice(0, 3000) : '';
-      if (!subject || !message) return NextResponse.json({ error: 'A subject and a message are both needed' }, { status: 400 });
+      if (type !== 'details') {
+        if (!subject || !message) return NextResponse.json({ error: 'A subject and a message are both needed' }, { status: 400 });
+        if (TEMPLATE_BLANKS.some((b) => message.includes(b))) {
+          return NextResponse.json({ error: 'Replace the part in [brackets] with your own words first' }, { status: 400 });
+        }
+      }
+      const picked = Array.isArray(body.rsvpIds) ? new Set((body.rsvpIds as unknown[]).filter((x): x is string => typeof x === 'string')) : null;
 
-      const gate = messageWindow(event.date, event.messages?.length ?? 0, Date.now());
+      const gate = messageWindow(type, event.date, now);
       const senderName = [admin.firstName, admin.lastName].filter(Boolean).join(' ') || 'The organizers';
-      const hostName = await hostNameFor(event);
+      const [hostName, groupLogo] = await Promise.all([hostNameFor(event), hostLogoFor(event)]);
       const eventUrl = `${SITE_URL}/events/${event.slug}`;
       const extras = eventExtrasFor(eventId, event);
+      const day = eventDay(event.date);
+      const build = (firstName: string) =>
+        type === 'details'
+          ? {
+              subject: getEventDetailsSubject(day, event.title),
+              html: EventDetailsEmail({ firstName, eventTitle: event.title, hostName, senderName, day, when: formatWhen(event.date), where: formatWhere(event), note, eventUrl, extras, groupLogo }),
+            }
+          : {
+              subject: getEventMessageSubject(subject, event.title),
+              html: EventMessageEmail({ firstName, eventTitle: event.title, hostName, senderName, subject, message, eventUrl, extras, groupLogo }),
+            };
+
+      // Going, chosen, and not already sent this kind.
+      const going = (await attendeesOf(eventId)).filter((a) => !a.waitlisted && (!picked || picked.has(a.id)));
+      const recipients = going.filter((a) => !alreadyReceived(a, type));
+      const skipped = going.length - recipients.length;
 
       // preview: the exact email, addressed to the sender, and nothing sent. The
-      // admin shows it in a frame before the Send button, so organizers see what
-      // their attendees will get, calendar links and getting-there note included.
+      // admin shows it in a frame before the Send button.
       if (body.preview === true) {
-        const going = (await attendeesOf(eventId)).filter((a) => !a.waitlisted).length;
+        const { subject: s, html } = build(admin.firstName || 'there');
         return NextResponse.json({
-          subject: getEventMessageSubject(subject, event.title),
-          html: EventMessageEmail({ firstName: admin.firstName || 'there', eventTitle: event.title, hostName, senderName, subject, message, eventUrl, extras }),
-          going,
-          canSend: gate.open && going > 0,
-          reason: !gate.open ? gate.reason : going === 0 ? "Nobody has RSVP'd yet" : null,
+          subject: s,
+          html,
+          going: recipients.length,
+          skipped,
+          canSend: gate.open && recipients.length > 0,
+          reason: !gate.open ? gate.reason : recipients.length === 0 ? 'Nobody selected still needs this one' : null,
         });
       }
       if (!gate.open) return NextResponse.json({ error: gate.reason }, { status: 400 });
+      if (recipients.length === 0) return NextResponse.json({ error: 'Nobody selected still needs this one' }, { status: 400 });
 
-      const going = (await attendeesOf(eventId)).filter((a) => !a.waitlisted);
-      if (going.length === 0) return NextResponse.json({ error: 'Nobody has RSVP\'d yet' }, { status: 400 });
-
-      const replyTo = admin.contactEmail || admin.email;
-      const { sent, configured } = await sendToAttendees(
-        going,
-        (a) => ({
-          subject: getEventMessageSubject(subject, event.title),
-          html: EventMessageEmail({ firstName: a.firstName, eventTitle: event.title, hostName, senderName, subject, message, eventUrl, extras }),
-        }),
-        replyTo
-      );
+      const { sent, configured } = await sendToAttendees(recipients, (a) => build(a.firstName), admin.contactEmail || admin.email);
       if (sent.length > 0) {
+        const at = new Date();
+        const stopReminder = replacesReminder(type, at.getTime(), event.date);
+        await Promise.all(
+          sent.map((a) =>
+            a.ref
+              .update({ [`messaged.${type}`]: at, ...(stopReminder && !a.remindedAt ? { remindedAt: at } : {}) })
+              .catch((err) => console.error('messaged stamp failed:', err))
+          )
+        );
         await eventDoc.ref.update({
-          messages: FieldValue.arrayUnion({ at: new Date(), by: email.toLowerCase(), subject, sent: sent.length }),
+          messages: FieldValue.arrayUnion({ at, by: email.toLowerCase(), type, subject: type === 'details' ? getEventDetailsSubject(day, event.title) : subject, sent: sent.length }),
         });
       }
-      return NextResponse.json({ sent: sent.length, total: going.length, configured });
+      return NextResponse.json({ sent: sent.length, total: recipients.length, skipped, configured });
     }
 
     const attendees = await attendeesOf(eventId);

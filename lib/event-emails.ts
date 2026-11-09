@@ -10,6 +10,7 @@ import { resend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from '@/lib/re
 import { EVENT_TIMEZONE } from '@/app/api/events/feed/_shared';
 import { buildCalendarLinks } from '@/lib/event-display';
 import type { EventExtras } from '@/lib/emails/event-extras';
+import { emailLogoUrl } from '@/lib/email-logo';
 
 export const SITE_URL = 'https://www.devsa.community';
 
@@ -52,11 +53,27 @@ export async function hostNameFor(event: FirebaseFirestore.DocumentData): Promis
   return hosts.length ? hosts.join(' + ') : 'DEVSA';
 }
 
+/**
+ * The first hosting group's mark, as a URL mail clients show, for the top of an
+ * attendee message. Null for an event no group hosts: the DEVSA header covers it.
+ */
+export async function hostLogoFor(event: FirebaseFirestore.DocumentData): Promise<string | null> {
+  const id = String(event.communityId || '').split(',').map((s) => s.trim()).find(Boolean);
+  if (!id) return null;
+  const doc = await getDb().collection(COLLECTIONS.COMMUNITIES).doc(id).get().catch(() => null);
+  return doc?.exists ? emailLogoUrl({ id, logo: doc.data()?.logo }) : null;
+}
+
 export interface Attendee {
   ref: FirebaseFirestore.DocumentReference;
+  id: string;
   firstName: string;
   email: string;
   remindedAt?: unknown;
+  submittedAt?: FirebaseFirestore.Timestamp | null;
+  promotedAt?: FirebaseFirestore.Timestamp | null;
+  /** When each kind of "Message attendees" went to them (lib/event-messages.ts). */
+  messaged?: Partial<Record<'details' | 'before' | 'after', FirebaseFirestore.Timestamp>> | null;
   /** Still on the waitlist: told about changes and cancellations, but not reminded or messaged. */
   waitlisted: boolean;
 }
@@ -67,7 +84,11 @@ export async function attendeesOf(eventId: string): Promise<Attendee[]> {
   return snap.docs
     .map((d) => ({
       ref: d.ref,
+      id: d.id,
       firstName: d.data().firstName || '',
+      submittedAt: d.data().submittedAt ?? null,
+      promotedAt: d.data().promotedAt ?? null,
+      messaged: d.data().messaged ?? null,
       email: String(d.data().email || '').toLowerCase(),
       remindedAt: d.data().remindedAt,
       waitlisted: d.data().waitlisted === true,

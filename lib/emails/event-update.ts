@@ -1,4 +1,4 @@
-import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf, SITE, C } from "./layout"
+import { emailShell, eyebrow, heading, paragraph, panel, rows, button, esc, firstNameOf, groupMark, SITE, C } from "./layout"
 import { calendarButtons, gettingThere, type EventExtras } from "./event-extras"
 
 /**
@@ -108,6 +108,7 @@ export function EventMessageEmail({
   message,
   eventUrl,
   extras,
+  groupLogo,
 }: {
   firstName: string
   eventTitle: string
@@ -118,6 +119,8 @@ export function EventMessageEmail({
   eventUrl: string
   /** Getting there and the calendar links, so an update about the night carries them. */
   extras?: EventExtras
+  /** The hosting group's mark at the top of the card (lib/email-logo.ts), when it has one. */
+  groupLogo?: string | null
 }): string {
   const paragraphs = message
     .split(/\n{2,}/)
@@ -129,6 +132,7 @@ export function EventMessageEmail({
     title: esc(subject),
     preheader: `From ${esc(senderName)} about ${esc(eventTitle)}.`,
     body: `
+      ${groupMark(groupLogo, hostName)}
       ${eyebrow(esc(eventTitle))}
       ${heading(esc(subject))}
       ${paragraph(`Hi ${firstNameOf(firstName)},`)}
@@ -142,3 +146,64 @@ export function EventMessageEmail({
 }
 
 export const getEventMessageSubject = (subject: string, eventTitle: string) => `${subject} | ${eventTitle}`
+
+/**
+ * "Event details", the default message: the event's own facts in one branded
+ * email, for the people going who didn't get them with their confirmation. The
+ * organizer adds at most a short note; everything else comes from the event.
+ */
+export function EventDetailsEmail({
+  firstName,
+  eventTitle,
+  hostName,
+  senderName,
+  day,
+  when,
+  where,
+  note,
+  eventUrl,
+  extras,
+  groupLogo,
+}: {
+  firstName: string
+  eventTitle: string
+  hostName: string
+  senderName: string
+  /** The weekday, for "See you Thursday". */
+  day: string
+  when: string
+  where: string
+  note?: string | null
+  eventUrl: string
+  extras?: EventExtras
+  groupLogo?: string | null
+}): string {
+  const noteHtml = note
+    ? note.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean).map((p) => esc(p).replace(/\n/g, "<br />")).join("<br /><br />")
+    : ""
+  return emailShell({
+    title: `See you ${esc(day)}: ${esc(eventTitle)}`,
+    preheader: `${esc(when)} · ${esc(where)}`,
+    body: `
+      ${groupMark(groupLogo, hostName)}
+      ${eyebrow("Event details")}
+      ${heading(`See you ${esc(day)}, ${firstNameOf(firstName)}.`)}
+      ${paragraph(`Here&rsquo;s everything for ${esc(eventTitle)} in one place.`)}
+      ${noteHtml ? panel(`<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #ffffff;">${noteHtml}</p>`, { label: `From ${esc(senderName)}` }) : ""}
+      ${panel(
+        `<p style="margin: 0 0 14px 0; font-size: 18px; font-weight: 700; color: #ffffff; line-height: 1.35;">${esc(eventTitle)}</p>
+        ${rows([
+          ["When", esc(when)],
+          ["Where", esc(where)],
+          ["Hosted by", esc(hostName)],
+        ])}`,
+        { label: "Your event" }
+      )}
+      ${extras ? `${gettingThere(extras.arrivalNote)}${calendarButtons(extras)}` : ""}
+      ${paragraph("Can&rsquo;t make it after all? Reply and let us know, so we can give your seat to someone else.")}
+      ${button(eventUrl, "View the event", extras ? C.border : undefined)}
+    `,
+  })
+}
+
+export const getEventDetailsSubject = (day: string, eventTitle: string) => `See you ${day}: ${eventTitle}`

@@ -3,7 +3,7 @@ import { getDb, COLLECTIONS } from '@/lib/firebase-admin';
 import { centralDayKey } from '@/lib/event-week';
 import { attendeesOf, eventExtrasFor, formatWhen, formatWhere, hostNameFor, sendToAttendees, SITE_URL } from '@/lib/event-emails';
 import { EventReminderEmail, getEventReminderSubject } from '@/lib/emails/event-reminder';
-import { remindersSuppressed } from '@/lib/event-messages';
+import { legacyRemindersSuppressed } from '@/lib/event-messages';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -17,9 +17,11 @@ const CRON_SECRET = process.env.CRON_SECRET;
  * goes out, so a re-run never sends twice. Link-only events are included: the
  * people who RSVP'd were sent the link.
  *
- * An event whose organizers used "Message attendees" is skipped: that message
- * already carries the details and the add-to-calendar links, so a reminder on
- * top of it is one email too many (lib/event-messages.ts, remindersSuppressed).
+ * Someone sent a "Message attendees" email within two days of the event is
+ * stamped `remindedAt` by that send, so they're skipped here: the message
+ * already carried the details and the add-to-calendar links. Everyone the
+ * organizers left out still gets the reminder (lib/event-messages.ts,
+ * replacesReminder). Events messaged before that was per person skip whole.
  *
  * `?dry=1` lists what would send, and sends nothing.
  */
@@ -46,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     for (const doc of events) {
       const event = doc.data();
-      if (remindersSuppressed(event)) {
+      if (legacyRemindersSuppressed(event)) {
         report.push({ title: event.title, due: 0, sent: 0, skipped: 'organizers messaged attendees' });
         continue;
       }

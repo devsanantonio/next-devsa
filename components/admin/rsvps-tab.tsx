@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Download, Loader2, Mail, ScanLine, Trash2, Users } from "lucide-react"
 import { CheckinDoor } from "@/components/admin/checkin-door"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
-import { messageWindow, MESSAGE_LIMIT } from "@/lib/event-messages"
+import { alreadyReceived, defaultKind, messageTemplate, messageWindow, MESSAGE_KINDS, type MessageKind } from "@/lib/event-messages"
 
 /**
  * The RSVPs tab: every RSVP the role can see, grouped by event, with the door
@@ -28,6 +28,9 @@ export interface RsvpRow {
   submittedAt: string
   waitlisted?: boolean
   checkedInAt?: string | null
+  promotedAt?: string | null
+  /** When each kind of "Message attendees" went to them. */
+  messaged?: Partial<Record<MessageKind, string | null>> | null
 }
 
 interface RsvpEvent {
@@ -39,14 +42,14 @@ interface RsvpEvent {
   communityName?: string
   isOfficial?: boolean
   rsvpEnabled?: boolean
-  messages?: { at: string; by: string; subject: string; sent: number }[]
+  messages?: { at: string; by: string; type?: MessageKind; subject: string; sent: number }[]
 }
+
+/** The time, for the message windows. A helper, so the component stays free of Date.now(). */
+const nowMs = () => Date.now()
 
 const hostIds = (stored?: string | null) =>
   (stored || "").split(",").map((id) => id.trim()).filter(Boolean)
-
-/** The message window as of now. A helper, so render stays free of Date.now(). */
-const messageGate = (date: string | undefined, sent: number) => messageWindow(date, sent, Date.now())
 
 type EventRSVP = RsvpRow
 
@@ -166,13 +169,46 @@ export function RsvpsTab({
     }
   }
 
-  /** "Message attendees": the organizers' own note to the people going. Rules in lib/event-messages.ts. */
-  const [messageTarget, setMessageTarget] = useState<{ eventId: string; title: string; going: number } | null>(null)
-  const [messageDraft, setMessageDraft] = useState({ subject: "", message: "" })
+  /** "Message attendees": event details, or the organizers' note before or after. Rules in lib/event-messages.ts. */
+  type MessageWindows = Record<MessageKind, { open: true } | { open: false; reason: string }>
+  const [messageTarget, setMessageTarget] = useState<{ eventId: string; title: string; going: RsvpRow[]; windows: MessageWindows } | null>(null)
+  const [messageKind, setMessageKind] = useState<MessageKind>("details")
+  /** One draft per free-form kind, each started from its template, so switching tabs keeps edits. */
+  const [messageDrafts, setMessageDrafts] = useState<Record<"before" | "after", { subject: string; message: string }>>({
+    before: { subject: "", message: "" },
+    after: { subject: "", message: "" },
+  })
+  const [messageNote, setMessageNote] = useState("")
+  /** Who it goes to: everyone going who doesn't already have this kind, until the organizer changes it. */
+  const [messagePicked, setMessagePicked] = useState<Set<string>>(new Set())
   const [isMessaging, setIsMessaging] = useState(false)
   /** The rendered email, shown before anything is sent. Cleared when the draft changes. */
-  const [messagePreview, setMessagePreview] = useState<{ subject: string; html: string; canSend: boolean; reason: string | null } | null>(null)
+  const [messagePreview, setMessagePreview] = useState<{ subject: string; html: string; going: number; skipped: number; canSend: boolean; reason: string | null } | null>(null)
   const [isPreviewing, setIsPreviewing] = useState(false)
+  const needing = (rows: RsvpRow[], kind: MessageKind) => new Set(rows.filter((r) => !alreadyReceived(r, kind)).map((r) => r.id))
+  const openMessage = (eventId: string, title: string, date: string | undefined, going: RsvpRow[]) => {
+    const now = nowMs()
+    const windows = Object.fromEntries(MESSAGE_KINDS.map(({ kind }) => [kind, messageWindow(kind, date, now)])) as MessageWindows
+    const kind = defaultKind(date, now)
+    setMessageKind(kind)
+    setMessageDrafts({ before: messageTemplate("before", { title, date }), after: messageTemplate("after", { title, date }) })
+    setMessageNote("")
+    setMessagePicked(needing(going, kind))
+    setMessagePreview(null)
+    setMessageTarget({ eventId, title, going, windows })
+  }
+  const switchMessageKind = (kind: MessageKind) => {
+    if (!messageTarget) return
+    setMessageKind(kind)
+    setMessagePicked(needing(messageTarget.going, kind))
+  }
+  const messagePayload = () => ({
+    eventId: messageTarget?.eventId,
+    kind: "message",
+    type: messageKind,
+    rsvpIds: [...messagePicked],
+    ...(messageKind === "details" ? { note: messageNote } : messageDrafts[messageKind]),
+  })
   const previewAttendeeMessage = async () => {
     if (!messageTarget) return
     setIsPreviewing(true)
@@ -180,14 +216,14 @@ export function RsvpsTab({
       const res = await adminFetch("/api/events/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: messageTarget.eventId, kind: "message", preview: true, ...messageDraft }),
+        body: JSON.stringify({ ...messagePayload(), preview: true }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         onError(data.error || "Couldn't build the preview")
         return
       }
-      setMessagePreview({ subject: data.subject, html: data.html, canSend: data.canSend, reason: data.reason })
+      setMessagePreview({ subject: data.subject, html: data.html, going: data.going, skipped: data.skipped ?? 0, canSend: data.canSend, reason: data.reason })
     } catch {
       onError("Couldn't build the preview")
     } finally {
@@ -205,7 +241,7 @@ export function RsvpsTab({
       const res = await adminFetch("/api/events/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: messageTarget.eventId, kind: "message", ...messageDraft }),
+        body: JSON.stringify(messagePayload()),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -214,11 +250,10 @@ export function RsvpsTab({
       }
       setMessageTarget(null)
       setMessagePreview(null)
-      setMessageDraft({ subject: "", message: "" })
       onSuccess(
         data.configured === false
           ? "Email isn't configured here, so nothing was sent"
-          : `Sent to ${data.sent} of ${data.total} ${data.total === 1 ? "person" : "people"} going`
+          : `Sent to ${data.sent} of ${data.total} ${data.total === 1 ? "person" : "people"}`
       )
       await onChanged()
     } catch {
@@ -357,7 +392,6 @@ export function RsvpsTab({
                 acc[key] = {
                   eventId: rsvp.eventId,
                   eventDate: event?.date,
-                  messagesSent: event?.messages?.length ?? 0,
                   eventTitle: event?.title || rsvp.eventSlug,
                   communityName: hostNames.length ? hostNames.join(' + ') : 'Unknown',
                   // For ordering: the event's own date (0 if the event is gone).
@@ -367,7 +401,7 @@ export function RsvpsTab({
               }
               acc[key].rsvps.push(rsvp)
               return acc
-            }, {} as Record<string, { eventId: string; eventDate?: string; messagesSent: number; eventTitle: string; communityName: string; sortAt: number; rsvps: EventRSVP[] }>)
+            }, {} as Record<string, { eventId: string; eventDate?: string; eventTitle: string; communityName: string; sortAt: number; rsvps: EventRSVP[] }>)
 
             // An event that has since been deleted has no date; its latest RSVP stands in.
             const orderAt = (g: { sortAt: number; rsvps: EventRSVP[] }) =>
@@ -399,11 +433,10 @@ export function RsvpsTab({
                 ) : (
                 <div className="space-y-6">
                 {/* Most recent event first. */}
-                {Object.entries(groupedByEvent).sort(([, a], [, b]) => orderAt(b) - orderAt(a)).map(([slug, { eventId, eventDate, messagesSent, eventTitle, communityName, rsvps: eventRsvps }]) => {
+                {Object.entries(groupedByEvent).sort(([, a], [, b]) => orderAt(b) - orderAt(a)).map(([slug, { eventId, eventDate, eventTitle, communityName, rsvps: eventRsvps }]) => {
                   const going = eventRsvps.filter((r) => !r.waitlisted)
                   const waiting = eventRsvps.length - going.length
                   const came = going.filter((r) => r.checkedInAt).length
-                  const gate = messageGate(eventDate, messagesSent)
                   return (
                   <div key={slug} className="rounded-xl border border-neutral-800 bg-neutral-800/30 overflow-hidden">
                     <div className="px-4 py-3 bg-neutral-800/50 border-b border-neutral-700 flex items-center justify-between flex-wrap gap-2">
@@ -426,15 +459,10 @@ export function RsvpsTab({
                         </span>
                         <button
                           type="button"
-                          onClick={() => {
-                            setMessageDraft({ subject: "", message: "" })
-                            setMessagePreview(null)
-                            setMessageTarget({ eventId, title: eventTitle, going: going.length })
-                          }}
-                          // Opens before the window so a message can be written and previewed early;
-                          // the preview says when it can go, and Send stays off until then.
-                          disabled={going.length === 0 || messagesSent >= MESSAGE_LIMIT}
-                          title={gate.open ? `${MESSAGE_LIMIT - messagesSent} of ${MESSAGE_LIMIT} left for this event` : gate.reason}
+                          onClick={() => openMessage(eventId, eventTitle, eventDate, going)}
+                          // Opens whatever the date: each kind shows its own window, and Send stays off outside it.
+                          disabled={going.length === 0}
+                          title="Event details, or your note before or after"
                           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-600 px-2.5 py-1.5 text-xs font-semibold text-neutral-200 transition-colors hover:bg-neutral-700/60 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Mail className="h-3.5 w-3.5" />
@@ -568,10 +596,29 @@ export function RsvpsTab({
         )
       })()}
 
-      {/* Message attendees: subject and note, to everyone going (not the waitlist).
-          Two steps: write, then Preview renders the exact email (the same HTML
-          Resend sends) in a frame, and Send is only offered from there. */}
-      {messageTarget && (
+      {/* Message attendees: one of three kinds (lib/event-messages.ts), to the people
+          picked from those going (never the waitlist). Two steps: write, then Preview
+          renders the exact email (the same HTML Resend sends) in a frame, and Send is
+          only offered from there. */}
+      {messageTarget && (() => {
+        const t = messageTarget
+        const win = t.windows[messageKind]
+        const draft = messageKind === "details" ? null : messageDrafts[messageKind]
+        const setDraft = (patch: Partial<{ subject: string; message: string }>) => {
+          if (messageKind === "details") return
+          setMessageDrafts({ ...messageDrafts, [messageKind]: { ...messageDrafts[messageKind], ...patch } })
+        }
+        const eligible = t.going.filter((r) => !alreadyReceived(r, messageKind))
+        const came = eligible.filter((r) => r.checkedInAt)
+        const toggle = (id: string) => {
+          const next = new Set(messagePicked)
+          if (next.has(id)) next.delete(id)
+          else next.add(id)
+          setMessagePicked(next)
+        }
+        const has = messageKind === "details" ? "has the details" : "already sent"
+        const link = "text-xs font-semibold text-neutral-300 underline decoration-neutral-600 underline-offset-2 hover:text-white"
+        return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="message-title">
           {!messagePreview ? (
             <form
@@ -579,42 +626,124 @@ export function RsvpsTab({
                 e.preventDefault()
                 previewAttendeeMessage()
               }}
-              className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
+              className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-y-auto rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
             >
-              <h3 id="message-title" className="text-lg font-bold text-white">
-                Message the {messageTarget.going} {messageTarget.going === 1 ? "person" : "people"} going
-              </h3>
+              <h3 id="message-title" className="text-lg font-bold text-white">Message the people going</h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-                For {messageTarget.title}. It goes from DEVSA with your name on it, and replies come to you. Each event gets {MESSAGE_LIMIT}, from three days before to a week after.
+                For {t.title}. It goes from DEVSA with your name on it, and replies come to you. Each kind reaches a person once.
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-                The email includes the event&apos;s details, its getting-there note and add-to-calendar buttons, so sending one <strong className="text-white">replaces the automatic day-before reminder</strong>.
-              </p>
-              <label htmlFor="message-subject" className="mt-4 block text-sm font-semibold text-neutral-300">Subject</label>
-              <input
-                id="message-subject"
-                required
-                maxLength={120}
-                value={messageDraft.subject}
-                onChange={(e) => setMessageDraft({ ...messageDraft, subject: e.target.value })}
-                placeholder="Slides and the recording"
-                className="mt-2 w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-              />
-              <label htmlFor="message-body" className="mt-4 block text-sm font-semibold text-neutral-300">Message</label>
-              <textarea
-                id="message-body"
-                required
-                rows={6}
-                maxLength={3000}
-                value={messageDraft.message}
-                onChange={(e) => setMessageDraft({ ...messageDraft, message: e.target.value })}
-                placeholder="Thanks for coming out last night. The slides are here: …"
-                className="mt-2 w-full resize-y rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
-              />
+
+              <div className="mt-4 grid grid-cols-3 gap-1 rounded-xl border border-neutral-700 bg-neutral-800/60 p-1" role="tablist" aria-label="Kind of message">
+                {MESSAGE_KINDS.map(({ kind, label }) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    role="tab"
+                    aria-selected={messageKind === kind}
+                    onClick={() => switchMessageKind(kind)}
+                    className={`rounded-lg px-2 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+                      messageKind === kind ? "bg-neutral-100 text-neutral-900" : "text-neutral-300 hover:bg-neutral-700/60"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-neutral-400">{MESSAGE_KINDS.find((k) => k.kind === messageKind)?.hint}</p>
+              {!win.open && <p className="mt-1 text-sm text-amber-300">{win.reason}, so this one can&apos;t be sent now.</p>}
+
+              {messageKind === "details" ? (
+                <>
+                  <label htmlFor="message-note" className="mt-4 block text-sm font-semibold text-neutral-300">
+                    Add a note <span className="font-normal text-neutral-400">(optional)</span>
+                  </label>
+                  <textarea
+                    id="message-note"
+                    rows={3}
+                    maxLength={600}
+                    value={messageNote}
+                    onChange={(e) => setMessageNote(e.target.value)}
+                    placeholder="Doors open at 5:45. Come up to the third floor."
+                    className="mt-2 w-full resize-y rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                  />
+                </>
+              ) : (
+                <>
+                  <label htmlFor="message-subject" className="mt-4 block text-sm font-semibold text-neutral-300">Subject</label>
+                  <input
+                    id="message-subject"
+                    required
+                    maxLength={120}
+                    value={draft?.subject ?? ""}
+                    onChange={(e) => setDraft({ subject: e.target.value })}
+                    className="mt-2 w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                  />
+                  <label htmlFor="message-body" className="mt-4 block text-sm font-semibold text-neutral-300">
+                    Message <span className="font-normal text-neutral-400">(replace the part in [brackets])</span>
+                  </label>
+                  <textarea
+                    id="message-body"
+                    required
+                    rows={8}
+                    maxLength={3000}
+                    value={draft?.message ?? ""}
+                    onChange={(e) => setDraft({ message: e.target.value })}
+                    className="mt-2 w-full resize-y rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-[#ef426f] focus:outline-none"
+                  />
+                </>
+              )}
+
+              <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-sm font-semibold text-neutral-300">
+                  To {messagePicked.size} of {t.going.length} going
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" className={link} onClick={() => setMessagePicked(new Set(eligible.map((r) => r.id)))}>
+                    Everyone who needs it
+                  </button>
+                  {messageKind === "after" && came.length > 0 && (
+                    <button type="button" className={link} onClick={() => setMessagePicked(new Set(came.map((r) => r.id)))}>
+                      Only the {came.length} who came
+                    </button>
+                  )}
+                  <button type="button" className={link} onClick={() => setMessagePicked(new Set())}>
+                    None
+                  </button>
+                </div>
+              </div>
+              <ul className="mt-2 max-h-56 divide-y divide-neutral-800 overflow-y-auto rounded-xl border border-neutral-700">
+                {t.going.map((r) => {
+                  const done = alreadyReceived(r, messageKind)
+                  return (
+                    <li key={r.id}>
+                      <label className={`flex items-center gap-3 px-3 py-2 text-sm ${done ? "cursor-not-allowed" : "cursor-pointer hover:bg-neutral-800/60"}`}>
+                        <input
+                          type="checkbox"
+                          checked={!done && messagePicked.has(r.id)}
+                          disabled={done}
+                          onChange={() => toggle(r.id)}
+                          className="h-4 w-4 accent-[#ef426f]"
+                        />
+                        <span className="min-w-0 flex-1 truncate text-white">
+                          {r.firstName} {r.lastName}
+                          <span className="ml-2 text-neutral-400">{r.email}</span>
+                        </span>
+                        {done && <span className="shrink-0 rounded-full bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">{has}</span>}
+                      </label>
+                    </li>
+                  )
+                })}
+              </ul>
+              {messageKind !== "after" && (
+                <p className="mt-2 text-xs leading-relaxed text-neutral-400">
+                  Sent within two days of the event, it replaces the day-before reminder for the people it goes to. Everyone else still gets theirs.
+                </p>
+              )}
+
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                 <button
                   type="submit"
-                  disabled={isPreviewing}
+                  disabled={isPreviewing || messagePicked.size === 0}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
                 >
                   {isPreviewing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Preview the email"}
@@ -630,7 +759,10 @@ export function RsvpsTab({
               <p className="mt-1 text-sm text-neutral-300">
                 <span className="text-neutral-400">Subject:</span> {messagePreview.subject}
               </p>
-              <p className="mt-1 text-xs text-neutral-400">Addressed to you here; each person going gets it with their own name.</p>
+              <p className="mt-1 text-xs text-neutral-400">
+                Addressed to you here; each person gets it with their own name.
+                {messagePreview.skipped > 0 && ` ${messagePreview.skipped} you picked already have this one and will be skipped.`}
+              </p>
               {/* sandbox: the email's links can't navigate the admin, and nothing in it runs. */}
               <iframe
                 title="Email preview"
@@ -648,7 +780,7 @@ export function RsvpsTab({
                   disabled={isMessaging || !messagePreview.canSend}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ef426f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d63760] disabled:opacity-50"
                 >
-                  {isMessaging ? <Loader2 className="h-4 w-4 animate-spin" /> : `Send to ${messageTarget.going}`}
+                  {isMessaging ? <Loader2 className="h-4 w-4 animate-spin" /> : `Send to ${messagePreview.going}`}
                 </button>
                 <button type="button" onClick={() => setMessagePreview(null)} disabled={isMessaging} className="flex-1 rounded-xl border border-neutral-600 px-4 py-2.5 text-sm font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50">
                   Back to edit
@@ -657,7 +789,8 @@ export function RsvpsTab({
             </div>
           )}
         </div>
-      )}
+        )
+      })()}
     </>
   )
 }

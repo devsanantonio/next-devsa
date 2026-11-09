@@ -314,6 +314,8 @@ export async function GET(request: NextRequest) {
       submittedAt: iso(doc.data().submittedAt),
       checkedInAt: iso(doc.data().checkedInAt),
       promotedAt: iso(doc.data().promotedAt),
+      // When each "Message attendees" kind went to them, so the admin can mark who already has it.
+      messaged: Object.fromEntries(Object.entries((doc.data().messaged ?? {}) as Record<string, unknown>).map(([k, v]) => [k, iso(v)])),
     }));
 
     // If CSV format requested, return CSV
