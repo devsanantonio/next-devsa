@@ -285,8 +285,8 @@ body:not(.idle) #hud{opacity:1}
       <div style="margin-top:70px;max-width:1240px">
         <div class="facts">
           <div class="row in" style="--i:2;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">01</span><span class="v" style="font-size:46px">DEVSA updates<br><small>TVSA · DreamWeek · Discord · Give a talk · Admin portal</small></span></div>
-          <div class="row in" style="--i:3;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">02</span><span class="v" style="font-size:46px">Geekdom Club<br><small>Geekdom's members-only club</small></span></div>
-          <div class="row in" style="--i:4;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">03</span><span class="v" style="font-size:46px">The roundtable<br><small>Every group, one at a time</small></span></div>
+          <div class="row in" style="--i:3;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">02</span><span class="v" style="font-size:46px">Community roundtable<br><small>Every group, one at a time</small></span></div>
+          <div class="row in" style="--i:4;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">03</span><span class="v" style="font-size:46px">Geekdom Club<br><small>Geekdom's members-only club</small></span></div>
         </div>
       </div>
     </div>
@@ -538,7 +538,24 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- 9 · Geekdom Club -->
+
+  <!-- 9 · Part two -->
+  <section class="slide" data-pose="section">
+    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+      <p class="eyebrow in" style="--i:0">Part two</p>
+      <h2 class="h1 in" style="--i:1;margin-top:30px;font-size:136px;white-space:nowrap">Community <span class="mute">roundtable.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:56px">When your logo comes up:</p>
+      <p class="in" style="--i:3;margin-top:18px;font-size:46px;font-weight:700">Who you are <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What's coming up <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What you need</p>
+    </div>
+  </section>
+
+  <!-- 10 · The roundtable -->
+  <section class="slide" data-pose="center" data-mode="roundtable" data-logo="off">
+    <div class="veil" id="veil"></div>
+    <p class="mono in" id="rtidle" style="--i:2;position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:24px;color:rgba(255,255,255,.6)">Every group. <span style="color:var(--teal)">One room.</span></p>
+  </section>
+
+  <!-- 11 · Geekdom Club: last, so their news closes the night -->
   <!-- Geekdom Club, in Geekdom's brand (from the next-geekdom repo): Bone ground, the
        wordmark in Geekdom Red as the slide's subject, the Club page's eyebrow in IBM Plex
        Mono. Geekdom staff present this part with no slides of their own. -->
@@ -552,23 +569,6 @@ body:not(.idle) #hud{opacity:1}
       <div class="gk-qr"><img src="assets/qr/geekdom-apply.svg" alt=""></div>
     </div>
   </section>
-
-  <!-- 10 · Part three -->
-  <section class="slide" data-pose="section">
-    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
-      <p class="eyebrow in" style="--i:0">Part three</p>
-      <h2 class="h1 in" style="--i:1;margin-top:30px;font-size:170px">The <span class="mute">roundtable.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:56px">When your logo comes up:</p>
-      <p class="in" style="--i:3;margin-top:18px;font-size:46px;font-weight:700">Who you are <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What's coming up <span style="color:rgba(255,255,255,.3);margin:0 20px">·</span> What you need</p>
-    </div>
-  </section>
-
-  <!-- 11 · The roundtable -->
-  <section class="slide" data-pose="center" data-mode="roundtable" data-logo="off">
-    <div class="veil" id="veil"></div>
-    <p class="mono in" id="rtidle" style="--i:2;position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:24px;color:rgba(255,255,255,.6)">Every group. <span style="color:var(--teal)">One room.</span></p>
-  </section>
-
   <!-- 12 · Close -->
   <section class="slide" data-pose="hero">
     <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
@@ -766,7 +766,7 @@ function clearSpot(animate = true) {
 function spotlight(i) {
   clearSpot()
   current = i
-  const g = GROUPS[i], sl = slides[11]
+  const g = GROUPS[i], sl = document.querySelector('.slide[data-mode="roundtable"]')
   nodeEls.forEach((n, k) => { n.classList.toggle("on", k === i); n.classList.toggle("done", done.has(k) && k !== i) })
   hubEls.forEach((h, k) => h.classList.toggle("on", k === i))
   netEl.classList.add("spotting"); netEl.style.opacity = .55
