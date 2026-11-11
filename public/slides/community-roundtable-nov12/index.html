@@ -91,7 +91,7 @@ body.idle{cursor:none}
 .facts .v{font-size:36px;font-weight:700;line-height:1.25}
 .facts .v small{font-weight:400;color:rgba(255,255,255,.65);font-size:30px}
 
-#stripe{position:absolute;left:0;right:0;bottom:0;height:12px;display:flex;z-index:5}
+#stripe{position:absolute;left:0;right:0;bottom:0;height:12px;display:flex;z-index:7;transition:opacity .6s}
 #stripe div{flex:1}
 #logo{position:absolute;left:140px;top:72px;width:112px;z-index:4;transition:opacity .6s}
 
@@ -247,7 +247,16 @@ body:not(.idle) #hud{opacity:1}
 .ovchk li a{margin-left:auto;font-size:17px;color:#d4d4d4}
 .ovbig{font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1;margin-top:8px}
 .ovnote{margin-top:10px;font-size:18px;line-height:1.45;color:#a3a3a3}
-.geek{background:radial-gradient(ellipse at 50% 40%,#1d1a16 0%,#0c0b0a 70%)}
+@font-face{font-family:GkPlex;font-weight:400;src:url(assets/geekdom/IBMPlexMono-400.ttf) format("truetype")}
+.geek{background:#f4f1eb;color:#1b1b1b;z-index:6}
+.gk-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:40px}
+.gk-mark{height:400px;display:block}
+.gk-eyebrow{margin-top:56px;font-family:GkPlex,monospace;font-size:32px;letter-spacing:.18em;text-transform:uppercase;color:#6b6b6b}
+.gk-apply{position:absolute;right:120px;bottom:100px;display:flex;align-items:center;gap:26px}
+.gk-qr{width:170px;height:170px}
+.gk-qr img{display:block;width:100%;height:100%}
+.gk-label{text-align:right;font-family:GkPlex,monospace;font-size:22px;letter-spacing:.14em;text-transform:uppercase;line-height:1.7;color:#1b1b1b}
+.gk-label span{color:#6b6b6b;text-transform:none;letter-spacing:.02em}
 .inc{columns:2;column-gap:24px;list-style:none;font-size:24px;line-height:1.7;color:rgba(255,255,255,.8)}
 .inc li{break-inside:avoid}
 .inc li::before{content:"·";color:var(--cream);margin-right:12px;opacity:.6}
@@ -530,13 +539,17 @@ body:not(.idle) #hud{opacity:1}
   </section>
 
   <!-- 9 · Geekdom Club -->
-  <section class="slide geek" data-pose="hidden" data-logo="off">
-    <div class="pad" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
-      <div class="in" style="--i:0;display:flex;align-items:flex-end;gap:48px">
-        <img src="assets/ext/geekdom-club-white.svg" alt="Geekdom" style="height:330px;display:block">
-        <span style="font-size:188px;font-weight:500;letter-spacing:-.02em;line-height:1;color:#fff;transform:translateY(-62px)">club</span>
-      </div>
-      <p class="in" style="--i:2;margin-top:60px;font-size:46px;font-weight:300;font-style:italic;color:rgba(255,255,255,.72)">Where San Antonio's founders and builders find their room.</p>
+  <!-- Geekdom Club, in Geekdom's brand (from the next-geekdom repo): Bone ground, the
+       wordmark in Geekdom Red as the slide's subject, the Club page's eyebrow in IBM Plex
+       Mono. Geekdom staff present this part with no slides of their own. -->
+  <section class="slide geek" data-pose="hidden" data-logo="off" data-stripe="off">
+    <div class="gk-center">
+      <img class="gk-mark in" style="--i:0" src="assets/geekdom/geekdom-wordmark-red.svg" alt="Geekdom">
+      <p class="gk-eyebrow in" style="--i:1">The Club · Members only</p>
+    </div>
+    <div class="gk-apply in" style="--i:2">
+      <p class="gk-label">Apply<br><span>geekdom.com/apply</span></p>
+      <div class="gk-qr"><img src="assets/qr/geekdom-apply.svg" alt=""></div>
     </div>
   </section>
 
@@ -881,6 +894,7 @@ function go(n) {
   const s = slides[n]
   setPose(POSES[s.dataset.pose] || POSES.faint)
   $("#logo").style.opacity = s.dataset.logo === "off" ? 0 : 1
+  $("#stripe").style.opacity = s.dataset.stripe === "off" ? 0 : 1
   if (s.dataset.enter) ENTER[s.dataset.enter]()
   $("#hud").textContent = `${n + 1} / ${slides.length}`
   window.history.replaceState(null, "", location.pathname + location.search + "#" + n)
