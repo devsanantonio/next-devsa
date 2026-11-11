@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "motion/react"
 import Image from "next/image"
 import { Handshake, Heart, ArrowUpRight } from "lucide-react"
@@ -96,7 +97,38 @@ const SHE_BUILDS = {
  * communities" while Firestore held twenty-three, which is the same hardcoded
  * count that let the footer publish nine of them.
  */
+/**
+ * The second worked example, at a city scale: what DEVSA ran inside SA Startup
+ * + Tech Week 2026 (from the week's own schedule in next-sasw). Facts DEVSA can
+ * state on its own; the week's results and sponsor amounts are SASTW's to share.
+ * Shown as a switch with SheBuilds, so the section keeps its size and photo slot.
+ */
+const SASTW = {
+  /* The Model at the Rand during the week, its name on the screen: from the
+     week's own recap (next-sasw, public/home/recap/r00.jpg). The frame id is in
+     the filename, so a different picture can't reuse this name and be served
+     from a stale cache. */
+  photo: "/photos/sastw-2026-the-model-r00.webp",
+  photoWidth: 1067,
+  photoHeight: 1600,
+  alt: "A panel on The Model's stage at the Rand during SA Startup + Tech Week 2026, the week's name on the screens",
+} as const
+
 export function PartnerCta({ communityCount }: { communityCount?: number }) {
+  const [example, setExample] = useState<"shebuilds" | "sastw">("shebuilds")
+  const tab = (key: "shebuilds" | "sastw", label: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={example === key}
+      onClick={() => setExample(key)}
+      className={`border-b-2 pb-1 text-sm md:text-base font-semibold transition-colors ${
+        example === key ? "border-[#ef426f] text-white" : "border-transparent text-white/55 hover:text-white/80"
+      }`}
+    >
+      {label}
+    </button>
+  )
   return (
     <section
       id="partner"
@@ -189,6 +221,19 @@ export function PartnerCta({ communityCount }: { communityCount?: number }) {
               <p className="text-xs md:text-sm font-medium text-white/40 uppercase tracking-[0.15em]">
                 What That Looks Like
               </p>
+              <div role="tablist" aria-label="Examples" className="mt-4 flex gap-6">
+                {tab("shebuilds", "SheBuilds")}
+                {tab("sastw", "SA Startup + Tech Week")}
+              </div>
+              {example === "sastw" ? (
+              <p className="mt-4 max-w-2xl text-base md:text-lg text-white/70 leading-relaxed">
+                <strong className="font-semibold text-white">SA Startup + Tech Week</strong>{" "}
+                asked DEVSA to run its tech track in 2026. Twelve events at the
+                Rand, PySanAntonio, Access Granted and The Model among them. A
+                computer drive at the Central Library with learnOPENtech and
+                LaunchSA. Seven speakers at Texas Public Radio.
+              </p>
+              ) : (
               <p className="mt-4 max-w-2xl text-base md:text-lg text-white/70 leading-relaxed">
                 <strong className="font-semibold text-white">SheBuilds</strong>{" "}
                 ran worldwide on International Women&apos;s Day. Lovable started
@@ -204,6 +249,7 @@ export function PartnerCta({ communityCount }: { communityCount?: number }) {
                 taught it. Berry to Bean opened on a Sunday. DEVSA brought
                 San&nbsp;Antonio&apos;s builders — and they shipped.
               </p>
+              )}
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
@@ -250,14 +296,15 @@ export function PartnerCta({ communityCount }: { communityCount?: number }) {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="lg:h-full"
           >
-            <figure className="overflow-hidden rounded-2xl border border-white/10 bg-black lg:h-full">
+            <figure className="relative overflow-hidden rounded-2xl border border-white/10 bg-black lg:h-full">
               <Image
-                src={SHE_BUILDS.photo}
-                alt="Laura Ruiz-Roehrs in conversation with an attendee at SheBuilds, a builder working at a laptop behind them"
-                width={SHE_BUILDS.photoWidth}
-                height={SHE_BUILDS.photoHeight}
+                key={example}
+                src={example === "sastw" ? SASTW.photo : SHE_BUILDS.photo}
+                alt={example === "sastw" ? SASTW.alt : "Laura Ruiz-Roehrs in conversation with an attendee at SheBuilds, a builder working at a laptop behind them"}
+                width={example === "sastw" ? SASTW.photoWidth : SHE_BUILDS.photoWidth}
+                height={example === "sastw" ? SASTW.photoHeight : SHE_BUILDS.photoHeight}
                 sizes="(max-width: 1024px) 100vw, 620px"
-                className="aspect-4/5 w-full object-cover lg:aspect-auto lg:h-full"
+                className="aspect-4/5 w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto lg:h-full"
               />
             </figure>
           </motion.div>
