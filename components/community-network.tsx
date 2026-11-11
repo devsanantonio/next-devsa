@@ -62,9 +62,13 @@ function layout(n: number) {
     const a = (k / Math.max(count, 1)) * Math.PI * 2 + (isInner ? 0.35 : 0) + Math.sin(i * 7.3) * 0.08
     const rx = isInner ? 128 : 262
     const ry = isInner ? 100 : 196
+    // Rounded to hundredths: rendered on the server (/impact passes its groups in), Node and the
+    // browser printed the last digit of a trig result differently, and React reported a hydration
+    // mismatch on every line's x1/y1. A hundredth of a viewBox unit changes nothing on screen.
+    const r2 = (v: number) => Math.round(v * 100) / 100
     return {
-      x: CX + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * 0.04),
-      y: CY + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * 0.04),
+      x: r2(CX + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * 0.04)),
+      y: r2(CY + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * 0.04)),
     }
   })
 }
