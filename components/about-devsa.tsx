@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react"
 import { Play, ArrowUpRight } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { MORE_HUMAN_RECAP_VIDEO } from "@/data/events"
@@ -14,6 +14,16 @@ const VIDEO_POSTER = "/photos/about-poster.webp"
 
 export function AboutDevsa() {
   const [playing, setPlaying] = useState(false)
+  // The calendar's record ("600+"), read live from /api/stats so it is never the
+  // hardcoded "20+" this section once dropped. Until it arrives, or if it fails,
+  // the sentence simply reads without it.
+  const [eventsSince2024, setEventsSince2024] = useState<string | null>(null)
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.eventsSince2024 && setEventsSince2024(d.eventsSince2024))
+      .catch(() => {})
+  }, [])
 
   return (
     <section
@@ -77,7 +87,11 @@ export function AboutDevsa() {
                 San Antonio never lacked tech groups. It lacked a way for them
                 to see each other. DEVSA is the 501(c)(3) bridge between them:{" "}
                 <strong className="font-semibold text-gray-900">
-                  one shared calendar and one public directory
+                  one shared calendar
+                </strong>
+                {eventsSince2024 ? `, with ${eventsSince2024} events since 2024, and ` : " and "}
+                <strong className="font-semibold text-gray-900">
+                  one public directory
                 </strong>
                 , open to every grassroots group in the city.
               </p>
