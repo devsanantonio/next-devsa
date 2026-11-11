@@ -568,6 +568,8 @@ export interface EventRSVP {
   /** The question as it read when this person answered, so a later edit cannot relabel old answers. */
   question?: string;
   answer?: string;
+  /** "Student, working in tech, or exploring?" Optional; only ever reported as totals (lib/rsvp-stage.ts). */
+  stage?: 'student' | 'working' | 'exploring';
   submittedAt: Date;
   /** Signed up after the event was full. Not counted, not reminded, until an organizer moves them up. */
   waitlisted?: boolean;

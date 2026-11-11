@@ -1,4 +1,5 @@
 "use client"
+import { RSVP_STAGES } from "@/lib/rsvp-stage"
 import { DiscordIcon } from "@/components/icons/social-icons"
 import { ShareImageMenu } from "@/components/events/share-image-menu"
 
@@ -123,6 +124,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
     lastName: '',
     email: '',
     answer: '',
+    stage: '',
     joinNewsletter: false
   })
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
@@ -346,6 +348,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
           lastName: rsvpForm.lastName,
           email: rsvpForm.email,
           answer: rsvpForm.answer,
+          stage: rsvpForm.stage || undefined,
           joinNewsletter: rsvpForm.joinNewsletter,
         })
       })
@@ -355,7 +358,7 @@ export function EventPageClient({ slug }: EventPageClientProps) {
       if (response.ok) {
         setRsvpSuccess(true)
         setRsvpWaitlisted(data.waitlisted === true)
-        setRsvpForm({ firstName: '', lastName: '', email: '', answer: '', joinNewsletter: false })
+        setRsvpForm({ firstName: '', lastName: '', email: '', answer: '', stage: '', joinNewsletter: false })
       } else {
         setRsvpError(data.error || 'Failed to submit RSVP')
       }
@@ -669,6 +672,32 @@ export function EventPageClient({ slug }: EventPageClientProps) {
                         />
                       </div>
                     )}
+                    {/* Optional, and only counted in totals: how DEVSA knows how many students it reaches (lib/rsvp-stage.ts). */}
+                    <fieldset>
+                      <legend className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Are you a student, working in tech, or exploring?
+                        <span className="ml-1.5 font-normal text-gray-500">(optional)</span>
+                      </legend>
+                      <div className="flex flex-wrap gap-2">
+                        {RSVP_STAGES.map((s) => {
+                          const on = rsvpForm.stage === s.value
+                          return (
+                            <button
+                              key={s.value}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => setRsvpForm(prev => ({ ...prev, stage: on ? '' : s.value }))}
+                              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                                on ? 'border-[#ef426f] bg-[#ef426f] text-white' : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                              }`}
+                            >
+                              {s.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <p className="mt-1.5 text-xs text-gray-500">Only ever counted in totals, never shared with your name.</p>
+                    </fieldset>
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"

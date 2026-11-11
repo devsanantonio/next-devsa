@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Download, Loader2, Mail, ScanLine, Trash2, Users } from "lucide-react"
 import { CheckinDoor } from "@/components/admin/checkin-door"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
+import { RSVP_STAGES, STAGE_MIN_SHOWN, type StageTotals } from "@/lib/rsvp-stage"
 import { alreadyReceived, defaultKind, messageTemplate, messageWindow, MESSAGE_KINDS, type MessageKind } from "@/lib/event-messages"
 
 /**
@@ -55,6 +56,7 @@ type EventRSVP = RsvpRow
 
 export function RsvpsTab({
   rsvps,
+  stageTotals,
   setRsvps,
   events,
   communities,
@@ -67,6 +69,8 @@ export function RsvpsTab({
   onChanged,
 }: {
   rsvps: RsvpRow[]
+  /** Answers to "Student, working in tech, or exploring?", counted per event. Never per person. */
+  stageTotals: StageTotals
   setRsvps: React.Dispatch<React.SetStateAction<RsvpRow[]>>
   events: RsvpEvent[]
   communities: { id: string; name: string }[]
@@ -370,6 +374,12 @@ export function RsvpsTab({
               ...(isAdmin ? [{ label: 'Communities', value: communityCount }] : []),
             ]
 
+            // Who's coming, summed over the events in view. Shown only once enough people have
+            // answered that the totals can't point at anyone (lib/rsvp-stage.ts).
+            const inView = new Set(filteredRsvps.map(r => r.eventId))
+            const stageSum = RSVP_STAGES.map(s => ({ ...s, n: [...inView].reduce((a, id) => a + (stageTotals[id]?.[s.value] ?? 0), 0) }))
+            const answered = stageSum.reduce((a, s) => a + s.n, 0)
+
             // Group by event
             const groupedByEvent = filteredRsvps.reduce((acc, rsvp) => {
               const key = rsvp.eventId || rsvp.eventSlug
@@ -420,6 +430,26 @@ export function RsvpsTab({
                       </p>
                     </div>
                   ))}
+                </div>
+
+                {/* Who's coming: totals only, and nothing until enough people have answered. */}
+                <div className="-mt-3 mb-6 rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Who&apos;s coming</p>
+                  {answered >= STAGE_MIN_SHOWN ? (
+                    <p className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-neutral-300">
+                      {stageSum.map((s) => (
+                        <span key={s.value}>
+                          <span className="font-semibold tabular-nums text-white">{s.n}</span> {s.label.toLowerCase()}
+                          <span className="text-neutral-400"> · {Math.round((s.n / answered) * 100)}%</span>
+                        </span>
+                      ))}
+                      <span className="text-neutral-400">of {answered} who answered</span>
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-sm text-neutral-400">
+                      Shows once {STAGE_MIN_SHOWN} people have answered &ldquo;Student, working in tech, or exploring?&rdquo; Asked on RSVPs from Nov 10, 2026, and only ever shown as totals.
+                    </p>
+                  )}
                 </div>
 
                 {totalRsvps === 0 ? (

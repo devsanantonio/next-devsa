@@ -1,5 +1,6 @@
 "use client"
 
+import type { StageTotals } from "@/lib/rsvp-stage"
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { EVENT_BRANDS, EVENT_BRAND_KEYS } from "@/lib/event-brands"
 import { useRouter } from "next/navigation"
@@ -463,6 +464,8 @@ export default function AdminPage() {
   const [communities, setCommunities] = useState<Community[]>([])
   const [communitiesSource, setCommunitiesSource] = useState<string>("static")
   const [rsvps, setRsvps] = useState<EventRSVP[]>([])
+  /** "Student, working in tech, or exploring?" as counts per event; never per person (lib/rsvp-stage.ts). */
+  const [rsvpStages, setRsvpStages] = useState<StageTotals>({})
   // Which link-only event's link was just copied, for the badge's "Copied" state.
   const [copiedEventSlug, setCopiedEventSlug] = useState<string | null>(null)
   
@@ -1101,6 +1104,7 @@ export default function AdminPage() {
       if (rsvpsRes.ok) {
         const rsvpsData = await rsvpsRes.json()
         setRsvps(rsvpsData.rsvps || [])
+        setRsvpStages(rsvpsData.stageTotals || {})
       }
 
       // Admin-only data
@@ -5933,6 +5937,7 @@ export default function AdminPage() {
           {activeTab === "rsvps" && (
             <RsvpsTab
               rsvps={rsvps}
+              stageTotals={rsvpStages}
               setRsvps={setRsvps}
               events={events}
               communities={communities}

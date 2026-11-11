@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifiedEmail } from '@/lib/admin-auth';
 import { logActivity } from '@/lib/activity-log';
+import { isRsvpStage, type StageTotals } from '@/lib/rsvp-stage';
 import { getDb, COLLECTIONS, type EventRSVP, type ApprovedAdmin, type NewsletterSubscription } from '@/lib/firebase-admin';
 import { checkBotId } from 'botid/server';
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
@@ -96,6 +97,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { eventId, eventSlug, joinNewsletter, answer } = body;
+    // Optional, and only ever reported as totals (lib/rsvp-stage.ts). Anything else is dropped, not an error.
+    const stage = isRsvpStage(body.stage) ? body.stage : null;
     const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
     const firstName = text(body.firstName, MAX_LEN.name);
     const lastName = text(body.lastName, MAX_LEN.name);
@@ -183,6 +186,7 @@ export async function POST(request: NextRequest) {
       email: normalizedEmail,
       joinNewsletter: joinNewsletter || false,
       ...(question ? { question, answer: answerText } : {}),
+      ...(stage ? { stage } : {}),
       submittedAt: new Date(),
     };
 
@@ -308,9 +312,19 @@ export async function GET(request: NextRequest) {
     };
 
     const iso = (v: unknown): string | null => (v as { toDate?: () => Date })?.toDate?.()?.toISOString() ?? (typeof v === "string" ? v : null);
+    // "Student, working in tech, or exploring?" leaves here only as counts per event,
+    // never on a row: totals, never per person (lib/rsvp-stage.ts).
+    const stageTotals: StageTotals = {};
+    for (const doc of rsvpSnapshot.docs) {
+      const { eventId: ev, stage: st } = doc.data();
+      if (!isRsvpStage(st) || !ev) continue;
+      const row = (stageTotals[ev] ??= {});
+      row[st] = (row[st] ?? 0) + 1;
+    }
     const rsvps = rsvpSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
+      stage: undefined,
       submittedAt: iso(doc.data().submittedAt),
       checkedInAt: iso(doc.data().checkedInAt),
       promotedAt: iso(doc.data().promotedAt),
@@ -354,6 +368,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       rsvps,
       total: rsvps.length,
+      stageTotals,
     });
   } catch (error) {
     console.error('RSVP fetch error:', error);
