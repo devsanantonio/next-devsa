@@ -188,23 +188,27 @@ export function DonationCta({ campaign }: { campaign?: CampaignKey } = {}) {
               ) : (
                 <>
                   <p className="text-xl md:text-2xl text-white/70 leading-[1.4] font-light">
-                    Every dollar goes to what DEVSA actually runs: the{" "}
+                    Every dollar goes to what DEVSA runs:{" "}
                     <strong className="font-semibold text-white">
-                      community calendar and public directory
-                    </strong>{" "}
-                    every group publishes to, and the{" "}
-                    {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
-                    conferences built right here in San&nbsp;Antonio —{" "}
-                    <ConferenceList />.
-                  </p>
-                  <p className="text-base md:text-lg text-white/70 leading-relaxed">
-                    That is the bridge the{" "}
-                    <strong className="font-semibold text-white">
-                      active builders
+                      the channels San&nbsp;Antonio&apos;s builders follow
                     </strong>
-                    , the community groups and the partners find each other on.
-                    Giving keeps it open.
+                    , the calendar every group publishes to, and{" "}
+                    {COUNT_WORD[conferences.length] ?? conferences.length}{" "}
+                    conferences: <ConferenceList />.
                   </p>
+                  {/* What giving makes possible next, in place of a paragraph that restated the
+                      bridge. Food and drinks are deliberately not named (memory: funding priorities). */}
+                  <dl className="divide-y divide-white/10 border-y border-white/10">
+                    {[
+                      ["A full-time director and team", "Running Discord, DEVSA TV, the socials and the calendar every day."],
+                      ["Bigger rooms", "Every conference has filled Geekdom\u2019s 80 seats. Next: venues like Stable Hall."],
+                    ].map(([t, d]) => (
+                      <div key={t} className="py-3">
+                        <dt className="text-base md:text-lg font-semibold text-white">{t}</dt>
+                        <dd className="mt-1 text-sm md:text-base text-white/65 leading-relaxed">{d}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </>
               )}
               <p className="text-base md:text-lg text-white/50 leading-relaxed">
