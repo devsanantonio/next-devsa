@@ -12,6 +12,7 @@ description: Adding or changing an event deck under /slides — the self-contain
 public/slides/<slug>/
   index.html     the whole deck: markup, styles and script in one file
   cover.jpg      its title slide, 1280x720, shown on /slides
+  og.jpg         its share card, 1200x630, named by og:image in the head
   assets/        everything it loads (fonts, logos, video, QR codes)
 ```
 
@@ -28,9 +29,14 @@ slug not listed in `DECKS` in `lib/slides.ts`, which is also what `/slides` list
 2. Keep the head of `index.html` as it is (see "Rules" below).
 3. Make `cover.jpg`: open the deck at 1920x1080 on its title slide, screenshot,
    scale to 1280x720 JPEG (about 100 KB).
-4. Add an entry to `DECKS` in `lib/slides.ts`: title, one-line summary, date,
+4. Give it a share card: `og.jpg` at 1200x630, and `og:*` / `twitter:*` tags in
+   the head with absolute `https://www.devsa.community/slides/<slug>/og.jpg`
+   URLs. The route serves the HTML as written, so the site's metadata never
+   reaches a deck; without these tags a shared link has no preview. The
+   roundtable's is the `og` format of `design/network/art.html`.
+5. Add an entry to `DECKS` in `lib/slides.ts`: title, one-line summary, date,
    where, slide count, the event page if there is one.
-5. Open `/slides` and the deck in `pnpm dev`, then `pnpm build`. Each deck
+6. Open `/slides` and the deck in `pnpm dev`, then `pnpm build`. Each deck
    page is generated at build time from `DECKS`, so it goes live with the deploy.
 
 ## Rules a deck must follow

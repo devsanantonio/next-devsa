@@ -43,7 +43,7 @@ function net(width, opts = {}) {
   return s
 }
 const stripe = (h) => `<div id="stripe" style="height:${h}px"><div style="background:var(--teal)"></div><div style="background:var(--pink)"></div><div style="background:var(--orange)"></div></div>`
-const SZ = { ig: [1080, 1350], yt: [1920, 1080], poster: [1800, 2400], shirt: [1500, 1800] }[F]
+const SZ = { ig: [1080, 1350], yt: [1920, 1080], poster: [1800, 2400], shirt: [1500, 1800], og: [1200, 630] }[F]
 document.body.style.width = SZ[0] + 'px'; document.body.style.height = SZ[1] + 'px'
 let html = ''
 if (F === 'ig') html = `
@@ -58,6 +58,13 @@ if (F === 'yt') html = `
   <div class="abs h" style="left:110px;top:650px;font-size:84px">DEVSA is<br><span style="color:var(--pink)">that connection.</span></div>
   <div class="abs mono" style="left:112px;top:870px;font-size:24px;color:rgba(255,255,255,.75)">devsa.community</div>
   <div class="abs" style="left:900px;top:150px">${net(960)}</div>${stripe(14)}`
+// og: the Community Roundtable deck's share card (public/slides/community-roundtable-nov12/og.jpg)
+if (F === 'og') html = `
+  <div class="abs mono" style="left:72px;top:150px;font-size:18px;color:var(--teal)">Thursday, Nov 12 · Geekdom</div>
+  <div class="abs h" style="left:70px;top:196px;font-size:76px">Community<br>Roundtable.</div>
+  <div class="abs lt" style="left:72px;top:372px;font-size:36px">Every group. One room.</div>
+  <div class="abs mono" style="left:72px;top:470px;font-size:18px;color:rgba(255,255,255,.75)">devsa.community</div>
+  <div class="abs" style="left:560px;top:30px">${net(620)}</div>${stripe(10)}`
 if (F === 'poster') html = `
   <div class="abs h" style="left:130px;top:170px;font-size:150px">San Antonio<br>never lacked<br>builders.</div>
   <div class="abs lt" style="left:134px;top:660px;font-size:62px">What it lacked was anything connecting them.</div>

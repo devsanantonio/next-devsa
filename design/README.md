@@ -8,7 +8,7 @@ scratch. Not part of the site: nothing here is built or served. Brought in from 
 |---|---|
 | `devsa-tv/` | the **>TV** mark: the DEVSA mark redrawn as a clapperboard (open, closed, square icon) as SVG and PNG, and the 2.4 s clap (MP4, 16:9 and square). Needs a #161616 or light ground; the body vanishes on pure black. No "DEVSA TV" wordmark beside it. |
 | `stickers/` | the house sticker style: `stickers.html` (Ship it., LGTM, WELCOME, the prompt, mascots), `election.html` and `vote.html` (Election Day, I Voted: holo foil, glitter die-cut edge, papel picado letters, pixel ballot box, ASCII decode). Each `*.cjs` renders stills and GIF frames. |
-| `network/` | the community network as art (`art.html`, same geometry as `components/community-network.tsx`): Instagram 1080x1350, YouTube 1920x1080, an 18x24 poster and a 15x18 shirt at 300 dpi. |
+| `network/` | the community network as art (`art.html`, same geometry as `components/community-network.tsx`): Instagram 1080x1350, YouTube 1920x1080, an 18x24 poster, a 15x18 shirt at 300 dpi, and the Community Roundtable deck's 1200x630 share card (`?f=og`). |
 | `shared/devsa-prompt.js` | the logo's own chevron and underline cursor, for anything that types at a prompt. Use it instead of a font's ">" and a block cursor. |
 | `shared/assets/` | copies of the marks and the PySA pieces the stickers load. |
 | `localhost/` | the localhost:210 square icon (the lockups and wordmarks live in `public/branding/localhost/`). |
