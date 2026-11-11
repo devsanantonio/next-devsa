@@ -8,6 +8,7 @@ import {
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
 import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
+import { calendarRecord } from "@/lib/calendar-record"
 import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -64,9 +65,10 @@ export const metadata: Metadata = {
  * hardcoded.
  */
 export default async function AboutPage() {
-  const [communities, partners] = await Promise.all([
+  const [communities, partners, record] = await Promise.all([
     listCommunities(),
     listPartners(),
+    calendarRecord(),
   ])
 
   return (
@@ -100,6 +102,7 @@ export default async function AboutPage() {
         <FoundingFacts
           communityCount={communities.length}
           partnerCount={partners.length}
+          eventsSince2024={record?.since2024 ?? null}
         />
         <OriginProse communityCount={communities.length} />
         <MeetTheTeam />

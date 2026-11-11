@@ -208,50 +208,63 @@ export function AboutHero() {
 export function FoundingFacts({
   communityCount,
   partnerCount,
+  eventsSince2024,
 }: {
   communityCount?: number
   partnerCount?: number
+  /** "600+", from lib/calendar-record.ts. Null when the calendar can't be read: that number is left out. */
+  eventsSince2024?: string | null
 }) {
-  // `short` is the phone form: at two columns "September 2023" wrapped while
-  // "March 2024" did not, and the space reserved to keep the labels level left
-  // a gap under every one-line value. Short forms keep every value to one line,
-  // so nothing needs reserving. "501(c)(3)" is held together, because it was
-  // breaking after "(c)".
-  const facts: { value: string; short?: string; label: React.ReactNode }[] = [
-    { value: "September 2023", short: "Sept 2023", label: "Started as a Discord server" },
-    { value: "March 2024", short: "Mar 2024", label: <>Incorporated as a <span className="whitespace-nowrap">501(c)(3)</span></> },
-    {
-      value: communityCount ? String(communityCount) : "Every",
-      label: "Community groups on the calendar",
-    },
-    {
-      value: partnerCount ? String(partnerCount) : "—",
-      label: "Partners backing the work",
-    },
+  // The record as a line, not a list: four dates on a teal-to-orange rule (the
+  // brand's three colours, as on the sponsor packet's record page), then the
+  // figures they add up to, set large. It replaced a four-fact strip that held
+  // the same dates and counts with no sense of time between them.
+  const milestones: { when: string; what: React.ReactNode }[] = [
+    { when: "Sept 2023", what: "Started as a Discord server" },
+    { when: "Mar 2024", what: <>Incorporated as a <span className="whitespace-nowrap">501(c)(3)</span></> },
+    { when: "Apr 2024", what: "DEVSA\u2019s first event, with about ten community groups on the calendar" },
+    { when: "Today", what: "One calendar and one directory on devsa.community" },
   ]
+  const figures: { value: string; label: React.ReactNode }[] = [
+    ...(eventsSince2024 ? [{ value: eventsSince2024, label: "events on the community calendar since 2024" }] : []),
+    ...(communityCount ? [{ value: String(communityCount), label: <>community groups, <span className="text-[#007f78]">up from about ten</span></> }] : []),
+    ...(partnerCount ? [{ value: String(partnerCount), label: "partners backing the work" }] : []),
+  ]
+  const dot = ["#00b2a9", "#ef426f", "#ef426f", "#ff8200"]
 
   return (
     <section className="w-full bg-white" data-bg-type="light">
       <div className="page-shell pt-10 md:pt-24">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-10 border-y border-gray-200 py-10 md:grid-cols-4 md:gap-x-10">
-          {facts.map((fact) => (
-            <div key={fact.value}>
-              <dt className="text-2xl font-black leading-tight tracking-[-0.02em] text-gray-900 md:text-3xl">
-                {fact.short ? (
-                  <>
-                    <span className="md:hidden">{fact.short}</span>
-                    <span className="hidden md:inline">{fact.value}</span>
-                  </>
-                ) : (
-                  fact.value
-                )}
-              </dt>
-              <dd className="mt-3 text-sm leading-snug text-gray-500">
-                {fact.label}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="border-b border-gray-200 pt-4 pb-10 md:pt-6 md:pb-14">
+          <ol className="relative grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-8">
+            {/* the line: down the side on a phone, across on a wide screen */}
+            <span
+              aria-hidden="true"
+              className="absolute left-1.75 top-2 bottom-2 w-1 rounded-full bg-linear-to-b from-[#00b2a9] via-[#ef426f] to-[#ff8200] md:left-0 md:right-0 md:top-1.75 md:bottom-auto md:h-1 md:w-auto md:bg-linear-to-r"
+            />
+            {milestones.map((m, i) => (
+              <li key={m.when} className="relative pl-10 md:pl-0 md:pt-10">
+                <span
+                  aria-hidden="true"
+                  className="absolute left-0 top-1 h-4.5 w-4.5 rounded-full border-4 border-white md:top-0"
+                  style={{ background: dot[i] }}
+                />
+                <p className="text-2xl font-black leading-tight tracking-[-0.02em] text-gray-900 md:text-3xl">{m.when}</p>
+                <p className="mt-2 text-sm leading-snug text-gray-600 md:text-base">{m.what}</p>
+              </li>
+            ))}
+          </ol>
+          {figures.length > 0 && (
+            <dl className="mt-10 grid grid-cols-1 gap-8 border-t border-gray-200 pt-8 sm:grid-cols-3 md:mt-14 md:pt-10">
+              {figures.map((f) => (
+                <div key={f.value} className="flex flex-col-reverse">
+                  <dt className="mt-2 text-sm font-semibold text-gray-700 md:text-base">{f.label}</dt>
+                  <dd className="text-5xl font-black leading-none tracking-[-0.03em] tabular-nums text-gray-900 md:text-7xl">{f.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
       </div>
     </section>
   )
