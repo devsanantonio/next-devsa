@@ -90,6 +90,9 @@ body.idle{cursor:none}
 .facts .k{font-size:22px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55)}
 .facts .v{font-size:36px;font-weight:700;line-height:1.25}
 .facts .v small{font-weight:400;color:rgba(255,255,255,.65);font-size:30px}
+.facts.why .row{padding:16px 0}
+.facts.why .v{font-size:36px !important;line-height:1.2}
+.facts.why .v small{font-size:28px;line-height:1.35;display:block;margin-top:6px}
 
 #stripe{position:absolute;left:0;right:0;bottom:0;height:12px;display:flex;z-index:7;transition:opacity .6s}
 #stripe div{flex:1}
@@ -289,6 +292,22 @@ body:not(.idle) #hud{opacity:1}
           <div class="row in" style="--i:4;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">03</span><span class="v" style="font-size:46px">Geekdom Club<br><small>Geekdom's members-only club</small></span></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- 2 · Why tonight: the question asked before the night, answered first -->
+  <section class="slide" data-pose="hidden">
+    <div class="pad" style="top:205px">
+      <p class="eyebrow in" style="--i:0">Why tonight</p>
+      <h2 class="h2 in" style="--i:1;margin-top:24px;font-size:80px">Make the rooms easier to run. <span class="mute">Overdue since November 2024.</span></h2>
+      <div style="margin-top:30px;max-width:1500px">
+        <div class="facts why">
+          <div class="row in" style="--i:2;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--teal);font-size:30px">01</span><span class="v" style="font-size:40px">Student leaders<br><small>An easier handoff from seniors to freshmen, and a bridge to DEVSA that stays open for the next officers.</small></span></div>
+          <div class="row in" style="--i:3;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--pink);font-size:30px">02</span><span class="v" style="font-size:40px">Organizers<br><small>We don't run your groups. We use our network to make hosting easier: more co-hosted events, less work to put one on.</small></span></div>
+          <div class="row in" style="--i:4;grid-template-columns:110px 1fr"><span class="mono" style="color:var(--orange);font-size:30px">03</span><span class="v" style="font-size:40px">DEVSA<br><small>Most of San Antonio still hasn't heard of us. One calendar, one directory, the conferences built here, all easy to find.</small></span></div>
+        </div>
+      </div>
+      <p class="mono in" style="--i:5;margin-top:22px;font-size:22px;color:rgba(255,255,255,.6)">No sales funnel. No false promises.</p>
     </div>
   </section>
 
@@ -878,7 +897,7 @@ const ENTER = {
   },
 }
 function leave(i) {
-  if (i === 8) $$("#fan img").forEach((im) => { im.style.transitionDelay = "0ms"; im.style.transform = "translate(200px,80px) rotate(0)" })
+  if (slides[i] && slides[i].dataset.enter === "fan") $$("#fan img").forEach((im) => { im.style.transitionDelay = "0ms"; im.style.transform = "translate(200px,80px) rotate(0)" })
   if (i === RT) { unspot(); rtHist = [] }
 }
 function go(n) {
