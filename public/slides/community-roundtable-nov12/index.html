@@ -36,6 +36,18 @@
 @font-face{font-family:Geist;font-weight:900;src:url(assets/fonts/Geist-Black.woff2) format("woff2")}
 @font-face{font-family:"Geist Mono";font-weight:500;src:url(assets/fonts/GeistMono-Medium.woff2) format("woff2")}
 @font-face{font-family:"Geist Mono";font-weight:700;src:url(assets/fonts/GeistMono-Bold.woff2) format("woff2")}
+@font-face{font-family:"Geist Pixel";src:url(assets/fonts/GeistPixel-Square.woff2) format("woff2")}
+.an-word{font-family:"Geist Pixel",monospace;font-size:132px;line-height:1;color:#fff4f7;
+  text-shadow:0 0 4px #ff7fa3,0 0 14px #ff7fa3,0 0 36px #ef426f,0 0 70px rgba(239,66,111,.55)}
+/* the ring keeps every logo: only a thin feather at the image's edges, where there is no logo */
+.an-ring{position:absolute;right:50px;top:170px;width:960px;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);mask-composite:intersect}
+/* the social graphic's "steal": the Rust gear in rust orange, an arrow, the Alamo Python badge */
+.ap-steal{position:absolute;right:120px;top:360px;display:flex;align-items:center;gap:34px}
+.ap-gear{width:290px;height:290px;fill:#f0643a;overflow:visible;display:block}
+.ap-steal img{width:290px;display:block}
+.ap-arrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:64px;color:rgba(255,255,255,.55)}
 
 :root{
   --teal:#00b2a9;--pink:#ef426f;--orange:#ff8200;
@@ -438,6 +450,40 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
+  <!-- Agentic Nights: the next Discord exclusive, in its poster's Geist Pixel neon wordmark and ASCII model ring
+       (~/Downloads/agentic-nights-nov18/fm/poster2.html, ring.cjs) -->
+  <section class="slide" data-pose="hidden">
+    <img class="an-ring in" style="--i:3" src="assets/agentic/ring.jpg" alt="">
+    <div class="pad" style="top:250px;right:auto;width:900px">
+      <p class="eyebrow in" style="--i:0;color:var(--pink)">Discord exclusive · Next Wednesday</p>
+      <h2 class="an-word in" style="--i:1;margin-top:30px">Agentic<br>Nights</h2>
+      <p class="in" style="--i:2;margin-top:40px;font-size:40px;font-weight:700">Every model. One room.</p>
+      <p class="body in" style="--i:2;margin-top:12px;font-size:30px">Show what you're building with agents. Bring what you're exploring. Ask anything.</p>
+      <p class="mono in" style="--i:4;margin-top:44px;font-size:30px;letter-spacing:.12em">Wed Nov 18 · 6–7:30 PM CT</p>
+      <p class="url in" style="--i:4;margin-top:14px;font-size:22px">devsa.community/discord</p>
+    </div>
+  </section>
+
+  <!-- Alamo Python, Nov 16: the next in-person night, between the Discord exclusive and Give a talk
+       (~/Downloads/alamo-python-nov16, the event's own graphic) -->
+  <section class="slide" data-pose="hidden">
+    <div class="ap-steal in" style="--i:3"><svg class="ap-gear" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rust"><path d="m71.05 23.68c-26.06 0-47.27 21.22-47.27 47.27s21.22 47.27 47.27 47.27 47.27-21.22 47.27-47.27-21.22-47.27-47.27-47.27zm-.07 4.2a3.1 3.11 0 0 1 3.02 3.11 3.11 3.11 0 0 1 -6.22 0 3.11 3.11 0 0 1 3.2-3.11zm7.12 5.12a38.27 38.27 0 0 1 26.2 18.66l-3.67 8.28c-.63 1.43.02 3.11 1.44 3.75l7.06 3.13a38.27 38.27 0 0 1 .08 6.64h-3.93c-.39 0-.55.26-.55.64v1.8c0 4.24-2.39 5.17-4.49 5.4-2 .23-4.21-.84-4.49-2.06-1.18-6.63-3.14-8.04-6.24-10.49 3.85-2.44 7.85-6.05 7.85-10.87 0-5.21-3.57-8.49-6-10.1-3.42-2.25-7.2-2.7-8.22-2.7h-40.6a38.27 38.27 0 0 1 21.41-12.08l4.79 5.02c1.08 1.13 2.87 1.18 4 .09zm-44.2 23.02a3.11 3.11 0 0 1 3.02 3.11 3.11 3.11 0 0 1 -6.22 0 3.11 3.11 0 0 1 3.2-3.11zm74.15.14a3.11 3.11 0 0 1 3.02 3.11 3.11 3.11 0 0 1 -6.22 0 3.11 3.11 0 0 1 3.2-3.11zm-68.29.5h5.42v24.44h-10.94a38.27 38.27 0 0 1 -1.24-14.61l6.7-2.98c1.43-.64 2.08-2.31 1.44-3.74zm22.62.26h12.91c.67 0 4.71.77 4.71 3.8 0 2.51-3.1 3.41-5.65 3.41h-11.98zm0 17.56h9.89c.9 0 4.83.26 6.08 5.28.39 1.54 1.26 6.56 1.85 8.17.59 1.8 2.98 5.4 5.53 5.4h16.14a38.27 38.27 0 0 1 -3.54 4.1l-6.57-1.41c-1.53-.33-3.04.65-3.37 2.18l-1.56 7.28a38.27 38.27 0 0 1 -31.91-.15l-1.56-7.28c-.33-1.53-1.83-2.51-3.36-2.18l-6.43 1.38a38.27 38.27 0 0 1 -3.32-3.92h31.27c.35 0 .59-.06.59-.39v-11.06c0-.32-.24-.39-.59-.39h-9.15zm-14.43 25.33a3.11 3.11 0 0 1 3.02 3.11 3.11 3.11 0 0 1 -6.22 0 3.11 3.11 0 0 1 3.2-3.11zm46.05.14a3.11 3.11 0 0 1 3.02 3.11 3.11 3.11 0 0 1 -6.22 0 3.11 3.11 0 0 1 3.2-3.11z"/><path d="m115.68 70.95a44.63 44.63 0 0 1 -44.63 44.63 44.63 44.63 0 0 1 -44.63-44.63 44.63 44.63 0 0 1 44.63-44.63 44.63 44.63 0 0 1 44.63 44.63zm-.84-4.31 6.96 4.31-6.96 4.31 5.98 5.59-7.66 2.87 4.78 6.65-8.09 1.32 3.4 7.46-8.19-.29 1.88 7.98-7.98-1.88.29 8.19-7.46-3.4-1.32 8.09-6.65-4.78-2.87 7.66-5.59-5.98-4.31 6.96-4.31-6.96-5.59 5.98-2.87-7.66-6.65 4.78-1.32-8.09-7.46 3.4.29-8.19-7.98 1.88 1.88-7.98-8.19.29 3.4-7.46-8.09-1.32 4.78-6.65-7.66-2.87 5.98-5.59-6.96-4.31 6.96-4.31-5.98-5.59 7.66-2.87-4.78-6.65 8.09-1.32-3.4-7.46 8.19.29-1.88-7.98 7.98 1.88-.29-8.19 7.46 3.4 1.32-8.09 6.65 4.78 2.87-7.66 5.59 5.98 4.31-6.96 4.31 6.96 5.59-5.98 2.87 7.66 6.65-4.78 1.32 8.09 7.46-3.4-.29 8.19 7.98-1.88-1.88 7.98 8.19-.29-3.4 7.46 8.09 1.32-4.78 6.65 7.66 2.87z" fill-rule="evenodd" stroke="#f0643a" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg><span class="ap-arrow">→</span><img src="assets/alamo-python/alamo-python-white-cropped.png" alt="Alamo Python"></div>
+    <div class="pad" style="top:230px;right:auto;width:980px">
+      <p class="mono in" style="--i:0;font-size:20px;color:rgba(255,255,255,.6)">In person · This Monday</p>
+      <p class="mono in" style="--i:1;margin-top:22px;font-size:28px;color:#ffd343">Alamo Python</p>
+      <h2 class="h2 in" style="--i:1;margin-top:18px;font-size:100px">Stealing good ideas from <span style="color:#f0643a">Rust</span></h2>
+      <p class="body in" style="--i:2;margin-top:30px;font-size:30px;max-width:900px">The habits that make Rust code hard to break, and how to get most of them in the Python you already ship.</p>
+      <p class="mono in" style="--i:4;margin-top:44px;font-size:30px;letter-spacing:.12em">Mon Nov 16 · 6:00–8:30 PM</p>
+      <p class="in" style="--i:4;margin-top:12px;font-size:26px;color:rgba(255,255,255,.75)">Geekdom · Rand Building, 3rd floor</p>
+      <p class="in" style="--i:4;margin-top:6px;font-size:26px;color:rgba(255,255,255,.75)">Parking: City Tower Garage, 60 N. Flores St · $10</p>
+      <div class="in" style="--i:5;margin-top:40px;display:flex;align-items:center;gap:30px">
+        <span class="mono" style="font-size:18px;color:rgba(255,255,255,.6)">With</span>
+        <img src="assets/alamo-python/pytexas-cropped.png" alt="PyTexas" style="height:64px">
+        <img src="assets/alamo-python/geekdom-white.svg" alt="Geekdom" style="height:44px">
+      </div>
+    </div>
+  </section>
+
   <!-- 6 · Give a talk: the /give-a-talk page's two halves, groups with open calls and the open-pool form -->
   <section class="slide" data-pose="hidden" data-enter="talk">
     <div class="pad" style="top:196px;bottom:50px">
@@ -643,6 +689,11 @@ const CONFIG = {
   discordInvite: "cvHHzThrEw",
   discordMembers: 891,
   discordAsOf: "November 4",
+  // The roundtable's speaking order: a fixed shuffle of GROUPS, the same on every load (so a reload
+  // mid-roundtable keeps its place). Change the number for a different order; 0 keeps list order.
+  shuffleSeed: 1112,
+  // Groups that didn't RSVP: always last, in this order, so they can be skipped if they don't walk in.
+  last: ["Alamo Regional Data Alliance", "Alamo Agents", "OWASP San Antonio", "Red Hat User Group"],
 }
 let discordLive = null   // set once Discord answers
 async function fetchDiscord() {
@@ -701,6 +752,7 @@ const GROUPS = [
   { name: "ACM TU", logo: "acm-tu.png" },
   { name: "Tech Study Buddy", logo: "tech-study-buddy.png" },
   { name: "RowdyCyberCon", logo: "rowdycybercon.png" },
+  { name: "Agentic Nights", logo: "agentic-nights.png" },
 ]
 // ===========================================================================
 
@@ -840,8 +892,17 @@ function unspot() {
   nodeEls.forEach((n) => n.classList.remove("on", "done")); hubEls.forEach((h) => h.classList.remove("on"))
   $("#rtidle").style.opacity = ""; $("#veil").classList.remove("on")
 }
+// the speaking order (CONFIG.shuffleSeed): a seeded Fisher-Yates over the group indices
+for (const g of document.querySelectorAll("svg.ap-gear")) { const r = g.getBBox(); g.setAttribute("viewBox", [r.x - 2, r.y - 2, r.width + 4, r.height + 4].join(" ")) }
+const ORDER = (() => {
+  const o = GROUPS.map((_, i) => i); let s = CONFIG.shuffleSeed >>> 0
+  const r = () => (s = (s * 16807) % 2147483647) / 2147483647
+  if (s) for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [o[i], o[j]] = [o[j], o[i]] }
+  const last = CONFIG.last.map((n) => GROUPS.findIndex((g) => g.name === n)).filter((i) => i >= 0)
+  return o.filter((i) => !last.includes(i)).concat(last)
+})()
 function rtNext() {
-  const k = GROUPS.findIndex((_, i) => !done.has(i))
+  const k = ORDER.find((i) => !done.has(i)) ?? -1
   if (k < 0) return false
   rtHist.push(k); spotlight(k); return true
 }
