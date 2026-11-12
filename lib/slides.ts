@@ -37,7 +37,7 @@ export const DECKS: Deck[] = [
     summary: "DEVSA updates, Geekdom Club, then every group in one room, one logo at a time.",
     date: "2026-11-12",
     where: "Geekdom",
-    slides: 14,
+    slides: 15,
     eventUrl: "/events/community-roundtable-mvbhtcsj",
     keys: "G picks the next group",
   },
