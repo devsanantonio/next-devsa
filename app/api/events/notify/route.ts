@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
       const senderName = [admin.firstName, admin.lastName].filter(Boolean).join(' ') || 'The organizers';
       const [hostName, groupLogo] = await Promise.all([hostNameFor(event), hostLogoFor(event)]);
       const eventUrl = `${SITE_URL}/events/${event.slug}`;
-      const extras = eventExtrasFor(eventId, event);
+      // Calendar buttons and the getting-there note are for a night still ahead. An
+      // "after the event" message (thanks, slides, the recording) leaves them out:
+      // "Add to calendar" for an evening that's over only confuses.
+      const extras = type === 'after' ? undefined : eventExtrasFor(eventId, event);
       const day = eventDay(event.date);
       const build = (firstName: string) =>
         type === 'details'
