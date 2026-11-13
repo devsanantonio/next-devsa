@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Download, Loader2, Mail, ScanLine, Trash2, Users } from "lucide-react"
 import { CheckinDoor } from "@/components/admin/checkin-door"
 import { AdminCombobox } from "@/components/admin/admin-combobox"
+import { csvFilename } from "@/lib/csv"
 import { RSVP_STAGES, STAGE_MIN_SHOWN, type StageTotals } from "@/lib/rsvp-stage"
 import { alreadyReceived, defaultKind, messageTemplate, messageWindow, MESSAGE_KINDS, type MessageKind } from "@/lib/event-messages"
 
@@ -103,7 +104,10 @@ export function RsvpsTab({
         const downloadUrl = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = downloadUrl
-        a.download = `rsvps-${eventId !== 'all' ? eventId : groupId || 'all'}-${new Date().toISOString().split('T')[0]}.csv`
+        // Named for the event (title and date) or the group, not their ids.
+        const ev = eventId !== 'all' ? events.find((e) => e.id === eventId) : undefined
+        const group = !ev && groupId ? (communities.find((c) => c.id === groupId)?.name ?? null) : null
+        a.download = ev ? csvFilename('RSVPs', ev.title, ev.date) : csvFilename('RSVPs', group ?? 'All events')
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)

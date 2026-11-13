@@ -296,7 +296,7 @@ interface EventRSVP {
 import { defaultSlugPreview, invalidCustomSlug } from "@/lib/event-slug-shared"
 import { eventDescriptionToPlainText } from "@/lib/event-markdown"
 import { isAdminRole } from "@/lib/admin-roles"
-import { csvCell } from "@/lib/csv"
+import { csvCell, csvFilename } from "@/lib/csv"
 
 type Tab = "overview" | "activity" | "newsletter" | "speakers" | "volunteers" | "access" | "admins" | "events" | "communities" | "partners" | "rsvps" | "demoday" | "getinvolved"
 
@@ -1158,7 +1158,7 @@ export default function AdminPage() {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
     const a = document.createElement("a")
     a.href = URL.createObjectURL(blob)
-    a.download = `volunteer-signups-${scope}-${new Date().toISOString().split("T")[0]}.csv`
+    a.download = csvFilename("Volunteer signups", scope === "all" ? "All events" : scope)
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -1200,7 +1200,7 @@ export default function AdminPage() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `speaker-submissions-${scope.replace(/[^a-z0-9-]+/gi, "-")}-${new Date().toISOString().split("T")[0]}.csv`
+    a.download = csvFilename("Speaker submissions", scope)
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -3041,7 +3041,7 @@ export default function AdminPage() {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement("a")
                   a.href = url
-                  a.download = `newsletter-${new Date().toISOString().split("T")[0]}.csv`
+                  a.download = csvFilename("Newsletter subscribers")
                   document.body.appendChild(a)
                   a.click()
                   document.body.removeChild(a)
@@ -3191,7 +3191,7 @@ export default function AdminPage() {
                       ]}
                     />
                     <ToolbarButton
-                      onClick={() => handleExportSpeakers(filteredSpeakers, speakerEventFilter)}
+                      onClick={() => handleExportSpeakers(filteredSpeakers, speakerEventFilter === "all" ? "All events" : eventLabel(speakerEventFilter))}
                       disabled={filteredSpeakers.length === 0}
                       icon={<Download className="h-4 w-4" />}
                     >
