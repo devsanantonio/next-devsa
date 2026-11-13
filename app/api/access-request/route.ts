@@ -17,16 +17,30 @@ import {
 } from '@/lib/emails/access-request-decision';
 import { ALERT_EMAIL } from '@/lib/contact';
 import { isAdminRole } from '@/lib/admin-roles';
+import { sanitizeInput } from '@/lib/sanitize';
 
 interface AccessRequestBody {
   name: string;
   email: string;
   communityOrg: string;
+  groupLink?: string;
+  groupAbout?: string;
 }
 
-// Caps on what the public types: all three are stored, and the name and group go
+// Caps on what the public types: all are stored, and the name and group go
 // out in the confirmation email to whatever address was entered.
-const MAX_LEN = { name: 100, email: 200, communityOrg: 120 } as const;
+const MAX_LEN = { name: 100, email: 200, communityOrg: 120, groupLink: 300, groupAbout: 200 } as const;
+
+/** An http(s) URL, with https:// added when it was typed bare; anything else is dropped. */
+function cleanLink(raw: string): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 /*
  * The one answer every submission gets, whatever the address's history. It used
@@ -55,6 +69,10 @@ export async function POST(request: NextRequest) {
     const name = text(body.name, MAX_LEN.name);
     const email = text(body.email, MAX_LEN.email);
     const communityOrg = text(body.communityOrg, MAX_LEN.communityOrg);
+    // Only sent for a group that isn't listed yet. Plain text: the admin reads these
+    // and may copy them into the group's directory entry.
+    const groupLink = cleanLink(sanitizeInput(text(body.groupLink, MAX_LEN.groupLink)));
+    const groupAbout = sanitizeInput(text(body.groupAbout, MAX_LEN.groupAbout)) || null;
 
     // Validate required fields
     if (!name || !email || !communityOrg) {
@@ -106,6 +124,8 @@ export async function POST(request: NextRequest) {
       name,
       email: normalizedEmail,
       communityOrg,
+      groupLink,
+      groupAbout,
       submittedAt: new Date(),
       status: 'pending',
     };
@@ -136,7 +156,7 @@ export async function POST(request: NextRequest) {
           to: ALERT_EMAIL,
           replyTo: normalizedEmail,
           subject: getAccessRequestAlertSubject(name, communityOrg),
-          html: AccessRequestAlertEmail({ name, email: normalizedEmail, communityOrg }),
+          html: AccessRequestAlertEmail({ name, email: normalizedEmail, communityOrg, groupLink, groupAbout }),
         });
       } catch (alertError) {
         console.error('Failed to send access request alert:', alertError);

@@ -33,6 +33,9 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
   /** The combobox selection: an organization name, or the OTHER sentinel. */
   const [selectedOrg, setSelectedOrg] = useState("")
   const [otherOrg, setOtherOrg] = useState("")
+  /** For a group not listed yet: what an admin needs to judge it and add it to the directory. */
+  const [groupLink, setGroupLink] = useState("")
+  const [groupAbout, setGroupAbout] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -119,6 +122,10 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
       )
       return
     }
+    if (selectedOrg === OTHER && !groupLink.trim()) {
+      setError("Add a link to your group: its website, Meetup, Discord or Luma page.")
+      return
+    }
 
     setIsLoading(true)
 
@@ -126,7 +133,12 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
       const response = await fetch("/api/access-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, communityOrg }),
+        body: JSON.stringify({
+          name,
+          email,
+          communityOrg,
+          ...(selectedOrg === OTHER && { groupLink: groupLink.trim(), groupAbout: groupAbout.trim() }),
+        }),
       })
 
       const data = await response.json()
@@ -241,6 +253,47 @@ export function AccessRequestForm({ onSuccess }: AccessRequestFormProps) {
             />
           )}
         </div>
+
+        {/* A group we don't list yet: enough for an admin to judge it and start its directory entry. */}
+        {selectedOrg === OTHER && (
+          <>
+            <div>
+              <label htmlFor="groupLink" className="mb-1.5 block text-[13px] font-medium text-gray-900">
+                Link to your group <span className="text-[#ef426f]">*</span>
+              </label>
+              <input
+                type="text"
+                id="groupLink"
+                inputMode="url"
+                required
+                maxLength={300}
+                value={groupLink}
+                onChange={(e) => setGroupLink(e.target.value)}
+                placeholder="Website, Meetup, Discord or Luma"
+                disabled={isLoading}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50"
+              />
+            </div>
+            <div>
+              <label htmlFor="groupAbout" className="mb-1.5 block text-[13px] font-medium text-gray-900">
+                What&apos;s your group about? <span className="font-normal text-gray-500">(optional)</span>
+              </label>
+              <input
+                type="text"
+                id="groupAbout"
+                maxLength={200}
+                value={groupAbout}
+                onChange={(e) => setGroupAbout(e.target.value)}
+                placeholder="One line, like you'd say it at a meetup"
+                disabled={isLoading}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#ef426f] focus:outline-none focus:ring-2 focus:ring-[#ef426f]/20 disabled:opacity-50"
+              />
+              <p className="mt-1.5 text-xs text-gray-500">
+                We use these to add your group to the directory when we approve you.
+              </p>
+            </div>
+          </>
+        )}
 
         <div>
           <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-gray-900">

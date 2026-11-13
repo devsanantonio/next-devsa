@@ -18,11 +18,16 @@ export function AccessRequestAlertEmail({
   email,
   communityOrg,
   message,
+  groupLink,
+  groupAbout,
 }: {
   name: string
   email: string
   communityOrg: string
   message?: string | null
+  /** Set when the group isn't in the directory yet. */
+  groupLink?: string | null
+  groupAbout?: string | null
 }): string {
   return emailShell({
     audience: "internal",
@@ -31,7 +36,7 @@ export function AccessRequestAlertEmail({
     body: `
       ${eyebrow("New access request")}
       ${heading(`${esc(name)} wants organizer access.`)}
-      ${panel(rows([["Name", esc(name)], ["Email", esc(email)], ["Group", esc(communityOrg)], ["Note", message ? esc(message) : null]]), { label: "The request" })}
+      ${panel(rows([["Name", esc(name)], ["Email", esc(email)], ["Group", esc(communityOrg)], ["Group link", groupLink ? esc(groupLink) : null], ["About the group", groupAbout ? esc(groupAbout) : null], ["Note", message ? esc(message) : null]]), { label: "The request" })}
       ${button(`${SITE}/admin?tab=access`, "Review it in the admin")}
     `,
   })

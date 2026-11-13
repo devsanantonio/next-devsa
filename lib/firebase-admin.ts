@@ -323,6 +323,10 @@ export interface AccessRequest {
   name: string;
   email: string;
   communityOrg: string;
+  /** For a group not yet in the directory: a link to it and one line about it, so
+   *  the admin can judge the request and start the group's directory entry from them. */
+  groupLink?: string | null;
+  groupAbout?: string | null;
   submittedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
 }

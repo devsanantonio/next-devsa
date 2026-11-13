@@ -175,6 +175,9 @@ interface AccessRequest {
   name: string
   email: string
   communityOrg: string
+  /** Sent only for a group not yet in the directory. */
+  groupLink?: string | null
+  groupAbout?: string | null
   submittedAt: string
   status: string
 }
@@ -584,6 +587,8 @@ export default function AdminPage() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [useFileUpload, setUseFileUpload] = useState(true)
   const [showCreateCommunity, setShowCreateCommunity] = useState(false)
+  /** The access request a new group is being created for, from its row in Access Requests. */
+  const [addingGroupFor, setAddingGroupFor] = useState<{ id: string; name: string } | null>(null)
   const [newCommunity, setNewCommunity] = useState<Omit<Community, 'isStatic'>>({
     id: "",
     name: "",
@@ -1274,6 +1279,33 @@ export default function AdminPage() {
     return communities.find((c) => c.name.trim().toLowerCase() === typed)?.id ?? ""
   }
 
+  /**
+   * A request whose group isn't in the directory used to leave Approve disabled with no
+   * reason given. This opens the create-group drawer started from the request: the name
+   * as typed, an id made from it, their one line as the description, and their link in
+   * whichever field it belongs to. The admin still reviews it and adds the logo; on save
+   * the new group is chosen for the request and the admin lands back on Access Requests.
+   */
+  const startGroupFromRequest = (request: AccessRequest) => {
+    const name = (request.communityOrg || "").trim()
+    const id = name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60)
+    const link = request.groupLink || ""
+    let host = ""
+    try { host = link ? new URL(link).hostname.replace(/^www\./, "") : "" } catch {}
+    const field =
+      /(^|\.)meetup\.com$/.test(host) ? "meetup"
+      : /(^|\.)(discord\.gg|discord\.com)$/.test(host) ? "discord"
+      : /(^|\.)(lu\.ma|luma\.com)$/.test(host) ? "luma"
+      : /(^|\.)linkedin\.com$/.test(host) ? "linkedin"
+      : /(^|\.)instagram\.com$/.test(host) ? "instagram"
+      : /(^|\.)github\.com$/.test(host) ? "github"
+      : "website"
+    setNewCommunity((c) => ({ ...c, id, name, description: request.groupAbout || "", ...(link && { [field]: link }) }))
+    setAddingGroupFor({ id: request.id, name: request.name })
+    setActiveTab("communities")
+    setShowCreateCommunity(true)
+  }
+
   const handleApproveAccess = async (request: AccessRequest) => {
     setIsApprovingAccess(request.id)
     try {
@@ -1937,8 +1969,18 @@ export default function AdminPage() {
           facebook: "",
           github: "",
         })
-        setSuccessMessage("Community created successfully!")
         await fetchData(adminEmail)
+        // Opened from an access request: pick the new group for it and go back, so
+        // the next click is Approve.
+        if (addingGroupFor) {
+          const createdId = newCommunity.id
+          setApproveGroup((g) => ({ ...g, [addingGroupFor.id]: createdId }))
+          setSuccessMessage(`${newCommunity.name} is in the directory. Approve ${addingGroupFor.name} to make them its organizer.`)
+          setAddingGroupFor(null)
+          setActiveTab("access")
+        } else {
+          setSuccessMessage("Community created successfully!")
+        }
       } else {
         const data = await response.json()
         setError(data.error || "Failed to create community")
@@ -3632,6 +3674,13 @@ export default function AdminPage() {
                           <Td><PrimaryCell title={request.name} sub={<MailLink email={request.email} />} /></Td>
                           <Td>
                             <span className="block text-neutral-300">{request.communityOrg || "—"}</span>
+                            {/* What they told us about a group we don't list yet. */}
+                            {request.groupAbout && <span className="mt-1 block max-w-[22rem] text-sm text-neutral-400">{request.groupAbout}</span>}
+                            {request.groupLink && (
+                              <a href={request.groupLink} target="_blank" rel="noopener noreferrer" className="mt-1 block max-w-[22rem] truncate text-sm text-teal-300 hover:underline">
+                                {request.groupLink.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+                              </a>
+                            )}
                             {/* Which group they'll organize: required before Approve. */}
                             <AdminCombobox
                               floating
@@ -3642,6 +3691,22 @@ export default function AdminPage() {
                               onChange={(v) => setApproveGroup((g) => ({ ...g, [request.id]: v }))}
                               placeholder="Choose their group"
                             />
+                            {/* No group chosen: say why Approve waits, and offer to add theirs. */}
+                            {!groupForRequest(request) && (
+                              <div className="mt-2 text-sm">
+                                <p className="text-neutral-400">Their group isn&apos;t in the directory yet.</p>
+                                {request.communityOrg && (
+                                  <button
+                                    type="button"
+                                    onClick={() => startGroupFromRequest(request)}
+                                    className="mt-1 inline-flex items-center gap-1.5 font-medium text-teal-300 hover:text-teal-200"
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                    Add &ldquo;{request.communityOrg}&rdquo; as a group
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </Td>
                           <Td><DateCell value={request.submittedAt} time /></Td>
                           <Td align="right">
@@ -5339,6 +5404,8 @@ export default function AdminPage() {
                 open={showCreateCommunity}
                 onClose={() => {
                   setShowCreateCommunity(false)
+                  // Opened from an access request: closing without saving goes back to it.
+                  if (addingGroupFor) { setAddingGroupFor(null); setActiveTab("access") }
                   setNewCommunity({
                     id: "",
                     name: "",
@@ -5586,6 +5653,7 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => {
                             setShowCreateCommunity(false)
+                            if (addingGroupFor) { setAddingGroupFor(null); setActiveTab("access") }
                             setNewCommunity({
                               id: "",
                               name: "",
