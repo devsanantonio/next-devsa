@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { ArrowUpRight } from "lucide-react"
+import { FmHeroLoop } from "@/components/fm/fm-hero-loop"
 import { FmPlayer } from "@/components/fm/fm-player"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -60,31 +61,37 @@ const STEPS: { step: string; what: string; path: string; href: string }[] = [
 export default function FmPage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
+      {/* The hero makes the stream the star: the night bus, scene 01, first and full width under the nav,
+          with Sound on to hear it as it airs. Under it, the mark as the title with one lead paragraph beside it. */}
       <section className="border-b border-neutral-900" data-bg-type="dark">
-        <div className="page-shell pb-16 pt-20 md:pb-20 md:pt-24">
-          <h1>
-            {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
-            <img src="/branding/devsa-fm/devsa-fm-mark.svg" alt="DEVSA FM" className="h-24 w-auto sm:h-28 lg:h-36" />
-          </h1>
-          <p className="mt-8 max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
-            <span className="font-semibold text-white">A night in San Antonio, in ASCII.</span> DEVSA FM is DEVSA&apos;s
-            lofi livestream for the city&apos;s learners and builders: the River Walk, Market Square, San Fernando and the
-            rest of downtown, drawn in characters, with Tejano lofi under it. It&apos;s open source, and every scene is one
-            HTML file anyone can build.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-            <a
-              href={REPO}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
-            >
-              Build a scene <ArrowUpRight className="h-4 w-4" />
-            </a>
-            <a
-              href={YOUTUBE}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
-            >
-              Watch on YouTube <ArrowUpRight className="h-4 w-4" />
-            </a>
+        <div className="page-shell pb-16 pt-16 md:pb-20 md:pt-20">
+          <FmHeroLoop />
+          <div className="mt-10 grid gap-8 md:mt-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-14">
+            <h1>
+              {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
+              <img src="/branding/devsa-fm/devsa-fm-mark.svg" alt="DEVSA FM" className="h-24 w-auto sm:h-28 lg:h-36" />
+            </h1>
+            <div>
+              <p className="max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
+                <span className="font-semibold text-white">A night in San Antonio, in ASCII.</span> DEVSA FM is
+                DEVSA&apos;s lofi livestream for the city&apos;s learners and builders, with Tejano lofi under it. It&apos;s
+                open source, and every scene is one HTML file anyone can build.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
+                <a
+                  href={REPO}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+                >
+                  Build a scene <ArrowUpRight className="h-4 w-4" />
+                </a>
+                <a
+                  href={YOUTUBE}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
+                >
+                  Watch on YouTube <ArrowUpRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
