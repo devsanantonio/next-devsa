@@ -41,7 +41,8 @@ export const metadata: Metadata = {
 }
 
 /**
- * DEVSA FM — the livestream, on the site. Built the way /localhost is: the project's mark as the title,
+ * DEVSA FM — the livestream, on the site. The title is the >FM alt mark: one colour, like DEVSA's alt logo,
+ * so the night bus above it is the only colour in the hero. Built the way /localhost is: the project's mark as the title,
  * one lead paragraph, the thing itself, then a light section that hands off to the repo.
  *
  * The scenes play here but live in devsanantonio/devsa-fm (see components/fm/fm-player.tsx and the
@@ -118,7 +119,7 @@ export default function FmPage() {
               <div className="mt-10 grid gap-8 md:mt-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-14">
                 <h1>
                   {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
-                  <img src="/branding/devsa-fm/devsa-fm-mark.svg" alt="DEVSA FM" className="h-24 w-auto sm:h-28 lg:h-36" />
+                  <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-24 w-auto sm:h-28 lg:h-36" />
                 </h1>
                 <div>
                   <p className="max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">

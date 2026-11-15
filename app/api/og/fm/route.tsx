@@ -6,8 +6,9 @@ export const runtime = "nodejs"
 
 /**
  * DEVSA FM's share card: the stream itself, not a text card. The night bus (the page's hero, scene 01) fills
- * the top, cropped to where the bus rolls past Mission San José; under it the >FM mark on its own (no
- * "DEVSA" wordmark set beside it), the headline, and where to find it.
+ * the top, cropped to where the bus rolls past Mission San José; under it the >FM alt mark on its own (no
+ * "DEVSA" wordmark set beside it), the headline, and where to find it. The alt mark, in one colour like
+ * DEVSA's own alt logo, leaves the colour to the stream.
  *
  * Built by hand rather than with OgCard because the frame is the point: OgCard has no slot for a picture.
  * The files are read with one literal URL each so they're traced into the bundle (see the og-image skill).
@@ -28,7 +29,7 @@ export async function GET() {
     loadBrandFonts(),
     loadBrandMonoFonts(),
     dataUri(new URL("../../../../public/fm/night-bus.jpg", import.meta.url), "image/jpeg"),
-    dataUri(new URL("../../../../public/branding/devsa-fm/devsa-fm-mark.svg", import.meta.url), "image/svg+xml"),
+    dataUri(new URL("../../../../public/branding/devsa-fm/devsa-fm-alt-mark.svg", import.meta.url), "image/svg+xml"),
   ])
 
   return new ImageResponse(
