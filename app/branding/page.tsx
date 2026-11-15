@@ -7,7 +7,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community
 const TITLE = "Branding Kit — Logos, Colors and Conference Wordmarks"
 const SHARE_TITLE = "DEVSA Branding Kit — Logos, Colors and Conference Wordmarks"
 const DESCRIPTION =
-  "The DEVSA logo and how to use it, brand colors, type and voice, plus downloadable wordmarks for PySanAntonio, More Human Than Human, Access Granted and The Model. For press, partners and community use."
+  "The DEVSA logo and how to use it, brand colors, type and voice, plus downloadable marks for DEVSA's conferences and for localhost:210, DEVSA TV and DEVSA FM. For press, partners and community use."
 
 /*
  * This had a title and a description and nothing else, so it inherited the

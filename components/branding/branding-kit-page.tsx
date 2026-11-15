@@ -371,7 +371,7 @@ export function BrandingKitPage() {
       <section className="max-w-5xl mx-auto px-6 md:px-8 pb-16">
         <h2 className="text-2xl font-bold text-white mb-2">Conferences &amp; Programs</h2>
         <p className="text-neutral-500 text-sm mb-8">
-          DEVSA&apos;s conferences each have their own identity. Use these files rather than retyping the names: the wordmarks are made for black backgrounds, where the conferences live.
+          DEVSA&apos;s conferences and programs each have their own identity. Use these files rather than retyping the names: the conference wordmarks are made for black backgrounds, where the conferences live; the TV and FM marks need dark gray or light.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -436,6 +436,96 @@ export function BrandingKitPage() {
                 </a>
                 <a href="/branding/localhost/localhost-210-lockup-light.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
                   Lockup SVG (light)
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* DEVSA TV: DEVSA programming on TVSA, the City's public access channel. The >TV clapperboard is DEVSA's
+              own mark, so it ships here. TVSA&apos;s logo, any "DEVSA x TVSA" lockup and co-production wording do not:
+              how TVSA wants to be credited is still to be confirmed (see /tv). */}
+          <div className="border border-neutral-800/50 rounded-2xl overflow-hidden">
+            <div className="bg-neutral-900 px-6 py-8 border-b border-neutral-800/50 min-h-32 flex items-center gap-8">
+              <img src="/branding/devsa-tv/devsa-tv-mark-open.svg" alt="DEVSA TV" className="h-20 w-auto" />
+              <img src="/branding/devsa-tv/devsa-tv-mark-closed.svg" alt="" className="h-16 w-auto" />
+            </div>
+            <div className="p-6 bg-neutral-900/30">
+              <ul className="text-xs text-neutral-400 space-y-2 leading-relaxed mb-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  DEVSA programming on TVSA, San Antonio&apos;s public access channel. Say it that way: don&apos;t use TVSA&apos;s logo or imply a co-production
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  The DEVSA mark as a clapperboard, a variant of it: never set &quot;DEVSA TV&quot; beside it, never recolor or invert it, and use it on dark gray #161616 or light
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <a href="/tv" className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-[#ef426f] transition-colors">
+                  DEVSA TV
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+                <a href="/branding/devsa-tv/devsa-tv-mark-open.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Mark SVG (open)
+                </a>
+                <a href="/branding/devsa-tv/devsa-tv-mark-closed.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Mark SVG (closed)
+                </a>
+                <a href="/branding/devsa-tv/devsa-tv-mark-open.png" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  PNG
+                </a>
+                <a href="/branding/devsa-tv/devsa-tv-icon.png" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Icon PNG
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* DEVSA FM: DEVSA's lofi livestream. The >FM radio in color, and its one-color alt cut, the way the
+              DEVSA mark has its alt logo. The scenes are MIT; the marks are DEVSA&apos;s (the repo&apos;s ASSETS.md). */}
+          <div className="border border-neutral-800/50 rounded-2xl overflow-hidden">
+            <div className="bg-neutral-900 px-6 py-8 border-b border-neutral-800/50 min-h-32 flex items-center gap-8">
+              <img src="/branding/devsa-fm/devsa-fm-mark.svg" alt="DEVSA FM" className="h-20 w-auto" />
+              <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM, alt" className="h-20 w-auto" />
+            </div>
+            <div className="p-6 bg-neutral-900/30">
+              <ul className="text-xs text-neutral-400 space-y-2 leading-relaxed mb-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  DEVSA&apos;s lofi livestream, on YouTube. Music by Patrick Robinson, made with Suno
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  The DEVSA mark as a radio, a variant of it: never set &quot;DEVSA FM&quot; beside it, never recolor or invert it, and use it on dark gray #161616 or light
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-neutral-500 mt-0.5">—</span>
+                  Use the alt, in one color, beside color: over a scene, a photo or a partner&apos;s palette. The scenes are MIT; the marks are not
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <a href="/fm" className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-[#ef426f] transition-colors">
+                  DEVSA FM
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+                <a
+                  href="https://github.com/devsanantonio/devsa-fm"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-[#ef426f] transition-colors"
+                >
+                  DEVSA FM on GitHub
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+                <a href="/branding/devsa-fm/devsa-fm-mark.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Mark SVG
+                </a>
+                <a href="/branding/devsa-fm/devsa-fm-alt-mark.svg" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Alt SVG
+                </a>
+                <a href="/branding/devsa-fm/devsa-fm-mark.png" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  PNG
+                </a>
+                <a href="/branding/devsa-fm/devsa-fm-alt-mark.png" download className="text-xs text-neutral-400 hover:text-white transition-colors">
+                  Alt PNG
                 </a>
               </div>
             </div>

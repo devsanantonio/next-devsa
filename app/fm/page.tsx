@@ -82,7 +82,7 @@ const PLACES: [number, string][] = [
  * there's light. Each line is [code, comment]; keep it in step with the starter if that changes.
  */
 const CODE: [string, string?][] = [
-  ["function paint(t) {", "1. the place, in greys"],
+  ["function paint(t) {", "1. the place, in grays"],
   ["  g.fillStyle = fm.gray(.02)", "the night"],
   ["  g.fillRect(0, 0, W, H)"],
   ["  g.fillStyle = fm.gray(.12)", "downtown, dim"],
@@ -91,7 +91,7 @@ const CODE: [string, string?][] = [
   [""],
   ["function render(t) {"],
   ["  paint(t)"],
-  ["  fm.ascii(\"#0c0c0c\")", "2. every grey, a character"],
+  ["  fm.ascii(\"#0c0c0c\")", "2. every gray, a character"],
   ["  stringLights(t); agent(t)", "3. color where there's light"],
   ["  footer(t)"],
   ["}"],
@@ -213,7 +213,7 @@ export default function FmPage() {
                       event="fm_issue"
                       props={{ issue: n }}
                       href={`${REPO}/issues/${n}`}
-                      className="inline-flex items-center rounded-full border border-gray-300 px-3.5 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:border-gray-900 hover:text-gray-900"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-900 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50"
                     >
                       {place}
                     </FmLink>
