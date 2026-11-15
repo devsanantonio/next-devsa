@@ -32,6 +32,15 @@ export interface Deck {
 
 export const DECKS: Deck[] = [
   {
+    slug: "devsa-tv-ep1-nov18",
+    title: "DEVSA TV · Episode 1",
+    summary: "What DEVSA is, then 2026 in review: AI April, VelociCode 2, RowdyHacks and RowdyCyberCon, and SA Startup + Tech Week.",
+    date: "2026-11-18",
+    where: "TVSA studios",
+    slides: 18,
+    eventUrl: "/tv",
+  },
+  {
     slug: "community-roundtable-nov12",
     title: "Community Roundtable",
     summary: "DEVSA updates, Geekdom Club, then every group in one room, one logo at a time.",
