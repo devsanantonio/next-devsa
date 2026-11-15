@@ -53,6 +53,9 @@ export const metadata: Metadata = {
 
 const REPO = "https://github.com/devsanantonio/devsa-fm"
 const YOUTUBE = "https://www.youtube.com/@devsatx"
+// The channel's live address: always whichever stream is on now. A single broadcast's link turns into a
+// recording when that stream ends.
+const LIVE = "https://www.youtube.com/@devsatx/live"
 
 /** How a scene gets made, from the starter to the stream; each step links where it lives in the repo. */
 const STEPS: { step: string; what: string; path: string; href: string }[] = [
@@ -134,7 +137,7 @@ export default function FmPage() {
                     Build a scene <ArrowUpRight className="h-4 w-4" />
                   </a>
                   <a
-                    href={YOUTUBE}
+                    href={LIVE}
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
                   >
                     Watch on YouTube <ArrowUpRight className="h-4 w-4" />
