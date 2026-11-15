@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { ArrowUpRight } from "lucide-react"
 import { FmLink } from "@/components/fm/fm-link"
-import { FmHeroVideo } from "@/components/fm/fm-hero-video"
+import { FmHero } from "@/components/fm/fm-hero"
 import { jsonLdScript } from "@/lib/json-ld"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -51,7 +51,8 @@ export const metadata: Metadata = {
  * scene live in a player, with a picker and a song for each; framed on the page, the scenes ran on its own
  * thread and it locked up while switching, and it was more page than the stream needs (2026-11-14).
  *
- * The title is the >FM alt mark: one colour, like DEVSA's alt logo, so the bus is the only colour in the hero.
+ * The hero is the night bus, full-bleed and the height of the screen, with the words over its dark side
+ * (components/fm/fm-hero.tsx). The >FM alt mark heads the repo card in the second section.
  * The music is credited to Patrick Robinson, from the DEVSA community, on the video beside Sound on.
  * Vercel Analytics: fm_build (from hero or repo), fm_youtube, and fm_sound in the video.
  */
@@ -69,7 +70,7 @@ const STEPS: { step: string; what: string; path: string; href: string }[] = [
   { step: "Draw", what: "The place in greys, one character a pixel; colour only where there's light", path: "fmkit.js", href: "blob/main/CONTRIBUTING.md#make-a-scene" },
   { step: "Check", what: "Runs without the optional assets, same frame for the same second, no seam", path: "npm run check", href: "blob/main/tools/check.cjs" },
   { step: "Share", what: "Open a pull request; the check runs on it and a maintainer reviews it", path: "pull request", href: "pulls" },
-  { step: "Air", what: "Maintainers pick what joins the night mix, and your name goes in its footer", path: "the night mix", href: "#on-air" },
+  { step: "Air", what: "Maintainers pick what joins the night mix, and your name goes in its footer", path: "the night mix", href: "blob/main/README.md#on-air" },
 ]
 
 export default function FmPage() {
@@ -119,44 +120,37 @@ export default function FmPage() {
         }}
       />
       <main className="min-h-screen bg-neutral-950 text-white">
-        <section className="pb-16 pt-16 md:pb-20 md:pt-20" data-bg-type="dark">
-          <div className="page-shell">
-            <div className="grid gap-8 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-14">
-              <h1>
-                {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
-                <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-20 w-auto sm:h-24 lg:h-28" />
-              </h1>
-              <div>
-                <p className="max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
-                  <span className="font-semibold text-white">A night in San Antonio, in ASCII.</span> DEVSA FM is
-                  DEVSA&apos;s lofi livestream for the city&apos;s learners and builders: the River Walk, Market Square, San
-                  Fernando and the rest of downtown, drawn in characters, with Tejano lofi under it. It plays on
-                  YouTube, and it&apos;s open source.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
-                  <FmLink
-                    event="fm_youtube"
-                    href={LIVE}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
-                  >
-                    Watch on YouTube <ArrowUpRight className="h-4 w-4" />
-                  </FmLink>
-                  <FmLink
-                    event="fm_build"
-                    props={{ from: "hero" }}
-                    href={REPO}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
-                  >
-                    Build a scene on GitHub <ArrowUpRight className="h-4 w-4" />
-                  </FmLink>
-                </div>
-              </div>
-            </div>
-            <div id="on-air" className="mt-10 scroll-mt-24">
-              <FmHeroVideo />
-            </div>
+        <FmHero>
+          <p className="font-mono text-[11px] uppercase tracking-widest text-white/60">
+            <span className="text-white">DEVSA FM</span> · On YouTube
+          </p>
+          <h1 className="mt-4 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
+            A night in San Antonio,{" "}
+            <span className="font-light italic text-white/60">in ASCII.</span>
+          </h1>
+          <p className="mt-6 border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/75">
+            DEVSA&apos;s lofi livestream for the city&apos;s learners and builders: the River Walk, Market Square, San
+            Fernando and the rest of downtown, drawn in characters, with Tejano lofi under it. It&apos;s open source, and
+            anyone can build a scene.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <FmLink
+              event="fm_youtube"
+              href={LIVE}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+            >
+              Watch on YouTube <ArrowUpRight className="h-4 w-4" />
+            </FmLink>
+            <FmLink
+              event="fm_build"
+              props={{ from: "hero" }}
+              href={REPO}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
+            >
+              Build a scene on GitHub <ArrowUpRight className="h-4 w-4" />
+            </FmLink>
           </div>
-        </section>
+        </FmHero>
 
         {/* The repo: what it's for, and the way in. One light section, one link out, as /localhost ends. */}
         <section id="build" className="scroll-mt-24 bg-white py-16 text-gray-900 md:py-24" data-bg-type="light">
@@ -189,9 +183,15 @@ export default function FmPage() {
             </div>
 
             <div className="min-w-0 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a] text-white">
-              <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
-                <p className="truncate font-mono text-[12px] text-white/80">devsanantonio/devsa-fm</p>
-                <p className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-white/50">Public · MIT</p>
+              {/* The >FM alt mark heads the repo: the project's face on the project's code. It lives on the dark card
+                  because the alt mark's light tabs would vanish on the section's white. */}
+              <div className="flex items-end justify-between gap-6 border-b border-neutral-800 px-6 pb-5 pt-6">
+                {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
+                <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-20 w-auto sm:h-24" />
+                <div className="min-w-0 text-right">
+                  <p className="truncate font-mono text-[12px] text-white/80">devsanantonio/devsa-fm</p>
+                  <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-white/50">Public · MIT</p>
+                </div>
               </div>
               <ol className="divide-y divide-neutral-800">
                 {STEPS.map((s, i) => (
