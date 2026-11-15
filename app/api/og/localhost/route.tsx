@@ -5,7 +5,7 @@ import { loadBrandFonts } from "@/lib/og-fonts"
 export const runtime = "nodejs"
 
 /**
- * localhost:210: the page's hook. Seven APIs and no one place to find them,
+ * localhost:210: the page's hook. Eight APIs and no one place to find them,
  * and localhost:210 as the bridge to every agency publishing them.
  */
 export async function GET() {
@@ -13,8 +13,8 @@ export async function GET() {
   return new ImageResponse(
     (
       <OgCard
-        title={["Seven APIs.", "No one place to find them."]}
-        hook="San Antonio's open data is spread across seven publishers. localhost:210 brings all seven together in one open repo, with three small experiments to see what's in there."
+        title={["Eight APIs.", "No one place to find them."]}
+        hook="San Antonio's open data is spread across eight publishers. localhost:210 brings all eight together in one open repo, with three small experiments to see what's in there."
         footer="localhost:210 · Build with San Antonio's open data"
         url="devsa.community/localhost"
       />

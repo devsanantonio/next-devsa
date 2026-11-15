@@ -10,7 +10,7 @@ import { ArrowUpRight } from "lucide-react"
  * links, a terminal quickstart box and a button under a three-line headline.
  * Then rebuilt again the same day, as a different hero rather than a tidier
  * one: localhost:210 is the title (it was an eyebrow over a three-line
- * headline), the hook is the problem it answers ("Seven APIs. No one place to
+ * headline), the hook is the problem it answers ("Eight APIs. No one place to
  * find them."), and the dot map is
  * the hero's full-bleed ground from lg up instead of a square beside the copy.
  * The three experiments run along the bottom edge as the map's legend. The
@@ -233,17 +233,17 @@ export function LocalhostHero() {
             />
           </h1>
           {/* The hook is the problem localhost:210 answers: San Antonio's open data is
-              free and keyless but scattered across seven publishers, with no one place
+              free and keyless but scattered across eight publishers, with no one place
               that lists them. The title above is the answer: the bridge to every agency
               publishing it. (The comparison to DEVSA as the bridge between the city's
               tech groups came out: it trailed the hook.) "Agencies", never "partners": DEVSA is affiliated with none
-              of them, and the page says so. There is now a starter for every publisher (ten in all, Nov 2026), but the
+              of them, and the page says so. There is now a starter for every publisher (TxDOT's busiest-roads made eight publishers, Nov 14 2026), but the
               sentence stops at the bridge; the experiments are the row below. */}
           {/* One lead paragraph under the title, as the conference pages do it: the hook
               opens it in white, then the bridge. The hook was set at display size for a
               while and competed with the title. */}
           <p className="mt-8 max-w-xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
-            <span className="font-semibold text-white">Seven APIs. No one place to find them.</span>{" "}
+            <span className="font-semibold text-white">Eight APIs. No one place to find them.</span>{" "}
             localhost:210 is the bridge to{" "}
             <a
               href="https://github.com/devsanantonio/localhost/blob/main/SOURCES.md"

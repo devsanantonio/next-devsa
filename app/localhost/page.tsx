@@ -12,10 +12,10 @@ import via from "@/public/localhost/via-route-4.json"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
 
 const TITLE = "localhost:210 — Build With San Antonio's Open Data"
-// Leads with the hero's hook: seven APIs and no one place to find them, which is
+// Leads with the hero's hook: eight APIs and no one place to find them, which is
 // what localhost:210 answers. The three pieces are experiments, not products.
 const DESCRIPTION =
-  "San Antonio has seven open-data APIs and no one place to find them. localhost:210 brings all seven together in one open repo, with three small experiments to see what's in there: race a real VIA bus up San Pedro, watch the City permit what's being built, and follow the water through three centuries of downtown. A DEVSA project."
+  "San Antonio has eight open-data APIs and no one place to find them. localhost:210 brings all eight together in one open repo, with three small experiments to see what's in there: race a real VIA bus up San Pedro, watch the City permit what's being built, and follow the water through three centuries of downtown. A DEVSA project."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -60,8 +60,10 @@ export const metadata: Metadata = {
  * agent setup, then localhost night) came and went on 2026-11-02; it made the
  * page read as several sites at once. That detail lives in the repo.
  *
- * Seven agencies publish San Antonio's open data, not three: the repo's
- * SOURCES.md lists all of them, and its peek starter reads any of them.
+ * Eight agencies publish San Antonio's open data, not three: the repo's
+ * SOURCES.md lists all of them, and its peek starter reads any of them. The eighth,
+ * TxDOT (Nov 2026), allows exploring but not republishing without its consent, so
+ * none of its numbers appear on this page.
  *
  * "Today" comes from the calendar snapshot in public/localhost/community.json
  * (scripts/build-community.py). Geekdom is a DEVSA partner and the room: DEVSA
@@ -86,7 +88,7 @@ const REPO = "https://github.com/devsanantonio/localhost"
  */
 // `href` is relative to the localhost repo, or a full URL for a step that lives in another repo.
 const STEPS: { step: string; what: string; path?: string; href?: string; status?: "new" | "next" }[] = [
-  { step: "Find", what: "Every dataset all seven publish, in one list, rebuilt every Monday", path: "data/", href: "tree/main/data" },
+  { step: "Find", what: "Every dataset all eight publish, in one list, rebuilt every Monday", path: "data/", href: "tree/main/data" },
   { step: "Fetch", what: "A small program for each agency, run against the live source every week", path: "starters/", href: "tree/main/starters" },
   { step: "Ask", what: "A question in plain English, to an agent that picks the right programs", path: "agent-patterns/ask-your-data/", href: "https://github.com/devsanantonio/agent-patterns/tree/main/ask-your-data", status: "new" },
   { step: "Run", what: "Any code the agent writes, run in a sandbox, never on your machine", status: "next" },
@@ -268,7 +270,7 @@ export default function LocalhostPage() {
         </BuildYourOwn>
       </section>
 
-      {/* The ending closes the hook and says where the project is going. The hero says seven APIs
+      {/* The ending closes the hook and says where the project is going. The hero says eight APIs
           and no one place to find them; the experiments show three. This lays the project out as six
           steps from a dataset to an answer you can check, says plainly which exist, and ends on the
           endgame: not an app DEVSA ships, but a habit, with what people find going back to the
@@ -277,15 +279,15 @@ export default function LocalhostPage() {
         <div className="page-shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-gray-500">
-              <span className="text-gray-900">That was three</span> · There are seven
+              <span className="text-gray-900">That was three</span> · There are eight
             </p>
             <h2 className="mt-4 text-balance font-sans text-3xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-4xl lg:text-5xl">
-              Seven APIs.{" "}
+              Eight APIs.{" "}
               <span className="font-light italic text-gray-500">Answers you can check.</span>
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-gray-600">
               Every experiment above took the same steps: find the data, fetch it, ask it something, show the
-              answer. The localhost repo does the first two for all seven agencies today. Next is an agent you can
+              answer. The localhost repo does the first two for all eight agencies today. Next is an agent you can
               ask in plain English, which writes the code to answer, runs it somewhere safe, and shows its work.
             </p>
             <a
