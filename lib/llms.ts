@@ -44,6 +44,7 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 - **Partner pop-ups**: SheBuilds with Lovable, and Zero to Agent with Vercel.
 - **Give a talk** (${SITE}/give-a-talk): every San Antonio community group currently looking for speakers, and any DEVSA conference whose call for speakers is open. Each group's form is on its own page (${SITE}/buildingtogether/<group>#speak). A speaker who doesn't know which group fits can send the talk to DEVSA's open pool on the same page, and with their consent DEVSA shares it with the organizers of the groups it suits. First-time speakers are welcome.
 - **DEVSA TV** (${SITE}/tv): DEVSA programming is coming to TVSA, San Antonio's public access channel, filming its first episode on November 18 and premiering in December 2026, featuring the groups, speakers and builders DEVSA connects. Watch on Spectrum 20, Grande 19 or AT&T 99 (TVSA Public has no online stream); every episode is also published on DEVSA's YouTube (https://www.youtube.com/@devsatx). Air dates and times are not yet announced.
+- **DEVSA FM** (${SITE}/fm): DEVSA's lofi livestream on YouTube (https://www.youtube.com/@devsatx): downtown San Antonio at night drawn in ASCII characters (the River Walk, Market Square, San Fernando Cathedral and more), with Tejano lofi by Patrick Robinson from the DEVSA community. The scenes run live on the page. It's open source (https://github.com/devsanantonio/devsa-fm, MIT): every scene is one HTML file, and anyone can propose one by pull request; maintainers choose what joins the stream.
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
 
@@ -107,6 +108,7 @@ ${partners.map((p) => `- [${p.name}](${SITE}/buildingtogether/${p.id})${p.websit
 - [Code of conduct](${SITE}/code-of-conduct)
 - [Give a talk: groups looking for speakers](${SITE}/give-a-talk)
 - [DEVSA TV: coming to TVSA, San Antonio's public access channel, this December](${SITE}/tv)
+- [DEVSA FM: a night in San Antonio, in ASCII; DEVSA's lofi livestream, open source](${SITE}/fm)
 - [Branding kit: logos, colors and conference wordmarks](${SITE}/branding)
 - Conferences: [The Model](${SITE}/events/the-model), [Access Granted](${SITE}/events/access-granted), [PySanAntonio](${SITE}/events/pysanantonio), [More Human Than Human](${SITE}/events/morehumanthanhuman)
 
