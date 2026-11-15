@@ -57,6 +57,9 @@
 @font-face{font-family:"Geist Mono";font-weight:500;src:url(assets/fonts/GeistMono-Medium.woff2) format("woff2")}
 @font-face{font-family:"Geist Mono";font-weight:700;src:url(assets/fonts/GeistMono-Bold.woff2) format("woff2")}
 @font-face{font-family:"Geist Pixel";src:url(assets/fonts/GeistPixel-Square.woff2) format("woff2")}
+@font-face{font-family:"Luckiest Guy";src:url(assets/fonts/LuckiestGuy-latin.woff2) format("woff2")}
+@font-face{font-family:"Rubik Dirt";src:url(assets/fonts/RubikDirt-latin.woff2) format("woff2")}
+@font-face{font-family:"Caveat Brush";src:url(assets/fonts/CaveatBrush-latin.woff2) format("woff2")}
 
 :root{
   --teal:#00b2a9;--pink:#ef426f;--orange:#ff8200;
@@ -179,6 +182,21 @@ body:not(.idle) #hud{opacity:1}
 .ways .card{padding:34px 36px}
 .ways .url{display:block;margin-top:14px}
 .ways p{margin-top:12px;font-size:28px;line-height:1.4;color:rgba(255,255,255,.72)}
+/* VelociCode 2, in its own brand (velocicode.acmsa.org): paper ground, the origami dino, the VELOCI CODE! wordmark
+   in its fonts and colors, and its "a hackathon / a month-long game jam" tagline. The DEVSA mark sits this one out:
+   the alt logo's light tabs vanish on paper. */
+.slide.vc{background:#f8edcc;color:#20180c}
+.vc-dino{position:absolute;right:90px;top:330px;width:620px;filter:drop-shadow(0 30px 0 rgba(32,24,12,.12))}
+.vc-copy{position:absolute;left:140px;top:190px;width:1080px}
+.vc-eyebrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#8c3914}
+.vc-wm{margin-top:40px;display:flex;align-items:center;white-space:nowrap;line-height:.9}
+.vc-wm .v{font-family:"Luckiest Guy",system-ui;font-size:176px;color:#1e6016;text-shadow:7px 7px 0 #f5c800,11px 11px 0 #20180c;transform:rotate(-1.5deg);display:inline-block}
+.vc-wm .c{font-family:"Rubik Dirt",system-ui;font-size:176px;color:#c44d24;text-shadow:9px 9px 0 #20180c;transform:rotate(1.5deg);display:inline-block}
+.vc-wm .b{font-family:"Caveat Brush",cursive;font-size:128px;color:#20180c;transform:rotate(-12deg) translateY(-.1em);display:inline-block;margin-left:.05em}
+.vc-tag{margin-top:44px;font-family:"Caveat Brush",cursive;font-size:74px;line-height:1.05;color:#8c3914;transform:rotate(-1.5deg)}
+.vc-tag s{text-decoration-color:#c44d24;text-decoration-thickness:6px;opacity:.5;margin-right:.3em}
+.vc-when{margin-top:56px;font-family:"Geist Mono",monospace;font-weight:700;font-size:36px;letter-spacing:.04em;color:#20180c}
+.vc-show{margin-top:14px;font-size:34px;color:#5a3a18}
 [hidden]{display:none !important}
 </style>
 </head>
@@ -339,8 +357,9 @@ body:not(.idle) #hud{opacity:1}
         <div>
           <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>the event</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:160px">AI April.</h2>
-          <p class="when in" style="--i:2;--c:var(--teal)">April 3 → May 2, 2026</p>
-          <p class="lede in" style="--i:3;margin-top:30px">A month of AI talks, demos and builds, in its second year.</p>
+          <p class="when in" style="--i:2;--c:var(--teal)">April 1 → May 2, 2026</p>
+          <!-- Geeks && {...}'s own line, from geeksand.tech/ai-april -->
+          <p class="lede in" style="--i:3;margin-top:30px">A month-long, citywide initiative exploring the innovation, ethics, and real-world impact of Artificial Intelligence.</p>
         </div>
         <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/g12.png" alt="Geeks && {...}"></div></div>
       </div>
@@ -357,17 +376,14 @@ body:not(.idle) #hud{opacity:1}
       <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 02</span><h2 style="font-size:76px">ACM San Antonio <span class="mute">&amp;</span> Greater Gaming Society</h2></div>
     </div>
   </section>
-  <section class="slide">
-    <div class="pad" style="top:120px">
-      <div class="ev">
-        <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 02 · <b>the event</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:160px">VelociCode 2.</h2>
-          <p class="when in" style="--i:2;--c:var(--pink)">July 1 → August 1, 2026</p>
-          <p class="lede in" style="--i:3;margin-top:30px">A month-long game jam, ending in a community showcase at St. Mary&rsquo;s University.</p>
-        </div>
-        <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/g5.png" alt="ACM San Antonio"></div></div>
-      </div>
+  <section class="slide vc" data-mark="off">
+    <img class="vc-dino in" src="assets/logos/velocicode-dino.png" alt="VelociCode's origami dino" style="--i:1">
+    <div class="vc-copy">
+      <p class="vc-eyebrow in" style="--i:0">★ Spotlight 02 · Expedition 02 ★</p>
+      <h2 class="vc-wm in" style="--i:1"><span class="v">VELOCI</span><span class="c">CODE</span><span class="b">!</span></h2>
+      <p class="vc-tag in" style="--i:2"><s>a hackathon</s>a month-long game jam.</p>
+      <p class="vc-when in" style="--i:3">July 1 → August 1, 2026 · Theme: Fossil</p>
+      <p class="vc-show in" style="--i:4">Showcase at St. Mary&rsquo;s University</p>
     </div>
   </section>
 
@@ -385,8 +401,8 @@ body:not(.idle) #hud{opacity:1}
           <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>the events</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:124px">Two rooms, <span class="mute">run by students.</span></h2>
           <ul class="evlist in" style="--i:2">
-            <li><span class="d">Oct 3</span><b>RowdyHacks XII <small style="display:block;margin-top:8px;font-size:30px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.7)">the largest hackathon in San Antonio</small></b></li>
-            <li><span class="d" data-cfg="rowdyCyberCon">&nbsp;</span><b>RowdyCyberCon</b></li>
+            <li><span class="d">Oct 3</span><b>RowdyHacks XII <small style="display:block;margin-top:8px;font-size:30px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.7)">UTSA&rsquo;s annual hackathon</small></b></li>
+            <li><span class="d" data-cfg="rowdyCyberCon">&nbsp;</span><b>RowdyCyberCon <small style="display:block;margin-top:8px;font-size:30px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.7)">San Antonio&rsquo;s student-led cybersecurity conference &amp; CTF</small></b></li>
           </ul>
         </div>
         <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/rowdycybercon.png" alt="RowdyCyberCon"></div></div>
@@ -444,7 +460,7 @@ body:not(.idle) #hud{opacity:1}
 // ===================== CONFIG: fill in before tape day =====================
 const CONFIG = {
   // RowdyCyberCon's date, as it should read on screen (e.g. "Feb 21"). Empty leaves the date off.
-  rowdyCyberCon: "",
+  rowdyCyberCon: "Nov 7",   // rowdycybercon.org: "November 7th · San Antonio, TX", at UTSA's downtown campus
   // Your December: one card per group, in this order. Events marked * are on the community calendar
   // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
   // until then the card says it's coming to the calendar, rather than inventing a date.
