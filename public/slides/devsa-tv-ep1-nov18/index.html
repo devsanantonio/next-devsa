@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>DEVSA TV · Episode 1</title>
-<meta name="description" content="DEVSA TV, episode 1: what DEVSA is, then 2026 in review through four rooms that defined the year.">
+<meta name="description" content="DEVSA TV, episode 1: meet DEVSA, then 2026 in review through four rooms that defined the year, and December on the community calendar.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="DEVSA TV · Episode 1">
-<meta property="og:description" content="What DEVSA is, then 2026 in review: AI April, VelociCode, RowdyHacks and SA Startup + Tech Week.">
+<meta property="og:description" content="Meet DEVSA, then 2026 in review: AI April, VelociCode, RowdyHacks and SA Startup + Tech Week.">
 <meta property="og:url" content="https://www.devsa.community/slides/devsa-tv-ep1-nov18">
 <meta property="og:image" content="https://www.devsa.community/slides/devsa-tv-ep1-nov18/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -16,7 +16,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.devsa.community/slides/devsa-tv-ep1-nov18/og.jpg">
 <!--
-  DEVSA TV, episode 1, taped November 18, 2026. The show's on-screen graphics, one slide per beat.
+  DEVSA TV, episode 1, taped November 18, 2026: the first DEVSA content ever to air on Spectrum,
+  Grande and AT&T, through TVSA's public access channel. The show's on-screen graphics, one slide per beat.
   Runs offline: open this file in Chrome, press F for full screen.
 
   Next          → , Space, Page Down, Enter, or click anywhere else
@@ -25,19 +26,22 @@
   Start over    Home
 
   The run of show:
-    The intro         what DEVSA is, what it gives the city, the groups by topic       slides 1–4
-    2026 in review    four spotlights, 3 to 5 minutes each, three slides apiece        slides 5–17
-                        01 AI April                 Geeks && {...}
-                        02 VelociCode 2             ACM San Antonio, Greater Gaming Society
-                        03 RowdyHacks, RowdyCyberCon  ACM UTSA
-                        04 SA Startup + Tech Week   Geekdom
-    The close         find your people, and where                                         slide 18
+    Meet DEVSA            the longest segment, this episode only: the audience has never met DEVSA     slides 1–9
+    2026 in review        four spotlights, 3 to 5 minutes each. The organizers and student leaders     slides 10–18
+                          introduce their orgs and talk about their events on camera; the slides stay
+                          out of their way: the org's logo while they introduce it, then the event.
+                            01 AI April                    Geeks && {...}
+                            02 VelociCode 2                ACM San Antonio, Greater Gaming Society
+                            03 RowdyHacks, RowdyCyberCon   ACM UTSA
+                            04 SA Startup + Tech Week      Geekdom
+    Your December         rooms the audience can walk into this month, from the calendar               slide 19
+    The close                                                                                          slide 20
 
-  Everything on screen is verifiable from the DEVSA calendar and directory. Anything that isn't
-  (attendance, quotes, RowdyCyberCon's date) lives in CONFIG below and stays off screen until it's
-  filled in. Before tape day, also confirm with Geekdom how it wants SA Startup + Tech Week and its
-  wordmark shown, and say "DEVSA programming on TVSA": no TVSA logo or co-production wording until
-  TVSA confirms how it wants to be credited.
+  Everything on screen is checked against the community calendar and directory. Before tape day:
+    · fill in CONFIG below: RowdyCyberCon's date, and the December events not yet on the calendar
+    · confirm with Geekdom how it wants SA Startup + Tech Week and its wordmark shown
+    · say "DEVSA programming on TVSA": no TVSA logo or co-production wording until TVSA confirms
+      how it wants to be credited
 
   The DEVSA TV mark needs a dark gray ground (#161616); it vanishes on black, so the stage is #161616.
 -->
@@ -76,9 +80,9 @@ body.idle{cursor:none}
 .h2{font-size:104px;font-weight:900;line-height:.95;letter-spacing:-.02em;text-wrap:balance}
 .mute{font-weight:300;font-style:italic;color:rgba(255,255,255,.5)}
 .lede{font-size:40px;line-height:1.35;color:rgba(255,255,255,.78);text-wrap:pretty}
-.mono{font-family:"Geist Mono",monospace;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .url{font-family:"Geist Mono",monospace;font-weight:500;font-size:30px;color:rgba(255,255,255,.85)}
 .card{border:1px solid var(--line);background:var(--card);border-radius:16px}
+.k{font-size:22px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
 
 #stripe{position:absolute;left:0;right:0;bottom:0;height:12px;display:flex;z-index:7;transition:opacity .6s}
 #stripe div{flex:1}
@@ -86,12 +90,32 @@ body.idle{cursor:none}
 #hud{position:absolute;right:40px;bottom:36px;z-index:30;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.5);opacity:0;transition:opacity .4s}
 body:not(.idle) #hud{opacity:1}
 
-/* the four things DEVSA gives the city */
+/* channels, on the welcome */
+.channels{display:flex;gap:80px;margin-top:70px;border-top:1px solid var(--line);padding-top:36px}
+.channels div{font-size:28px;color:rgba(255,255,255,.65)}
+.channels b{display:block;font-size:84px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+
+/* who it's for, and the first-meetup steps */
+.rows{list-style:none;border-top:1px solid var(--line)}
+.rows li{display:grid;grid-template-columns:110px 1fr;gap:30px;align-items:baseline;padding:26px 0;border-bottom:1px solid var(--line)}
+.rows .num{font-family:"Geist Mono",monospace;font-size:28px;color:var(--c,var(--teal))}
+.rows b{font-size:48px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.rows small{display:block;margin-top:8px;font-size:30px;font-weight:400;color:rgba(255,255,255,.68)}
+
+/* four things, and the rooms */
 .cardgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
 .cardgrid .card{padding:34px 34px 36px}
 .cardgrid .n{display:block;font-family:"Geist Mono",monospace;font-size:22px;color:var(--orange);margin-bottom:22px}
 .cardgrid h3{font-size:42px;font-weight:900;letter-spacing:-.01em;line-height:1.05}
 .cardgrid p{margin-top:16px;font-size:28px;line-height:1.4;color:rgba(255,255,255,.72)}
+
+/* how it started */
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;position:relative;margin-top:90px;padding-top:50px}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:12px;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))}
+.timeline div{position:relative}
+.timeline div::before{content:"";position:absolute;left:0;top:-50px;width:30px;height:30px;border-radius:50%;background:var(--ground);border:6px solid var(--c)}
+.timeline b{display:block;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.timeline span{display:block;margin-top:16px;font-size:32px;line-height:1.35;color:rgba(255,255,255,.75)}
 
 /* the groups by topic */
 .topics{display:grid;grid-template-columns:repeat(3,1fr);gap:34px 60px}
@@ -100,44 +124,45 @@ body:not(.idle) #hud{opacity:1}
 
 /* the year's four rooms */
 .pillars{list-style:none;border-top:1px solid var(--line)}
-.pillars li{display:grid;grid-template-columns:110px 1fr 520px;gap:40px;align-items:baseline;padding:28px 0;border-bottom:1px solid var(--line)}
+.pillars li{display:grid;grid-template-columns:110px 1fr 560px;gap:40px;align-items:baseline;padding:28px 0;border-bottom:1px solid var(--line)}
 .pillars .num{font-family:"Geist Mono",monospace;font-size:28px;color:var(--c)}
 .pillars b{font-size:54px;font-weight:900;letter-spacing:-.02em;line-height:1}
 .pillars span{font-size:30px;color:rgba(255,255,255,.7)}
 
-/* a spotlight's title card */
-.spot{display:grid;grid-template-columns:1fr 560px;gap:100px;align-items:center;height:100%}
-.discs{display:flex;flex-wrap:wrap;gap:36px;justify-content:center}
-.disc{width:400px;height:400px;border-radius:50%;background:#101010;border:2px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;
+/* a spotlight, while its organizers introduce the org: the logo, big, and the name */
+.org{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px;padding-bottom:40px}
+.discs{display:flex;gap:70px;justify-content:center}
+.disc{width:460px;height:460px;border-radius:50%;background:#101010;border:2px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;
   box-shadow:0 0 0 18px rgba(255,255,255,.03),0 0 160px rgba(239,66,111,.18)}
 .disc img{width:74%;height:74%;object-fit:contain}
-.discs.two .disc{width:260px;height:260px}
-.wordmark{display:block;max-width:520px;max-height:200px;margin:0 auto}
+.discs.two .disc{width:400px;height:400px}
+.orgname{text-align:center}
+.orgname .eyebrow{display:block}
+.orgname h2{margin-top:20px;font-size:88px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.wordmark{display:block;max-width:900px;max-height:300px}
 
-/* a spotlight's run of events */
-.run{list-style:none;border-top:1px solid var(--line)}
-.run li{display:grid;grid-template-columns:200px 1fr 440px;gap:36px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--line)}
-.run .d{font-family:"Geist Mono",monospace;font-size:26px;color:var(--c,var(--teal))}
-.run .t{font-size:34px;font-weight:700;line-height:1.2}
-.run .w{font-size:27px;color:rgba(255,255,255,.62);text-align:right}
+/* a spotlight, while they talk about the event */
+.ev{display:grid;grid-template-columns:1fr 440px;gap:100px;align-items:center;height:100%}
+.ev .when{margin-top:34px;font-family:"Geist Mono",monospace;font-weight:700;font-size:36px;letter-spacing:.06em;color:var(--c,var(--teal))}
+.ev .disc{width:420px;height:420px}
+.evlist{list-style:none;margin-top:44px;border-top:1px solid var(--line)}
+.evlist li{display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--line)}
+.evlist .d{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;color:var(--orange)}
+.evlist b{font-size:46px;font-weight:900;letter-spacing:-.02em}
 
-/* a spotlight's close: who made it, the numbers once they're in, where to find them */
-.made{display:flex;flex-wrap:wrap;gap:22px}
-.made .who{display:flex;align-items:center;gap:20px;padding:16px 26px 16px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card)}
-.made .who img{width:76px;height:76px;object-fit:contain;border-radius:50%;background:#101010}
-.made .who b{font-size:32px;font-weight:700}
-.nums{display:flex;gap:80px;margin-top:56px}
-.nums div{font-size:28px;color:rgba(255,255,255,.65)}
-.nums b{display:block;font-size:96px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
-.quote{margin-top:56px;max-width:1300px;border-left:6px solid var(--orange);padding:6px 0 6px 36px;font-size:42px;line-height:1.35;font-weight:300;font-style:italic;color:rgba(255,255,255,.88)}
-.quote small{display:block;margin-top:14px;font-size:27px;font-style:normal;font-weight:500;color:rgba(255,255,255,.62)}
-.find{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:baseline;gap:30px;border-top:1px solid var(--line);padding-top:30px}
-.find .k{font-size:22px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+/* your December */
+.dec{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-top:56px}
+.dec .card{padding:28px 26px 30px;display:flex;flex-direction:column}
+.dec img{width:120px;height:120px;border-radius:50%;background:#101010;object-fit:contain;padding:14px}
+.dec .g{margin-top:22px;font-size:22px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.dec .t{margin-top:10px;font-size:29px;font-weight:900;letter-spacing:-.01em;line-height:1.1;flex:1}
+.dec .w{margin-top:20px;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;color:var(--teal);line-height:1.3}
+.dec .p{margin-top:6px;font-size:23px;color:rgba(255,255,255,.65);line-height:1.3}
+.dec .soon .t{font-weight:400;font-size:27px;color:rgba(255,255,255,.7)}
 
 /* the close */
 .ways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:70px}
 .ways .card{padding:32px 36px}
-.ways .k{font-size:22px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
 .ways .url{display:block;margin-top:14px}
 .ways p{margin-top:12px;font-size:27px;line-height:1.4;color:rgba(255,255,255,.7)}
 [hidden]{display:none !important}
@@ -147,7 +172,7 @@ body:not(.idle) #hud{opacity:1}
 <div id="stage">
   <img id="mark" src="assets/tv/devsa-tv-mark-open.svg" alt="DEVSA TV">
 
-  <!-- 0 · Title: the mark, large, and the episode -->
+  <!-- 0 · Title -->
   <section class="slide" data-mark="off">
     <div class="pad" style="top:0;bottom:0;display:flex;align-items:center;gap:120px">
       <img class="in" src="assets/tv/devsa-tv-mark-open.svg" alt="DEVSA TV" style="--i:0;height:420px;flex-shrink:0">
@@ -159,32 +184,73 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- ===================== The intro: what DEVSA is ===================== -->
+  <!-- ===================== Meet DEVSA: the longest segment, this episode only ===================== -->
 
-  <!-- 1 · The gap DEVSA closes -->
+  <!-- 1 · Welcome: the first time on TV -->
+  <section class="slide">
+    <div class="pad" style="top:250px">
+      <p class="eyebrow in" style="--i:0">Welcome</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">For the first time, <span class="mute">DEVSA is on your TV.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:48px;max-width:1400px">DEVSA programming on TVSA, San Antonio&rsquo;s public access channel, and every episode on YouTube.</p>
+      <div class="channels in" style="--i:3">
+        <div><b>20</b>Spectrum</div>
+        <div><b>19</b>Grande</div>
+        <div><b>99</b>AT&amp;T</div>
+        <div><b style="font-size:56px;line-height:84px">@devsatx</b>YouTube</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · The gap DEVSA closes -->
   <section class="slide">
     <div class="pad" style="top:250px">
       <p class="eyebrow in" style="--i:0">This is DEVSA</p>
       <h2 class="h2 in" style="--i:1;margin-top:30px;max-width:1500px">San Antonio never lacked builders. <span class="mute">They just couldn&rsquo;t find each other.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:56px;max-width:1360px">The city&rsquo;s tech groups ran their own meetups, on their own calendars, for their own people. DEVSA is the community infrastructure that connects them, a 501(c)(3) nonprofit, started as a Discord server in 2023.</p>
+      <p class="lede in" style="--i:2;margin-top:56px;max-width:1360px">The city&rsquo;s tech groups ran their own meetups, on their own calendars, for their own people. DEVSA is the community infrastructure that connects them.</p>
     </div>
   </section>
 
-  <!-- 2 · What DEVSA gives the city -->
+  <!-- 3 · Who it's for -->
+  <section class="slide">
+    <div class="pad" style="top:230px">
+      <p class="eyebrow in" style="--i:0">Who it&rsquo;s for</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">Learners <span class="mute">and builders.</span></h2>
+      <ol class="rows in" style="--i:2;margin-top:56px">
+        <li style="--c:var(--teal)"><span class="num">01</span><b>Students<small>finding the first room outside the classroom</small></b></li>
+        <li style="--c:var(--pink)"><span class="num">02</span><b>Career changers<small>looking for a way in, and the people already there</small></b></li>
+        <li style="--c:var(--orange)"><span class="num">03</span><b>Builders<small>new to the city, or ready to find their people in it</small></b></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 4 · What DEVSA gives the city -->
   <section class="slide">
     <div class="pad" style="top:250px">
       <p class="eyebrow in" style="--i:0">What DEVSA does</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">Four things, <span class="mute">all free.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">Four things, <span class="mute">for the whole city.</span></h2>
       <div class="cardgrid in" style="--i:2;margin-top:70px">
         <div class="card"><span class="n">01</span><h3>One calendar</h3><p>Every group&rsquo;s meetups, workshops and conferences, in one place.</p></div>
-        <div class="card"><span class="n">02</span><h3>One directory</h3><p><span data-cfg="groups">27</span> community groups and the partners behind them, each with its own page.</p></div>
-        <div class="card"><span class="n">03</span><h3>One channel</h3><p>The Discord, YouTube and DEVSA&rsquo;s socials: what&rsquo;s happening across every group.</p></div>
+        <div class="card"><span class="n">02</span><h3>One directory</h3><p>27 community groups and the partners behind them, each with its own page.</p></div>
+        <div class="card"><span class="n">03</span><h3>One channel</h3><p>The Discord, YouTube and now TV: what&rsquo;s happening across every group.</p></div>
         <div class="card"><span class="n">04</span><h3>The rooms</h3><p>DEVSA&rsquo;s own conferences, where all of it meets.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- 3 · The groups by topic (the directory's "Find a group by topic", as of November 15) -->
+  <!-- 5 · How it started (the About page's facts) -->
+  <section class="slide">
+    <div class="pad" style="top:250px">
+      <p class="eyebrow in" style="--i:0">How it started</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">A Discord server <span class="mute">that kept growing.</span></h2>
+      <div class="timeline in" style="--i:2">
+        <div style="--c:var(--teal)"><b>Sept 2023</b><span>Started as a Discord server</span></div>
+        <div style="--c:var(--pink)"><b>Mar 2024</b><span>A 501(c)(3) nonprofit</span></div>
+        <div style="--c:var(--orange)"><b>600+ events</b><span>on the community calendar since 2024</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · The groups by topic (the directory's "Find a group by topic", November 15) -->
   <section class="slide">
     <div class="pad" style="top:250px">
       <p class="eyebrow in" style="--i:0">The groups</p>
@@ -200,7 +266,36 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- 4 · Into the year -->
+  <!-- 7 · DEVSA's own rooms -->
+  <section class="slide">
+    <div class="pad" style="top:250px">
+      <p class="eyebrow in" style="--i:0">The rooms</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">DEVSA&rsquo;s own <span class="mute">conferences.</span></h2>
+      <div class="cardgrid in" style="--i:2;margin-top:70px">
+        <div class="card"><span class="n">Python</span><h3>PySanAntonio</h3><p>San Antonio&rsquo;s Python conference.</p></div>
+        <div class="card"><span class="n">AI</span><h3>More Human Than Human</h3><p>AI, for developers and engineers.</p></div>
+        <div class="card"><span class="n">Security</span><h3>Access Granted</h3><p>A hands-on security room.</p></div>
+        <div class="card"><span class="n">Creators</span><h3>The Model</h3><p>For creators, founders and builders.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Your first meetup -->
+  <section class="slide">
+    <div class="pad" style="top:230px">
+      <p class="eyebrow in" style="--i:0">Your first meetup</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">No membership. <span class="mute">No gatekeeping.</span></h2>
+      <ol class="rows in" style="--i:2;margin-top:56px">
+        <li style="--c:var(--teal)"><span class="num">01</span><b>Find a group<small>devsa.community: every group, by what it covers</small></b></li>
+        <li style="--c:var(--pink)"><span class="num">02</span><b>Pick an event<small>most meetups are free, and open to anyone</small></b></li>
+        <li style="--c:var(--orange)"><span class="num">03</span><b>Show up<small>that&rsquo;s the whole thing</small></b></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== 2026 in review ===================== -->
+
+  <!-- 9 · Into the year -->
   <section class="slide">
     <div class="pad" style="top:230px">
       <p class="eyebrow in" style="--i:0">2026 in review</p>
@@ -214,178 +309,106 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- ===================== Spotlight 01 · AI April ===================== -->
-
+  <!-- Spotlight 01 · Geeks && {...}: the org, then AI April -->
+  <section class="slide" data-mark="off">
+    <div class="org">
+      <div class="discs in" style="--i:0"><div class="disc"><img src="assets/logos/g12.png" alt=""></div></div>
+      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 01</span><h2>Geeks &amp;&amp; {...}</h2></div>
+    </div>
+  </section>
   <section class="slide">
     <div class="pad" style="top:120px">
-      <div class="spot">
+      <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>April</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:140px">AI April.</h2>
-          <p class="lede in" style="--i:2;margin-top:40px">A month of AI talks, demos and builds, from Geeks &amp;&amp; {...} and the groups around it. The second year, from a kickoff party on April 3 to the showcase on May 2.</p>
+          <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>the event</b></p>
+          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">AI April.</h2>
+          <p class="when in" style="--i:2;--c:var(--teal)">April 3 → May 2, 2026</p>
+          <p class="lede in" style="--i:3;margin-top:30px">A month of AI talks, demos and builds, in its second year, ending in the AI April Showcase.</p>
         </div>
-        <div class="discs in" style="--i:2"><div class="disc"><img src="assets/logos/g12.png" alt="Geeks && {...}"></div></div>
+        <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/g12.png" alt="Geeks && {...}"></div></div>
       </div>
     </div>
   </section>
 
-  <section class="slide">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">AI April · <b>the month</b></p>
-      <ul class="run in" style="--i:1;margin-top:44px;--c:var(--teal)">
-        <li><span class="d">Apr 3</span><span class="t">AI April Kickoff Party</span><span class="w">Zelifcam</span></li>
-        <li><span class="d">Apr 7</span><span class="t">OpenClaw, Two Ways</span><span class="w">with Alamo Python</span></li>
-        <li><span class="d">Apr 14</span><span class="t">People, Not Widgets</span><span class="w">with ACM San Antonio</span></li>
-        <li><span class="d">Apr 27</span><span class="t">GameDev &amp; the Machine: Humans Still Required</span><span class="w">with Greater Gaming Society</span></li>
-        <li><span class="d">Apr 28</span><span class="t">Open Source Builder Nights: OpenClaw Demo</span><span class="w">with Alamo Tech Collective</span></li>
-        <li><span class="d">May 2</span><span class="t">2nd Annual AI April Showcase</span><span class="w">Radius Center</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="slide" data-spot="aiApril">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">AI April · <b>who made it</b></p>
-      <div class="made in" style="--i:1;margin-top:40px">
-        <div class="who"><img src="assets/logos/g12.png" alt=""><b>Geeks &amp;&amp; {...}</b></div>
-        <div class="who"><img src="assets/logos/g4.png" alt=""><b>Alamo Tech Collective</b></div>
-        <div class="who"><img src="assets/logos/g6.png" alt=""><b>Alamo Python</b></div>
-        <div class="who"><img src="assets/logos/g5.png" alt=""><b>ACM San Antonio</b></div>
-        <div class="who"><img src="assets/logos/g9.png" alt=""><b>Greater Gaming Society</b></div>
+  <!-- Spotlight 02 · ACM San Antonio and Greater Gaming Society: the orgs, then VelociCode 2 -->
+  <section class="slide" data-mark="off">
+    <div class="org">
+      <div class="discs two in" style="--i:0">
+        <div class="disc"><img src="assets/logos/g5.png" alt=""></div>
+        <div class="disc"><img src="assets/logos/g9.png" alt=""></div>
       </div>
-      <div class="nums in" data-nums style="--i:2"></div>
-      <p class="quote in" data-quote style="--i:3"></p>
-      <div class="find in" style="--i:4"><span class="k">Find them</span><span class="url">devsa.community/buildingtogether/geeks-and-drinks</span></div>
+      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 02</span><h2 style="font-size:72px">ACM San Antonio <span class="mute">&amp;</span> Greater Gaming Society</h2></div>
     </div>
   </section>
-
-  <!-- ===================== Spotlight 02 · VelociCode 2 ===================== -->
-
   <section class="slide">
     <div class="pad" style="top:120px">
-      <div class="spot">
+      <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 02 · <b>July</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:140px">VelociCode 2.</h2>
-          <p class="lede in" style="--i:2;margin-top:40px">A month-long game jam from ACM San Antonio and Greater Gaming Society: workshops, a playtest night, and a community showcase on August 1.</p>
+          <p class="eyebrow in" style="--i:0">Spotlight 02 · <b>the event</b></p>
+          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">VelociCode 2.</h2>
+          <p class="when in" style="--i:2;--c:var(--pink)">July 1 → August 1, 2026</p>
+          <p class="lede in" style="--i:3;margin-top:30px">A month-long game jam: workshops, a playtest night, and a community showcase at St. Mary&rsquo;s University.</p>
         </div>
-        <div class="discs two in" style="--i:2">
-          <div class="disc"><img src="assets/logos/g5.png" alt="ACM San Antonio"></div>
-          <div class="disc"><img src="assets/logos/g9.png" alt="Greater Gaming Society"></div>
-        </div>
+        <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/g5.png" alt="ACM San Antonio"></div></div>
       </div>
     </div>
   </section>
 
-  <section class="slide">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">VelociCode 2 · <b>the jam</b></p>
-      <ul class="run in" style="--i:1;margin-top:44px;--c:var(--pink)">
-        <li><span class="d">Jul 1</span><span class="t">Kickoff</span><span class="w">Geekdom</span></li>
-        <li><span class="d">Jul 8</span><span class="t">Powering Up with Unreal Engine 5</span><span class="w">with Unreal Engine SA</span></li>
-        <li><span class="d">Jul 16</span><span class="t">Dynamic and Procedural Audio in Godot</span><span class="w">Black Potion</span></li>
-        <li><span class="d">Jul 17</span><span class="t">Playtest Night</span><span class="w">with Alamo Tech Collective</span></li>
-        <li><span class="d">Jul 22</span><span class="t">Final Sprint Workshop</span><span class="w">with Unreal Engine SA</span></li>
-        <li><span class="d">Aug 1</span><span class="t">Community Showcase</span><span class="w">St. Mary&rsquo;s University</span></li>
-      </ul>
+  <!-- Spotlight 03 · ACM UTSA: the org, then RowdyHacks and RowdyCyberCon -->
+  <section class="slide" data-mark="off">
+    <div class="org">
+      <div class="discs in" style="--i:0"><div class="disc"><img src="assets/logos/g2.png" alt=""></div></div>
+      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 03</span><h2>ACM UTSA</h2></div>
     </div>
   </section>
-
-  <section class="slide" data-spot="velocicode">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">VelociCode 2 · <b>who made it</b></p>
-      <div class="made in" style="--i:1;margin-top:40px">
-        <div class="who"><img src="assets/logos/g5.png" alt=""><b>ACM San Antonio</b></div>
-        <div class="who"><img src="assets/logos/g9.png" alt=""><b>Greater Gaming Society</b></div>
-        <div class="who"><img src="assets/logos/g21.png" alt=""><b>Unreal Engine SA</b></div>
-        <div class="who"><img src="assets/logos/g4.png" alt=""><b>Alamo Tech Collective</b></div>
-      </div>
-      <div class="nums in" data-nums style="--i:2"></div>
-      <p class="quote in" data-quote style="--i:3"></p>
-      <div class="find in" style="--i:4"><span class="k">Find them</span><span class="url">devsa.community/buildingtogether/acm-sa</span></div>
-    </div>
-  </section>
-
-  <!-- ===================== Spotlight 03 · ACM UTSA: RowdyHacks and RowdyCyberCon ===================== -->
-
   <section class="slide">
     <div class="pad" style="top:120px">
-      <div class="spot">
+      <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>ACM UTSA</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:128px">RowdyHacks <span class="mute">&amp; RowdyCyberCon.</span></h2>
-          <p class="lede in" style="--i:2;margin-top:40px">UTSA&rsquo;s students run RowdyHacks, the largest hackathon in San Antonio, and RowdyCyberCon.</p>
+          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>the events</b></p>
+          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:120px">Two rooms, <span class="mute">run by students.</span></h2>
+          <ul class="evlist in" style="--i:2">
+            <li><span class="d">Oct 3</span><b>RowdyHacks XII <small style="display:block;margin-top:8px;font-size:28px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.68)">the largest hackathon in San Antonio</small></b></li>
+            <li><span class="d" data-cfg="rowdyCyberCon">&nbsp;</span><b>RowdyCyberCon</b></li>
+          </ul>
         </div>
-        <div class="discs two in" style="--i:2">
-          <div class="disc"><img src="assets/logos/g2.png" alt="ACM UTSA"></div>
-          <div class="disc"><img src="assets/logos/rowdycybercon.png" alt="RowdyCyberCon"></div>
-        </div>
+        <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/rowdycybercon.png" alt="RowdyCyberCon"></div></div>
       </div>
     </div>
   </section>
 
-  <section class="slide">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">ACM UTSA · <b>the two rooms</b></p>
-      <ul class="run in" style="--i:1;margin-top:44px;--c:var(--orange)">
-        <li><span class="d">Oct 3</span><span class="t">RowdyHacks XII</span><span class="w">San Pedro 1, downtown</span></li>
-        <li data-cfg-row="rowdyCyberCon"><span class="d" data-cfg="rowdyCyberCon.when"></span><span class="t">RowdyCyberCon</span><span class="w" data-cfg="rowdyCyberCon.where"></span></li>
-      </ul>
-      <p class="lede in" data-cfg="rowdyCyberCon.what" style="--i:2;margin-top:48px;max-width:1400px"></p>
-    </div>
-  </section>
-
-  <section class="slide" data-spot="acmUtsa">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">ACM UTSA · <b>who made it</b></p>
-      <div class="made in" style="--i:1;margin-top:40px">
-        <div class="who"><img src="assets/logos/g2.png" alt=""><b>ACM UTSA</b></div>
-        <div class="who"><img src="assets/logos/rowdycybercon.png" alt=""><b>RowdyCyberCon</b></div>
-      </div>
-      <div class="nums in" data-nums style="--i:2"></div>
-      <p class="quote in" data-quote style="--i:3"></p>
-      <div class="find in" style="--i:4"><span class="k">Find them</span><span class="url">devsa.community/buildingtogether/acm-utsa</span></div>
-    </div>
-  </section>
-
-  <!-- ===================== Spotlight 04 · Geekdom: SA Startup + Tech Week ===================== -->
+  <!-- Spotlight 04 · Geekdom: the org, then SA Startup + Tech Week -->
   <!-- Confirm with Geekdom before tape day: how it wants SA Startup + Tech Week described, and its wordmark on screen. -->
-
+  <section class="slide" data-mark="off">
+    <div class="org">
+      <img class="wordmark in" src="assets/marks/geekdom-wordmark-red.svg" alt="" style="--i:0;max-height:220px">
+      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 04</span><h2>Geekdom</h2></div>
+    </div>
+  </section>
   <section class="slide">
     <div class="pad" style="top:120px">
-      <div class="spot">
+      <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 04 · <b>Sept 28 – Oct 2</b></p>
+          <p class="eyebrow in" style="--i:0">Spotlight 04 · <b>the event</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:128px">SA Startup <span class="mute">+ Tech Week.</span></h2>
-          <p class="lede in" style="--i:2;margin-top:40px">Five days of San Antonio&rsquo;s founders and builders, with Geekdom. DEVSA brought the tech track: the groups, the talks and its own rooms.</p>
+          <p class="when in" style="--i:2;--c:var(--teal)">September 28 → October 2, 2026</p>
+          <p class="lede in" style="--i:3;margin-top:30px">Five days of San Antonio&rsquo;s founders and builders. DEVSA brought the tech track: PySanAntonio, Access Granted, The Model and the groups.</p>
         </div>
-        <div class="in" style="--i:2;display:flex;flex-direction:column;gap:70px;align-items:center">
-          <img class="wordmark" src="assets/marks/sastw-white.png" alt="SA Startup + Tech Week">
-          <img class="wordmark" src="assets/marks/geekdom-wordmark-red.svg" alt="Geekdom" style="max-height:110px">
-        </div>
+        <div class="in" style="--i:2"><img class="wordmark" src="assets/marks/sastw-white.png" alt="SA Startup + Tech Week" style="max-width:440px"></div>
       </div>
     </div>
   </section>
 
-  <section class="slide">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">SA Startup + Tech Week · <b>the tech track</b></p>
-      <ul class="run in" style="--i:1;margin-top:44px;--c:var(--teal)">
-        <li><span class="d">DEVSA</span><span class="t">PySanAntonio</span><span class="w">DEVSA&rsquo;s Python conference</span></li>
-        <li><span class="d">DEVSA</span><span class="t">Access Granted</span><span class="w">a hands-on security room</span></li>
-        <li><span class="d">DEVSA</span><span class="t">The Model</span><span class="w">for creators and builders</span></li>
-        <li><span class="d">Groups</span><span class="t">.NET User Group · AITX · Datanauts</span><span class="w">and more, all week</span></li>
-      </ul>
-    </div>
-  </section>
+  <!-- ===================== Your December ===================== -->
 
-  <section class="slide" data-spot="sastw">
-    <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">SA Startup + Tech Week · <b>the week</b></p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:88px">Thank you, Geekdom. <span class="mute">See you in 2027.</span></h2>
-      <div class="nums in" data-nums style="--i:2"></div>
-      <p class="quote in" data-quote style="--i:3"></p>
-      <div class="find in" style="--i:4"><span class="k">Thanks to</span><span style="font-size:30px;font-weight:700">Geekdom, a DEVSA partner</span></div>
+  <!-- The rooms the audience can walk into this month. Filled from CONFIG.december; a group whose event
+       isn't on the calendar yet says so rather than inventing a date. -->
+  <section class="slide">
+    <div class="pad" style="top:210px;left:110px;right:110px">
+      <p class="eyebrow in" style="--i:0">On the community calendar</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px">Your December, <span class="mute">on the calendar.</span></h2>
+      <div class="dec in" id="dec" style="--i:2"></div>
+      <p class="url in" style="--i:3;margin-top:44px">Every event, and how to RSVP: <b style="color:#fff">devsa.community</b></p>
     </div>
   </section>
 
@@ -393,10 +416,10 @@ body:not(.idle) #hud{opacity:1}
 
   <section class="slide" data-mark="off">
     <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">That was 2026</p>
+      <p class="eyebrow in" style="--i:0">Thanks for watching</p>
       <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:120px">Find your people. <span class="mute">Build your future.</span></h2>
       <div class="ways in" style="--i:2">
-        <div class="card"><span class="k">The calendar</span><span class="url">devsa.community</span><p>Every group&rsquo;s next meetup. Free, and open to anyone.</p></div>
+        <div class="card"><span class="k">The calendar</span><span class="url">devsa.community</span><p>Every group&rsquo;s next meetup, in one place.</p></div>
         <div class="card"><span class="k">The Discord</span><span class="url">devsa.community/discord</span><p>Where the community talks every day.</p></div>
         <div class="card"><span class="k">Every episode</span><span class="url">youtube.com/@devsatx</span><p>DEVSA programming on TVSA, San Antonio&rsquo;s public access channel.</p></div>
       </div>
@@ -409,34 +432,30 @@ body:not(.idle) #hud{opacity:1}
 
 <script>
 // ===================== CONFIG: fill in before tape day =====================
-// Anything left empty stays off screen: a number, a quote or a line only appears once it's here.
-// Quote organizers in their own words, with their OK.
 const CONFIG = {
-  groups: 27,                       // the directory's count of community groups (devsa.community/buildingtogether)
-  spots: {
-    aiApril:    { nums: [ /* ["120", "people at the showcase"] */ ], quote: "", by: "" },
-    velocicode: { nums: [ /* ["14", "games submitted"] */ ], quote: "", by: "" },
-    acmUtsa:    { nums: [ /* ["500", "hackers at RowdyHacks XII"] */ ], quote: "", by: "" },
-    // SASTW's own figures are its data: publish only in its words and with its permission.
-    sastw:      { nums: [ /* ["723", "first-timers"] */ ], quote: "", by: "" },
-  },
-  rowdyCyberCon: { when: "", where: "", what: "" },   // e.g. { when: "Feb 21", where: "UTSA", what: "ACM UTSA's student cybersecurity conference..." }
+  // RowdyCyberCon's date, as it should read on screen (e.g. "Feb 21"). Empty leaves the date off.
+  rowdyCyberCon: "",
+  // Your December: one card per group, in this order. Events marked * are on the community calendar
+  // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
+  // until then the card says to watch devsa.community, rather than inventing a date.
+  december: [
+    { group: "Alamo City Locksport", logo: "g17-2026.png", title: "", when: "", where: "" },
+    { group: "ACM San Antonio", logo: "g5.png", title: "Confidential Computing Leveraging Bootable Containers", when: "Wed Dec 9 · 6 PM", where: "Geekdom" }, // *
+    { group: "Datanauts", logo: "g16.png", title: "Holiday Bash 2026", when: "Thu Dec 10 · 6:30 PM", where: "Little Woodrow's at Braun" }, // *
+    { group: "Geeks && {...}", logo: "g12.png", title: "", when: "", where: "" },
+    { group: "Google Developer Group", logo: "g11.png", title: "", when: "", where: "" },
+  ],
 }
 // ===========================================================================
 
 const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [...r.querySelectorAll(q)]
 const stage = $("#stage"), slides = $$(".slide")
-const get = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), CONFIG)
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
-// Fill the slots from CONFIG; anything empty is hidden.
-$$("[data-cfg]").forEach((el) => { const v = get(el.dataset.cfg); if (v === "" || v == null) el.hidden = !el.matches("span"); else el.textContent = v })
-$$("[data-cfg-row]").forEach((el) => { if (!get(el.dataset.cfgRow + ".when")) el.hidden = true })
-$$("[data-spot]").forEach((s) => {
-  const c = CONFIG.spots[s.dataset.spot] || {}
-  const nums = $("[data-nums]", s), quote = $("[data-quote]", s)
-  if (nums) { if (c.nums && c.nums.length) nums.innerHTML = c.nums.map(([n, l]) => `<div><b>${n}</b>${l}</div>`).join(""); else nums.hidden = true }
-  if (quote) { if (c.quote) { quote.textContent = `“${c.quote}”`; if (c.by) { const sm = document.createElement("small"); sm.textContent = c.by; quote.append(sm) } } else quote.hidden = true }
-})
+$$("[data-cfg]").forEach((el) => { const v = CONFIG[el.dataset.cfg]; if (v) el.textContent = v })
+$("#dec").innerHTML = CONFIG.december.map((e) => e.title
+  ? `<div class="card"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">${esc(e.title)}</span><span class="w">${esc(e.when)}</span><span class="p">${esc(e.where)}</span></div>`
+  : `<div class="card soon"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">December date coming to the calendar</span><span class="w">devsa.community</span></div>`).join("")
 
 // ---------- fit the 1920x1080 stage to the screen ----------
 function fit() {
