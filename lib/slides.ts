@@ -37,7 +37,7 @@ export const DECKS: Deck[] = [
     summary: "DEVSA's first time on TV: DEVSA in its own words, its four conferences, the groups' 2026, and December on the calendar.",
     date: "2026-11-18",
     where: "TVSA studios",
-    slides: 22,
+    slides: 23,
     eventUrl: "/tv",
   },
   {

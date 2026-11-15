@@ -41,7 +41,7 @@
     Close                                                                                              slide 22
 
   Before tape day:
-    · fill in CONFIG below: RowdyCyberCon's date, and the December events not yet on the calendar
+    · fill in CONFIG below: the December events not yet on the calendar
     · confirm with Geekdom how it wants SA Startup + Tech Week and its wordmark shown
     · "DEVSA programming on TVSA" only: no TVSA logo or co-production wording until TVSA confirms
   Photos are captioned only as the site captions them. The mark is DEVSA's alt logo; on black its body
@@ -60,6 +60,8 @@
 @font-face{font-family:"Luckiest Guy";src:url(assets/fonts/LuckiestGuy-latin.woff2) format("woff2")}
 @font-face{font-family:"Rubik Dirt";src:url(assets/fonts/RubikDirt-latin.woff2) format("woff2")}
 @font-face{font-family:"Caveat Brush";src:url(assets/fonts/CaveatBrush-latin.woff2) format("woff2")}
+@font-face{font-family:Manuale;font-weight:300 800;src:url(assets/fonts/Manuale-latin.woff2) format("woff2")}
+@font-face{font-family:"Shadows Into Light";src:url(assets/fonts/ShadowsIntoLight-latin.woff2) format("woff2")}
 
 :root{
   --teal:#00b2a9;--pink:#ef426f;--orange:#ff8200;
@@ -152,6 +154,8 @@ body:not(.idle) #hud{opacity:1}
 .disc{width:480px;height:480px;border-radius:50%;background:#101010;border:2px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;
   box-shadow:0 0 0 18px rgba(255,255,255,.03),0 0 160px rgba(239,66,111,.18)}
 .disc img{width:74%;height:74%;object-fit:contain}
+.disc.paper{background:#f3efe6;border-color:#f3efe6}
+.disc.paper img{width:86%;height:86%}
 .discs.two .disc{width:420px;height:420px}
 .orgname{text-align:center}
 .orgname .eyebrow{display:block}
@@ -197,6 +201,22 @@ body:not(.idle) #hud{opacity:1}
 .vc-tag s{text-decoration-color:#c44d24;text-decoration-thickness:6px;opacity:.5;margin-right:.3em}
 .vc-when{margin-top:56px;font-family:"Geist Mono",monospace;font-weight:700;font-size:36px;letter-spacing:.04em;color:#20180c}
 .vc-show{margin-top:14px;font-size:34px;color:#5a3a18}
+/* RowdyHacks XII, in its own brand (xii.rowdyhacks.org): the heist's investigation board. Kraft ground, the
+   crumpled October calendar with ROWDY HACKS 2026 in pen, the stamp pinned on torn paper, TOP SECRET across the
+   corner, the date circled in red marker; Manuale for the type, Shadows Into Light for the pen. */
+.slide.rh{background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover;color:#1a1a1a}
+.rh-cal{position:absolute;right:40px;top:110px;width:1000px;transform:rotate(2deg);filter:drop-shadow(0 22px 30px rgba(0,0,0,.35))}
+.rh-pin{position:absolute;left:1000px;top:560px;width:430px;height:430px;transform:rotate(-8deg);filter:drop-shadow(0 18px 24px rgba(0,0,0,.35))}
+.rh-pin .paper{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.rh-pin .stamp{position:absolute;left:12%;top:10%;width:76%;transform:rotate(6deg)}
+.rh-secret{position:absolute;left:640px;top:70px;width:300px;transform:rotate(-14deg);opacity:.9}
+.rh-copy{position:absolute;left:140px;top:250px;width:860px}
+.rh-eyebrow{font-family:Manuale,serif;font-weight:700;font-size:28px;letter-spacing:.14em;text-transform:uppercase;color:#3b2a14}
+.rh-title{margin-top:24px;font-family:Manuale,serif;font-weight:800;font-size:128px;line-height:.95;letter-spacing:-.01em;color:#141414}
+.rh-when{position:relative;display:inline-block;margin-top:40px;padding:0;font-family:"Shadows Into Light",cursive;font-size:64px;line-height:1;color:#141414}
+.rh-mark{position:absolute;left:1292px;top:318px;width:100px;height:72px;transform:rotate(-8deg)}
+.rh-line{margin-top:34px;font-family:Manuale,serif;font-weight:500;font-size:38px;line-height:1.35;color:#2a1d0c}
+.rh-where{margin-top:14px;font-family:Manuale,serif;font-weight:700;font-size:30px;color:#7a1414}
 [hidden]{display:none !important}
 </style>
 </head>
@@ -391,19 +411,34 @@ body:not(.idle) #hud{opacity:1}
   <section class="slide" data-mark="off">
     <div class="org">
       <div class="discs in" style="--i:0"><div class="disc"><img src="assets/logos/g2.png" alt=""></div></div>
-      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 03</span><h2>ACM UTSA</h2></div>
+      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 03</span><h2>ACM UTSA</h2><p class="lede" style="margin-top:22px"><span class="mute" style="font-size:52px">Two rooms, run by students.</span></p></div>
     </div>
   </section>
+  <!-- RowdyHacks XII, in its own brand: see .slide.rh -->
+  <section class="slide rh">
+    <img class="rh-cal in" src="assets/rowdyhacks/calendar.webp" alt="" style="--i:1">
+    <div class="rh-pin in" style="--i:2"><img class="paper" src="assets/rowdyhacks/paper.webp" alt=""><img class="stamp" src="assets/rowdyhacks/stamp.webp" alt="RowdyHacks"></div>
+    <img class="rh-secret in" src="assets/rowdyhacks/top-secret.svg" alt="" style="--i:3">
+    <img class="rh-mark in" src="assets/rowdyhacks/marker-circle3.svg" alt="" style="--i:4">
+    <div class="rh-copy">
+      <p class="rh-eyebrow in" style="--i:0">Spotlight 03 · Room one</p>
+      <h2 class="rh-title in" style="--i:1">RowdyHacks XII</h2>
+      <p class="rh-when in" style="--i:2">October 3, 2026</p>
+      <!-- ACM UTSA's own words, from rowdyhacks.org -->
+      <p class="rh-line in" style="--i:3">UTSA&rsquo;s annual hackathon, hosted by the Association for Computing Machinery at UTSA.</p>
+      <p class="rh-where in" style="--i:4">UTSA San Pedro 1, downtown</p>
+    </div>
+  </section>
+
+  <!-- RowdyCyberCon: its own line and date, from rowdycybercon.org -->
   <section class="slide">
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>the events</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:124px">Two rooms, <span class="mute">run by students.</span></h2>
-          <ul class="evlist in" style="--i:2">
-            <li><span class="d">Oct 3</span><b>RowdyHacks XII <small style="display:block;margin-top:8px;font-size:30px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.7)">UTSA&rsquo;s annual hackathon</small></b></li>
-            <li><span class="d" data-cfg="rowdyCyberCon">&nbsp;</span><b>RowdyCyberCon <small style="display:block;margin-top:8px;font-size:30px;font-weight:400;letter-spacing:0;color:rgba(255,255,255,.7)">San Antonio&rsquo;s student-led cybersecurity conference &amp; CTF</small></b></li>
-          </ul>
+          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>room two</b></p>
+          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">RowdyCyberCon.</h2>
+          <p class="when in" style="--i:2;--c:var(--orange)">November 7, 2026 · UTSA downtown</p>
+          <p class="lede in" style="--i:3;margin-top:30px">San Antonio&rsquo;s student-led cybersecurity conference and capture the flag.</p>
         </div>
         <div class="in" style="--i:2"><div class="disc"><img src="assets/logos/rowdycybercon.png" alt="RowdyCyberCon"></div></div>
       </div>
@@ -459,8 +494,6 @@ body:not(.idle) #hud{opacity:1}
 <script>
 // ===================== CONFIG: fill in before tape day =====================
 const CONFIG = {
-  // RowdyCyberCon's date, as it should read on screen (e.g. "Feb 21"). Empty leaves the date off.
-  rowdyCyberCon: "Nov 7",   // rowdycybercon.org: "November 7th · San Antonio, TX", at UTSA's downtown campus
   // Your December: one card per group, in this order. Events marked * are on the community calendar
   // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
   // until then the card says it's coming to the calendar, rather than inventing a date.
@@ -481,7 +514,6 @@ const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [..
 const stage = $("#stage"), slides = $$(".slide")
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
-$$("[data-cfg]").forEach((el) => { const v = CONFIG[el.dataset.cfg]; if (v) el.textContent = v })
 $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
 $("#dec").innerHTML = CONFIG.december.map((e) => e.title
   ? `<div class="card"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">${esc(e.title)}</span><span class="w">${esc(e.when)}</span><span class="p">${esc(e.where)}</span></div>`
