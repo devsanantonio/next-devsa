@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { ArrowUpRight, Volume2, VolumeX } from "lucide-react"
 
 /**
- * The /fm hero and player in one: a big 2:1 frame that opens on the night bus, and the night mix under the
- * page's intro to pick from. (They were two sections, a hero video and a player below it; they said the same
+ * The /fm hero and player in one: a big 2:1 frame that opens on the night bus, and the night mix right under
+ * it to pick from. The page's intro (mark, lead, buttons) sits above it. (They were two sections, a hero video and a player below it; they said the same
  * thing twice.)
  *
  * The night bus is a video, so it can be heard. Two files keep the page light for people who never turn
@@ -36,7 +36,7 @@ const LOOP = "/fm/night-bus-loop.mp4"
 const FULL = "/fm/night-bus.mp4"
 const LOOP_AT = 18.5
 
-export function FmStage({ children }: { children: React.ReactNode }) {
+export function FmStage() {
   const [scenes, setScenes] = useState<Scene[]>([])
   const [id, setId] = useState(BUS)
   const [sound, setSound] = useState(false)
@@ -177,10 +177,8 @@ export function FmStage({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {children}
-
       {onAir.length > 0 && (
-        <div id="on-air" className="mt-12 scroll-mt-24 md:mt-16">
+        <div id="on-air" className="mt-10 scroll-mt-24 md:mt-12">
           <p className="font-mono text-[11px] uppercase tracking-widest text-white/50">
             <span className="text-white/80">The night mix, in order</span> · On stream each plays to its own song
           </p>

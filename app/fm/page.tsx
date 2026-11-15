@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 
 /**
  * DEVSA FM — the livestream, on the site. The title is the >FM alt mark: one colour, like DEVSA's alt logo,
- * so the night bus above it is the only colour in the hero. Built the way /localhost is: the project's mark as the title,
+ * so the night bus below it is the only colour in the hero. Built the way /localhost is: the project's mark as the title,
  * one lead paragraph, the thing itself, then a light section that hands off to the repo.
  *
  * The scenes play here but live in devsanantonio/devsa-fm (see components/fm/fm-player.tsx and the
@@ -111,39 +111,40 @@ export default function FmPage() {
         }}
       />
       <main className="min-h-screen bg-neutral-950 text-white">
-        {/* One section: the stage (the night bus, or whichever scene is picked), the intro under it, then the
-            night mix to pick from. The hero and the player used to be two sections saying the same thing. */}
+        {/* One section: the intro (mark, lead, buttons) at the top, then the stage (the night bus, or whichever
+            scene is picked), then the night mix to pick from. The hero and the player used to be two sections. */}
         <section className="pb-16 pt-16 md:pb-20 md:pt-20" data-bg-type="dark">
           <div className="page-shell">
-            <FmStage>
-              <div className="mt-10 grid gap-8 md:mt-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-14">
-                <h1>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
-                  <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-24 w-auto sm:h-28 lg:h-36" />
-                </h1>
-                <div>
-                  <p className="max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
-                    <span className="font-semibold text-white">A night in San Antonio, in ASCII.</span> DEVSA FM is
-                    DEVSA&apos;s lofi livestream for the city&apos;s learners and builders, with Tejano lofi under it. It&apos;s
-                    open source, and every scene is one HTML file anyone can build.
-                  </p>
-                  <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
-                    <a
-                      href={REPO}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
-                    >
-                      Build a scene <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                    <a
-                      href={YOUTUBE}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
-                    >
-                      Watch on YouTube <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                  </div>
+            <div className="grid gap-8 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-14">
+              <h1>
+                {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
+                <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-20 w-auto sm:h-24 lg:h-28" />
+              </h1>
+              <div>
+                <p className="max-w-2xl border-l-2 border-[#ff8200] pl-5 text-lg leading-relaxed text-white/70 md:text-xl">
+                  <span className="font-semibold text-white">A night in San Antonio, in ASCII.</span> DEVSA FM is
+                  DEVSA&apos;s lofi livestream for the city&apos;s learners and builders, with Tejano lofi under it. It&apos;s
+                  open source, and every scene is one HTML file anyone can build.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
+                  <a
+                    href={REPO}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+                  >
+                    Build a scene <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={YOUTUBE}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white"
+                  >
+                    Watch on YouTube <ArrowUpRight className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
-            </FmStage>
+            </div>
+            <div className="mt-10">
+              <FmStage />
+            </div>
           </div>
         </section>
 
