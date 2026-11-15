@@ -6,6 +6,7 @@ import {
   TheRecord,
 } from "@/components/about/origin-story"
 import { MeetTheTeam } from "@/components/partners/meet-the-team"
+import { AboutDiscord } from "@/components/about/about-discord"
 import { listCommunities } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
 import { calendarRecord } from "@/lib/calendar-record"
@@ -105,6 +106,8 @@ export default async function AboutPage() {
           eventsSince2024={record?.since2024 ?? null}
         />
         <OriginProse communityCount={communities.length} />
+        {/* What the Discord it started as is now: the page "San Antonio tech Discord" can land on. */}
+        <AboutDiscord />
         <MeetTheTeam />
         <TheRecord />
       </main>

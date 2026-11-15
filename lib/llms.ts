@@ -1,4 +1,5 @@
 import { listCommunities, listCommunityProfiles } from "@/lib/communities"
+import { groupsByTopic } from "@/lib/community-topics"
 import { listPartners } from "@/lib/partners"
 
 const SITE = "https://www.devsa.community"
@@ -55,24 +56,8 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
 
-  // Groups by topic, matched from each group's own name and description in the live directory, so the index
-  // can't drift from it. This is what lets "linux in san antonio" or "python in san antonio" land on a group.
-  const TOPICS: [string, RegExp][] = [
-    ["Linux and open source", /linux|red hat|open source|foss/i],
-    ["Python", /python|pysa|\bdjango\b/i],
-    [".NET and C#", /\.net|dotnet|c#/i],
-    ["Ruby", /ruby|rails/i],
-    ["JavaScript and the web", /javascript|typescript|react|node\.?js|web dev/i],
-    ["AI, models and agents", /\bai\b|artificial intelligence|machine learning|\bllm|agent|genai|model/i],
-    ["Cybersecurity", /cyber|security|owasp|def ?con|locksport|hacking|ctf/i],
-    ["Cloud", /\baws\b|amazon web services|google cloud|azure|cloud/i],
-    ["Data", /\bdata\b|analytics|datanauts/i],
-    ["Game development", /\bgam(e|es|ing)\b|\bunreal\b|\bunity\b/i], // whole words: "unity" is inside "community"
-    ["Design and UX", /\bux\b|user experience|design/i],
-  ]
-  const byTopic = TOPICS.map(([topic, re]) => [topic, profiles.filter((p) => re.test(`${p.name} ${p.description}`))] as const).filter(
-    ([, groups]) => groups.length > 0
-  )
+  // Groups by topic, from lib/community-topics.ts: the same list the directory shows on /buildingtogether.
+  const byTopic = groupsByTopic(profiles)
   if (byTopic.length) {
     sections.push(`## San Antonio tech groups by topic
 

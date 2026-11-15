@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { ArrowUpRight } from "lucide-react"
+import { jsonLdScript } from "@/lib/json-ld"
 import { LocalhostHero } from "@/components/localhost/localhost-hero"
 import { FollowTheWater } from "@/components/localhost/follow-the-water"
 import { OutrunThe4 } from "@/components/localhost/outrun-the-4"
@@ -143,6 +144,37 @@ function BuildYourOwn({
 
 export default function LocalhostPage() {
   return (
+    <>
+      {/* What the page is, for search and for assistants: DEVSA's open-data project, the repo behind it, and the
+          agencies whose data it uses (named as publishers, never partners: DEVSA isn't affiliated with them). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: TITLE,
+            url: `${siteUrl}/localhost`,
+            description: DESCRIPTION,
+            isPartOf: { "@type": "WebSite", name: "DEVSA", url: siteUrl },
+            about: [
+              { "@type": "Thing", name: "San Antonio open data" },
+              { "@type": "City", name: "San Antonio", addressRegion: "TX", addressCountry: "US" },
+            ],
+            mainEntity: {
+              "@type": "SoftwareSourceCode",
+              name: "localhost:210",
+              description:
+                "Starters, a catalog and an MCP server for building with San Antonio's open data from the City of San Antonio, Bexar County, VIA Metropolitan Transit and other public agencies.",
+              codeRepository: REPO,
+              programmingLanguage: "Python",
+              license: "https://opensource.org/licenses/MIT",
+              creator: { "@type": "Organization", name: "DEVSA", url: siteUrl },
+              keywords: ["open data", "San Antonio", "GTFS", "GIS", "MCP", "Python"],
+            },
+          }),
+        }}
+      />
     <main className="min-h-screen bg-neutral-950 text-white">
       <LocalhostHero />
 
@@ -319,5 +351,6 @@ export default function LocalhostPage() {
         </div>
       </section>
     </main>
+    </>
   )
 }

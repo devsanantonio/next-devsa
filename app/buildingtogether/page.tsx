@@ -4,7 +4,8 @@ import {
   LogoShowcase,
   type LogoItem,
 } from "@/components/partners/logo-showcase"
-import { listCommunities } from "@/lib/communities"
+import { listCommunities, listCommunityProfiles } from "@/lib/communities"
+import { GroupsByTopic } from "@/components/partners/groups-by-topic"
 import { listPartners } from "@/lib/partners"
 import { StayConnected } from "@/components/partners/stay-connected"
 import { HowWeHelp } from "@/components/partners/how-we-help"
@@ -45,7 +46,11 @@ export const metadata: Metadata = {
     "student tech groups San Antonio",
     "UTSA tech student groups",
     "cybersecurity groups San Antonio",
-    "civic tech San Antonio",
+    "Linux San Antonio",
+    "Python San Antonio",
+    "AI agents San Antonio",
+    "San Antonio tech Discord",
+    "community infrastructure San Antonio",
   ],
   alternates: {
     canonical: "/buildingtogether",
@@ -96,9 +101,10 @@ export default async function GroupsPage({
   const giPath: GetInvolvedPath = params.path === "general" ? "general" : "partner"
   const giWay = PARTNER_WAY_KEYS.includes(params.way ?? "") ? (params.way as string) : ""
 
-  const [communities, partners] = await Promise.all([
+  const [communities, partners, profiles] = await Promise.all([
     listCommunities(),
     listPartners(),
+    listCommunityProfiles(),
   ])
 
   /* Communities first, matching the order the wall rendered in before. A
@@ -157,6 +163,8 @@ export default async function GroupsPage({
       <ScrollToHash />
       <GroupsHero communityCount={communities.length} />
       <LogoShowcase logos={logos} />
+      {/* The wall's second way in: the same groups by subject (Linux, Python, AI...), as text a search reads. */}
+      <GroupsByTopic groups={profiles} />
       {/* Between the gap and the ask. The hero states the problem and the
           limit; StayConnected asks the reader to act. The mechanism — and one
           instance of it having worked — belongs between them. */}
