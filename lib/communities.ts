@@ -76,3 +76,21 @@ export const listCommunities = cache(async (): Promise<CommunityLink[]> => {
     return []
   }
 })
+
+/**
+ * Each group's name and description, for /llms.txt's topic index and group lines. Kept apart from
+ * listCommunities, which goes to the footer on every page and shouldn't carry descriptions it never shows.
+ */
+export const listCommunityProfiles = cache(async (): Promise<{ id: string; name: string; description: string }[]> => {
+  try {
+    const snapshot = await getDb().collection(COLLECTIONS.COMMUNITIES).get()
+    const rows: Orderable[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    rows.sort(byDisplayOrder)
+    return rows
+      .filter((row): row is Orderable & { name: string } => Boolean(row.name))
+      .map((row) => ({ id: row.id, name: row.name, description: String((row as { description?: string }).description ?? "") }))
+  } catch (error) {
+    console.error("Community profiles fetch failed:", error)
+    return []
+  }
+})

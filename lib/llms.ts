@@ -1,4 +1,4 @@
-import { listCommunities } from "@/lib/communities"
+import { listCommunities, listCommunityProfiles } from "@/lib/communities"
 import { listPartners } from "@/lib/partners"
 
 const SITE = "https://www.devsa.community"
@@ -21,8 +21,15 @@ const SITE = "https://www.devsa.community"
  * (PyTexas Foundation, Texas Linux Fest). Assistants repeat what they are
  * told; nothing here should claim a place DEVSA does not work in.
  */
+/** A group's first sentence, for its line in the full list. */
+function firstSentence(text: string) {
+  const t = text.replace(/\s+/g, " ").trim()
+  const m = t.match(/^.*?[.!?](\s|$)/)
+  return (m ? m[0] : t).trim().slice(0, 200)
+}
+
 export async function buildLlmsText({ full }: { full: boolean }): Promise<string> {
-  const [communities, partners] = await Promise.all([listCommunities(), listPartners()])
+  const [communities, partners, profiles] = await Promise.all([listCommunities(), listPartners(), listCommunityProfiles()])
   const groupCount = communities.length
 
   const sections: string[] = []
@@ -48,6 +55,32 @@ San Antonio is one of the largest cities in the country, and it has never lacked
 
 The community groups run themselves. DEVSA does not own them; it gives them the calendar, the directory, the channel and the room.`)
 
+  // Groups by topic, matched from each group's own name and description in the live directory, so the index
+  // can't drift from it. This is what lets "linux in san antonio" or "python in san antonio" land on a group.
+  const TOPICS: [string, RegExp][] = [
+    ["Linux and open source", /linux|red hat|open source|foss/i],
+    ["Python", /python|pysa|\bdjango\b/i],
+    [".NET and C#", /\.net|dotnet|c#/i],
+    ["Ruby", /ruby|rails/i],
+    ["JavaScript and the web", /javascript|typescript|react|node\.?js|web dev/i],
+    ["AI, models and agents", /\bai\b|artificial intelligence|machine learning|\bllm|agent|genai|model/i],
+    ["Cybersecurity", /cyber|security|owasp|def ?con|locksport|hacking|ctf/i],
+    ["Cloud", /\baws\b|amazon web services|google cloud|azure|cloud/i],
+    ["Data", /\bdata\b|analytics|datanauts/i],
+    ["Game development", /\bgam(e|es|ing)\b|\bunreal\b|\bunity\b/i], // whole words: "unity" is inside "community"
+    ["Design and UX", /\bux\b|user experience|design/i],
+  ]
+  const byTopic = TOPICS.map(([topic, re]) => [topic, profiles.filter((p) => re.test(`${p.name} ${p.description}`))] as const).filter(
+    ([, groups]) => groups.length > 0
+  )
+  if (byTopic.length) {
+    sections.push(`## San Antonio tech groups by topic
+
+Each group runs itself and has its own page in DEVSA's directory, with its links and upcoming events.
+
+${byTopic.map(([topic, groups]) => `- **${topic}**: ${groups.map((g) => `[${g.name}](${SITE}/buildingtogether/${g.id})`).join(", ")}`).join("\n")}`)
+  }
+
   sections.push(`## Who it is for
 
 - **Builders and career changers**: find the groups and events in your field.
@@ -61,7 +94,7 @@ The community groups run themselves. DEVSA does not own them; it gives them the 
 - Partner with DEVSA or ask a question: ${SITE}/buildingtogether#get-involved
 - Donate (a 501(c)(3); donors receive an emailed receipt): ${SITE}/buildingtogether#donate
 - Subscribe to the calendar: ${SITE}/events
-- Join the Discord: ${SITE}/discord`)
+- Join the Discord (${SITE}/discord): DEVSA started as a Discord server in 2023, and it's still where the community talks day to day. The week's calendar is posted in #community-calendar every Monday, there's a question of the day in #vibe-chat, and people show what they've built in #build-and-tell on Fridays.`)
 
   // For developers asking how to build on DEVSA's calendar or on the city's data.
   sections.push(`## Open source and open data
@@ -83,10 +116,10 @@ DEVSA's code and docs are public at https://github.com/devsanantonio:
 - DEVSA no longer runs a coworking space (its room at Geekdom closed September 19, 2026) or a merch shop.`)
 
   if (full) {
-    if (communities.length) {
-      sections.push(`## Community groups (${communities.length})
+    if (profiles.length) {
+      sections.push(`## Community groups (${profiles.length})
 
-${communities.map((c) => `- [${c.name}](${SITE}/buildingtogether/${c.id})`).join("\n")}`)
+${profiles.map((c) => `- [${c.name}](${SITE}/buildingtogether/${c.id})${firstSentence(c.description) ? `: ${firstSentence(c.description)}` : ""}`).join("\n")}`)
     }
     if (partners.length) {
       sections.push(`## Partners (${partners.length})

@@ -4,6 +4,8 @@ import { GroupPageClient } from "./group-page-client"
 import { PartnerPageClient } from "./partner-page-client"
 import { notFound } from "next/navigation"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
+import { jsonLdScript } from "@/lib/json-ld"
+import type { TechCommunity } from "@/data/communities"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -15,7 +17,7 @@ async function findCommunity(slug: string) {
     const db = getDb()
     const doc = await db.collection(COLLECTIONS.COMMUNITIES).doc(slug).get()
     if (doc.exists) {
-      return { id: doc.id, ...doc.data() } as { id: string; name: string; logo: string; description: string }
+      return { id: doc.id, ...doc.data() } as TechCommunity
     }
   } catch {
     // Firestore unavailable - fall through
@@ -47,6 +49,46 @@ async function findCommunity(slug: string) {
  * nothing. Crawlers drop the page; the status stays imperfect.
  */
 
+/**
+ * What search sees for a group or partner. The title names the group and the city, so "linux san antonio"
+ * or "python san antonio" finds the group's own page; the root layout adds " | DEVSA". (It said
+ * "<name> | DEVSA Tech Groups", which the template made "... | DEVSA Tech Groups | DEVSA".)
+ */
+const SA = /san antonio/i // only the city written out: "Alamo Python" or "DEF CON Group SATX" still gets "San Antonio"
+const groupTitle = (name: string) => (SA.test(name) ? `${name}: Tech Group` : `${name}: San Antonio Tech Group`)
+const partnerTitle = (name: string) => `${name}: DEVSA Partner`
+
+/** A description cut on a word, not mid-word, at about the length search results show. */
+function snippet(text: string, max = 155) {
+  const t = (text ?? "").replace(/\s+/g, " ").trim()
+  if (t.length <= max) return t
+  return t.slice(0, t.lastIndexOf(" ", max - 1)).replace(/[,;:.]$/, "") + "…"
+}
+
+/**
+ * The group or partner as an Organization in San Antonio, with its own links and its tie to DEVSA, so search
+ * and assistants can connect "Linux San Antonio" to Linux, San Antonio and the directory it's listed in.
+ */
+function orgJsonLd(o: { name: string; description: string; logo?: string; links: (string | undefined | null)[]; slug: string }, kind: "group" | "partner") {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: o.name,
+    description: o.description,
+    url: `${siteUrl}/buildingtogether/${o.slug}`,
+    ...(o.logo && /^https?:/.test(o.logo) ? { logo: o.logo } : {}),
+    areaServed: { "@type": "City", name: "San Antonio", addressRegion: "TX", addressCountry: "US" },
+    ...(() => {
+      const sameAs = o.links.filter((l): l is string => !!l && /^https?:/.test(l))
+      return sameAs.length ? { sameAs } : {}
+    })(),
+    ...(kind === "group"
+      ? { memberOf: { "@type": "Organization", name: "DEVSA", url: siteUrl } }
+      : {}),
+  }
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
@@ -54,8 +96,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Check if it's a community (static or Firestore)
   const community = await findCommunity(slug)
   if (community) {
-    const title = `${community.name} | DEVSA Tech Groups`
-    const description = community.description.slice(0, 155) + (community.description.length > 155 ? "..." : "")
+    const title = groupTitle(community.name)
+    const description = snippet(community.description)
     
     return {
       title,
@@ -88,8 +130,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Check if it's a partner
   const partner = await getPartner(slug)
   if (partner) {
-    const title = `${partner.name} | DEVSA Partners`
-    const description = partner.description.slice(0, 155) + (partner.description.length > 155 ? "..." : "")
+    const title = partnerTitle(partner.name)
+    const description = snippet(partner.description)
     
     return {
       title,
@@ -135,14 +177,38 @@ export default async function PartnerOrGroupPage({ params }: PageProps) {
   // Check if it's a community (static or Firestore)
   const community = await findCommunity(slug)
   if (community) {
-    return <GroupPageClient slug={slug} />
+    const c = community
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(orgJsonLd({
+              name: c.name, description: c.description, logo: c.logo, slug,
+              links: [c.website, c.meetup, c.luma, c.discord, c.github, c.linkedin, c.instagram, c.twitter, c.youtube, c.twitch, c.facebook],
+            }, "group")),
+          }}
+        />
+        <GroupPageClient slug={slug} />
+      </>
+    )
   }
   
   // Check if it's a partner. The record is passed down rather than looked up
   // again in the client — it has already been fetched here.
   const partner = await getPartner(slug)
   if (partner) {
-    return <PartnerPageClient partner={partner} />
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(orgJsonLd({ name: partner.name, description: partner.description, logo: partner.logo, slug, links: [partner.website] }, "partner")),
+          }}
+        />
+        <PartnerPageClient partner={partner} />
+      </>
+    )
   }
   
   notFound()
