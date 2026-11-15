@@ -2256,7 +2256,7 @@ export default function AdminPage() {
       // components/layout-chrome.tsx), so this owns its own way back out.
       <main className="flex min-h-dvh items-center bg-[#0a0a0a] py-16">
         <div className="page-shell">
-          <div className="mx-auto flex w-full max-w-[26rem] flex-col gap-6">
+          <div className="mx-auto flex w-full max-w-104 flex-col gap-6">
             <Link
               href="/"
               className="inline-flex w-fit items-center gap-2 text-[13px] font-medium text-neutral-400 transition-colors hover:text-white"
@@ -2783,7 +2783,7 @@ export default function AdminPage() {
       {railCollapsed && railTip && (
         <div
           role="tooltip"
-          className="pointer-events-none fixed left-[4.5rem] z-[60] hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg lg:block"
+          className="pointer-events-none fixed left-18 z-60 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-neutral-700 bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg lg:block"
           style={{ top: railTip.y }}
         >
           {railTip.text}
@@ -3233,7 +3233,7 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
-                <div className="relative min-w-[14rem] flex-1">
+                <div className="relative min-w-56 flex-1">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
                   <input
                     type="search"
@@ -3675,9 +3675,9 @@ export default function AdminPage() {
                           <Td>
                             <span className="block text-neutral-300">{request.communityOrg || "—"}</span>
                             {/* What they told us about a group we don't list yet. */}
-                            {request.groupAbout && <span className="mt-1 block max-w-[22rem] text-sm text-neutral-400">{request.groupAbout}</span>}
+                            {request.groupAbout && <span className="mt-1 block max-w-88 text-sm text-neutral-400">{request.groupAbout}</span>}
                             {request.groupLink && (
-                              <a href={request.groupLink} target="_blank" rel="noopener noreferrer" className="mt-1 block max-w-[22rem] truncate text-sm text-teal-300 hover:underline">
+                              <a href={request.groupLink} target="_blank" rel="noopener noreferrer" className="mt-1 block max-w-88 truncate text-sm text-teal-300 hover:underline">
                                 {request.groupLink.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
                               </a>
                             )}
@@ -3685,7 +3685,7 @@ export default function AdminPage() {
                             <AdminCombobox
                               floating
                               ariaLabel={`Group for ${request.name}`}
-                              className="mt-2 min-w-[14rem]"
+                              className="mt-2 min-w-56"
                               options={communities.map((c) => ({ value: c.id, label: c.name }))}
                               value={groupForRequest(request)}
                               onChange={(v) => setApproveGroup((g) => ({ ...g, [request.id]: v }))}
@@ -3808,7 +3808,7 @@ export default function AdminPage() {
                       <div className="flex-1 min-w-0">
                         {/* On a phone the title gets its own line, whole, and the badges wrap under it. */}
                         <div className="flex flex-wrap items-center gap-2 mb-2 sm:gap-3">
-                          <h3 className="basis-full break-words text-lg font-bold tracking-tight text-white sm:basis-auto sm:truncate">{event.title}</h3>
+                          <h3 className="basis-full wrap-break-word text-lg font-bold tracking-tight text-white sm:basis-auto sm:truncate">{event.title}</h3>
                           <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 ${
                             event.status === "published"
                               ? "bg-green-500/20 text-green-400"
@@ -5767,7 +5767,7 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
-                        <p className="mt-1 line-clamp-2 break-words text-xs text-neutral-400">{partner.description}</p>
+                        <p className="mt-1 line-clamp-2 wrap-break-word text-xs text-neutral-400">{partner.description}</p>
                         {partner.website && (
                           <a
                             href={partner.website}
@@ -6056,7 +6056,7 @@ export default function AdminPage() {
                   <tbody>
                     {demoDayInquiries.map((inq) => (
                       <Tr key={inq.id} highlight={inq.status === "new"}>
-                        <Td className="w-[15rem]">
+                        <Td className="w-60">
                           <PrimaryCell
                             title={decodeEntities(inq.organization)}
                             sub={
@@ -6156,7 +6156,7 @@ export default function AdminPage() {
                       const who = decodeEntities(inq.organization || inq.name)
                       return (
                         <Tr key={inq.id} highlight={inq.status === "new"} onClick={() => openInquiry(inq)}>
-                          <Td className="max-w-[15rem]">
+                          <Td className="max-w-60">
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); openInquiry(inq) }}
@@ -6176,7 +6176,7 @@ export default function AdminPage() {
                               </Pill>
                               {inq.way && <span className="text-[13px] text-neutral-400">{partnerWayLabel(inq.way)}</span>}
                             </div>
-                            <p className="mt-1.5 line-clamp-1 max-w-[22rem] text-[13px] text-neutral-400">
+                            <p className="mt-1.5 line-clamp-1 max-w-88 text-[13px] text-neutral-400">
                               {decodeEntities(inq.subject || inq.event || inq.message)}
                             </p>
                           </Td>
@@ -6383,7 +6383,7 @@ export default function AdminPage() {
 
           {/* Declining an access request: the "request received" email promised an answer either way. */}
           {declineTarget && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="decline-title">
+            <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="decline-title">
               <div className="w-full max-w-md rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
                 <h3 id="decline-title" className="text-lg font-bold text-white">Decline {declineTarget.name}&apos;s request?</h3>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-300">
@@ -6412,7 +6412,7 @@ export default function AdminPage() {
 
           {/* Telling the people who RSVP'd: after a save that moved the date, time or place, or before deleting. */}
           {attendeeNotice && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="notice-title">
+            <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="notice-title">
               <div className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
                 <h3 id="notice-title" className="text-lg font-bold text-white">
                   {attendeeNotice.kind === "changed"
