@@ -34,10 +34,10 @@ export const DECKS: Deck[] = [
   {
     slug: "devsa-tv-ep1-nov18",
     title: "DEVSA TV · Episode 1",
-    summary: "DEVSA's first time on cable: meet DEVSA, 2026 in review through four rooms, and December on the calendar.",
+    summary: "DEVSA's first time on TV: DEVSA in its own words, its four conferences, the groups' 2026, and December on the calendar.",
     date: "2026-11-18",
     where: "TVSA studios",
-    slides: 20,
+    slides: 22,
     eventUrl: "/tv",
   },
   {
