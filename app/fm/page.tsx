@@ -52,7 +52,7 @@ export const metadata: Metadata = {
  * thread and it locked up while switching, and it was more page than the stream needs (2026-11-14).
  *
  * The hero is the night bus, full-bleed and the height of the screen, with the words over its dark side
- * (components/fm/fm-hero.tsx). The >FM alt mark heads the repo card in the second section.
+ * (components/fm/fm-hero.tsx). The >FM alt mark is the hero's sound control.
  * The music is credited to Patrick Robinson, from the DEVSA community, on the video beside Sound on.
  * Vercel Analytics: fm_build (from hero or repo), fm_youtube, and fm_sound in the video.
  */
@@ -63,14 +63,39 @@ const YOUTUBE = "https://www.youtube.com/@devsatx"
 // recording when that stream ends.
 const LIVE = "https://www.youtube.com/@devsatx/live"
 
-/** How a scene gets from an idea to the stream; each step links where it lives in the repo. */
-const STEPS: { step: string; what: string; path: string; href: string }[] = [
-  { step: "Pick", what: "A place someone from here would recognize; six are waiting as good first scenes", path: "good first scene", href: "labels/good%20first%20scene" },
-  { step: "Copy", what: "Start from the starter: it explains how a scene works in its comments", path: "scene/starter.html", href: "blob/main/scene/starter.html" },
-  { step: "Draw", what: "The place in greys, one character a pixel; colour only where there's light", path: "fmkit.js", href: "blob/main/CONTRIBUTING.md#make-a-scene" },
-  { step: "Check", what: "Runs without the optional assets, same frame for the same second, no seam", path: "npm run check", href: "blob/main/tools/check.cjs" },
-  { step: "Share", what: "Open a pull request; the check runs on it and a maintainer reviews it", path: "pull request", href: "pulls" },
-  { step: "Air", what: "Maintainers pick what joins the night mix, and your name goes in its footer", path: "the night mix", href: "blob/main/README.md#on-air" },
+/**
+ * The places waiting to be drawn: the repo's "good first scene" issues, by number. Shown as plain chips, each
+ * opening its issue. When one is built or closed, take it out here (and add a new one when an issue is opened).
+ */
+const PLACES: [number, string][] = [
+  [1, "La Villita"],
+  [2, "Hemisfair and the Tower"],
+  [3, "A bus stop in the rain"],
+  [4, "San Pedro Creek"],
+  [5, "The Japanese Tea Garden"],
+  [6, "A mission under the stars"],
+]
+
+/**
+ * The starter scene's render loop, abridged from devsa-fm's scene/starter.html (same names, same order), as
+ * the proof that a scene is one small HTML file: the place in greys, the greys as characters, colour where
+ * there's light. Each line is [code, comment]; keep it in step with the starter if that changes.
+ */
+const CODE: [string, string?][] = [
+  ["function paint(t) {", "1. the place, in greys"],
+  ["  g.fillStyle = fm.gray(.02)", "the night"],
+  ["  g.fillRect(0, 0, W, H)"],
+  ["  g.fillStyle = fm.gray(.12)", "downtown, dim"],
+  ["  g.fillRect(380, 400, 160, 420)"],
+  ["}"],
+  [""],
+  ["function render(t) {"],
+  ["  paint(t)"],
+  ["  fm.ascii(\"#0c0c0c\")", "2. every grey, a character"],
+  ["  stringLights(t); agent(t)", "3. color where there's light"],
+  ["  footer(t)"],
+  ["}"],
+  ["fm.start(render)"],
 ]
 
 export default function FmPage() {
@@ -152,7 +177,9 @@ export default function FmPage() {
           </div>
         </FmHero>
 
-        {/* The repo: what it's for, and the way in. One light section, one link out, as /localhost ends. */}
+        {/* The repo: the pitch on the left with the places waiting to be drawn, and on the right the proof that a
+            scene is one small HTML file: the starter's own render loop. One light section, one link out, as
+            /localhost ends. (It was two paragraphs and a six-step list; the steps live in the repo's guide.) */}
         <section id="build" className="scroll-mt-24 bg-white py-16 text-gray-900 md:py-24" data-bg-type="light">
           <div className="page-shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
             <div>
@@ -164,13 +191,8 @@ export default function FmPage() {
                 <span className="font-light italic text-gray-500">on the stream.</span>
               </h2>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-gray-600">
-                DEVSA FM is built in the open so the stream can grow the way DEVSA does: from the people in it. Every
-                scene is one HTML file that draws on a canvas, with no framework and no build step. Draw a place you know,
-                open a pull request, and it can air, with your name on it.
-              </p>
-              <p className="mt-4 max-w-xl text-lg leading-relaxed text-gray-600">
-                The repo has every scene on the stream, with stills, a starter that explains itself, and a check that
-                tells you if your scene is ready. If you can write a little JavaScript, you can make one.
+                Every scene is one HTML file that draws on a canvas. Draw a place you know, open a pull request, and it can
+                air with your name on it.
               </p>
               <FmLink
                 event="fm_build"
@@ -180,38 +202,47 @@ export default function FmPage() {
               >
                 Open it on GitHub <ArrowUpRight className="h-4 w-4" />
               </FmLink>
+
+              <p className="mt-12 font-mono text-[11px] uppercase tracking-widest text-gray-500">
+                <span className="text-gray-900">Waiting to be drawn</span> · Good first scenes
+              </p>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {PLACES.map(([n, place]) => (
+                  <li key={n}>
+                    <FmLink
+                      event="fm_issue"
+                      props={{ issue: n }}
+                      href={`${REPO}/issues/${n}`}
+                      className="inline-flex items-center rounded-full border border-gray-300 px-3.5 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:border-gray-900 hover:text-gray-900"
+                    >
+                      {place}
+                    </FmLink>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="min-w-0 overflow-hidden rounded-2xl border border-neutral-800 bg-[#0a0a0a] text-white">
-              {/* The >FM alt mark heads the repo: the project's face on the project's code. It lives on the dark card
-                  because the alt mark's light tabs would vanish on the section's white. */}
-              <div className="flex items-end justify-between gap-6 border-b border-neutral-800 px-6 pb-5 pt-6">
-                {/* eslint-disable-next-line @next/next/no-img-element -- the brand SVG, served as-is */}
-                <img src="/branding/devsa-fm/devsa-fm-alt-mark.svg" alt="DEVSA FM" className="h-20 w-auto sm:h-24" />
-                <div className="min-w-0 text-right">
-                  <p className="truncate font-mono text-[12px] text-white/80">devsanantonio/devsa-fm</p>
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-white/50">Public · MIT</p>
-                </div>
+              <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-5 py-3">
+                <a
+                  href={`${REPO}/blob/main/scene/starter.html`}
+                  className="truncate font-mono text-[12px] text-white/80 underline decoration-white/20 underline-offset-4 hover:decoration-white"
+                >
+                  scene/starter.html
+                </a>
+                <p className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-white/50">Public · MIT</p>
               </div>
-              <ol className="divide-y divide-neutral-800">
-                {STEPS.map((s, i) => (
-                  <li key={s.step}>
-                    <a
-                      href={s.href.startsWith("#") ? s.href : `${REPO}/${s.href}`}
-                      className="group grid gap-1 px-5 py-3.5 sm:grid-cols-[7rem_1fr] sm:gap-x-4"
-                    >
-                      <span className="flex items-baseline gap-3">
-                        <span className="font-mono text-[11px] text-white/50">{String(i + 1).padStart(2, "0")}</span>
-                        <span className="font-mono text-[13px] text-[#ff8200] group-hover:underline">{s.step.toLowerCase()}</span>
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm text-white/75 group-hover:text-white">{s.what}</span>
-                        <span className="mt-1 block font-mono text-[11px] text-white/50">{s.path}</span>
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ol>
+              <pre className="overflow-x-auto px-5 py-5 font-mono text-[13px] leading-[1.75]">
+                <code>
+                  {CODE.map(([code, note], i) => (
+                    <span key={i} className="block whitespace-pre">
+                      <span className="text-white/85">{code}</span>
+                      {note && <span className="text-white/50">{"  // "}{note}</span>}
+                      {!code && "\u00a0"}
+                    </span>
+                  ))}
+                </code>
+              </pre>
               <p className="overflow-x-auto whitespace-nowrap border-t border-neutral-800 px-5 py-3.5 font-mono text-[12px] text-white/70">
                 <span className="select-none text-[#ff8200]">$ </span>git clone {REPO}
               </p>
