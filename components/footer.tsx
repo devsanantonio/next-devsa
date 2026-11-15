@@ -391,6 +391,7 @@ export function Footer({ communities }: { communities: CommunityLink[] }) {
               <ul className="space-y-3.5">
                 <li><Link href="/give-a-talk" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">Give a talk</Link></li>
                 <li><Link href="/tv" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">DEVSA TV</Link></li>
+                <li><Link href="/fm" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">DEVSA FM</Link></li>
                 <li><Link href="/localhost" className="text-neutral-400 hover:text-white text-[13px] font-normal leading-normal transition-colors">localhost:210</Link></li>
               </ul>
             </div>
