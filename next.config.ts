@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
+// DEVSA FM's scenes live in devsanantonio/devsa-fm and GitHub Pages publishes them; /fm serves them
+// from there (see the rewrites below), so a scene merged in that repo shows up here with no deploy.
+// FM_ORIGIN points at a local copy for development (node tools/site.cjs && npx serve _site in devsa-fm).
+const FM_ORIGIN = process.env.FM_ORIGIN || "https://devsanantonio.github.io/devsa-fm";
+
 const nextConfig: NextConfig = {
   // Don't announce the framework in every response.
   poweredByHeader: false,
@@ -18,12 +23,21 @@ const nextConfig: NextConfig = {
       {
         // No page may be framed by another site, so a signed-in admin can't be
         // tricked into clicking through an invisible /admin (clickjacking).
-        // Except /events/embed, which "Feed and embed" hands out as an iframe, and
-        // the image proxy, whose policy below includes this one.
-        source: "/((?!events/embed|api/image-proxy).*)",
+        // Except /events/embed, which "Feed and embed" hands out as an iframe,
+        // the image proxy, whose policy below includes this one, and DEVSA FM's
+        // scenes, which /fm frames from this same site (their rule is below).
+        source: "/((?!events/embed|api/image-proxy|fm/scene/).*)",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+      {
+        // DEVSA FM's scenes: /fm's player frames them, and nothing else may.
+        source: "/fm/scene/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
         ],
       },
       {
@@ -61,6 +75,13 @@ const nextConfig: NextConfig = {
         hostname: "images-api.printify.com",
       },
     ],
+  },
+  async rewrites() {
+    return [
+      { source: "/fm/scene/:path*", destination: `${FM_ORIGIN}/scene/:path*` },
+      { source: "/fm/thumbs/:path*", destination: `${FM_ORIGIN}/thumbs/:path*` },
+      { source: "/fm/scenes.json", destination: `${FM_ORIGIN}/scenes.json` },
+    ];
   },
   async redirects() {
     return [
