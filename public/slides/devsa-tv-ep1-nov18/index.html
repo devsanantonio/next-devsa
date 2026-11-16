@@ -337,18 +337,7 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- 2 · What DEVSA is -->
-  <!-- the community network from the roundtable deck (and components/community-network.tsx): every group in the
-       directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
-  <section class="slide" id="netSlide">
-    <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
-    <div class="pad" style="top:270px;right:auto;width:820px">
-      <p class="eyebrow in" style="--i:0">This is DEVSA</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:94px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
-    </div>
-  </section>
-
-  <!-- 4 · How it started (the About page's facts) -->
+  <!-- 2 · How it started (the About page's facts): the origin comes before what DEVSA is, so the gap leads into who answered it -->
   <section class="slide">
     <div class="pad" style="top:225px">
       <p class="eyebrow in" style="--i:0">How it started</p>
@@ -368,6 +357,18 @@ body:not(.idle) #hud{opacity:1}
       </div>
     </div>
   </section>
+
+  <!-- 3 · What DEVSA is -->
+  <!-- the community network from the roundtable deck (and components/community-network.tsx): every group in the
+       directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
+  <section class="slide" id="netSlide">
+    <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
+    <div class="pad" style="top:270px;right:auto;width:820px">
+      <p class="eyebrow in" style="--i:0">This is DEVSA</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:94px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
+    </div>
+  </section>
+
 
 
 
@@ -491,75 +492,29 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- ===================== The community groups: their 2026 ===================== -->
+  <!-- ===================== Community spotlight: ACM UTSA ===================== -->
 
-  <!-- The groups' segment opens here: the four spotlights to come, each in its own look, with who runs it.
-       (A wall of every group's logo sat before this; slide 2's network and the directory page already show them.) -->
-  <section class="slide">
+  <!-- The spotlight opens on the group and its two events, each in its own look; its student leaders
+       introduce ACM UTSA over this slide, then each event over its own. -->
+  <section class="slide" data-mark="off">
+    <div class="corner in" style="--i:0"><img src="assets/logos/g2.png" alt="ACM UTSA"></div>
     <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">The community groups &middot; <b>2026</b></p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">The groups run themselves. <span class="mute">Here&rsquo;s their 2026.</span></h2>
-      <div class="yr in" style="--i:2">
-        <div class="yc" style="--c:#9d86e8">
-          <div class="v" style="background:linear-gradient(115deg,#6d4fa0 0%,#7a62b8 30%,#4d6fc4 62%,#2f8fd6 100%)">
-            <div class="aia-mark"><p class="aia-annual" style="font-size:17px">2<sup>ND</sup> ANNUAL</p><p class="aia-word" style="font-size:66px"><b>A</b><span class="p">P</span><span>R</span><span class="b">I</span><span class="b">L</span></p></div>
-          </div>
-          <div class="t"><span class="n">01</span><b>AI April</b><span class="h">Geeks &amp;&amp; {...}</span><span class="m">April</span></div>
-        </div>
-        <div class="yc" style="--c:#c4501f">
-          <div class="v" style="background:#f8edcc"><img src="assets/logos/velocicode-dino.png" alt="" style="height:86%"></div>
-          <div class="t"><span class="n">02</span><b>VelociCode 2</b><span class="h">ACM San Antonio &middot; Greater Gaming Society</span><span class="m">July</span></div>
+      <p class="eyebrow in" style="--i:0">Community spotlight</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">ACM UTSA. <span class="mute">Two rooms, run by students.</span></h2>
+      <div class="yr in" style="--i:2;grid-template-columns:repeat(2,1fr);max-width:1240px">
+        <div class="yc" style="--c:#ff8200">
+          <div class="v" style="height:250px;background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover"><img src="assets/rowdyhacks/stamp.webp" alt="" style="height:80%"></div>
+          <div class="t"><b>RowdyHacks XII</b><span class="h">UTSA&rsquo;s annual hackathon</span><span class="m">October 3</span></div>
         </div>
         <div class="yc" style="--c:#ff8200">
-          <div class="v" style="background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover;gap:18px"><img src="assets/rowdyhacks/stamp.webp" alt="" style="height:74%"><img src="assets/logos/rowdycybercon.png" alt="" style="height:58%"></div>
-          <div class="t"><span class="n">03</span><b>RowdyHacks &amp; RowdyCyberCon</b><span class="h">ACM UTSA</span><span class="m">October &middot; November</span></div>
-        </div>
-        <div class="yc" style="--c:var(--teal)">
-          <div class="v" style="background:#000 url(assets/photos/sastw-audience.webp) center 52%/cover"><i></i><img src="assets/marks/sastw-white.png" alt="" style="width:78%;position:relative"></div>
-          <div class="t"><span class="n">04</span><b>SA Startup + Tech Week</b><span class="h">Geekdom</span><span class="m">Sept &rarr; Oct</span></div>
+          <div class="v" style="height:250px;background:#0b0b0b"><img src="assets/logos/rowdycybercon.png" alt="" style="height:72%"></div>
+          <div class="t"><b>RowdyCyberCon</b><span class="h">Student-led cybersecurity conference and capture the flag</span><span class="m">November 7</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- AI April: laid out like RowdyCyberCon's slide, with AI April's own wordmark disc in place of a logo disc -->
-  <section class="slide" data-mark="off">
-    <!-- Spotlight 01 · the group's logo in the corner DEVSA's mark usually holds, while its organizers introduce it and the event -->
-    <div class="corner in" style="--i:0"><img src="assets/logos/g12.png" alt="Geeks && {...}"></div>
-    <div class="pad" style="top:120px">
-      <div class="ev">
-        <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>Geeks &amp;&amp; {...}</b></p>
-          <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">AI April.</h2>
-          <p class="when in" style="--i:2;--c:#9d86e8">April 3 → May 2, 2026</p>
-          <!-- Geeks && {...}'s own line for AI April, from geeksand.tech/ai-april -->
-          <p class="lede in" style="--i:3;margin-top:30px">A month-long, citywide initiative exploring the innovation, ethics, and real-world impact of Artificial Intelligence.</p>
-        </div>
-        <div class="in" style="--i:2">
-          <div class="disc aia-disc">
-            <canvas class="aia-topo" id="aiaTopo" width="880" height="880"></canvas>
-            <div class="aia-mark">
-              <p class="aia-annual">2<sup>ND</sup> ANNUAL</p>
-              <p class="aia-word"><b>A</b><span class="p">P</span><span>R</span><span class="b">I</span><span class="b">L</span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Spotlight 02 · VelociCode 2, with ACM San Antonio's and Greater Gaming Society's logos (GGS's white mark inked black on the paper) -->
-  <section class="slide vc" data-mark="off">
-    <div class="corner in" style="--i:0"><img src="assets/logos/g5.png" alt="ACM San Antonio"><img src="assets/logos/g9.png" alt="Greater Gaming Society" style="filter:brightness(0);height:70%"></div>
-    <img class="vc-dino in" src="assets/logos/velocicode-dino.png" alt="VelociCode's origami dino" style="--i:1">
-    <div class="vc-copy">
-      <p class="vc-eyebrow in" style="--i:0">Spotlight 02 · ACM San Antonio &amp; Greater Gaming Society</p>
-      <h2 class="vc-wm in" style="--i:1"><span class="v">VELOCI</span><span class="c">CODE</span><span class="b">!</span></h2>
-      <p class="vc-tag in" style="--i:2"><s>a hackathon</s>a month-long game jam.</p>
-      <p class="vc-when in" style="--i:3">July 1 → August 1, 2026 · Theme: Fossil</p>
-      <p class="vc-show in" style="--i:4">Showcase at St. Mary&rsquo;s University</p>
-    </div>
-  </section>
 
   <!-- RowdyHacks XII, in its own brand: see .slide.rh -->
   <section class="slide rh" data-mark="off">
@@ -568,7 +523,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="rh-pin in" style="--i:2"><img class="paper" src="assets/rowdyhacks/paper.webp" alt=""><img class="stamp" src="assets/rowdyhacks/stamp.webp" alt="RowdyHacks"></div>
     <img class="rh-secret in" src="assets/rowdyhacks/top-secret.svg" alt="" style="--i:3">
     <div class="rh-copy">
-      <p class="rh-eyebrow in" style="--i:0">Spotlight 03 · ACM UTSA</p>
+      <p class="rh-eyebrow in" style="--i:0">Community spotlight · ACM UTSA</p>
       <h2 class="rh-title in" style="--i:1">RowdyHacks XII</h2>
       <p class="rh-when in" style="--i:2">October 3, 2026</p>
       <!-- ACM UTSA's own words, from rowdyhacks.org -->
@@ -583,7 +538,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>ACM UTSA</b></p>
+          <p class="eyebrow in" style="--i:0">Community spotlight · <b>ACM UTSA</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">RowdyCyberCon.</h2>
           <p class="when in" style="--i:2;--c:var(--orange)">November 7, 2026 · UTSA downtown</p>
           <p class="lede in" style="--i:3;margin-top:30px">San Antonio&rsquo;s student-led cybersecurity conference and capture the flag.</p>
@@ -593,18 +548,19 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- Spotlight 04 · SA Startup + Tech Week, with Geekdom's wordmark in the corner.
-       Confirm with Geekdom before tape day: how it wants SA Startup + Tech Week described, and its wordmark on screen. -->
-  <section class="slide" data-mark="off">
-    <div class="corner in" style="--i:0"><img src="assets/marks/geekdom-wordmark-red.svg" alt="Geekdom" style="height:100%"></div>
-    <!-- The Model's audience, during Startup + Tech Week (r01, from Jesse) -->
-    <div class="media"><img src="assets/photos/sastw-audience.webp" alt="The audience at The Model, during Startup + Tech Week" style="object-position:50% 62%"></div>
-    <div class="conf fg" style="top:280px;width:740px;--c:var(--teal)">
-      <p class="eyebrow in" style="--i:0;margin-bottom:34px">Spotlight 04 · <b>Geekdom</b></p>
-      <img class="wm in" src="assets/marks/sastw-white.png" alt="SA Startup + Tech Week" style="--i:0;max-width:620px">
-      <!-- from sasw.co: "Year 11", the week's own line, and its description of The Rand (Geekdom · DEVSA Community) -->
-      <p class="when in" style="--i:1">Year 11 · Sept 28 → Oct 2, 2026</p>
-      <p class="lede in" style="--i:2;margin-top:30px;font-size:36px;line-height:1.35">Founders, builders, students and first-timers, five days across the city, every session free. <b class="hi">Geekdom&rsquo;s third floor was the busiest room of the week: the groups DEVSA hosts all year, in one place for five days.</b></p>
+
+  <!-- ===================== Featured talk ===================== -->
+
+  <!-- Patrick Robinson, from the DEVSA community (he made DEVSA FM's music), on what a software factory is.
+       The opener's pyramid of pixel windows builds beside the title: windows made by windows. If he presents
+       from his own laptop, switch the monitor's input after this slide (see the run of show). -->
+  <section class="slide" id="talkSlide">
+    <canvas class="pyr" id="pyr2" width="1920" height="1080"></canvas>
+    <div class="pad" style="top:250px;right:auto;width:780px">
+      <p class="eyebrow in" style="--i:0">Featured talk</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">What is a software <span class="mute">factory?</span></h2>
+      <p class="in" style="--i:2;margin-top:64px;font-size:60px;font-weight:900;letter-spacing:-.02em">Patrick Robinson</p>
+      <p class="lede in" style="--i:3;margin-top:8px">From the DEVSA community</p>
     </div>
   </section>
 
@@ -674,8 +630,8 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
 // ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
-;(function pyramid() {
-  const c = $("#pyr"), sl = $("#opener"); if (!c) return
+;for (const [cid, sid] of [["pyr", "opener"], ["pyr2", "talkSlide"]]) (function pyramid() {
+  const c = $("#" + cid), sl = $("#" + sid); if (!c) return
   const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200"
   function win(x, y, px, lit, a) {
     const W = 22, H = 18
