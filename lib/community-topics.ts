@@ -30,3 +30,48 @@ export function groupsByTopic<T extends { name: string; description: string }>(g
     ([, gs]) => gs.length > 0
   )
 }
+
+/** A short label and a URL slug per topic, for the wall's topic filter and the hero's quick links
+ * (#topic-<slug> selects one). Keyed by the topic names above. */
+export const TOPIC_SHORT: Record<string, { label: string; slug: string }> = {
+  "Linux and open source": { label: "Linux", slug: "linux" },
+  Python: { label: "Python", slug: "python" },
+  ".NET and C#": { label: ".NET", slug: "dotnet" },
+  Ruby: { label: "Ruby", slug: "ruby" },
+  "JavaScript and the web": { label: "JavaScript", slug: "javascript" },
+  "AI, models and agents": { label: "AI", slug: "ai" },
+  Cybersecurity: { label: "Cybersecurity", slug: "cybersecurity" },
+  Cloud: { label: "Cloud", slug: "cloud" },
+  Data: { label: "Data", slug: "data" },
+  "Game development": { label: "Game dev", slug: "games" },
+  "Design and UX": { label: "Design", slug: "design" },
+}
+
+export type TopicFilter = { name: string; label: string; slug: string; ids: string[] }
+
+/** The topics that have groups, with their group ids, for the wall's filter and the hero. */
+export function topicFilters<T extends { id: string; name: string; description: string }>(groups: T[]): TopicFilter[] {
+  return groupsByTopic(groups).map(([name, gs]) => {
+    const short = TOPIC_SHORT[name] ?? { label: name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-") }
+    return { name, ...short, ids: gs.map((g) => g.id) }
+  })
+}
+
+/** DEVSA's own conferences by topic, for the topic pages: each line is the conference page's own. */
+export const TOPIC_CONFERENCES: Record<string, { name: string; href: string; line: string }[]> = {
+  python: [{ name: "PySanAntonio", href: "/events/pysanantonio", line: "DEVSA's Python conference, for the people writing Python in San Antonio." }],
+  cybersecurity: [{ name: "Access Granted", href: "/events/access-granted", line: "DEVSA's security conference, built with San Antonio's hacker community." }],
+  ai: [
+    { name: "More Human Than Human", href: "/events/morehumanthanhuman", line: "DEVSA's AI conference for developers and engineers." },
+    { name: "The Model", href: "/events/the-model", line: "DEVSA's AI conference for creators, creatives, founders and builders." },
+  ],
+}
+
+/** A topic by its URL slug, or null. */
+export function topicBySlug(slug: string): { name: string; label: string; slug: string; re: RegExp } | null {
+  for (const [name, re] of TOPICS) {
+    const short = TOPIC_SHORT[name]
+    if (short?.slug === slug) return { name, ...short, re }
+  }
+  return null
+}

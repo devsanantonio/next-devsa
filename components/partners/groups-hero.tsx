@@ -1,6 +1,7 @@
 "use client"
 
 import { countInWords } from "@/lib/count-words"
+import type { TopicFilter } from "@/lib/community-topics"
 import { motion } from "motion/react"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
@@ -71,7 +72,7 @@ import { ArrowUpRight } from "lucide-react"
  * variant to stay unfetched on phones — see the note there.
  */
 
-export function GroupsHero({ communityCount }: { communityCount?: number }) {
+export function GroupsHero({ communityCount, topics = [] }: { communityCount?: number; topics?: TopicFilter[] }) {
   // From the directory, like /about's story. This was hardcoded
   // "Twenty-Three" and went stale when the count reached twenty-five.
   // The number is held together so a phone never breaks it at its hyphen
@@ -230,6 +231,26 @@ export function GroupsHero({ communityCount }: { communityCount?: number }) {
                 <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
+
+            {/* Straight to a topic's page (/buildingtogether/topics/<slug>, "Python in San Antonio"), for the
+                reader who knows what they want to learn and not who runs it. Real pages, not #anchors, so the
+                links count for search too. */}
+            {topics.length > 0 && (
+              <p className="max-w-2xl text-sm leading-7 text-white/60 md:text-base md:leading-8">
+                <span className="mr-2 font-mono text-xs uppercase tracking-widest text-white/50">Find a group</span>
+                {topics.map((t, i) => (
+                  <span key={t.slug} className="whitespace-nowrap">
+                    {i > 0 && <span aria-hidden className="mx-1.5 text-white/30">·</span>}
+                    <Link
+                      href={`/buildingtogether/topics/${t.slug}`}
+                      className="font-medium text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/70"
+                    >
+                      {t.label}
+                    </Link>
+                  </span>
+                ))}
+              </p>
+            )}
           </div>
         </motion.div>
       </div>

@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { groupsByTopic } from "@/lib/community-topics"
+import { groupsByTopic, TOPIC_SHORT } from "@/lib/community-topics"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 
 /**
@@ -26,31 +26,44 @@ const BRAND = ["#007a73", "#c4214f", "#b45400"]
 type Group = { id: string; name: string; description: string }
 type Logo = { id: string; name: string; logo: string; type: "community" | "partner" }
 
-export function GroupsByTopic({ groups, logos = [] }: { groups: Group[]; logos?: Logo[] }) {
+/* bare: the rows only, under a page's own heading (/buildingtogether/topics). Each topic name links to its
+   page there. */
+export function GroupsByTopic({ groups, logos = [], bare = false }: { groups: Group[]; logos?: Logo[]; bare?: boolean }) {
   const topics = groupsByTopic(groups)
   if (!topics.length) return null
   const logoFor = new Map(logos.map((l) => [l.id, l]))
 
   return (
     <section id="by-topic" className="w-full scroll-mt-20 bg-white" data-bg-type="light">
-      <div className="page-shell border-t border-gray-200 py-16 md:py-24">
-        <div className="max-w-4xl">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-gray-500 md:text-base">Find a group by topic</p>
-          <h2 className="mt-5 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-5xl lg:text-6xl xl:text-7xl">
-            What do you want <span className="font-light italic text-gray-600">to learn?</span>
-          </h2>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-gray-600 md:text-xl">
-            San Antonio&apos;s tech groups by what they cover. Each runs itself; open one for when it meets and how to join.
-          </p>
-        </div>
+      <div className={bare ? "page-shell pb-16 md:pb-24" : "page-shell border-t border-gray-200 py-16 md:py-24"}>
+        {!bare && (
+          <div className="max-w-4xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-gray-500 md:text-base">Find a group by topic</p>
+            <h2 className="mt-5 text-balance font-sans text-4xl font-black leading-[0.95] tracking-[-0.02em] text-gray-900 md:text-5xl lg:text-6xl xl:text-7xl">
+              What do you want <span className="font-light italic text-gray-600">to learn?</span>
+            </h2>
+            <p className="mt-8 max-w-2xl text-lg leading-relaxed text-gray-600 md:text-xl">
+              San Antonio&apos;s tech groups by what they cover. Each runs itself; open one for when it meets and how to join.
+            </p>
+          </div>
+        )}
 
         {/* A row per topic, its groups as chips that wrap: about one line each, where the cards it replaced
             stacked a group per line and ran three screens. */}
-        <dl className="mt-10 border-t border-gray-200 md:mt-14">
+        <dl className={bare ? "border-t border-gray-200" : "mt-10 border-t border-gray-200 md:mt-14"}>
           {topics.map(([topic, gs], i) => (
             <div key={topic} className="grid gap-2.5 border-b border-gray-200 py-4 md:grid-cols-[16rem_1fr] md:gap-8 md:py-5">
               <dt className="flex items-baseline justify-between gap-4 md:block">
-                <span className="block text-lg font-black tracking-[-0.01em] text-gray-900 md:text-xl">{topic}</span>
+                {TOPIC_SHORT[topic] ? (
+                  <Link
+                    href={`/buildingtogether/topics/${TOPIC_SHORT[topic].slug}`}
+                    className="block text-lg font-black tracking-[-0.01em] text-gray-900 underline decoration-gray-300 underline-offset-[6px] hover:decoration-gray-900 md:text-xl"
+                  >
+                    {topic}
+                  </Link>
+                ) : (
+                  <span className="block text-lg font-black tracking-[-0.01em] text-gray-900 md:text-xl">{topic}</span>
+                )}
                 <span className="font-mono text-xs uppercase tracking-widest md:mt-1 md:block" style={{ color: BRAND[i % 3] }}>
                   {gs.length} {gs.length === 1 ? "group" : "groups"}
                 </span>

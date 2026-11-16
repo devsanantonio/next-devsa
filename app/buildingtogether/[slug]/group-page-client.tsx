@@ -2,6 +2,7 @@
 import { DiscordIcon } from "@/components/icons/social-icons"
 
 import { useState, useEffect, useMemo } from "react"
+import type { GroupEvent } from "@/lib/group-events"
 import { motion } from "motion/react"
 import { logoOnDark } from "@/lib/logo-invert"
 import { useRouter } from "next/navigation"
@@ -17,7 +18,6 @@ import {
   Globe, 
   Calendar, 
   MapPin, 
-  Loader2,
   ChevronDown,
 } from "lucide-react"
 import { 
@@ -40,69 +40,19 @@ function MeetupIcon({ className }: { className?: string }) {
   )
 }
 
-interface FirestoreEvent {
-  id: string
-  title: string
-  slug: string
-  date: string
-  location: string
-  description: string
-  url?: string
-  communityId: string
-}
-
 interface GroupPageClientProps {
   slug: string
+  /* Read on the server for this request (page.tsx), so the group's name, description, links and meetups are
+     in the HTML. This component used to fetch /api/communities and /api/events after load, and the server
+     sent a spinner in their place: a search engine saw no heading and no events on any group page. */
+  community: TechCommunity
+  events: GroupEvent[]
+  /* The directory's topics this group falls under (lib/community-topics.ts), linking to their pages. */
+  topics: { label: string; slug: string }[]
 }
 
-export function GroupPageClient({ slug }: GroupPageClientProps) {
+export function GroupPageClient({ slug, community, events: firestoreEvents, topics }: GroupPageClientProps) {
   const router = useRouter()
-  const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([])
-  const [isLoadingEvents, setIsLoadingEvents] = useState(true)
-  const [community, setCommunity] = useState<TechCommunity | null>(null)
-  const [isLoadingCommunity, setIsLoadingCommunity] = useState(true)
-
-  // Fetch community data from API (Firestore)
-  useEffect(() => {
-    const fetchCommunity = async () => {
-      try {
-        const response = await fetch('/api/communities')
-        if (response.ok) {
-          const data = await response.json()
-          const communities = data.communities || []
-          const foundCommunity = communities.find((c: TechCommunity) => c.id === slug)
-          
-          if (foundCommunity) {
-            setCommunity(foundCommunity)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch community:', error)
-      } finally {
-        setIsLoadingCommunity(false)
-      }
-    }
-    fetchCommunity()
-  }, [slug])
-
-
-  // Fetch events from Firestore
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/api/events')
-        if (response.ok) {
-          const data = await response.json()
-          setFirestoreEvents(data.events || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch events:', error)
-      } finally {
-        setIsLoadingEvents(false)
-      }
-    }
-    fetchEvents()
-  }, [])
 
   // Get events for this community
   const { upcomingEvents, pastEvents } = useMemo(() => {
@@ -159,7 +109,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
     return { upcomingEvents: upcoming, pastEvents: past }
-  }, [firestoreEvents, isLoadingEvents, slug])
+  }, [firestoreEvents, slug])
 
   /* Past events fold away: six full cards were the tallest thing on the page and
      pushed the call for speakers out of sight. The heading keeps the count,
@@ -169,23 +119,13 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
     ? new Date(pastEvents[pastEvents.length - 1].date)
     : null
 
-  // Show loading state while fetching community data
-  // A shared link to #speak arrives before the section exists (the group and its events load
-  // client-side), so the browser can't jump to it. Scroll once both have loaded: the events list
-  // sits above the section, and arriving later it would push the section back down.
+  // A shared link to #speak: the section is in the server's HTML now, but the page's entrance animation
+  // can move it after the browser's own jump, so scroll once more after first paint.
   useEffect(() => {
-    if (community?.speakersOpen && !isLoadingEvents && window.location.hash === "#speak") {
+    if (community?.speakersOpen && window.location.hash === "#speak") {
       requestAnimationFrame(() => document.getElementById("speak")?.scrollIntoView())
     }
-  }, [community, isLoadingEvents])
-
-  if (isLoadingCommunity) {
-    return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#ef426f]" />
-      </main>
-    )
-  }
+  }, [community])
 
   if (!community) {
     return (
@@ -260,6 +200,24 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
               <h1 className="mt-3 text-balance font-sans text-4xl font-black leading-[0.98] tracking-[-0.02em] text-white md:text-5xl lg:text-6xl">
                 {community.name}
               </h1>
+              {/* The topics this group is filed under, each to its page ("Python in San Antonio"): the group
+                  and topic pages linking both ways is how a search for the subject finds the group. */}
+              {topics.length > 0 && (
+                <p className="mt-4 text-sm text-white/60 md:text-base">
+                  <span className="mr-2 font-mono text-xs uppercase tracking-widest text-white/50">Topics</span>
+                  {topics.map((t, i) => (
+                    <span key={t.slug} className="whitespace-nowrap">
+                      {i > 0 && <span aria-hidden className="mx-1.5 text-white/30">·</span>}
+                      <Link
+                        href={`/buildingtogether/topics/${t.slug}`}
+                        className="font-medium text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/70"
+                      >
+                        {t.label}
+                      </Link>
+                    </span>
+                  ))}
+                </p>
+              )}
               {/* While the call is open, say so before anyone scrolls: the button
                   in the site's own shape and arrow (as on Building Together's hero),
                   and a plain line saying why it's there. */}
@@ -459,11 +417,7 @@ export function GroupPageClient({ slug }: GroupPageClientProps) {
             <div className="mt-4 border-t border-gray-200 pt-12">
               <h2 className="mb-5 text-sm md:text-base font-medium uppercase tracking-[0.2em] text-gray-500">Upcoming events</h2>
 
-              {isLoadingEvents ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                </div>
-              ) : upcomingEvents.length === 0 ? (
+              {upcomingEvents.length === 0 ? (
                 <p className="text-[17px] leading-[1.7] text-gray-600">
                   Nothing on the calendar yet. Check back, or follow them through the links above.
                 </p>

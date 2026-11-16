@@ -5,7 +5,7 @@ import {
   type LogoItem,
 } from "@/components/partners/logo-showcase"
 import { listCommunities, listCommunityProfiles } from "@/lib/communities"
-import { GroupsByTopic } from "@/components/partners/groups-by-topic"
+import { topicFilters } from "@/lib/community-topics"
 import { listPartners } from "@/lib/partners"
 import { StayConnected } from "@/components/partners/stay-connected"
 import { HowWeHelp } from "@/components/partners/how-we-help"
@@ -128,6 +128,9 @@ export default async function GroupsPage({
       })),
   ]
 
+  // The directory's groups by topic: the wall filters on these, and the hero links straight to one.
+  const topics = topicFilters(profiles)
+
   const siteUrlValue = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devsa.community"
   return (
     <>
@@ -161,10 +164,8 @@ export default async function GroupsPage({
       {/* #get-involved and #donate render after the browser has looked for
           them; see the component. */}
       <ScrollToHash />
-      <GroupsHero communityCount={communities.length} />
+      <GroupsHero communityCount={communities.length} topics={topics} />
       <LogoShowcase logos={logos} />
-      {/* The wall's second way in: the same groups by subject (Linux, Python, AI...), as text a search reads. */}
-      <GroupsByTopic groups={profiles} logos={logos} />
       {/* Between the gap and the ask. The hero states the problem and the
           limit; StayConnected asks the reader to act. The mechanism — and one
           instance of it having worked — belongs between them. */}

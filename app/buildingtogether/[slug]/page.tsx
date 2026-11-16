@@ -6,12 +6,24 @@ import { notFound } from "next/navigation"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 import { jsonLdScript } from "@/lib/json-ld"
 import type { TechCommunity } from "@/data/communities"
+import { listPublishedEvents, hostedBy } from "@/lib/group-events"
+import { topicFilters } from "@/lib/community-topics"
 
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
 // Helper to check if a slug belongs to a community (Firestore)
+/** The group's fields the page shows, as a plain object: the Firestore document also carries Timestamps
+ * (createdAt, updatedAt), which can't cross to a client component. */
+function plainCommunity(c: TechCommunity): TechCommunity {
+  const keys: (keyof TechCommunity)[] = ["id", "name", "logo", "description", "website", "discord", "meetup", "luma", "instagram",
+    "twitter", "linkedin", "youtube", "twitch", "facebook", "github", "speakersOpen", "speakersNote", "speakersQuestion"]
+  const out: Record<string, unknown> = {}
+  for (const k of keys) if (c[k] !== undefined) out[k] = c[k]
+  return out as unknown as TechCommunity
+}
+
 async function findCommunity(slug: string) {
   try {
     const db = getDb()
@@ -189,7 +201,12 @@ export default async function PartnerOrGroupPage({ params }: PageProps) {
             }, "group")),
           }}
         />
-        <GroupPageClient slug={slug} />
+        <GroupPageClient
+          slug={slug}
+          community={plainCommunity(c)}
+          events={(await listPublishedEvents()).filter((e) => hostedBy(e, slug))}
+          topics={topicFilters([{ id: slug, name: c.name, description: c.description ?? "" }]).map(({ label, slug: t }) => ({ label, slug: t }))}
+        />
       </>
     )
   }

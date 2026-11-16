@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next"
 import { getDb, COLLECTIONS } from "@/lib/firebase-admin"
 import { isListed } from "@/lib/event-visibility"
 import { listPartners } from "@/lib/partners"
+import { listCommunityProfiles } from "@/lib/communities"
+import { topicFilters } from "@/lib/community-topics"
 
 /**
  * The sitemap reads Firestore, so a community, partner or event added in the
@@ -104,6 +106,20 @@ async function communityRoutes(): Promise<MetadataRoute.Sitemap> {
   }))
 }
 
+/** The topic index and each topic that has groups today ("Python in San Antonio"); lib/community-topics.ts. */
+async function topicRoutes(): Promise<MetadataRoute.Sitemap> {
+  const topics = topicFilters(await listCommunityProfiles())
+  return [
+    { url: `${baseUrl}/buildingtogether/topics`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
+    ...topics.map((t) => ({
+      url: `${baseUrl}/buildingtogether/topics/${t.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+  ]
+}
+
 async function partnerRoutes(): Promise<MetadataRoute.Sitemap> {
   const partners = await listPartners()
   return partners.map((p) => ({
@@ -122,10 +138,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    * a signal about the site rather than about one Firestore call. If events are
    * unreachable, the partners and communities still ship.
    */
-  const [events, communities, partners] = await Promise.allSettled([
+  const [events, communities, partners, topics] = await Promise.allSettled([
     eventRoutes(),
     communityRoutes(),
     partnerRoutes(),
+    topicRoutes(),
   ])
 
   const settled = (r: PromiseSettledResult<MetadataRoute.Sitemap>) => {
@@ -139,6 +156,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...settled(events),
     ...settled(communities),
     ...settled(partners),
+    ...settled(topics),
   ]
 
   // A partner and a community can share the /buildingtogether/<id> namespace,
