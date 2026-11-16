@@ -174,7 +174,7 @@ body:not(.idle) #hud{opacity:1}
 /* one conference */
 .conf{position:absolute;left:140px;top:330px;width:860px}
 .conf .wm{display:block;max-height:170px;max-width:800px}
-.conf .lede{margin-top:50px;font-size:38px}
+.conf .lede{margin-top:50px;font-size:46px;line-height:1.25}
 .conf .lede .hi{font-weight:400;color:#fff}
 .conf .when{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
 .conf .with{margin-top:16px;font-size:30px;color:rgba(255,255,255,.7);line-height:1.4}
@@ -241,6 +241,18 @@ body:not(.idle) #hud{opacity:1}
 .dec .tm{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;color:#fff}
 
 /* the close */
+.ask{display:grid;grid-template-columns:1.25fr 1fr;gap:24px;margin-top:60px}
+.ask .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.ask .lead{padding:40px 44px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
+.ask .lead b{display:block;margin-top:14px;font-size:76px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.ask .lead p{margin-top:18px;font-size:32px;line-height:1.35;color:rgba(255,255,255,.8)}
+.ask .side{display:grid;gap:24px}
+.ask .side div{padding:30px 36px;border-radius:20px;border:1px solid var(--line);background:var(--card)}
+.ask .side p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
+.ask .side b{color:#fff;font-weight:700}
+.follow{display:flex;align-items:center;gap:22px;margin-top:40px}
+.follow img{width:36px;height:36px;opacity:.85}
+.follow span{margin-left:12px;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
 .ways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:70px}
 .ways .card{padding:34px 36px}
 .ways .url{display:block;margin-top:14px}
@@ -251,7 +263,7 @@ body:not(.idle) #hud{opacity:1}
 .slide.vc{background:#f8edcc;color:#20180c}
 .vc-dino{position:absolute;right:90px;top:330px;width:620px;filter:drop-shadow(0 30px 0 rgba(32,24,12,.12))}
 .vc-copy{position:absolute;left:140px;top:230px;width:1080px}
-.vc-eyebrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#8c3914}
+.vc-eyebrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.1em;white-space:nowrap;text-transform:uppercase;color:#8c3914}
 .vc-wm{margin-top:40px;display:flex;align-items:center;white-space:nowrap;line-height:.9}
 .vc-wm .v{font-family:"Luckiest Guy",system-ui;font-size:176px;color:#1e6016;text-shadow:7px 7px 0 #f5c800,11px 11px 0 #20180c;transform:rotate(-1.5deg);display:inline-block}
 .vc-wm .c{font-family:"Rubik Dirt",system-ui;font-size:176px;color:#c44d24;text-shadow:9px 9px 0 #20180c;transform:rotate(1.5deg);display:inline-block}
@@ -345,13 +357,13 @@ body:not(.idle) #hud{opacity:1}
         <div style="--c:var(--teal)"><b>Sept 2023</b><span>Started as a Discord server</span></div>
         <div style="--c:var(--pink)"><b>Mar 2024</b><span>A 501(c)(3), run by a volunteer board</span></div>
         <div style="--c:var(--orange)"><b>Apr 2024</b><span>The first event, about ten groups on the calendar</span></div>
-        <div style="--c:var(--teal)"><b>Today</b><span>27 groups in the directory</span></div>
+        <div style="--c:var(--teal)"><b>Nov 2026</b><span>27 groups in the directory</span></div>
       </div>
       <!-- the calendar's record: Luma for 2024 and 2025, devsa.community for 2026 (lib/calendar-record.ts), as of Nov 15 -->
       <div class="figs in" style="--i:3">
         <div><b>214</b><span>events in 2024</span></div>
         <div><b>204</b><span>in 2025</span></div>
-        <div><b>190+</b><span>in 2026, so far</span></div>
+        <div><b>190+</b><span>in 2026</span></div>
         <div><b>600+</b><span>since 2024</span></div>
       </div>
     </div>
@@ -374,7 +386,7 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- 01 · The calendar: devsa.community/events as it looked on Nov 15 (December's meetups, the month view) -->
+  <!-- 01 · The calendar: devsa.community/events on Nov 15, scrolled to December with the month view on December -->
   <section class="slide">
     <div class="does-copy" style="--c:var(--teal)">
       <p class="eyebrow in" style="--i:0">01 &middot; <b>The calendar</b></p>
@@ -443,8 +455,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/more-human-head.mp4" poster="assets/conf/more-human-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#ff9900">
       <img class="wm in" src="assets/conf/more-human-than-human-wordmark.svg" alt="More Human Than Human" style="--i:0">
-      <!-- word for word from /events/morehumanthanhuman (data/more-human/2026.ts MH_HOOK) -->
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for developers and engineers: the people building software factories, agent harnesses and everything that runs on them. <b class="hi">When the code writes itself, the job is building what writes it.</b></p>
+      <!-- trimmed from the lead on /events/morehumanthanhuman (data/more-human/2026.ts MH_HOOK) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for developers and engineers. <b class="hi">When the code writes itself, the job is building what writes it.</b></p>
     </div>
   </section>
 
@@ -454,8 +466,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media dim"><img src="assets/photos/the-model-stage.webp" alt="A speaker on stage at The Model, between two screens" style="object-position:50% 40%"></div>
     <div class="conf fg" style="--c:#C0B4FC">
       <p class="tm-wm in" style="--i:0;font-size:120px" role="img" aria-label="The Model">The <span>Model</span></p>
-      <!-- word for word from /events/the-model (components/the-model/2026/hero.tsx) -->
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for creators, creatives, founders and builders. Cool vibes, great company, and a room full of people showing each other what comes next &mdash; the work itself, not a description of it.</p>
+      <!-- trimmed from the lead on /events/the-model (components/the-model/2026/hero.tsx) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for creators, creatives, founders and builders. <b class="hi">The work itself, not a description of it.</b></p>
     </div>
   </section>
 
@@ -464,8 +476,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/padlock-loop.mp4" poster="assets/conf/padlock-loop-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#00ff66">
       <p class="ag-wm in" style="--i:0;font-size:130px"><span>Access</span> Granted</p>
-      <!-- word for word from /events/access-granted (data/access-granted/2026.ts AG_POSITIONING, AG_ONE_LINER) -->
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s security conference, built with San Antonio&rsquo;s hacker community. Every other room is people talking about technology. <b class="hi">This one is people taking it apart.</b></p>
+      <!-- trimmed from the lead on /events/access-granted (data/access-granted/2026.ts AG_POSITIONING, AG_ONE_LINER) -->
+      <p class="lede in" style="--i:1">Every other room is people talking about technology. <b class="hi">This one is people taking it apart.</b></p>
     </div>
   </section>
 
@@ -474,8 +486,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/mascot-clip.mp4" poster="assets/conf/mascot-video-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#4a90d9">
       <img class="wm in" src="assets/conf/pysa-wordmark.svg" alt="PySanAntonio" style="--i:0;max-height:140px">
-      <!-- word for word from /events/pysanantonio (components/pysa/2026/hero.tsx) -->
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s Python conference, for the people writing Python in San Antonio. Talks on agents, testing and what AI is doing to the craft, <b class="hi">and a round of Python Jeopardy, because it should still be fun.</b></p>
+      <!-- trimmed from the lead on /events/pysanantonio (components/pysa/2026/hero.tsx) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s Python conference, <b class="hi">for the people writing Python in San Antonio.</b></p>
     </div>
   </section>
 
@@ -541,7 +553,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="corner in" style="--i:0"><img src="assets/logos/g5.png" alt="ACM San Antonio"><img src="assets/logos/g9.png" alt="Greater Gaming Society" style="filter:brightness(0);height:70%"></div>
     <img class="vc-dino in" src="assets/logos/velocicode-dino.png" alt="VelociCode's origami dino" style="--i:1">
     <div class="vc-copy">
-      <p class="vc-eyebrow in" style="--i:0">★ Spotlight 02 · Expedition 02 ★</p>
+      <p class="vc-eyebrow in" style="--i:0">Spotlight 02 · ACM San Antonio &amp; Greater Gaming Society</p>
       <h2 class="vc-wm in" style="--i:1"><span class="v">VELOCI</span><span class="c">CODE</span><span class="b">!</span></h2>
       <p class="vc-tag in" style="--i:2"><s>a hackathon</s>a month-long game jam.</p>
       <p class="vc-when in" style="--i:3">July 1 → August 1, 2026 · Theme: Fossil</p>
@@ -556,7 +568,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="rh-pin in" style="--i:2"><img class="paper" src="assets/rowdyhacks/paper.webp" alt=""><img class="stamp" src="assets/rowdyhacks/stamp.webp" alt="RowdyHacks"></div>
     <img class="rh-secret in" src="assets/rowdyhacks/top-secret.svg" alt="" style="--i:3">
     <div class="rh-copy">
-      <p class="rh-eyebrow in" style="--i:0">Spotlight 03 · Hackathon</p>
+      <p class="rh-eyebrow in" style="--i:0">Spotlight 03 · ACM UTSA</p>
       <h2 class="rh-title in" style="--i:1">RowdyHacks XII</h2>
       <p class="rh-when in" style="--i:2">October 3, 2026</p>
       <!-- ACM UTSA's own words, from rowdyhacks.org -->
@@ -571,7 +583,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>Cybersecurity conference</b></p>
+          <p class="eyebrow in" style="--i:0">Spotlight 03 · <b>ACM UTSA</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">RowdyCyberCon.</h2>
           <p class="when in" style="--i:2;--c:var(--orange)">November 7, 2026 · UTSA downtown</p>
           <p class="lede in" style="--i:3;margin-top:30px">San Antonio&rsquo;s student-led cybersecurity conference and capture the flag.</p>
@@ -588,10 +600,11 @@ body:not(.idle) #hud{opacity:1}
     <!-- The Model's audience, during Startup + Tech Week (r01, from Jesse) -->
     <div class="media"><img src="assets/photos/sastw-audience.webp" alt="The audience at The Model, during Startup + Tech Week" style="object-position:50% 62%"></div>
     <div class="conf fg" style="top:280px;width:740px;--c:var(--teal)">
+      <p class="eyebrow in" style="--i:0;margin-bottom:34px">Spotlight 04 · <b>Geekdom</b></p>
       <img class="wm in" src="assets/marks/sastw-white.png" alt="SA Startup + Tech Week" style="--i:0;max-width:620px">
       <!-- from sasw.co: "Year 11", the week's own line, and its description of The Rand (Geekdom · DEVSA Community) -->
       <p class="when in" style="--i:1">Year 11 · Sept 28 → Oct 2, 2026</p>
-      <p class="lede in" style="--i:2;margin-top:30px">Founders, builders, students and first-timers, five days across the city, every session free. <b class="hi">Geekdom&rsquo;s third floor was the busiest room of the week: the groups DEVSA hosts all year, in one place for five days.</b></p>
+      <p class="lede in" style="--i:2;margin-top:30px;font-size:36px;line-height:1.35">Founders, builders, students and first-timers, five days across the city, every session free. <b class="hi">Geekdom&rsquo;s third floor was the busiest room of the week: the groups DEVSA hosts all year, in one place for five days.</b></p>
     </div>
   </section>
 
@@ -611,14 +624,24 @@ body:not(.idle) #hud{opacity:1}
 
   <section class="slide">
     <img class="stk in" src="assets/stickers/love.webp" alt="I love SATX" style="--i:3;right:150px;top:70px;width:380px;transform:rotate(6deg)">
-    <div class="pad" style="top:220px">
+    <div class="pad" style="top:180px">
       <p class="eyebrow in" style="--i:0">Thanks for watching</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:124px">Find your people. <span class="mute">Build your future.</span></h2>
-      <div class="ways in" style="--i:2">
-        <div class="card"><span class="k">The calendar</span><span class="url">devsa.community</span><p>Every group&rsquo;s next meetup, in one place.</p></div>
-        <div class="card"><span class="k">The Discord</span><span class="url">devsa.community/discord</span><p>Where the community talks every day.</p></div>
-        <div class="card"><span class="k">Every episode</span><span class="url">youtube.com/@devsatx</span><p>DEVSA programming on TVSA, San Antonio&rsquo;s public access channel.</p></div>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">Find your people. <span class="mute">Build your future.</span></h2>
+      <!-- The asks, in DEVSA's order: the calendar first, then (for organizers) getting on it, then support. Social is the
+           small print, as on the channel page: the website leads. No channel or station named until TVSA's wording is confirmed. -->
+      <div class="ask in" style="--i:2">
+        <div class="lead">
+          <span class="k">Start here</span>
+          <b>devsa.community</b>
+          <p>Subscribe to the community calendar: every group&rsquo;s meetups, in one place.</p>
+        </div>
+        <div class="side">
+          <div><span class="k">Run a group?</span><p>Put your events on the calendar. Sign in at <b>devsa.community</b></p></div>
+          <div><span class="k" style="color:var(--pink)">Support DEVSA</span><p>A 501(c)(3), run by a volunteer board. <b>Donate at devsa.community</b></p></div>
+        </div>
       </div>
+      <p class="follow in" style="--i:3"><img src="assets/channels/discord.svg" alt=""><img src="assets/channels/instagram.svg" alt=""><img src="assets/channels/linkedin.svg" alt=""><img src="assets/channels/x.svg" alt=""><img src="assets/channels/youtube.svg" alt=""><span>@devsatx &middot; devsa.community/discord</span></p>
+</div>
     </div>
   </section>
 
