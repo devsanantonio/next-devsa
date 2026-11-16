@@ -117,12 +117,18 @@ body:not(.idle) #hud{opacity:1}
 .cardgrid p{margin-top:16px;font-size:30px;line-height:1.35;color:rgba(255,255,255,.75)}
 
 /* how it started */
-.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;position:relative;margin-top:90px;padding-top:50px}
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;position:relative;margin-top:60px;padding-top:50px}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;margin-top:50px;padding-top:36px;border-top:2px solid #262626}
+.figs b{display:block;font-size:84px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.figs span{display:block;margin-top:10px;font-size:32px;color:rgba(255,255,255,.7)}
+/* the community network, slide 2 */
+.netbox{position:absolute;left:880px;top:140px;width:1040px;height:780px}
+#net,#net svg{display:block;width:100%;height:100%;overflow:visible}
 .timeline::before{content:"";position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))}
 .timeline div{position:relative}
 .timeline div::before{content:"";position:absolute;left:0;top:-50px;width:32px;height:32px;border-radius:50%;background:#000;border:7px solid var(--c)}
-.timeline b{display:block;font-size:76px;font-weight:900;letter-spacing:-.02em;line-height:1}
-.timeline span{display:block;margin-top:16px;font-size:34px;line-height:1.3;color:rgba(255,255,255,.78)}
+.timeline b{display:block;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.timeline span{display:block;margin-top:16px;font-size:32px;line-height:1.3;color:rgba(255,255,255,.78)}
 
 /* the four conferences, as a bill */
 .bill{display:grid;grid-template-columns:repeat(2,1fr);gap:80px 120px;align-items:center;justify-items:start;margin-top:90px}
@@ -263,11 +269,14 @@ body:not(.idle) #hud{opacity:1}
   </section>
 
   <!-- 2 · What DEVSA is -->
-  <section class="slide">
-    <div class="pad" style="top:250px">
+  <!-- the community network from the roundtable deck (and components/community-network.tsx): every group in the
+       directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
+  <section class="slide" id="netSlide">
+    <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
+    <div class="pad" style="top:200px;right:auto;width:820px">
       <p class="eyebrow in" style="--i:0">This is DEVSA</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;max-width:1550px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:56px;max-width:1450px">A shared calendar every group publishes to, a public directory anyone can search, one channel to follow, and a few rooms a year where all of it meets.</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:50px;font-size:38px">A shared calendar every group publishes to, a public directory anyone can search, one channel to follow, and a few rooms a year where all of it meets.</p>
     </div>
   </section>
 
@@ -287,13 +296,21 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- 4 · How it started (the About page's facts) -->
   <section class="slide">
-    <div class="pad" style="top:250px">
+    <div class="pad" style="top:225px">
       <p class="eyebrow in" style="--i:0">How it started</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">A Discord server, <span class="mute">then a 501(c)(3).</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">A Discord server, <span class="mute">then a 501(c)(3).</span></h2>
       <div class="timeline in" style="--i:2">
         <div style="--c:var(--teal)"><b>Sept 2023</b><span>Started as a Discord server</span></div>
         <div style="--c:var(--pink)"><b>Mar 2024</b><span>A 501(c)(3), run by a volunteer board</span></div>
-        <div style="--c:var(--orange)"><b>600+</b><span>events on the community calendar since 2024</span></div>
+        <div style="--c:var(--orange)"><b>Apr 2024</b><span>The first event, about ten groups on the calendar</span></div>
+        <div style="--c:var(--teal)"><b>Today</b><span>27 groups in the directory</span></div>
+      </div>
+      <!-- the calendar's record: Luma for 2024 and 2025, devsa.community for 2026 (lib/calendar-record.ts), as of Nov 15 -->
+      <div class="figs in" style="--i:3">
+        <div><b>214</b><span>events in 2024</span></div>
+        <div><b>204</b><span>in 2025</span></div>
+        <div><b>190+</b><span>in 2026, so far</span></div>
+        <div><b>600+</b><span>since 2024</span></div>
       </div>
     </div>
   </section>
@@ -541,6 +558,64 @@ const stage = $("#stage"), slides = $$(".slide")
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
 $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+// ---------- the community network (the roundtable deck's geometry): CONFIG.wall's groups, each linked to DEVSA ----------
+;(function network() {
+  const host = $("#net"), slide = $("#netSlide"); if (!host) return
+  const G = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return { src: "assets/wall/" + f, white: flag === "white" } })
+  const VW = 640, VH = 480, CX = VW / 2, CY = VH / 2, R = 23, N = G.length, C = ["#00b2a9", "#ef426f", "#ff8200"], NS = "http://www.w3.org/2000/svg"
+  const inner = Math.min(N, Math.max(3, Math.round(N * .36)))
+  const base = G.map((_, i) => {
+    const isI = i < inner, cnt = isI ? inner : N - inner, k = isI ? i : i - inner
+    const a = (k / cnt) * Math.PI * 2 + (isI ? .35 : 0) + Math.sin(i * 7.3) * .08
+    const rx = isI ? 128 : 262, ry = isI ? 100 : 196
+    return [CX + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * .04), CY + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * .04)]
+  })
+  const LINKS = []
+  for (let i = 0; i < inner && inner + i * 2 < N; i++) LINKS.push([i, inner + Math.round((i / inner) * (N - inner))])
+  for (let i = inner; i + 1 < N; i += 3) LINKS.push([i, i + 1])
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${VW} ${VH}`)
+  svg.innerHTML = `<defs><clipPath id="nc"><circle r="${R - 5}"/></clipPath>
+    <filter id="nw"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
+    <radialGradient id="glow"><stop offset="0" stop-color="#ef426f" stop-opacity=".35"/><stop offset="1" stop-color="#ef426f" stop-opacity="0"/></radialGradient></defs>`
+  const mk = () => { const g = document.createElementNS(NS, "g"); svg.append(g); return g }
+  const gLinks = mk(), gHub = mk(), gPulse = mk(), gNodes = mk()
+  const line = (g, attrs) => { const l = document.createElementNS(NS, "line"); for (const k in attrs) l.setAttribute(k, attrs[k]); g.append(l); return l }
+  const linkEls = LINKS.map(() => line(gLinks, { stroke: "#fff", "stroke-opacity": ".16", "stroke-width": "1.05" }))
+  const hubEls = G.map((_, i) => line(gHub, { stroke: C[i % 3], "stroke-opacity": ".65", "stroke-width": "1.4" }))
+  const nodeEls = G.map((g) => {
+    const n = document.createElementNS(NS, "g"), r = R - 6
+    n.innerHTML = `<circle r="${R}" fill="#151515" stroke="#2c2c2c"/><image href="${esc(g.src)}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="xMidYMid meet" clip-path="url(#nc)"${g.white ? ' filter="url(#nw)"' : ""}/>`
+    gNodes.append(n); return n
+  })
+  const hub = document.createElementNS(NS, "g")
+  hub.innerHTML = `<circle class="hubglow" r="90" fill="url(#glow)"/><circle r="58" fill="#000" stroke="#262626"/><image href="assets/marks/devsa-alt-logo.svg" x="-40" y="-30" width="80" height="60"/>`
+  hub.setAttribute("transform", `translate(${CX} ${CY})`); svg.append(hub); host.append(svg)
+  const glow = hub.querySelector(".hubglow")
+  const pulses = Array.from({ length: 9 }, (_, k) => { const c = document.createElementNS(NS, "circle"); c.setAttribute("r", "2.6"); gPulse.append(c); return { el: c, to: (k * 7) % N, t0: -k * .45, dur: 2.2 + (k % 3) * .4 } })
+  const pos = base.map((p) => [...p])
+  function frame(ms) {
+    requestAnimationFrame(frame)
+    if (!slide.classList.contains("on") && pos.drawn) return   // only animate while it's on screen
+    pos.drawn = true
+    const t = ms / 1000
+    for (let i = 0; i < N; i++) {
+      pos[i][0] = base[i][0] + Math.sin(t * .42 + i * 1.7) * 4.2; pos[i][1] = base[i][1] + Math.cos(t * .35 + i * 2.1) * 4.2
+      nodeEls[i].setAttribute("transform", `translate(${pos[i][0].toFixed(2)} ${pos[i][1].toFixed(2)})`)
+      const h = hubEls[i]; h.setAttribute("x1", CX); h.setAttribute("y1", CY); h.setAttribute("x2", pos[i][0].toFixed(2)); h.setAttribute("y2", pos[i][1].toFixed(2))
+    }
+    LINKS.forEach(([a, b], k) => { const l = linkEls[k]; l.setAttribute("x1", pos[a][0]); l.setAttribute("y1", pos[a][1]); l.setAttribute("x2", pos[b][0]); l.setAttribute("y2", pos[b][1]) })
+    for (const p of pulses) {
+      let u = (t - p.t0) / p.dur
+      if (u >= 1) { p.t0 = t; p.to = Math.floor(Math.random() * N); u = 0 }
+      if (u < 0) { p.el.setAttribute("opacity", 0); continue }
+      const e = 1 - Math.pow(1 - u, 2)
+      p.el.setAttribute("cx", CX + (pos[p.to][0] - CX) * e); p.el.setAttribute("cy", CY + (pos[p.to][1] - CY) * e)
+      p.el.setAttribute("fill", C[p.to % 3]); p.el.setAttribute("opacity", (Math.sin(u * Math.PI) * .95).toFixed(3))
+    }
+    glow.setAttribute("r", (86 + Math.sin(t * 1.3) * 10).toFixed(1))
+  }
+  requestAnimationFrame(frame)
+})()
 $("#dec").innerHTML = CONFIG.december.map((e) => e.title
   ? `<div class="card"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">${esc(e.title)}</span><span class="w">${esc(e.when)}</span><span class="p">${esc(e.where)}</span></div>`
   : `<div class="card soon"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">December date coming to the calendar</span><span class="w">devsa.community</span></div>`).join("")
