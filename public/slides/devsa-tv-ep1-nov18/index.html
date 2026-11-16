@@ -230,14 +230,15 @@ body:not(.idle) #hud{opacity:1}
 .evlist b{font-size:50px;font-weight:900;letter-spacing:-.02em}
 
 /* your December */
-.dec{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-top:56px}
-.dec .card{padding:28px 26px 30px;display:flex;flex-direction:column}
-.dec img{width:120px;height:120px;border-radius:50%;background:#101010;object-fit:contain;padding:14px}
-.dec .g{margin-top:22px;font-size:22px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65)}
-.dec .t{margin-top:10px;font-size:30px;font-weight:900;letter-spacing:-.01em;line-height:1.1;flex:1}
-.dec .w{margin-top:20px;font-family:"Geist Mono",monospace;font-weight:700;font-size:25px;color:var(--teal);line-height:1.3}
-.dec .p{margin-top:6px;font-size:24px;color:rgba(255,255,255,.68);line-height:1.3}
-.dec .soon .t{font-weight:400;font-size:28px;color:rgba(255,255,255,.72)}
+.dec{margin-top:50px;border-top:1px solid var(--line)}
+.dec .row{display:grid;grid-template-columns:170px 76px 1fr auto;gap:36px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.dec .dt b{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:38px;letter-spacing:.02em;color:var(--teal);line-height:1}
+.dec .dt i{display:block;margin-top:6px;font-style:normal;font-family:"Geist Mono",monospace;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.dec img{width:76px;height:76px;border-radius:50%;background:#101010;object-fit:contain;padding:12px}
+.dec .de b{display:block;font-size:38px;font-weight:900;letter-spacing:-.015em;line-height:1.1}
+.dec .de i{display:block;margin-top:6px;font-style:normal;font-size:26px;color:rgba(255,255,255,.65)}
+.dec .de{min-width:0}
+.dec .tm{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;color:#fff}
 
 /* the close */
 .ways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:70px}
@@ -598,11 +599,11 @@ body:not(.idle) #hud{opacity:1}
 
   <section class="slide">
     <img class="stk in" src="assets/stickers/ornament.webp" alt="" style="--i:3;right:120px;top:36px;width:190px;transform:rotate(8deg)">
-    <div class="pad" style="top:210px;left:110px;right:110px">
+    <div class="pad" style="top:190px">
       <p class="eyebrow in" style="--i:0">On the community calendar</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">Your December, <span class="mute">on the calendar.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:28px;font-size:96px">Your December, <span class="mute">on the calendar.</span></h2>
       <div class="dec in" id="dec" style="--i:2"></div>
-      <p class="url in" style="--i:3;margin-top:44px">Every event, and how to RSVP: <b style="color:#fff">devsa.community</b></p>
+      <p class="url in" style="--i:3;margin-top:36px">Every event, and how to RSVP: <b style="color:#fff">devsa.community</b></p>
     </div>
   </section>
 
@@ -631,8 +632,8 @@ const CONFIG = {
   // Your December: one card per group, in this order. Events marked * are on the community calendar
   // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
   // until then the card says it's coming to the calendar, rather than inventing a date.
-  december: [   // from devsa.community/events, Nov 15, in date order (times in San Antonio time)
-    { group: "Geeks && {...}", logo: "g12.png", title: "Geeks&&Drinks", when: "Tue Dec 1 · 6 PM", where: "Idle Beer Hall & Brewery" },
+  december: [   // from devsa.community/events, Nov 15, in date order (times in San Antonio time). Geeks&&Drinks (Dec 1) is left off:
+                 // the episode airs after it.
     { group: "Alamo City Locksport", logo: "g17-2026.png", title: "December Meetup", when: "Sat Dec 5 · 7 PM", where: "Flying Saucer, Huebner Rd" },
     { group: "ACM San Antonio", logo: "g5.png", title: "Confidential Computing Leveraging Bootable Containers", when: "Wed Dec 9 · 6 PM", where: "Geekdom" },
     { group: "Datanauts", logo: "g16.png", title: "Holiday Bash 2026", when: "Thu Dec 10 · 6:30 PM", where: "Little Woodrow's at Braun" },
@@ -735,9 +736,12 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
   }
   requestAnimationFrame(frame)
 })()
-$("#dec").innerHTML = CONFIG.december.map((e) => e.title
-  ? `<div class="card"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">${esc(e.title)}</span><span class="w">${esc(e.when)}</span><span class="p">${esc(e.where)}</span></div>`
-  : `<div class="card soon"><img src="assets/logos/${esc(e.logo)}" alt=""><span class="g">${esc(e.group)}</span><span class="t">December date coming to the calendar</span><span class="w">devsa.community</span></div>`).join("")
+// December as a calendar list: the date, the group's logo, the event and who runs it, the time. (Venues are a click away
+// on devsa.community, which the slide names.) "when" reads like "Tue Dec 1 · 6 PM".
+$("#dec").innerHTML = CONFIG.december.map((e) => {
+  const [d, t = ""] = (e.when || "").split(" · "), [dow = "", ...md] = d.split(" ")
+  return `<div class="row"><span class="dt"><b>${esc(md.join(" "))}</b><i>${esc(dow)}</i></span><img src="assets/logos/${esc(e.logo)}" alt=""><span class="de"><b>${esc(e.title || "Date coming to the calendar")}</b><i>${esc(e.group)}</i></span><span class="tm">${esc(t)}</span></div>`
+}).join("")
 
 // ---------- AI April's topographic ground: contour lines of a smooth field (marching squares), seeded ----------
 ;(function topo() {
