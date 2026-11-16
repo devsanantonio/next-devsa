@@ -186,6 +186,17 @@ body:not(.idle) #hud{opacity:1}
 .wall .white img{filter:brightness(0) invert(1)}
 
 /* the year's four rooms */
+/* the groups' 2026: four cards, each event in its own look */
+.yr{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:50px}
+.yc{border:1px solid var(--line);background:var(--card);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.yc .v{position:relative;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.yc .v img{display:block;object-fit:contain}
+.yc .v i{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.yc .t{padding:26px 28px 30px;display:flex;flex-direction:column;flex:1}
+.yc .n{font-family:"Geist Mono",monospace;font-size:22px;color:var(--c)}
+.yc .t b{margin-top:10px;font-size:38px;font-weight:900;letter-spacing:-.015em;line-height:1.05}
+.yc .h{margin-top:12px;font-size:25px;line-height:1.3;color:rgba(255,255,255,.72);flex:1}
+.yc .m{margin-top:18px;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
 .pillars{list-style:none;border-top:1px solid var(--line)}
 .pillars li{display:grid;grid-template-columns:110px 1fr 600px;gap:40px;align-items:baseline;padding:24px 0;border-bottom:1px solid var(--line)}
 .pillars .num{font-family:"Geist Mono",monospace;font-size:30px;color:var(--c)}
@@ -466,26 +477,32 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- ===================== The community groups: their 2026 ===================== -->
 
-  <!-- 10 · The groups, as the year in review's introduction -->
-  <section class="slide">
-    <div class="pad" style="top:210px">
-      <p class="eyebrow in" style="--i:0">The community groups</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">The groups run themselves. <span class="mute">Here&rsquo;s their 2026.</span></h2>
-      <div class="wall in" style="--i:2" id="wall"></div>
-    </div>
-  </section>
-
-  <!-- 11 · The four -->
+  <!-- The groups' segment opens here: the four spotlights to come, each in its own look, with who runs it.
+       (A wall of every group's logo sat before this; slide 2's network and the directory page already show them.) -->
   <section class="slide">
     <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">2026 in review</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">Four rooms <span class="mute">that defined the year.</span></h2>
-      <ol class="pillars in" style="--i:2;margin-top:44px">
-        <li style="--c:var(--teal)"><span class="num">01</span><b>AI April</b><span>Geeks &amp;&amp; {...} · April</span></li>
-        <li style="--c:var(--pink)"><span class="num">02</span><b>VelociCode 2</b><span>ACM San Antonio · Greater Gaming Society</span></li>
-        <li style="--c:var(--orange)"><span class="num">03</span><b>RowdyHacks &amp; RowdyCyberCon</b><span>ACM UTSA</span></li>
-        <li style="--c:var(--teal)"><span class="num">04</span><b>SA Startup + Tech Week</b><span>Geekdom</span></li>
-      </ol>
+      <p class="eyebrow in" style="--i:0">The community groups &middot; <b>2026</b></p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">The groups run themselves. <span class="mute">Here&rsquo;s their 2026.</span></h2>
+      <div class="yr in" style="--i:2">
+        <div class="yc" style="--c:#9d86e8">
+          <div class="v" style="background:linear-gradient(115deg,#6d4fa0 0%,#7a62b8 30%,#4d6fc4 62%,#2f8fd6 100%)">
+            <div class="aia-mark"><p class="aia-annual" style="font-size:17px">2<sup>ND</sup> ANNUAL</p><p class="aia-word" style="font-size:66px"><b>A</b><span class="p">P</span><span>R</span><span class="b">I</span><span class="b">L</span></p></div>
+          </div>
+          <div class="t"><span class="n">01</span><b>AI April</b><span class="h">Geeks &amp;&amp; {...}</span><span class="m">April</span></div>
+        </div>
+        <div class="yc" style="--c:#c4501f">
+          <div class="v" style="background:#f8edcc"><img src="assets/logos/velocicode-dino.png" alt="" style="height:86%"></div>
+          <div class="t"><span class="n">02</span><b>VelociCode 2</b><span class="h">ACM San Antonio &middot; Greater Gaming Society</span><span class="m">July</span></div>
+        </div>
+        <div class="yc" style="--c:#ff8200">
+          <div class="v" style="background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover;gap:18px"><img src="assets/rowdyhacks/stamp.webp" alt="" style="height:74%"><img src="assets/logos/rowdycybercon.png" alt="" style="height:58%"></div>
+          <div class="t"><span class="n">03</span><b>RowdyHacks &amp; RowdyCyberCon</b><span class="h">ACM UTSA</span><span class="m">October &middot; November</span></div>
+        </div>
+        <div class="yc" style="--c:var(--teal)">
+          <div class="v" style="background:#000 url(assets/photos/sastw-room-full.webp) center/cover"><i></i><img src="assets/marks/sastw-white.png" alt="" style="width:78%;position:relative"></div>
+          <div class="t"><span class="n">04</span><b>SA Startup + Tech Week</b><span class="h">Geekdom</span><span class="m">Sept &rarr; Oct</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -497,7 +514,9 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
   <!-- AI April: laid out like RowdyCyberCon's slide, with AI April's own wordmark disc in place of a logo disc -->
-  <section class="slide">
+  <section class="slide" data-mark="off">
+    <!-- Geeks && {...}'s logo in the corner DEVSA's mark usually holds: AI April is theirs -->
+    <img class="in" src="assets/logos/g12.png" alt="Geeks && {...}" style="--i:0;position:absolute;left:140px;top:60px;width:150px">
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
@@ -648,7 +667,7 @@ const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [..
 const stage = $("#stage"), slides = $$(".slide")
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
-$("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
 // ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
 ;(function pyramid() {
   const c = $("#pyr"), sl = $("#opener"); if (!c) return
