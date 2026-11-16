@@ -164,7 +164,7 @@ export default async function GroupsPage({
       <GroupsHero communityCount={communities.length} />
       <LogoShowcase logos={logos} />
       {/* The wall's second way in: the same groups by subject (Linux, Python, AI...), as text a search reads. */}
-      <GroupsByTopic groups={profiles} />
+      <GroupsByTopic groups={profiles} logos={logos} />
       {/* Between the gap and the ask. The hero states the problem and the
           limit; StayConnected asks the reader to act. The mechanism — and one
           instance of it having worked — belongs between them. */}

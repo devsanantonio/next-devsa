@@ -4,7 +4,7 @@ import { motion } from "motion/react"
 import Link from "next/link"
 import { ArrowUpRight, CalendarDays, CalendarPlus } from "lucide-react"
 import { GoogleCalendarIcon, AppleCalendarIcon, OutlookIcon } from "@/components/icons/calendar-icons"
-import { DiscordIcon } from "@/components/icons/social-icons"
+import { DiscordIcon, InstagramIcon, LinkedInIcon, TwitterIcon, YouTubeIcon } from "@/components/icons/social-icons"
 import { track } from "@vercel/analytics"
 import { calendarSubscribeLinks, newSubscribeCode } from "@/lib/calendar-subscribe"
 
@@ -36,7 +36,16 @@ function codeTheLink(e: React.MouseEvent<HTMLAnchorElement>, key: (typeof SUBSCR
   e.currentTarget.href = links[key]
   track("calendar_subscribe", { app: key === "webcal" ? "apple" : key, from: "buildingtogether" })
 }
-const DISCORD_URL = "/discord"
+// DEVSA's channels, the same list and order as DEVSA TV's "one channel" page and the footer: the website leads
+// (this page is on it), and these are for whoever is already on one of them. Following DEVSA on any one is
+// following every group, since DEVSA carries all of them.
+const CHANNELS = [
+  { name: "Discord", handle: "devsa.community/discord", href: "/discord", Icon: DiscordIcon },
+  { name: "Instagram", handle: "@devsatx", href: "https://instagram.com/devsatx", Icon: InstagramIcon },
+  { name: "LinkedIn", handle: "/company/devsa", href: "https://linkedin.com/company/devsa", Icon: LinkedInIcon },
+  { name: "X", handle: "@devsatx", href: "https://x.com/devsatx", Icon: TwitterIcon },
+  { name: "YouTube", handle: "@devsatx", href: "https://www.youtube.com/@devsatx", Icon: YouTubeIcon },
+] as const
 
 /**
  * Stay Connected: the section for one person on /buildingtogether.
@@ -49,7 +58,10 @@ const DISCORD_URL = "/discord"
  *
  * What it offers instead are the ways to stay connected that already exist:
  * browse the calendar, subscribe to it in your own calendar app (the feed was
- * only offered inside a dialog on /events), and the DEVSA Discord. No
+ * only offered inside a dialog on /events), and DEVSA's channels. The last was
+ * a single "Join the Discord" card until November 2026, which made Discord look
+ * like the one other place DEVSA is; it is one of five, listed as DEVSA TV's
+ * first episode lists them. No
  * newsletter signup: sending is not set up yet (it needs an unsubscribe flow
  * and a postal address), and collecting addresses with nothing to send would
  * be a promise DEVSA cannot keep.
@@ -82,7 +94,8 @@ export function StayConnected() {
             <p className="max-w-5xl text-lg md:text-xl text-gray-600 leading-[1.45] font-light">
               Every meetup, workshop and conference in San Antonio tech, on one
               calendar. Put it in your own calendar so new events show up on
-              their own, and find the people behind them on Discord.
+              their own, and follow DEVSA wherever you already are: one channel for
+              every group.
             </p>
           </motion.div>
 
@@ -137,21 +150,29 @@ export function StayConnected() {
               </span>
             </div>
 
-            <a
-              href={DISCORD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#5865F2]/10 text-[#5865F2]">
-                <DiscordIcon className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-base font-semibold text-gray-900">Join the Discord</span>
-                <span className="block text-sm text-gray-500">Where the organizers and the community talk</span>
-              </span>
-              <ArrowUpRight className="h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
+            {/* One card, a row per channel: following DEVSA on any of them reaches every group. */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+              <span className="block text-base font-semibold text-gray-900">Follow DEVSA</span>
+              <span className="block text-sm text-gray-500">One channel for every group, wherever you already are</span>
+              <ul className="mt-3 divide-y divide-gray-100">
+                {CHANNELS.map(({ Icon, ...c }) => (
+                  <li key={c.name}>
+                    <a
+                      href={c.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => track("channel_click", { channel: c.name.toLowerCase(), from: "buildingtogether" })}
+                      className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-gray-50"
+                    >
+                      <Icon className="h-5 w-5 shrink-0 text-gray-900" />
+                      <span className="text-sm font-semibold text-gray-900">{c.name}</span>
+                      <span className="ml-auto min-w-0 truncate font-mono text-xs text-gray-500 group-hover:text-gray-700">{c.handle}</span>
+                      <ArrowUpRight className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </motion.div>
         </div>
       </div>
