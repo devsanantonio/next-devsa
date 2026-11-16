@@ -187,6 +187,9 @@ body:not(.idle) #hud{opacity:1}
 
 /* the year's four rooms */
 /* the groups' 2026: four cards, each event in its own look */
+/* a spotlight's group logo, in the corner DEVSA's mark holds elsewhere */
+.corner{position:absolute;left:140px;top:56px;height:110px;display:flex;align-items:center;gap:22px;z-index:8}
+.corner img{height:100%;width:auto;display:block}
 .yr{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:50px}
 .yc{border:1px solid var(--line);background:var(--card);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
 .yc .v{position:relative;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -246,7 +249,7 @@ body:not(.idle) #hud{opacity:1}
    the alt logo's light tabs vanish on paper. */
 .slide.vc{background:#f8edcc;color:#20180c}
 .vc-dino{position:absolute;right:90px;top:330px;width:620px;filter:drop-shadow(0 30px 0 rgba(32,24,12,.12))}
-.vc-copy{position:absolute;left:140px;top:190px;width:1080px}
+.vc-copy{position:absolute;left:140px;top:230px;width:1080px}
 .vc-eyebrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#8c3914}
 .vc-wm{margin-top:40px;display:flex;align-items:center;white-space:nowrap;line-height:.9}
 .vc-wm .v{font-family:"Luckiest Guy",system-ui;font-size:176px;color:#1e6016;text-shadow:7px 7px 0 #f5c800,11px 11px 0 #20180c;transform:rotate(-1.5deg);display:inline-block}
@@ -264,7 +267,7 @@ body:not(.idle) #hud{opacity:1}
 .rh-pin{position:absolute;left:990px;top:40px;width:960px;height:1000px;transform:rotate(-5deg);filter:drop-shadow(0 22px 28px rgba(0,0,0,.35))}
 .rh-pin .paper{position:absolute;inset:0;width:100%;height:100%}
 .rh-pin .stamp{position:absolute;left:20%;top:21%;width:60%;transform:rotate(4deg)}
-.rh-secret{position:absolute;left:120px;top:40px;width:230px;transform:rotate(-10deg);opacity:.9}
+.rh-secret{position:absolute;left:300px;top:40px;width:200px;transform:rotate(-10deg);opacity:.9}
 .rh-copy{position:absolute;left:140px;top:290px;width:880px}
 .rh-eyebrow{font-family:Manuale,serif;font-weight:700;font-size:28px;letter-spacing:.14em;text-transform:uppercase;color:#3b2a14}
 .rh-title{margin-top:24px;font-family:Manuale,serif;font-weight:800;font-size:112px;line-height:.95;letter-spacing:-.015em;color:#141414;white-space:nowrap}
@@ -506,21 +509,14 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- Spotlight 01 · Geeks && {...}: the org, then AI April -->
-  <section class="slide" data-mark="off">
-    <div class="org">
-      <div class="discs in" style="--i:0"><div class="disc"><img src="assets/logos/g12.png" alt=""></div></div>
-      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 01</span><h2>Geeks &amp;&amp; {...}</h2></div>
-    </div>
-  </section>
   <!-- AI April: laid out like RowdyCyberCon's slide, with AI April's own wordmark disc in place of a logo disc -->
   <section class="slide" data-mark="off">
-    <!-- Geeks && {...}'s logo in the corner DEVSA's mark usually holds: AI April is theirs -->
-    <img class="in" src="assets/logos/g12.png" alt="Geeks && {...}" style="--i:0;position:absolute;left:140px;top:60px;width:150px">
+    <!-- Spotlight 01 · the group's logo in the corner DEVSA's mark usually holds, while its organizers introduce it and the event -->
+    <div class="corner in" style="--i:0"><img src="assets/logos/g12.png" alt="Geeks && {...}"></div>
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>the event</b></p>
+          <p class="eyebrow in" style="--i:0">Spotlight 01 · <b>Geeks &amp;&amp; {...}</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">AI April.</h2>
           <p class="when in" style="--i:2;--c:#9d86e8">April 3 → May 2, 2026</p>
           <!-- Geeks && {...}'s own line for AI April, from geeksand.tech/ai-april -->
@@ -539,17 +535,9 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- Spotlight 02 · ACM San Antonio and Greater Gaming Society: the orgs, then VelociCode 2 -->
-  <section class="slide" data-mark="off">
-    <div class="org">
-      <div class="discs two in" style="--i:0">
-        <div class="disc"><img src="assets/logos/g5.png" alt=""></div>
-        <div class="disc"><img src="assets/logos/g9.png" alt=""></div>
-      </div>
-      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 02</span><h2 style="font-size:76px">ACM San Antonio <span class="mute">&amp;</span> Greater Gaming Society</h2></div>
-    </div>
-  </section>
-  <section class="slide vc">
+  <!-- Spotlight 02 · VelociCode 2, with ACM San Antonio's and Greater Gaming Society's logos (GGS's white mark inked black on the paper) -->
+  <section class="slide vc" data-mark="off">
+    <div class="corner in" style="--i:0"><img src="assets/logos/g5.png" alt="ACM San Antonio"><img src="assets/logos/g9.png" alt="Greater Gaming Society" style="filter:brightness(0);height:70%"></div>
     <img class="vc-dino in" src="assets/logos/velocicode-dino.png" alt="VelociCode's origami dino" style="--i:1">
     <div class="vc-copy">
       <p class="vc-eyebrow in" style="--i:0">★ Spotlight 02 · Expedition 02 ★</p>
@@ -560,15 +548,10 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- Spotlight 03 · ACM UTSA: the org, then RowdyHacks and RowdyCyberCon -->
-  <section class="slide" data-mark="off">
-    <div class="org">
-      <div class="discs in" style="--i:0"><div class="disc"><img src="assets/logos/g2.png" alt=""></div></div>
-      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 03</span><h2>ACM UTSA</h2><p class="lede" style="margin-top:22px"><span class="mute" style="font-size:52px">Two rooms, run by students.</span></p></div>
-    </div>
-  </section>
   <!-- RowdyHacks XII, in its own brand: see .slide.rh -->
   <section class="slide rh" data-mark="off">
+    <!-- Spotlight 03 · ACM UTSA's logo in the corner, TOP SECRET stamped beside it -->
+    <div class="corner in" style="--i:0"><img src="assets/logos/g2.png" alt="ACM UTSA"></div>
     <div class="rh-pin in" style="--i:2"><img class="paper" src="assets/rowdyhacks/paper.webp" alt=""><img class="stamp" src="assets/rowdyhacks/stamp.webp" alt="RowdyHacks"></div>
     <img class="rh-secret in" src="assets/rowdyhacks/top-secret.svg" alt="" style="--i:3">
     <div class="rh-copy">
@@ -583,6 +566,7 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- RowdyCyberCon: its own line and date, from rowdycybercon.org -->
   <section class="slide" data-mark="off">
+    <div class="corner in" style="--i:0"><img src="assets/logos/g2.png" alt="ACM UTSA"></div>
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
@@ -596,15 +580,10 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- Spotlight 04 · Geekdom: the org, then SA Startup + Tech Week -->
-  <!-- Confirm with Geekdom before tape day: how it wants SA Startup + Tech Week described, and its wordmark on screen. -->
+  <!-- Spotlight 04 · SA Startup + Tech Week, with Geekdom's wordmark in the corner.
+       Confirm with Geekdom before tape day: how it wants SA Startup + Tech Week described, and its wordmark on screen. -->
   <section class="slide" data-mark="off">
-    <div class="org">
-      <img class="wordmark in" src="assets/marks/geekdom-wordmark-red.svg" alt="" style="--i:0;max-height:240px">
-      <div class="orgname in" style="--i:1"><span class="eyebrow">Spotlight 04</span><h2>Geekdom</h2></div>
-    </div>
-  </section>
-  <section class="slide">
+    <div class="corner in" style="--i:0"><img src="assets/marks/geekdom-wordmark-red.svg" alt="Geekdom" style="height:100%"></div>
     <div class="media dim"><img src="assets/photos/sastw-room-full.webp" alt="A full room at long tables during a Startup + Tech Week session"></div>
     <div class="conf fg" style="top:300px;--c:var(--teal)">
       <img class="wm in" src="assets/marks/sastw-white.png" alt="SA Startup + Tech Week" style="--i:0;max-width:620px">
