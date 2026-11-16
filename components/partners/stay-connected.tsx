@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react"
 import Link from "next/link"
-import { ArrowUpRight, CalendarDays, CalendarPlus } from "lucide-react"
+import { ArrowUpRight, AtSign, CalendarDays, CalendarPlus } from "lucide-react"
 import { GoogleCalendarIcon, AppleCalendarIcon, OutlookIcon } from "@/components/icons/calendar-icons"
 import { DiscordIcon, InstagramIcon, LinkedInIcon, TwitterIcon, YouTubeIcon } from "@/components/icons/social-icons"
 import { track } from "@vercel/analytics"
@@ -150,28 +150,33 @@ export function StayConnected() {
               </span>
             </div>
 
-            {/* One card, a row per channel: following DEVSA on any of them reaches every group. */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-              <span className="block text-base font-semibold text-gray-900">Follow DEVSA</span>
-              <span className="block text-sm text-gray-500">One channel for every group, wherever you already are</span>
-              <ul className="mt-3 divide-y divide-gray-100">
+            {/* Built like "Add it to your calendar" above it, icon tile, title and a row of buttons indented
+                under the title, so the column's three cards share one left edge. One row of icons, not a row
+                per channel: listing each handle made this the busiest card in the column. */}
+            <div className="flex flex-wrap items-start gap-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-900">
+                <AtSign className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-semibold text-gray-900">Follow DEVSA</span>
+                <span className="block text-sm text-gray-500">@devsatx, wherever you already are</span>
+              </span>
+              <span className="flex basis-full flex-wrap gap-2 sm:-mt-1 sm:pl-[3.75rem]">
                 {CHANNELS.map(({ Icon, ...c }) => (
-                  <li key={c.name}>
-                    <a
-                      href={c.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => track("channel_click", { channel: c.name.toLowerCase(), from: "buildingtogether" })}
-                      className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-gray-50"
-                    >
-                      <Icon className="h-5 w-5 shrink-0 text-gray-900" />
-                      <span className="text-sm font-semibold text-gray-900">{c.name}</span>
-                      <span className="ml-auto min-w-0 truncate font-mono text-xs text-gray-500 group-hover:text-gray-700">{c.handle}</span>
-                      <ArrowUpRight className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </a>
-                  </li>
+                  <a
+                    key={c.name}
+                    href={c.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`DEVSA on ${c.name}`}
+                    title={`${c.name} · ${c.handle}`}
+                    onClick={() => track("channel_click", { channel: c.name.toLowerCase(), from: "buildingtogether" })}
+                    className="flex h-9 w-11 items-center justify-center rounded-lg border border-gray-200 text-gray-900 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
                 ))}
-              </ul>
+              </span>
             </div>
           </motion.div>
         </div>

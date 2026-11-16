@@ -1,6 +1,5 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowUpRight } from "lucide-react"
 import { groupsByTopic } from "@/lib/community-topics"
 import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
 
@@ -17,9 +16,9 @@ import { logoOnLight, logoSrcOnLight } from "@/lib/logo-invert"
  *
  * It used to be a heading one step below the site's ramp and columns of underlined links, which read as a
  * sitemap under a branded wall. Now it speaks the marketing idiom (the sans eyebrow, the full h2 ramp with
- * its light italic clause) and each topic is a card in the site's shape, its groups shown with their logos
- * the way the wall shows them. The count in each card's corner takes the brand's three colors in turn, each
- * darkened to clear 4.5:1 on the card's gray-50 (the stock teal and orange measure 2.5 and 2.4 there).
+ * its light italic clause), and each topic is a row with its groups as logo chips. (A card per topic, a group
+ * per line, was tried first and ran three screens long; rows keep it to about one line a topic.) The count beside each topic takes the brand's three colors in turn, each
+ * darkened to clear 4.5:1 on white (the stock teal and orange measure about 2.5 there).
  */
 
 const BRAND = ["#007a73", "#c4214f", "#b45400"]
@@ -45,51 +44,49 @@ export function GroupsByTopic({ groups, logos = [] }: { groups: Group[]; logos?:
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 md:mt-14 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+        {/* A row per topic, its groups as chips that wrap: about one line each, where the cards it replaced
+            stacked a group per line and ran three screens. */}
+        <dl className="mt-10 border-t border-gray-200 md:mt-14">
           {topics.map(([topic, gs], i) => (
-            <div key={topic} className="flex h-full flex-col rounded-2xl border border-gray-200 bg-gray-50 p-6">
-              <div className="flex items-baseline justify-between gap-4">
-                <h3 className="text-xl font-black tracking-[-0.01em] text-gray-900 md:text-2xl">{topic}</h3>
-                <span className="shrink-0 font-mono text-xs uppercase tracking-widest" style={{ color: BRAND[i % 3] }}>
+            <div key={topic} className="grid gap-2.5 border-b border-gray-200 py-4 md:grid-cols-[16rem_1fr] md:gap-8 md:py-5">
+              <dt className="flex items-baseline justify-between gap-4 md:block">
+                <span className="block text-lg font-black tracking-[-0.01em] text-gray-900 md:text-xl">{topic}</span>
+                <span className="font-mono text-xs uppercase tracking-widest md:mt-1 md:block" style={{ color: BRAND[i % 3] }}>
                   {gs.length} {gs.length === 1 ? "group" : "groups"}
                 </span>
-              </div>
-              <ul className="mt-5 space-y-1">
-                {gs.map((g) => {
-                  const logo = logoFor.get(g.id)
-                  return (
-                    <li key={g.id}>
-                      <Link
-                        href={`/buildingtogether/${g.id}`}
-                        className="group/row -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-white"
-                      >
-                        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white">
-                          {logo ? (
-                            <Image
-                              src={logoSrcOnLight(logo, logo.logo)}
-                              alt=""
-                              fill
-                              unoptimized
-                              sizes="36px"
-                              className={`object-contain p-1.5 ${logoOnLight(logo)}`}
-                            />
-                          ) : null}
-                        </span>
-                        <span className="min-w-0 flex-1 text-base font-medium leading-snug text-gray-800 group-hover/row:text-gray-900">
+              </dt>
+              <dd>
+                <ul className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {gs.map((g) => {
+                    const logo = logoFor.get(g.id)
+                    return (
+                      <li key={g.id}>
+                        <Link
+                          href={`/buildingtogether/${g.id}`}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white py-0.5 pl-0.5 pr-2.5 text-[13px] font-medium sm:gap-2 sm:py-1 sm:pl-1 sm:pr-3.5 sm:text-sm text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          <span className="relative h-6 w-6 shrink-0 sm:h-7 sm:w-7 overflow-hidden rounded-full border border-gray-100 bg-white">
+                            {logo ? (
+                              <Image
+                                src={logoSrcOnLight(logo, logo.logo)}
+                                alt=""
+                                fill
+                                unoptimized
+                                sizes="28px"
+                                className={`object-contain p-1 ${logoOnLight(logo)}`}
+                              />
+                            ) : null}
+                          </span>
                           {g.name.trim()}
-                        </span>
-                        <ArrowUpRight
-                          aria-hidden
-                          className="h-4 w-4 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover/row:opacity-100"
-                        />
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   )
