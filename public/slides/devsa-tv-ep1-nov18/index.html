@@ -105,8 +105,26 @@ body:not(.idle) #hud{opacity:1}
 .fg{position:relative;z-index:2}
 
 /* opener */
-.opener{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:70px}
-.opener img{width:520px}
+.pyr{position:absolute;inset:0;width:100%;height:100%}
+.op-meta{position:absolute;left:124px;top:116px;font-family:"Geist Mono",monospace;font-weight:500;font-size:42px;line-height:1.32;text-transform:uppercase;letter-spacing:.02em}
+.op-meta .pixel{text-transform:none;line-height:1.1;margin-bottom:18px}
+.op-meta .dim{color:rgba(255,255,255,.55)}
+.op-mark{position:absolute;left:124px;bottom:120px;width:250px}
+/* the four things, a page each: words left, the real thing right */
+.does-copy{position:absolute;left:140px;top:250px;width:700px}
+.does-copy .h2{font-size:100px;margin-top:30px}
+.does-copy .lede{margin-top:44px;font-size:38px}
+.does-copy .url{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.02em;color:var(--c,var(--teal))}
+.shot{position:absolute;left:920px;top:150px;width:880px;border-radius:18px;overflow:hidden;border:1px solid #2c2c2c;background:#fff;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.shot .bar{display:flex;align-items:center;gap:10px;height:46px;padding:0 18px;background:#161616;border-bottom:1px solid #2c2c2c}
+.shot .bar i{width:13px;height:13px;border-radius:50%;background:#3a3a3a}
+.shot .bar span{margin-left:14px;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.6)}
+.shot img{display:block;width:100%}
+.post{position:absolute;left:1080px;top:110px;height:860px;border-radius:18px;border:1px solid #2c2c2c;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:110px;padding-top:40px;border-top:2px solid #262626}
+.chapters span{display:block;font-family:"Geist Mono",monospace;font-size:28px;color:var(--c)}
+.chapters b{display:block;margin-top:12px;font-size:56px;font-weight:900;letter-spacing:-.015em}
+.stk{position:absolute;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6))}
 .pixel{font-family:"Geist Pixel",monospace;font-size:72px;color:#fff;letter-spacing:.04em}
 
 /* what DEVSA gives */
@@ -248,12 +266,16 @@ body:not(.idle) #hud{opacity:1}
 <div id="stage">
   <img id="mark" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
 
-  <!-- 0 · Opener: the mark, and the episode. (The desk TV carries the stickers.) -->
-  <section class="slide" data-mark="off">
-    <div class="opener">
-      <img class="in" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA" style="--i:0">
-      <span class="pixel in" style="--i:1">Episode 01</span>
+  <!-- 0 · Opener: the DEVSA TV ship-style card (~/Downloads/devsa-tv-graphics/ship-style): a pyramid of pixel windows,
+       each the DEVSA mark in pixels, built row by row with the top one lit in the brand colors last. -->
+  <section class="slide" data-mark="off" id="opener">
+    <canvas class="pyr" id="pyr" width="1920" height="1080"></canvas>
+    <div class="op-meta">
+      <p class="pixel in" style="--i:0;font-size:104px">Episode 01</p>
+      <p class="in" style="--i:1">San Antonio&rsquo;s learners &amp; builders</p>
+      <p class="in dim" style="--i:2">Public access TV &middot; 12.2026</p>
     </div>
+    <img class="op-mark in" style="--i:3" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
   </section>
 
   <!-- ===================== Meet DEVSA, in DEVSA's own words ===================== -->
@@ -273,24 +295,9 @@ body:not(.idle) #hud{opacity:1}
        directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
   <section class="slide" id="netSlide">
     <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
-    <div class="pad" style="top:200px;right:auto;width:820px">
+    <div class="pad" style="top:270px;right:auto;width:820px">
       <p class="eyebrow in" style="--i:0">This is DEVSA</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:50px;font-size:38px">A shared calendar every group publishes to, a public directory anyone can search, one channel to follow, and a few rooms a year where all of it meets.</p>
-    </div>
-  </section>
-
-  <!-- 3 · The four things -->
-  <section class="slide">
-    <div class="pad" style="top:250px">
-      <p class="eyebrow in" style="--i:0">What DEVSA does</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px">Find your people. <span class="mute">Build your future.</span></h2>
-      <div class="cardgrid in" style="--i:2;margin-top:70px">
-        <div class="card" style="--c:var(--teal)"><span class="n">01</span><h3>The calendar</h3><p>Every group publishes to it.</p></div>
-        <div class="card" style="--c:var(--pink)"><span class="n">02</span><h3>The directory</h3><p>Public. Anyone can search it.</p></div>
-        <div class="card" style="--c:var(--orange)"><span class="n">03</span><h3>The channel</h3><p>One to follow, for the groups that have none of their own.</p></div>
-        <div class="card" style="--c:var(--teal)"><span class="n">04</span><h3>The rooms</h3><p>A few a year, where all of it meets.</p></div>
-      </div>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:112px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
     </div>
   </section>
 
@@ -315,12 +322,65 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
+
+
+  <!-- What DEVSA does: a title card, then a page each (the rooms are the bill that follows) -->
+  <section class="slide">
+    <img class="stk in" src="assets/stickers/hello.webp" alt="" style="--i:2;right:130px;top:56px;width:440px;transform:rotate(-6deg)">
+    <div class="pad" style="top:300px">
+      <p class="eyebrow in" style="--i:0">What DEVSA does</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:136px">Find your people. <span class="mute">Build your future.</span></h2>
+      <div class="chapters in" style="--i:3">
+        <div style="--c:var(--teal)"><span>01</span><b>The calendar</b></div>
+        <div style="--c:var(--pink)"><span>02</span><b>The directory</b></div>
+        <div style="--c:var(--orange)"><span>03</span><b>The channel</b></div>
+        <div style="--c:var(--teal)"><span>04</span><b>The rooms</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 · The calendar: devsa.community/events as it looked on Nov 15 (December's meetups, the month view) -->
+  <section class="slide">
+    <div class="does-copy" style="--c:var(--teal)">
+      <p class="eyebrow in" style="--i:0">01 &middot; <b>The calendar</b></p>
+      <h2 class="h2 in" style="--i:1">Every group. <span class="mute">One calendar.</span></h2>
+      <!-- the calendar page's own line -->
+      <p class="lede in" style="--i:2">Python, Linux, .NET, AI, game dev, design, data, security, cloud. All 27 groups publish here.</p>
+      <p class="url in" style="--i:3">devsa.community/events</p>
+    </div>
+    <div class="shot in" style="--i:2"><div class="bar"><i></i><i></i><i></i><span>devsa.community/events</span></div><img src="assets/does/calendar.webp" alt="DEVSA's community calendar"></div>
+  </section>
+
+  <!-- 02 · The directory: Building Together's grid, the community groups' rows only (the partner rows below carry
+       logos, TVSA's among them, that aren't cleared for TV) -->
+  <section class="slide">
+    <div class="does-copy" style="--c:var(--pink)">
+      <p class="eyebrow in" style="--i:0">02 &middot; <b>The directory</b></p>
+      <h2 class="h2 in" style="--i:1">Every group, <span class="mute">in one place.</span></h2>
+      <!-- Building Together's own line -->
+      <p class="lede in" style="--i:2">Open any logo for what they do, when they meet, and how to join.</p>
+      <p class="url in" style="--i:3">devsa.community/buildingtogether</p>
+    </div>
+    <div class="shot in" style="--i:2;top:200px"><div class="bar"><i></i><i></i><i></i><span>devsa.community/buildingtogether</span></div><img src="assets/does/directory.webp" alt="DEVSA's directory of community groups"></div>
+  </section>
+
+  <!-- 03 · The channel: the Monday post DEVSA's Discord gets in #community-calendar (/api/og/week/social, the week of Nov 16) -->
+  <section class="slide">
+    <div class="does-copy" style="--c:var(--orange);width:820px">
+      <p class="eyebrow in" style="--i:0">03 &middot; <b>The channel</b></p>
+      <h2 class="h2 in" style="--i:1">One channel <span class="mute">to follow.</span></h2>
+      <p class="lede in" style="--i:2">For the groups that have none of their own. Every Monday, DEVSA&rsquo;s Discord gets the week on the calendar.</p>
+      <p class="url in" style="--i:3">devsa.community/discord</p>
+    </div>
+    <img class="post in" style="--i:2" src="assets/does/channel.webp" alt="DEVSA's weekly calendar post">
+  </section>
+
   <!-- ===================== The rooms DEVSA runs: one slide per conference, in its own brand ===================== -->
 
   <!-- 5 · The bill -->
   <section class="slide">
     <div class="pad" style="top:250px">
-      <p class="eyebrow in" style="--i:0">The rooms</p>
+      <p class="eyebrow in" style="--i:0">04 &middot; <b>The rooms</b></p>
       <h2 class="h2 in" style="--i:1;margin-top:30px">A few rooms a year, <span class="mute">where all of it meets.</span></h2>
       <div class="bill in" style="--i:2">
         <img src="assets/conf/more-human-than-human-wordmark.svg" alt="More Human Than Human">
@@ -508,6 +568,7 @@ body:not(.idle) #hud{opacity:1}
   <!-- ===================== Your December ===================== -->
 
   <section class="slide">
+    <img class="stk in" src="assets/stickers/ornament.webp" alt="" style="--i:3;right:120px;top:36px;width:190px;transform:rotate(8deg)">
     <div class="pad" style="top:210px;left:110px;right:110px">
       <p class="eyebrow in" style="--i:0">On the community calendar</p>
       <h2 class="h2 in" style="--i:1;margin-top:30px">Your December, <span class="mute">on the calendar.</span></h2>
@@ -519,6 +580,7 @@ body:not(.idle) #hud{opacity:1}
   <!-- ===================== Close ===================== -->
 
   <section class="slide">
+    <img class="stk in" src="assets/stickers/love.webp" alt="I love SATX" style="--i:3;right:150px;top:70px;width:380px;transform:rotate(6deg)">
     <div class="pad" style="top:220px">
       <p class="eyebrow in" style="--i:0">Thanks for watching</p>
       <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:124px">Find your people. <span class="mute">Build your future.</span></h2>
@@ -540,12 +602,12 @@ const CONFIG = {
   // Your December: one card per group, in this order. Events marked * are on the community calendar
   // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
   // until then the card says it's coming to the calendar, rather than inventing a date.
-  december: [
-    { group: "Alamo City Locksport", logo: "g17-2026.png", title: "", when: "", where: "" },
-    { group: "ACM San Antonio", logo: "g5.png", title: "Confidential Computing Leveraging Bootable Containers", when: "Wed Dec 9 · 6 PM", where: "Geekdom" }, // *
-    { group: "Datanauts", logo: "g16.png", title: "Holiday Bash 2026", when: "Thu Dec 10 · 6:30 PM", where: "Little Woodrow's at Braun" }, // *
-    { group: "Geeks && {...}", logo: "g12.png", title: "", when: "", where: "" },
-    { group: "Google Developer Group", logo: "g11.png", title: "", when: "", where: "" },
+  december: [   // from devsa.community/events, Nov 15, in date order (times in San Antonio time)
+    { group: "Geeks && {...}", logo: "g12.png", title: "Geeks&&Drinks", when: "Tue Dec 1 · 6 PM", where: "Idle Beer Hall & Brewery" },
+    { group: "Alamo City Locksport", logo: "g17-2026.png", title: "December Meetup", when: "Sat Dec 5 · 7 PM", where: "Flying Saucer, Huebner Rd" },
+    { group: "ACM San Antonio", logo: "g5.png", title: "Confidential Computing Leveraging Bootable Containers", when: "Wed Dec 9 · 6 PM", where: "Geekdom" },
+    { group: "Datanauts", logo: "g16.png", title: "Holiday Bash 2026", when: "Thu Dec 10 · 6:30 PM", where: "Little Woodrow's at Braun" },
+    { group: "Google Developer Group", logo: "g11.png", title: "Christmas Build Jam", when: "Fri Dec 18 · 6 PM", where: "Geekdom" },
   ],
   // The groups wall: the directory's groups with a logo in assets/wall (November 15; ACM TAMUSA has no file yet).
   wall: ["g0.png", "g1.png", "g2.png", "g3.png", "g4.png", "g5.png", "g6.png", "g7.png", "g8.png", "g9.png", "g10.png", "g11.png", "g12.png",
@@ -558,6 +620,34 @@ const stage = $("#stage"), slides = $$(".slide")
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
 $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+// ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
+;(function pyramid() {
+  const c = $("#pyr"), sl = $("#opener"); if (!c) return
+  const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200"
+  function win(x, y, px, lit, a) {
+    const W = 22, H = 18
+    const frame = lit ? "#eeeeee" : "#3a3a3a", body = lit ? "#111" : "#161616", face = lit ? "#eeeeee" : "#9a9a9a"
+    const tabs = lit ? [TEAL, PINK, ORANGE] : ["#555", "#555", "#555"]
+    const P = (col, cx, cy, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x + cx * px, y + cy * px, w * px, h * px) }
+    g.globalAlpha = a
+    P(frame, 1, 0, W - 2, H); P(frame, 0, 1, W, H - 2); P(body, 1, 4, W - 2, H - 5)
+    P(tabs[0], 1, 1, 6, 2); P(tabs[1], 8, 1, 6, 2); P(tabs[2], 15, 1, 6, 2)
+    for (const [cx, cy] of [[4, 6], [5, 7], [6, 8], [7, 9], [6, 10], [5, 11], [4, 12]]) P(face, cx, cy, 2, 1)
+    P(face, 11, 12, 7, 1); g.globalAlpha = 1
+  }
+  const px = 9, w = 22 * px, h = 18 * px, gap = 24, cx = 1360, top = 170, wins = []
+  for (let r = 3; r >= 0; r--) { const n = r + 1, rowW = n * w + (n - 1) * gap; for (let i = 0; i < n; i++) wins.push([Math.round(cx - rowW / 2 + i * (w + gap)), top + r * (h + gap), r === 0]) }
+  let t0 = null
+  function draw(ms) {
+    if (t0 === null) t0 = ms
+    const t = ms - t0; g.clearRect(0, 0, 1920, 1080)
+    wins.forEach(([x, y, lit], k) => { const a = Math.max(0, Math.min(1, (t - 400 - k * 110 - (lit ? 350 : 0)) / 300)); if (a > 0) win(x, y, px, lit, a) })
+    if (t < 400 + wins.length * 110 + 700) requestAnimationFrame(draw)
+  }
+  const start = () => { t0 = null; requestAnimationFrame(draw) }
+  new MutationObserver(() => { if (sl.classList.contains("on")) start() }).observe(sl, { attributes: true, attributeFilter: ["class"] })
+  if (sl.classList.contains("on")) start()
+})()
 // ---------- the community network (the roundtable deck's geometry): CONFIG.wall's groups, each linked to DEVSA ----------
 ;(function network() {
   const host = $("#net"), slide = $("#netSlide"); if (!host) return
