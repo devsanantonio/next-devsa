@@ -164,7 +164,7 @@ body:not(.idle) #hud{opacity:1}
 .bill img{display:block;max-height:120px;max-width:680px}
 
 /* one conference */
-.conf{position:absolute;left:140px;top:170px;width:860px}
+.conf{position:absolute;left:140px;top:330px;width:860px}
 .conf .wm{display:block;max-height:170px;max-width:800px}
 .conf .lede{margin-top:56px}
 .conf .when{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
@@ -414,25 +414,22 @@ body:not(.idle) #hud{opacity:1}
     </div>
   </section>
 
-  <!-- 6 · More Human Than Human (its line, date and credit from data/conferences.ts) -->
+  <!-- 6 · More Human Than Human (its line from data/conferences.ts) -->
   <section class="slide">
     <div class="media"><video src="assets/conf/more-human-head.mp4" poster="assets/conf/more-human-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#ff9900">
       <img class="wm in" src="assets/conf/more-human-than-human-wordmark.svg" alt="More Human Than Human" style="--i:0">
       <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for developers and engineers building software factories and agent harnesses.</p>
-      <p class="when in" style="--i:2">February 28, 2026 · Geekdom</p>
-      <p class="with in" style="--i:3">Powered by DEVSA and 434 MEDIA</p>
     </div>
   </section>
 
   <!-- 7 · The Model -->
   <section class="slide">
-    <div class="media dim"><img src="assets/photos/the-model-room.webp" alt="Three panellists on stage at The Model, microphones in hand, in front of the event's lighting rig"></div>
+    <!-- The Model page's lead photo (components/the-model/2026/room.tsx), with its caption -->
+    <div class="media dim"><img src="assets/photos/the-model-stage.webp" alt="A speaker on stage at The Model, between two screens" style="object-position:50% 40%"></div>
     <div class="conf fg" style="--c:#C0B4FC">
       <img class="wm in" src="assets/conf/the-model-wordmark.svg" alt="The Model" style="--i:0">
       <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for creators, creatives, founders and builders.</p>
-      <p class="when in" style="--i:2">September 28, 2026 · Geekdom</p>
-      <p class="with in" style="--i:3">Powered by The Creative Futures, Tech Bloc and DEVSA</p>
     </div>
   </section>
 
@@ -441,9 +438,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/padlock-loop.mp4" poster="assets/conf/padlock-loop-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#00ff66">
       <img class="wm in" src="assets/conf/access-granted-wordmark.svg" alt="Access Granted" style="--i:0">
-      <p class="lede in" style="--i:1">Every other room that week was people talking about technology. This one was people taking it apart.</p>
-      <p class="when in" style="--i:2">September 30, 2026 · Geekdom</p>
-      <p class="with in" style="--i:3">With BSides San Antonio, DEF CON Group San Antonio, San Antonio Hacker Association, UTSA CyberJedis and Alamo City Locksport</p>
+      <!-- the Access Granted page's own line -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s security conference. Every other room is people talking about technology. This one is people taking it apart.</p>
     </div>
   </section>
 
@@ -452,9 +448,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/mascot-clip.mp4" poster="assets/conf/mascot-video-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#4a90d9">
       <img class="wm in" src="assets/conf/pysa-wordmark.svg" alt="PySanAntonio" style="--i:0;max-height:140px">
-      <p class="lede in" style="--i:1">The city&rsquo;s Python conference, back for a second year: an afternoon of learning, networking and community building.</p>
-      <p class="when in" style="--i:2">October 2, 2026 · Geekdom</p>
-      <p class="with in" style="--i:3">With Alamo Python and the PyTexas Foundation</p>
+      <!-- the PySanAntonio page's own words -->
+      <p class="lede in" style="--i:1">San Antonio&rsquo;s Python conference: an afternoon of talks, learning, networking and community building.</p>
     </div>
   </section>
 
