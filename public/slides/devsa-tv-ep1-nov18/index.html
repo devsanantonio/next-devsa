@@ -120,7 +120,18 @@ body:not(.idle) #hud{opacity:1}
 .shot .bar i{width:13px;height:13px;border-radius:50%;background:#3a3a3a}
 .shot .bar span{margin-left:14px;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.6)}
 .shot img{display:block;width:100%}
-.post{position:absolute;left:1080px;top:110px;height:860px;border-radius:18px;border:1px solid #2c2c2c;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.chan{position:absolute;left:940px;top:170px;width:860px}
+.chan .web{display:flex;align-items:center;gap:40px;padding:40px 44px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
+.chan .web img{width:150px;flex:none}
+.chan .web .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.chan .web b{display:block;margin-top:10px;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.chan .web .d{display:block;margin-top:14px;font-size:28px;color:rgba(255,255,255,.72)}
+.chan ul{list-style:none;margin-top:22px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.chan li{display:flex;align-items:center;gap:28px;padding:22px 40px}
+.chan li + li{border-top:1px solid var(--line)}
+.chan li img{width:44px;height:44px}
+.chan li b{font-size:38px;font-weight:900;letter-spacing:-.01em}
+.chan li span{margin-left:auto;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
 .chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:110px;padding-top:40px;border-top:2px solid #262626}
 .chapters span{display:block;font-family:"Geist Mono",monospace;font-size:28px;color:var(--c)}
 .chapters b{display:block;margin-top:12px;font-size:56px;font-weight:900;letter-spacing:-.015em}
@@ -364,15 +375,27 @@ body:not(.idle) #hud{opacity:1}
     <div class="shot in" style="--i:2;top:200px"><div class="bar"><i></i><i></i><i></i><span>devsa.community/buildingtogether</span></div><img src="assets/does/directory.webp" alt="DEVSA's directory of community groups"></div>
   </section>
 
-  <!-- 03 · The channel: the Monday post DEVSA's Discord gets in #community-calendar (/api/og/week/social, the week of Nov 16) -->
+  <!-- 03 · The channel: DEVSA is the one to follow, wherever someone already is. The website leads, as the source
+       of truth, because not everyone uses the others. Handles from components/footer.tsx; icons from simple-icons. -->
   <section class="slide">
-    <div class="does-copy" style="--c:var(--orange);width:820px">
+    <div class="does-copy" style="--c:var(--orange);width:740px">
       <p class="eyebrow in" style="--i:0">03 &middot; <b>The channel</b></p>
       <h2 class="h2 in" style="--i:1">One channel <span class="mute">to follow.</span></h2>
-      <p class="lede in" style="--i:2">For the groups that have none of their own. Every Monday, DEVSA&rsquo;s Discord gets the week on the calendar.</p>
-      <p class="url in" style="--i:3">devsa.community/discord</p>
+      <p class="lede in" style="--i:2">It starts on the web, because not everyone is on social media. If you are, DEVSA is the one to follow. It connects you to the whole community.</p>
     </div>
-    <img class="post in" style="--i:2" src="assets/does/channel.webp" alt="DEVSA's weekly calendar post">
+    <div class="chan in" style="--i:2">
+      <div class="web">
+        <img src="assets/marks/devsa-alt-logo.svg" alt="">
+        <div><span class="k">Start here</span><b>devsa.community</b><span class="d">Every event and every group, always current</span></div>
+      </div>
+      <ul>
+        <li><img src="assets/channels/discord.svg" alt=""><b>Discord</b><span>devsa.community/discord</span></li>
+        <li><img src="assets/channels/instagram.svg" alt=""><b>Instagram</b><span>@devsatx</span></li>
+        <li><img src="assets/channels/linkedin.svg" alt=""><b>LinkedIn</b><span>/company/devsa</span></li>
+        <li><img src="assets/channels/x.svg" alt=""><b>X</b><span>@devsatx</span></li>
+        <li><img src="assets/channels/youtube.svg" alt=""><b>YouTube</b><span>@devsatx</span></li>
+      </ul>
+    </div>
   </section>
 
   <!-- ===================== The rooms DEVSA runs: one slide per conference, in its own brand ===================== -->
