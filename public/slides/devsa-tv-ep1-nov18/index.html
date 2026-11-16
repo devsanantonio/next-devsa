@@ -56,6 +56,7 @@
 @font-face{font-family:Geist;font-weight:900;src:url(assets/fonts/Geist-Black.woff2) format("woff2")}
 @font-face{font-family:"Geist Mono";font-weight:500;src:url(assets/fonts/GeistMono-Medium.woff2) format("woff2")}
 @font-face{font-family:"Geist Mono";font-weight:700;src:url(assets/fonts/GeistMono-Bold.woff2) format("woff2")}
+@font-face{font-family:Oswald;font-weight:700;src:url(assets/fonts/Oswald-700.ttf) format("truetype")}
 @font-face{font-family:"Geist Pixel";src:url(assets/fonts/GeistPixel-Square.woff2) format("woff2")}
 @font-face{font-family:"Luckiest Guy";src:url(assets/fonts/LuckiestGuy-latin.woff2) format("woff2")}
 @font-face{font-family:"Rubik Dirt";src:url(assets/fonts/RubikDirt-latin.woff2) format("woff2")}
@@ -162,11 +163,19 @@ body:not(.idle) #hud{opacity:1}
 /* the four conferences, as a bill */
 .bill{display:grid;grid-template-columns:repeat(2,1fr);gap:80px 120px;align-items:center;justify-items:start;margin-top:90px}
 .bill img{display:block;max-height:120px;max-width:680px}
+/* The Model's wordmark as the event page draws it (ModelWordmark, components/brand/the-model.tsx): Geist Mono
+   medium, uppercase, tight, THE at white/85 and MODEL in a lavender selection that hugs the letters */
+/* Access Granted's wordmark as its page sets it (components/access-granted/2026/hero.tsx): Oswald bold, uppercase */
+.ag-wm{font-family:Oswald,sans-serif;font-weight:700;text-transform:uppercase;line-height:.9;letter-spacing:-.025em;color:#fff;white-space:nowrap}
+.ag-wm span{color:#00ff66}
+.tm-wm{font-family:"Geist Mono",monospace;font-weight:500;text-transform:uppercase;letter-spacing:-.025em;line-height:.95;color:rgba(255,255,255,.85);white-space:nowrap}
+.tm-wm span{background:#C0B4FC;color:#09090B;padding:0 .083em;margin-right:-.083em}
 
 /* one conference */
 .conf{position:absolute;left:140px;top:330px;width:860px}
 .conf .wm{display:block;max-height:170px;max-width:800px}
-.conf .lede{margin-top:56px}
+.conf .lede{margin-top:50px;font-size:38px}
+.conf .lede .hi{font-weight:400;color:#fff}
 .conf .when{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
 .conf .with{margin-top:16px;font-size:30px;color:rgba(255,255,255,.7);line-height:1.4}
 
@@ -407,8 +416,8 @@ body:not(.idle) #hud{opacity:1}
       <h2 class="h2 in" style="--i:1;margin-top:30px">A few rooms a year, <span class="mute">where all of it meets.</span></h2>
       <div class="bill in" style="--i:2">
         <img src="assets/conf/more-human-than-human-wordmark.svg" alt="More Human Than Human">
-        <img src="assets/conf/the-model-wordmark.svg" alt="The Model">
-        <img src="assets/conf/access-granted-wordmark.svg" alt="Access Granted">
+        <p class="tm-wm" style="font-size:84px" role="img" aria-label="The Model">The <span>Model</span></p>
+        <p class="ag-wm" style="font-size:96px"><span>Access</span> Granted</p>
         <img src="assets/conf/pysa-wordmark.svg" alt="PySanAntonio" style="max-height:130px">
       </div>
     </div>
@@ -419,7 +428,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/more-human-head.mp4" poster="assets/conf/more-human-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#ff9900">
       <img class="wm in" src="assets/conf/more-human-than-human-wordmark.svg" alt="More Human Than Human" style="--i:0">
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for developers and engineers building software factories and agent harnesses.</p>
+      <!-- word for word from /events/morehumanthanhuman (data/more-human/2026.ts MH_HOOK) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for developers and engineers: the people building software factories, agent harnesses and everything that runs on them. <b class="hi">When the code writes itself, the job is building what writes it.</b></p>
     </div>
   </section>
 
@@ -428,8 +438,9 @@ body:not(.idle) #hud{opacity:1}
     <!-- The Model page's lead photo (components/the-model/2026/room.tsx), with its caption -->
     <div class="media dim"><img src="assets/photos/the-model-stage.webp" alt="A speaker on stage at The Model, between two screens" style="object-position:50% 40%"></div>
     <div class="conf fg" style="--c:#C0B4FC">
-      <img class="wm in" src="assets/conf/the-model-wordmark.svg" alt="The Model" style="--i:0">
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for creators, creatives, founders and builders.</p>
+      <p class="tm-wm in" style="--i:0;font-size:120px" role="img" aria-label="The Model">The <span>Model</span></p>
+      <!-- word for word from /events/the-model (components/the-model/2026/hero.tsx) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s AI conference for creators, creatives, founders and builders. Cool vibes, great company, and a room full of people showing each other what comes next &mdash; the work itself, not a description of it.</p>
     </div>
   </section>
 
@@ -437,9 +448,9 @@ body:not(.idle) #hud{opacity:1}
   <section class="slide">
     <div class="media"><video src="assets/conf/padlock-loop.mp4" poster="assets/conf/padlock-loop-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#00ff66">
-      <img class="wm in" src="assets/conf/access-granted-wordmark.svg" alt="Access Granted" style="--i:0">
-      <!-- the Access Granted page's own line -->
-      <p class="lede in" style="--i:1">DEVSA&rsquo;s security conference. Every other room is people talking about technology. This one is people taking it apart.</p>
+      <p class="ag-wm in" style="--i:0;font-size:130px"><span>Access</span> Granted</p>
+      <!-- word for word from /events/access-granted (data/access-granted/2026.ts AG_POSITIONING, AG_ONE_LINER) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s security conference, built with San Antonio&rsquo;s hacker community. Every other room is people talking about technology. <b class="hi">This one is people taking it apart.</b></p>
     </div>
   </section>
 
@@ -448,8 +459,8 @@ body:not(.idle) #hud{opacity:1}
     <div class="media"><video src="assets/conf/mascot-clip.mp4" poster="assets/conf/mascot-video-poster.webp" muted loop playsinline preload="auto"></video></div>
     <div class="conf fg" style="--c:#4a90d9">
       <img class="wm in" src="assets/conf/pysa-wordmark.svg" alt="PySanAntonio" style="--i:0;max-height:140px">
-      <!-- the PySanAntonio page's own words -->
-      <p class="lede in" style="--i:1">San Antonio&rsquo;s Python conference: an afternoon of talks, learning, networking and community building.</p>
+      <!-- word for word from /events/pysanantonio (components/pysa/2026/hero.tsx) -->
+      <p class="lede in" style="--i:1">DEVSA&rsquo;s Python conference, for the people writing Python in San Antonio. Talks on agents, testing and what AI is doing to the craft, <b class="hi">and a round of Python Jeopardy, because it should still be fun.</b></p>
     </div>
   </section>
 
