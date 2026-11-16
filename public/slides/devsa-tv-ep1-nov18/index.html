@@ -190,6 +190,24 @@ body:not(.idle) #hud{opacity:1}
 /* a spotlight's group logo, in the corner DEVSA's mark holds elsewhere */
 .corner{position:absolute;left:140px;top:56px;height:110px;display:flex;align-items:center;gap:22px;z-index:8}
 .corner img{height:100%;width:auto;display:block}
+/* Patrick's talk, in the Software Factory Night frame */
+.slide.sf{background:#0a1a3d;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:48px 48px}
+.sf-copy{position:absolute;left:140px;top:150px;width:1640px}
+.sf-eye{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;letter-spacing:.16em;text-transform:uppercase;color:#6fd0e0}
+.sf-wm{margin-top:30px;font-weight:900;font-size:150px;line-height:.9;letter-spacing:-.04em;color:#f3f6fb}
+.sf-steps{display:flex;align-items:center;gap:20px;margin-top:56px}
+.sf-steps span{font-family:"Geist Mono",monospace;font-weight:700;font-size:34px;letter-spacing:.14em;text-transform:uppercase;color:#6fd0e0;border:2px solid rgba(111,208,224,.6);border-radius:12px;padding:16px 28px 14px}
+.sf-steps span.on{background:#6fd0e0;color:#0a1a3d;border-color:#6fd0e0}
+.sf-steps i{font-style:normal;font-family:"Geist Mono",monospace;font-size:30px;color:rgba(111,208,224,.7)}
+.sf-term{position:absolute;right:140px;bottom:190px;display:flex;align-items:stretch;gap:26px}
+.sf-opd{position:absolute;right:140px;top:150px;width:300px}
+.sf-term .win{width:760px;border:2px solid rgba(255,255,255,.14);border-radius:14px;background:#081430;padding:0 0 22px}
+.sf-term .bar{display:flex;gap:10px;padding:16px 20px;border-bottom:2px solid rgba(255,255,255,.1);margin-bottom:18px}
+.sf-term .bar b{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.28)}
+.sf-term p{font-family:"Geist Mono",monospace;font-weight:500;font-size:28px;color:#e8eef8;padding:4px 26px}
+.sf-term em{font-style:normal;color:#6fd0e0;margin-right:10px}
+.sf-who{position:absolute;left:140px;bottom:110px;font-family:"Geist Mono",monospace;font-weight:700;font-size:44px;letter-spacing:.08em;text-transform:uppercase;color:#f3f6fb}
+.sf-who span{color:#6fd0e0;margin:0 8px}
 .yr{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:50px}
 .yc{border:1px solid var(--line);background:var(--card);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
 .yc .v{position:relative;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -495,20 +513,21 @@ body:not(.idle) #hud{opacity:1}
   <!-- ===================== Community spotlight: ACM UTSA ===================== -->
 
   <!-- The spotlight opens on the group and its two events, each in its own look; its student leaders
-       introduce ACM UTSA over this slide, then each event over its own. -->
+       introduce ACM UTSA over this slide, then each event over its own. Framed as 2026 in review: by air
+       (December) both events have happened, and undated or unframed they'd read as upcoming. -->
   <section class="slide" data-mark="off">
     <div class="corner in" style="--i:0"><img src="assets/logos/g2.png" alt="ACM UTSA"></div>
     <div class="pad" style="top:200px">
-      <p class="eyebrow in" style="--i:0">Community spotlight</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">ACM UTSA. <span class="mute">Two rooms, run by students.</span></h2>
+      <p class="eyebrow in" style="--i:0">Community spotlight &middot; <b>2026 in review</b></p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">ACM UTSA&rsquo;s 2026. <span class="mute">Two rooms, run by students.</span></h2>
       <div class="yr in" style="--i:2;grid-template-columns:repeat(2,1fr);max-width:1240px">
         <div class="yc" style="--c:#ff8200">
           <div class="v" style="height:250px;background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover"><img src="assets/rowdyhacks/stamp.webp" alt="" style="height:80%"></div>
-          <div class="t"><b>RowdyHacks XII</b><span class="h">UTSA&rsquo;s annual hackathon</span><span class="m">October 3</span></div>
+          <div class="t"><b>RowdyHacks XII</b><span class="h">UTSA&rsquo;s annual hackathon</span><span class="m">Oct 3, 2026</span></div>
         </div>
         <div class="yc" style="--c:#ff8200">
           <div class="v" style="height:250px;background:#0b0b0b"><img src="assets/logos/rowdycybercon.png" alt="" style="height:72%"></div>
-          <div class="t"><b>RowdyCyberCon</b><span class="h">Student-led cybersecurity conference and capture the flag</span><span class="m">November 7</span></div>
+          <div class="t"><b>RowdyCyberCon</b><span class="h">Student-led cybersecurity conference and capture the flag</span><span class="m">Nov 7, 2026</span></div>
         </div>
       </div>
     </div>
@@ -523,7 +542,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="rh-pin in" style="--i:2"><img class="paper" src="assets/rowdyhacks/paper.webp" alt=""><img class="stamp" src="assets/rowdyhacks/stamp.webp" alt="RowdyHacks"></div>
     <img class="rh-secret in" src="assets/rowdyhacks/top-secret.svg" alt="" style="--i:3">
     <div class="rh-copy">
-      <p class="rh-eyebrow in" style="--i:0">Community spotlight · ACM UTSA</p>
+      <p class="rh-eyebrow in" style="--i:0">2026 in review · ACM UTSA</p>
       <h2 class="rh-title in" style="--i:1">RowdyHacks XII</h2>
       <p class="rh-when in" style="--i:2">October 3, 2026</p>
       <!-- ACM UTSA's own words, from rowdyhacks.org -->
@@ -538,7 +557,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="pad" style="top:120px">
       <div class="ev">
         <div>
-          <p class="eyebrow in" style="--i:0">Community spotlight · <b>ACM UTSA</b></p>
+          <p class="eyebrow in" style="--i:0">2026 in review · <b>ACM UTSA</b></p>
           <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">RowdyCyberCon.</h2>
           <p class="when in" style="--i:2;--c:var(--orange)">November 7, 2026 · UTSA downtown</p>
           <p class="lede in" style="--i:3;margin-top:30px">San Antonio&rsquo;s student-led cybersecurity conference and capture the flag.</p>
@@ -551,17 +570,23 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- ===================== Featured talk ===================== -->
 
-  <!-- Patrick Robinson, from the DEVSA community (he made DEVSA FM's music), on what a software factory is.
-       The opener's pyramid of pixel windows builds beside the title: windows made by windows. If he presents
-       from his own laptop, switch the monitor's input after this slide (see the run of show). -->
-  <section class="slide" id="talkSlide">
-    <canvas class="pyr" id="pyr2" width="1920" height="1080"></canvas>
-    <div class="pad" style="top:250px;right:auto;width:780px">
-      <p class="eyebrow in" style="--i:0">Featured talk</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:118px">What is a software <span class="mute">factory?</span></h2>
-      <p class="in" style="--i:2;margin-top:64px;font-size:60px;font-weight:900;letter-spacing:-.02em">Patrick Robinson</p>
-      <p class="lede in" style="--i:3;margin-top:8px">From the DEVSA community</p>
+  <!-- Patrick Robinson (Founder · On PAR Dev), on what a software factory is. Drawn in the frame of the Discord
+       exclusive he led on Nov 4, "Meet the Software Factory" (Software Factory Night): navy blueprint grid, cyan
+       accent, a mono eyebrow, the display wordmark, the PLAN → BUILD → CHECK → SHIP strip, the alt logo beside
+       his factory CLI in a terminal, and the wide mono line along the bottom. He presents from his own laptop;
+       the monitor switches after this slide (see the run of show). -->
+  <section class="slide sf" data-mark="off" id="talkSlide">
+    <div class="sf-copy">
+      <p class="sf-eye in" style="--i:0">DEVSA TV &middot; Featured talk</p>
+      <h2 class="sf-wm in" style="--i:1">What is a<br>software factory?</h2>
+      <div class="sf-steps in" style="--i:2"><span>Plan</span><i>&rarr;</i><span>Build</span><i>&rarr;</i><span>Check</span><i>&rarr;</i><span class="on">Ship</span></div>
     </div>
+    <div class="sf-term in" style="--i:3">
+      <div class="win"><div class="bar"><b></b><b></b><b></b></div><p><em>~ %</em> npm install -g @on-par/factory-cli</p><p><em>~ %</em> factory ship 42</p></div>
+    </div>
+    <!-- On PAR Dev's mark (its GitHub avatar, background taken out). No "Presented by": on DEVSA material that credit is for paid sponsors. -->
+    <img class="sf-opd in" style="--i:1" src="assets/logos/opd.png" alt="On PAR Dev">
+    <p class="sf-who in" style="--i:4">Patrick Robinson <span>&middot;</span> Founder, On PAR Dev</p>
   </section>
 
   <!-- ===================== Your December ===================== -->
@@ -630,7 +655,7 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
 // ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
-;for (const [cid, sid] of [["pyr", "opener"], ["pyr2", "talkSlide"]]) (function pyramid() {
+;for (const [cid, sid] of [["pyr", "opener"]]) (function pyramid() {
   const c = $("#" + cid), sl = $("#" + sid); if (!c) return
   const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200"
   function win(x, y, px, lit, a) {
