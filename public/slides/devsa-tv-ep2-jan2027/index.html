@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>DEVSA TV · Episode 2</title>
+<meta name="description" content="DEVSA TV, episode 1: DEVSA, the four conferences it runs, the community groups' 2026, and December on the calendar.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DEVSA TV · Episode 2">
+<meta property="og:description" content="DEVSA in its own words, DreamWeek 2027 and DreamTech, and a featured talk.">
+<meta property="og:url" content="https://www.devsa.community/slides/devsa-tv-ep2-jan2027">
+<meta property="og:image" content="https://www.devsa.community/slides/devsa-tv-ep2-jan2027/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.devsa.community/slides/devsa-tv-ep2-jan2027/og.jpg">
+<!--
+  DEVSA TV, episode 1, taped November 18, 2026: the first time DEVSA speaks to people on TV.
+
+  Where this plays: the external monitor beside the people speaking, in the shot. (The TV built into the
+  desk shows DEVSA TV's custom stickers and doesn't change, so this deck doesn't repeat them.) It's read
+  on camera, at a distance: big type, few words, motion where a conference has its own.
+  Runs offline: open this file in Chrome on the laptop driving the monitor, press F.
+
+  Next          → , Space, Page Down, Enter, or click anywhere else
+  Back          ← , Page Up, Backspace, or click the left third of the screen
+  Full screen   F
+  Start over    Home
+
+  The run of show:
+    Opener                 the DEVSA mark, Episode 01                                                   slide 1
+    Meet DEVSA             the longest segment, this episode only, in DEVSA's own words (the About     slides 2–5
+                           page, the homepage): the gap, what DEVSA is, what it gives, how it started
+    The rooms DEVSA runs   one slide per conference, each in its own brand: wordmark, motion or        slides 6–10
+                           photo, its line from data/conferences.ts, its date and who it was with
+    The community groups   the groups' 2026, as the introduction to them. Four spotlights, 3 to 5      slides 11–20
+                           minutes each: the organizers and student leaders introduce their orgs and
+                           talk about their events on camera, the org's logo on screen, then the event.
+    Your December          rooms the audience can walk into this month, from the calendar              slide 21
+    Close                                                                                              slide 22
+
+  Before tape day:
+    · fill in CONFIG below: the December events not yet on the calendar
+    · confirm with Geekdom how it wants SA Startup + Tech Week and its wordmark shown
+    · "DEVSA programming on TVSA" only: no TVSA logo or co-production wording until TVSA confirms
+  Photos are captioned only as the site captions them. The mark is DEVSA's alt logo; on black its body
+  drops out and the tabs and >SA stand on their own, as on the site's dark surfaces.
+-->
+<style>
+@font-face{font-family:Geist;font-weight:300;src:url(assets/fonts/Geist-Light.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:300;font-style:italic;src:url(assets/fonts/Geist-LightItalic.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:400;src:url(assets/fonts/Geist-Regular.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:500;src:url(assets/fonts/Geist-Medium.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:700;src:url(assets/fonts/Geist-Bold.woff2) format("woff2")}
+@font-face{font-family:Geist;font-weight:900;src:url(assets/fonts/Geist-Black.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:500;src:url(assets/fonts/GeistMono-Medium.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:700;src:url(assets/fonts/GeistMono-Bold.woff2) format("woff2")}
+@font-face{font-family:Oswald;font-weight:700;src:url(assets/fonts/Oswald-700.ttf) format("truetype")}
+@font-face{font-family:"Geist Pixel";src:url(assets/fonts/GeistPixel-Square.woff2) format("woff2")}
+@font-face{font-family:"Luckiest Guy";src:url(assets/fonts/LuckiestGuy-latin.woff2) format("woff2")}
+@font-face{font-family:"Rubik Dirt";src:url(assets/fonts/RubikDirt-latin.woff2) format("woff2")}
+@font-face{font-family:"Caveat Brush";src:url(assets/fonts/CaveatBrush-latin.woff2) format("woff2")}
+@font-face{font-family:Manuale;font-weight:300 800;src:url(assets/fonts/Manuale-latin.woff2) format("woff2")}
+@font-face{font-family:"Shadows Into Light";src:url(assets/fonts/ShadowsIntoLight-latin.woff2) format("woff2")}
+
+:root{
+  --teal:#00b2a9;--pink:#ef426f;--orange:#ff8200;
+  --ground:#000;--card:#141414;--line:#2a2a2a;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden}
+body{color:#fff;font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body.idle{cursor:none}
+
+/* A 1920x1080 stage, scaled to whatever screen it lands on. */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:var(--ground)}
+
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .7s var(--ease)}
+.slide.on{opacity:1;pointer-events:auto}
+.slide .in{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+.slide.on .in{opacity:1;transform:none}
+
+.pad{position:absolute;left:140px;right:140px;top:120px;bottom:120px}
+.eyebrow{font-size:28px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.eyebrow b{font-weight:500;color:#fff}
+.h2{font-size:112px;font-weight:900;line-height:.95;letter-spacing:-.02em;text-wrap:balance}
+.mute{font-weight:300;font-style:italic;color:rgba(255,255,255,.55)}
+.lede{font-size:44px;line-height:1.3;color:rgba(255,255,255,.82);text-wrap:pretty}
+.url{font-family:"Geist Mono",monospace;font-weight:500;font-size:32px;color:rgba(255,255,255,.88)}
+.card{border:1px solid var(--line);background:var(--card);border-radius:16px}
+.k{font-size:24px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+
+#stripe{position:absolute;left:0;right:0;bottom:0;height:14px;display:flex;z-index:7;transition:opacity .6s}
+#stripe div{flex:1}
+#mark{position:absolute;left:140px;top:68px;width:130px;z-index:8;transition:opacity .6s}
+#hud{position:absolute;right:40px;bottom:36px;z-index:30;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.5);opacity:0;transition:opacity .4s}
+body:not(.idle) #hud{opacity:1}
+
+/* a photo or a loop as a slide's ground: full height on the right, faded into the black on its left */
+.media{position:absolute;top:0;right:0;bottom:0;width:62%;z-index:0;
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 38%);mask-image:linear-gradient(to right,transparent 0%,#000 38%)}
+.media img,.media video{width:100%;height:100%;object-fit:cover;display:block}
+.media.dim img{opacity:.55}
+.fg{position:relative;z-index:2}
+
+/* opener */
+.pyr{position:absolute;inset:0;width:100%;height:100%}
+.op-meta{position:absolute;left:124px;top:116px;font-family:"Geist Mono",monospace;font-weight:500;font-size:42px;line-height:1.32;text-transform:uppercase;letter-spacing:.02em}
+.op-meta .pixel{text-transform:none;line-height:1.1;margin-bottom:18px}
+.op-meta .dim{color:rgba(255,255,255,.55)}
+.op-mark{position:absolute;left:124px;bottom:120px;width:250px}
+/* the four things, a page each: words left, the real thing right */
+.does-copy{position:absolute;left:140px;top:250px;width:700px}
+.does-copy .h2{font-size:100px;margin-top:30px}
+.does-copy .lede{margin-top:44px;font-size:38px}
+.does-copy .url{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.02em;color:var(--c,var(--teal))}
+.shot{position:absolute;left:920px;top:150px;width:880px;border-radius:18px;overflow:hidden;border:1px solid #2c2c2c;background:#fff;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.shot .bar{display:flex;align-items:center;gap:10px;height:46px;padding:0 18px;background:#161616;border-bottom:1px solid #2c2c2c}
+.shot .bar i{width:13px;height:13px;border-radius:50%;background:#3a3a3a}
+.shot .bar span{margin-left:14px;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.6)}
+.shot img{display:block;width:100%}
+.chan{position:absolute;left:940px;top:170px;width:860px}
+.chan .web{display:flex;align-items:center;gap:40px;padding:40px 44px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
+.chan .web img{width:150px;flex:none}
+.chan .web .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.chan .web b{display:block;margin-top:10px;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.chan .web .d{display:block;margin-top:14px;font-size:28px;color:rgba(255,255,255,.72)}
+.chan ul{list-style:none;margin-top:22px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.chan li{display:flex;align-items:center;gap:28px;padding:22px 40px}
+.chan li + li{border-top:1px solid var(--line)}
+.chan li img{width:44px;height:44px}
+.chan li b{font-size:38px;font-weight:900;letter-spacing:-.01em}
+.chan li span{margin-left:auto;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
+.chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:110px;padding-top:40px;border-top:2px solid #262626}
+.chapters span{display:block;font-family:"Geist Mono",monospace;font-size:28px;color:var(--c)}
+.chapters b{display:block;margin-top:12px;font-size:56px;font-weight:900;letter-spacing:-.015em}
+.stk{position:absolute;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6))}
+.pixel{font-family:"Geist Pixel",monospace;font-size:72px;color:#fff;letter-spacing:.04em}
+
+/* what DEVSA gives */
+.cardgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.cardgrid .card{padding:36px 34px 40px}
+.cardgrid .n{display:block;font-family:"Geist Mono",monospace;font-size:24px;margin-bottom:22px;color:var(--c,var(--orange))}
+.cardgrid h3{font-size:50px;font-weight:900;letter-spacing:-.01em;line-height:1.05}
+.cardgrid p{margin-top:16px;font-size:30px;line-height:1.35;color:rgba(255,255,255,.75)}
+
+/* how it started */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;position:relative;margin-top:60px;padding-top:50px}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;margin-top:50px;padding-top:36px;border-top:2px solid #262626}
+.figs b{display:block;font-size:84px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.figs span{display:block;margin-top:10px;font-size:32px;color:rgba(255,255,255,.7)}
+/* the community network, slide 2 */
+.netbox{position:absolute;left:880px;top:135px;width:1060px;height:795px}
+#net,#net svg{display:block;width:100%;height:100%;overflow:visible}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))}
+.timeline div{position:relative}
+.timeline div::before{content:"";position:absolute;left:0;top:-50px;width:32px;height:32px;border-radius:50%;background:#000;border:7px solid var(--c)}
+.timeline b{display:block;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.timeline span{display:block;margin-top:16px;font-size:32px;line-height:1.3;color:rgba(255,255,255,.78)}
+
+/* the four conferences, as a bill */
+.bill{display:grid;grid-template-columns:repeat(2,1fr);gap:80px 120px;align-items:center;justify-items:start;margin-top:90px}
+.bill img{display:block;max-height:120px;max-width:680px}
+/* The Model's wordmark as the event page draws it (ModelWordmark, components/brand/the-model.tsx): Geist Mono
+   medium, uppercase, tight, THE at white/85 and MODEL in a lavender selection that hugs the letters */
+/* Access Granted's wordmark as its page sets it (components/access-granted/2026/hero.tsx): Oswald bold, uppercase */
+.ag-wm{font-family:Oswald,sans-serif;font-weight:700;text-transform:uppercase;line-height:.9;letter-spacing:-.025em;color:#fff;white-space:nowrap}
+.ag-wm span{color:#00ff66}
+.tm-wm{font-family:"Geist Mono",monospace;font-weight:500;text-transform:uppercase;letter-spacing:-.025em;line-height:.95;color:rgba(255,255,255,.85);white-space:nowrap}
+.tm-wm span{background:#C0B4FC;color:#09090B;padding:0 .083em;margin-right:-.083em}
+
+/* one conference */
+.conf{position:absolute;left:140px;top:330px;width:860px}
+.conf .wm{display:block;max-height:170px;max-width:800px}
+.conf .lede{margin-top:50px;font-size:46px;line-height:1.25}
+.conf .lede .hi{font-weight:400;color:#fff}
+.conf .when{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.conf .with{margin-top:16px;font-size:30px;color:rgba(255,255,255,.7);line-height:1.4}
+
+/* the groups wall */
+.wall{display:grid;grid-template-columns:repeat(13,1fr);gap:18px;margin-top:80px}
+.wall div{aspect-ratio:1;border-radius:50%;background:#101010;border:1px solid #262626;display:grid;place-items:center;overflow:hidden}
+.wall img{width:72%;height:72%;object-fit:contain}
+.wall .white img{filter:brightness(0) invert(1)}
+
+/* the year's four rooms */
+/* the groups' 2026: four cards, each event in its own look */
+/* a spotlight's group logo, in the corner DEVSA's mark holds elsewhere */
+.corner{position:absolute;left:140px;top:56px;height:110px;display:flex;align-items:center;gap:22px;z-index:8}
+.corner img{height:100%;width:auto;display:block}
+/* Patrick's talk, in the Software Factory Night frame */
+.slide.sf{background:#0a1a3d;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:48px 48px}
+.sf-copy{position:absolute;left:140px;top:150px;width:1640px}
+.sf-eye{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;letter-spacing:.16em;text-transform:uppercase;color:#6fd0e0}
+.sf-wm{margin-top:30px;font-weight:900;font-size:150px;line-height:.9;letter-spacing:-.04em;color:#f3f6fb}
+.sf-steps{display:flex;align-items:center;gap:20px;margin-top:56px}
+.sf-steps span{font-family:"Geist Mono",monospace;font-weight:700;font-size:34px;letter-spacing:.14em;text-transform:uppercase;color:#6fd0e0;border:2px solid rgba(111,208,224,.6);border-radius:12px;padding:16px 28px 14px}
+.sf-steps span.on{background:#6fd0e0;color:#0a1a3d;border-color:#6fd0e0}
+.sf-steps i{font-style:normal;font-family:"Geist Mono",monospace;font-size:30px;color:rgba(111,208,224,.7)}
+.sf-term{position:absolute;right:140px;bottom:190px;display:flex;align-items:stretch;gap:26px}
+.sf-opd{position:absolute;right:140px;top:150px;width:300px}
+.sf-term .win{width:760px;border:2px solid rgba(255,255,255,.14);border-radius:14px;background:#081430;padding:0 0 22px}
+.sf-term .bar{display:flex;gap:10px;padding:16px 20px;border-bottom:2px solid rgba(255,255,255,.1);margin-bottom:18px}
+.sf-term .bar b{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.28)}
+.sf-term p{font-family:"Geist Mono",monospace;font-weight:500;font-size:28px;color:#e8eef8;padding:4px 26px}
+.sf-term em{font-style:normal;color:#6fd0e0;margin-right:10px}
+.sf-who{position:absolute;left:140px;bottom:110px;font-family:"Geist Mono",monospace;font-weight:700;font-size:44px;letter-spacing:.08em;text-transform:uppercase;color:#f3f6fb}
+.sf-who span{color:#6fd0e0;margin:0 8px}
+/* DreamWeek 2027, in its own colors (dreamweek.org: red #ee3e2f, blue #0a7fc2, gold #ffd02a) */
+.slide.dwk{background:radial-gradient(circle at 88% 30%,rgba(10,127,194,.28),transparent 45%),radial-gradient(circle at 10% 100%,rgba(238,62,47,.22),transparent 45%),#0b0d14}
+.dw-logo{position:absolute;left:140px;top:64px;height:64px}
+.dw-copy{position:absolute;left:140px;top:210px;width:1040px}
+.dw-eye{font-weight:800;font-size:30px;letter-spacing:.14em;text-transform:uppercase;color:#ffd02a}
+.dw-stats{display:flex;gap:64px;margin-top:56px;padding-top:34px;border-top:2px solid rgba(255,255,255,.14)}
+.dw-stats span{font-size:30px;color:rgba(255,255,255,.7)}
+.dw-stats b{display:block;font-size:96px;font-weight:900;letter-spacing:-.03em;color:#fff;line-height:1}
+.dw-art{position:absolute;right:120px;top:250px;width:620px}
+/* DreamWeek's chevrons alone (assets/dreamweek/chevrons.png: its 15-years art with the white 15 and lettering taken out) */
+.dw-chev{position:absolute;right:150px;top:260px;width:520px;height:553px;background:url(assets/dreamweek/chevrons.png) center/contain no-repeat}
+.dw-quote{margin-top:44px;font-size:52px;font-weight:500;line-height:1.25;color:#fff;max-width:1250px}
+.dw-partner{display:flex;align-items:center;gap:34px;margin-top:70px;padding:34px 40px;border-radius:20px;border:2px solid rgba(255,208,42,.55);background:rgba(255,255,255,.04);max-width:1120px}
+.dw-partner img{width:150px;flex:none}
+.dw-partner p{font-size:36px;line-height:1.3;color:rgba(255,255,255,.88)}
+.dw-partner span{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:#ffd02a;margin-bottom:8px}
+.dw-ways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+.dw-ways div{padding:34px 36px;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+.dw-ways b{display:block;font-size:44px;font-weight:900;color:#fff}
+.dw-ways div:nth-child(1) b{color:#ff6a5c}.dw-ways div:nth-child(2) b{color:#4fb4f0}.dw-ways div:nth-child(3) b{color:#ffd02a}
+.dw-ways p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
+.dw-url{display:flex;align-items:center;gap:30px;margin-top:56px}
+.dw-url .qr{width:150px;height:150px;background:#fff;padding:10px;border-radius:12px}
+.dw-url .qr img{width:100%;height:100%;display:block}
+.dw-url span{font-family:"Geist Mono",monospace;font-weight:700;font-size:44px;color:#fff}
+.yr{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:50px}
+.yc{border:1px solid var(--line);background:var(--card);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.yc .v{position:relative;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.yc .v img{display:block;object-fit:contain}
+.yc .v i{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.yc .t{padding:26px 28px 30px;display:flex;flex-direction:column;flex:1}
+.yc .n{font-family:"Geist Mono",monospace;font-size:22px;color:var(--c)}
+.yc .t b{margin-top:10px;font-size:38px;font-weight:900;letter-spacing:-.015em;line-height:1.05}
+.yc .h{margin-top:12px;font-size:25px;line-height:1.3;color:rgba(255,255,255,.72);flex:1}
+.yc .m{margin-top:18px;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.pillars{list-style:none;border-top:1px solid var(--line)}
+.pillars li{display:grid;grid-template-columns:110px 1fr 600px;gap:40px;align-items:baseline;padding:24px 0;border-bottom:1px solid var(--line)}
+.pillars .num{font-family:"Geist Mono",monospace;font-size:30px;color:var(--c)}
+.pillars b{font-size:58px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.pillars span{font-size:32px;color:rgba(255,255,255,.72)}
+
+/* a spotlight, while its organizers introduce the org: the logo, big, and the name */
+.org{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px;padding-bottom:40px}
+.discs{display:flex;gap:70px;justify-content:center}
+.disc{width:480px;height:480px;border-radius:50%;background:#101010;border:2px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;
+  box-shadow:0 0 0 18px rgba(255,255,255,.03),0 0 160px rgba(239,66,111,.18)}
+.disc img{width:74%;height:74%;object-fit:contain}
+.disc.paper{background:#f3efe6;border-color:#f3efe6}
+.disc.paper img{width:86%;height:86%}
+.discs.two .disc{width:420px;height:420px}
+.orgname{text-align:center}
+.orgname .eyebrow{display:block}
+.orgname h2{margin-top:20px;font-size:96px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.wordmark{display:block;max-width:900px;max-height:300px}
+
+/* a spotlight, while they talk about the event */
+.ev{display:grid;grid-template-columns:1fr 440px;gap:100px;align-items:center;height:100%}
+.when{margin-top:34px;font-family:"Geist Mono",monospace;font-weight:700;font-size:38px;letter-spacing:.06em;color:var(--c,var(--teal))}
+.ev .disc{width:440px;height:440px}
+.evlist{list-style:none;margin-top:44px;border-top:1px solid var(--line)}
+.evlist li{display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:baseline;padding:24px 0;border-bottom:1px solid var(--line)}
+.evlist .d{font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;color:var(--orange)}
+.evlist b{font-size:50px;font-weight:900;letter-spacing:-.02em}
+
+/* your December */
+.dec{margin-top:50px;border-top:1px solid var(--line)}
+.dec .row{display:grid;grid-template-columns:170px 76px 1fr auto;gap:36px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.dec .dt b{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:38px;letter-spacing:.02em;color:var(--teal);line-height:1}
+.dec .dt i{display:block;margin-top:6px;font-style:normal;font-family:"Geist Mono",monospace;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.dec img{width:76px;height:76px;border-radius:50%;background:#101010;object-fit:contain;padding:12px}
+.dec .de b{display:block;font-size:38px;font-weight:900;letter-spacing:-.015em;line-height:1.1}
+.dec .de i{display:block;margin-top:6px;font-style:normal;font-size:26px;color:rgba(255,255,255,.65)}
+.dec .de{min-width:0}
+.dec .tm{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;color:#fff}
+
+/* the close */
+.ask{display:grid;grid-template-columns:1.25fr 1fr;gap:24px;margin-top:60px}
+.ask .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.ask .lead{padding:40px 44px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
+.ask .lead b{display:block;margin-top:14px;font-size:76px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.ask .lead p{margin-top:18px;font-size:32px;line-height:1.35;color:rgba(255,255,255,.8)}
+.ask .side{display:grid;gap:24px}
+.ask .side div{padding:30px 36px;border-radius:20px;border:1px solid var(--line);background:var(--card)}
+.ask .side p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
+.ask .side b{color:#fff;font-weight:700}
+.follow{display:flex;align-items:center;gap:22px;margin-top:40px}
+.follow img{width:36px;height:36px;opacity:.85}
+.follow span{margin-left:12px;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
+.ways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:70px}
+.ways .card{padding:34px 36px}
+.ways .url{display:block;margin-top:14px}
+.ways p{margin-top:12px;font-size:28px;line-height:1.4;color:rgba(255,255,255,.72)}
+/* VelociCode 2, in its own brand (velocicode.acmsa.org): paper ground, the origami dino, the VELOCI CODE! wordmark
+   in its fonts and colors, and its "a hackathon / a month-long game jam" tagline. The DEVSA mark sits this one out:
+   the alt logo's light tabs vanish on paper. */
+.slide.vc{background:#f8edcc;color:#20180c}
+.vc-dino{position:absolute;right:90px;top:330px;width:620px;filter:drop-shadow(0 30px 0 rgba(32,24,12,.12))}
+.vc-copy{position:absolute;left:140px;top:230px;width:1080px}
+.vc-eyebrow{font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.1em;white-space:nowrap;text-transform:uppercase;color:#8c3914}
+.vc-wm{margin-top:40px;display:flex;align-items:center;white-space:nowrap;line-height:.9}
+.vc-wm .v{font-family:"Luckiest Guy",system-ui;font-size:176px;color:#1e6016;text-shadow:7px 7px 0 #f5c800,11px 11px 0 #20180c;transform:rotate(-1.5deg);display:inline-block}
+.vc-wm .c{font-family:"Rubik Dirt",system-ui;font-size:176px;color:#c44d24;text-shadow:9px 9px 0 #20180c;transform:rotate(1.5deg);display:inline-block}
+.vc-wm .b{font-family:"Caveat Brush",cursive;font-size:128px;color:#20180c;transform:rotate(-12deg) translateY(-.1em);display:inline-block;margin-left:.05em}
+.vc-tag{margin-top:44px;font-family:"Caveat Brush",cursive;font-size:74px;line-height:1.05;color:#8c3914;transform:rotate(-1.5deg)}
+.vc-tag s{text-decoration-color:#c44d24;text-decoration-thickness:6px;opacity:.5;margin-right:.3em}
+.vc-when{margin-top:56px;font-family:"Geist Mono",monospace;font-weight:700;font-size:36px;letter-spacing:.04em;color:#20180c}
+.vc-show{margin-top:14px;font-size:34px;color:#5a3a18}
+/* RowdyHacks XII, in its own brand (xii.rowdyhacks.org): the heist's investigation board. Kraft ground, the
+   crumpled October calendar with ROWDY HACKS 2026 in pen, the stamp pinned on torn paper, TOP SECRET across the
+   corner, the date circled in red marker; Manuale for the type, Shadows Into Light for the pen. */
+.slide.rh{background:#a8763e url(assets/rowdyhacks/kraft.webp) center/cover;color:#1a1a1a}
+/* the stamp on its torn paper square, the way the site pins it to the board */
+.rh-pin{position:absolute;left:990px;top:40px;width:960px;height:1000px;transform:rotate(-5deg);filter:drop-shadow(0 22px 28px rgba(0,0,0,.35))}
+.rh-pin .paper{position:absolute;inset:0;width:100%;height:100%}
+.rh-pin .stamp{position:absolute;left:20%;top:21%;width:60%;transform:rotate(4deg)}
+.rh-secret{position:absolute;left:300px;top:40px;width:200px;transform:rotate(-10deg);opacity:.9}
+.rh-copy{position:absolute;left:140px;top:290px;width:880px}
+.rh-eyebrow{font-family:Manuale,serif;font-weight:700;font-size:28px;letter-spacing:.14em;text-transform:uppercase;color:#3b2a14}
+.rh-title{margin-top:24px;font-family:Manuale,serif;font-weight:800;font-size:112px;line-height:.95;letter-spacing:-.015em;color:#141414;white-space:nowrap}
+/* the date on a strip of the site's yellow tape (its Register / Mentors / Judges labels) */
+.rh-when{position:relative;display:inline-block;margin-top:40px;padding:22px 56px 14px 44px;font-family:"Shadows Into Light",cursive;font-size:64px;line-height:1;color:#141414;
+  background:linear-gradient(180deg,#f3d26a,#e9c254);transform:rotate(-2deg);filter:drop-shadow(0 6px 8px rgba(0,0,0,.25));
+  clip-path:polygon(0 6%,3% 0,97% 4%,100% 0,98% 50%,100% 100%,96% 94%,4% 100%,0 96%,2% 50%)}
+.rh-line{margin-top:34px;font-family:Manuale,serif;font-weight:500;font-size:38px;line-height:1.35;color:#2a1d0c}
+.rh-where{margin-top:14px;font-family:Manuale,serif;font-weight:700;font-size:30px;color:#7a1414}
+/* AI April's wordmark disc (geeksand.tech/ai-april's banner, 2026 the 2nd annual), in place of a logo disc: the
+   purple-to-blue topographic ground drawn in script, and APRIL with AI built in: the A and the P's stem, which is the
+   I, in white, the P's bowl carrying on in lavender into PRIL. (Geeks && {...}'s design; the later I isn't lit.) */
+.aia-disc{background:linear-gradient(115deg,#6d4fa0 0%,#7a62b8 30%,#4d6fc4 62%,#2f8fd6 100%);position:relative;border-color:rgba(255,255,255,.35)}
+.aia-disc .aia-topo{position:absolute;inset:0;width:100%;height:100%}
+.aia-mark{position:relative;text-align:center;color:#fff}
+.aia-annual{font-size:26px;font-weight:300;letter-spacing:.42em;line-height:1;margin-left:.42em}
+.aia-annual sup{font-size:.55em;letter-spacing:.2em;vertical-align:.7em}
+/* the shadow sits behind the whole word (a text-shadow paints over gradient-filled letters and dulls them) */
+.aia-word{margin-top:10px;font-size:100px;font-weight:400;letter-spacing:.14em;line-height:1;margin-left:.14em;filter:drop-shadow(3px 3px 0 rgba(60,30,120,.5))}
+.aia-word b{font-weight:400;color:#fff}
+.aia-word span{background:linear-gradient(180deg,#e2d6ff,#a891ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+.aia-word span.b{background:linear-gradient(180deg,#cdeaff,#7dbcf4);-webkit-background-clip:text;background-clip:text}
+/* the P's stem in white: the P's own fill, white to the end of its stem (measured: 23% of the span in Geist 400),
+   lavender after, so the stroke is exactly the P's own */
+.aia-word .p{background:linear-gradient(90deg,#fff 0 23.5%,transparent 23.5%),linear-gradient(180deg,#e2d6ff,#a891ee);-webkit-background-clip:text;background-clip:text}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="mark" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
+
+  <!-- 0 · Opener: the DEVSA TV ship-style card (~/Downloads/devsa-tv-graphics/ship-style): a pyramid of pixel windows,
+       each the DEVSA mark in pixels, built row by row with the top one lit in the brand colors last. -->
+  <section class="slide" data-mark="off" id="opener">
+    <canvas class="pyr" id="pyr" width="1920" height="1080"></canvas>
+    <div class="op-meta">
+      <p class="pixel in" style="--i:0;font-size:104px">Episode 02</p>
+      <p class="in" style="--i:1">San Antonio&rsquo;s learners &amp; builders</p>
+      <p class="in dim" style="--i:2">Public access TV &middot; 01.2027</p>
+    </div>
+    <img class="op-mark in" style="--i:3" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
+  </section>
+
+  <!-- ===================== Meet DEVSA, in DEVSA's own words ===================== -->
+
+  <!-- 1 · The gap (the About page's opening) -->
+  <section class="slide">
+    <!-- the site's caption (components/hero-bridge.tsx): an attendee at PySanAntonio working at a laptop covered in Python community stickers -->
+    <div class="media" style="width:50%"><img src="assets/photos/builder-stickers.webp" alt="An attendee at PySanAntonio working at a laptop covered in Python community stickers" style="object-position:50% 45%;opacity:.85"></div>
+    <div class="pad fg" style="top:250px;right:auto;width:820px">
+      <p class="eyebrow in" style="--i:0">San Antonio</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">Has never lacked people who build things. <span class="mute">What it lacked was anything that connected them.</span></h2>
+    </div>
+  </section>
+
+  <!-- 2 · How it started (the About page's facts): the origin comes before what DEVSA is, so the gap leads into who answered it -->
+  <section class="slide">
+    <div class="pad" style="top:225px">
+      <p class="eyebrow in" style="--i:0">How it started</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">A Discord server, <span class="mute">then a 501(c)(3).</span></h2>
+      <div class="timeline in" style="--i:2">
+        <div style="--c:var(--teal)"><b>Sept 2023</b><span>Started as a Discord server</span></div>
+        <div style="--c:var(--pink)"><b>Mar 2024</b><span>A 501(c)(3), run by a volunteer board</span></div>
+        <div style="--c:var(--orange)"><b>Apr 2024</b><span>The first event, about ten groups on the calendar</span></div>
+        <div style="--c:var(--teal)"><b>Nov 2026</b><span>27 groups in the directory</span></div>
+      </div>
+      <!-- the calendar's record: Luma for 2024 and 2025, devsa.community for 2026 (lib/calendar-record.ts), as of Nov 15 -->
+      <div class="figs in" style="--i:3">
+        <div><b>214</b><span>events in 2024</span></div>
+        <div><b>204</b><span>in 2025</span></div>
+        <div><b>190+</b><span>in 2026</span></div>
+        <div><b>600+</b><span>since 2024</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · What DEVSA is -->
+  <!-- the community network from the roundtable deck (and components/community-network.tsx): every group in the
+       directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
+  <section class="slide" id="netSlide">
+    <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
+    <div class="pad" style="top:270px;right:auto;width:820px">
+      <p class="eyebrow in" style="--i:0">This is DEVSA</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:94px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
+    </div>
+  </section>
+
+
+
+
+  <!-- What DEVSA does: a title card, then a page each (the rooms are the bill that follows) -->
+  <section class="slide">
+    <img class="stk in" src="assets/stickers/hello.webp" alt="" style="--i:2;right:130px;top:56px;width:440px;transform:rotate(-6deg)">
+    <div class="pad" style="top:300px">
+      <p class="eyebrow in" style="--i:0">What DEVSA does</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:136px">Find your people. <span class="mute">Build your future.</span></h2>
+      <div class="chapters in" style="--i:3">
+        <div style="--c:var(--teal)"><span>01</span><b>The calendar</b></div>
+        <div style="--c:var(--pink)"><span>02</span><b>The directory</b></div>
+        <div style="--c:var(--orange)"><span>03</span><b>The channel</b></div>
+        <div style="--c:var(--teal)"><span>04</span><b>The rooms</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DreamWeek 2027 ===================== -->
+
+  <!-- DreamWeek in its own words and art (dreamweek.org, Nov 16): the 15th anniversary, Jan 15–31, 2027,
+       #CONNECTIONS, 17 days and 15 categories, hosted by the people and organizations of San Antonio.
+       The 15-years art and the reversed logo are DreamWeek's, from the roundtable deck. -->
+  <section class="slide dwk" data-mark="off">
+    <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
+    <div class="dw-copy">
+      <p class="dw-eye in" style="--i:0">January 15&ndash;31, 2027 &middot; #Connections</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:110px">DreamWeek <span class="mute">San Antonio.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:40px">Seventeen days of forums, performances, screenings, service days and shared tables, hosted by the people and organizations of San Antonio.</p>
+      <div class="dw-stats in" style="--i:3"><span><b>15</b> years</span><span><b>17</b> days</span><span><b>15</b> categories</span></div>
+    </div>
+    <img class="dw-art in" style="--i:2" src="assets/dreamweek/15-years.png" alt="DreamWeek: 15 years of connecting">
+  </section>
+
+  <!-- DreamTech, and DEVSA's part in it: a community partner helping DreamWeek activate the category (the
+       roundtable deck's framing). DreamTech sits under Empower; the line is how DreamWeek describes it. -->
+  <section class="slide dwk" data-mark="off">
+    <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
+    <div class="dw-chev in" style="--i:1" aria-hidden="true"></div>
+    <div class="dw-copy" style="width:1180px">
+      <p class="dw-eye in" style="--i:0">DreamWeek 2027 &middot; Empower</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">DreamTech.</h2>
+      <p class="dw-quote in" style="--i:2">&ldquo;Technology, media, AI, cybersecurity, digital culture, innovation, and access.&rdquo;</p>
+      <p class="in" style="--i:2;margin-top:14px;font-size:26px;color:rgba(255,255,255,.6)">How DreamWeek describes the category</p>
+      <div class="dw-partner in" style="--i:3">
+        <img src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
+        <p><span>Community partner</span>DEVSA is helping the DreamWeek team activate DreamTech, with San Antonio&rsquo;s tech community groups.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to take part, from dreamweek.org's own ways in; the QR goes to dreamweek.org. -->
+  <section class="slide dwk" data-mark="off">
+    <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
+    <div class="dw-copy" style="width:1640px">
+      <p class="dw-eye in" style="--i:0">Be part of the 15th</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">Find your seat <span class="mute">at DreamWeek.</span></h2>
+      <div class="dw-ways in" style="--i:2">
+        <div><b>Go</b><p>Seventeen days of events across the city, January 15&ndash;31. Follow DreamTech, or wander into a new category.</p></div>
+        <div><b>Subscribe</b><p>A morning digest of the categories you pick, every day of the summit.</p></div>
+        <div><b>Volunteer</b><p>Greet guests, run check-in, keep 17 days moving.</p></div>
+      </div>
+      <div class="dw-url in" style="--i:3"><div class="qr"><img src="assets/dreamweek/qr.svg" alt=""></div><span>dreamweek.org</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== Featured talk ===================== -->
+
+  <!-- The speaker's name, title and talk come from CONFIG.speaker in the script below; until they're set the
+       slide says the talk is to be announced. -->
+  <section class="slide" id="talkSlide">
+    <canvas class="pyr" id="pyr2" width="1920" height="1080"></canvas>
+    <div class="pad" style="top:250px;right:auto;width:800px">
+      <p class="eyebrow in" style="--i:0">Featured talk</p>
+      <h2 class="h2 in" id="spTalk" style="--i:1;margin-top:30px;font-size:110px">Talk title <span class="mute">to come.</span></h2>
+      <p class="in" id="spName" style="--i:2;margin-top:64px;font-size:60px;font-weight:900;letter-spacing:-.02em">Speaker</p>
+      <p class="lede in" id="spTitle" style="--i:3;margin-top:8px">&nbsp;</p>
+    </div>
+  </section>
+
+  <!-- ===================== Close ===================== -->
+
+  <section class="slide">
+    <img class="stk in" src="assets/stickers/love.webp" alt="I love SATX" style="--i:3;right:150px;top:70px;width:380px;transform:rotate(6deg)">
+    <div class="pad" style="top:180px">
+      <p class="eyebrow in" style="--i:0">Thanks for watching &middot; <b>see you in February</b></p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">Find your people. <span class="mute">Build your future.</span></h2>
+      <!-- The asks, in DEVSA's order: the calendar first, then (for organizers) getting on it, then support. Social is the
+           small print, as on the channel page: the website leads. No channel or station named until TVSA's wording is confirmed. -->
+      <div class="ask in" style="--i:2">
+        <div class="lead">
+          <span class="k">Start here</span>
+          <b>devsa.community</b>
+          <p>Subscribe to the community calendar: every group&rsquo;s meetups, in one place.</p>
+        </div>
+        <div class="side">
+          <div><span class="k">Run a group?</span><p>Put your events on the calendar. Sign in at <b>devsa.community</b></p></div>
+          <div><span class="k" style="color:var(--pink)">Support DEVSA</span><p>A 501(c)(3), run by a volunteer board. <b>Donate at devsa.community</b></p></div>
+        </div>
+      </div>
+      <p class="follow in" style="--i:3"><img src="assets/channels/discord.svg" alt=""><img src="assets/channels/instagram.svg" alt=""><img src="assets/channels/linkedin.svg" alt=""><img src="assets/channels/x.svg" alt=""><img src="assets/channels/youtube.svg" alt=""><span>@devsatx &middot; devsa.community/discord</span></p>
+</div>
+    </div>
+  </section>
+
+  <div id="stripe"><div style="background:var(--teal)"></div><div style="background:var(--pink)"></div><div style="background:var(--orange)"></div></div>
+  <div id="hud"></div>
+</div>
+
+<script>
+// ===================== CONFIG: fill in before tape day =====================
+const CONFIG = {
+  // Your December: one card per group, in this order. Events marked * are on the community calendar
+  // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
+  // until then the card says it's coming to the calendar, rather than inventing a date.
+  // The featured speaker: fill these in once confirmed. Blank leaves "to come" on the slide.
+  speaker: { name: "", title: "", talk: "", talkMute: "" },   // talk: the bold part; talkMute: the light italic end
+  // The groups wall: the directory's groups with a logo in assets/wall (November 15; ACM TAMUSA has no file yet).
+  wall: ["g0.png", "g1.png", "g2.png", "g3.png", "g4.png", "g5.png", "g6.png", "g7.png", "g8.png", "g9.png", "g10.png", "g11.png", "g12.png",
+    "g13.png", "g14.png", "g15.png:white", "g16.png", "g17-2026.png", "g18.png", "g19.png", "g21.png", "g22.png", "g23.png", "g24.png", "g25.svg", "aws-sbg-wgu.png"],
+}
+// ===========================================================================
+
+const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [...r.querySelectorAll(q)]
+const stage = $("#stage"), slides = $$(".slide")
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
+
+if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+// ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
+;for (const [cid, sid] of [["pyr", "opener"], ["pyr2", "talkSlide"]]) (function pyramid() {
+  const c = $("#" + cid), sl = $("#" + sid); if (!c) return
+  const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200"
+  function win(x, y, px, lit, a) {
+    const W = 22, H = 18
+    const frame = lit ? "#eeeeee" : "#3a3a3a", body = lit ? "#111" : "#161616", face = lit ? "#eeeeee" : "#9a9a9a"
+    const tabs = lit ? [TEAL, PINK, ORANGE] : ["#555", "#555", "#555"]
+    const P = (col, cx, cy, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x + cx * px, y + cy * px, w * px, h * px) }
+    g.globalAlpha = a
+    P(frame, 1, 0, W - 2, H); P(frame, 0, 1, W, H - 2); P(body, 1, 4, W - 2, H - 5)
+    P(tabs[0], 1, 1, 6, 2); P(tabs[1], 8, 1, 6, 2); P(tabs[2], 15, 1, 6, 2)
+    for (const [cx, cy] of [[4, 6], [5, 7], [6, 8], [7, 9], [6, 10], [5, 11], [4, 12]]) P(face, cx, cy, 2, 1)
+    P(face, 11, 12, 7, 1); g.globalAlpha = 1
+  }
+  const px = 9, w = 22 * px, h = 18 * px, gap = 24, cx = 1360, top = 170, wins = []
+  for (let r = 3; r >= 0; r--) { const n = r + 1, rowW = n * w + (n - 1) * gap; for (let i = 0; i < n; i++) wins.push([Math.round(cx - rowW / 2 + i * (w + gap)), top + r * (h + gap), r === 0]) }
+  let t0 = null
+  function draw(ms) {
+    if (t0 === null) t0 = ms
+    const t = ms - t0; g.clearRect(0, 0, 1920, 1080)
+    wins.forEach(([x, y, lit], k) => { const a = Math.max(0, Math.min(1, (t - 400 - k * 110 - (lit ? 350 : 0)) / 300)); if (a > 0) win(x, y, px, lit, a) })
+    if (t < 400 + wins.length * 110 + 700) requestAnimationFrame(draw)
+  }
+  const start = () => { t0 = null; requestAnimationFrame(draw) }
+  new MutationObserver(() => { if (sl.classList.contains("on")) start() }).observe(sl, { attributes: true, attributeFilter: ["class"] })
+  if (sl.classList.contains("on")) start()
+})()
+// ---------- the community network (the roundtable deck's geometry): CONFIG.wall's groups, each linked to DEVSA ----------
+;(function network() {
+  const host = $("#net"), slide = $("#netSlide"); if (!host) return
+  const G = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return { src: "assets/wall/" + f, white: flag === "white" } })
+  const VW = 640, VH = 480, CX = VW / 2, CY = VH / 2, R = 23, N = G.length, C = ["#00b2a9", "#ef426f", "#ff8200"], NS = "http://www.w3.org/2000/svg"
+  const inner = Math.min(N, Math.max(3, Math.round(N * .36)))
+  const base = G.map((_, i) => {
+    const isI = i < inner, cnt = isI ? inner : N - inner, k = isI ? i : i - inner
+    const a = (k / cnt) * Math.PI * 2 + (isI ? .35 : 0) + Math.sin(i * 7.3) * .08
+    const rx = isI ? 128 : 262, ry = isI ? 100 : 196
+    return [CX + Math.cos(a) * rx * (1 + Math.sin(i * 3.1) * .04), CY + Math.sin(a) * ry * (1 + Math.cos(i * 2.3) * .04)]
+  })
+  const LINKS = []
+  for (let i = 0; i < inner && inner + i * 2 < N; i++) LINKS.push([i, inner + Math.round((i / inner) * (N - inner))])
+  for (let i = inner; i + 1 < N; i += 3) LINKS.push([i, i + 1])
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${VW} ${VH}`)
+  svg.innerHTML = `<defs><clipPath id="nc"><circle r="${R - 5}"/></clipPath>
+    <filter id="nw"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
+    <radialGradient id="glow"><stop offset="0" stop-color="#ef426f" stop-opacity=".35"/><stop offset="1" stop-color="#ef426f" stop-opacity="0"/></radialGradient></defs>`
+  const mk = () => { const g = document.createElementNS(NS, "g"); svg.append(g); return g }
+  const gLinks = mk(), gHub = mk(), gPulse = mk(), gNodes = mk()
+  const line = (g, attrs) => { const l = document.createElementNS(NS, "line"); for (const k in attrs) l.setAttribute(k, attrs[k]); g.append(l); return l }
+  const linkEls = LINKS.map(() => line(gLinks, { stroke: "#fff", "stroke-opacity": ".16", "stroke-width": "1.05" }))
+  const hubEls = G.map((_, i) => line(gHub, { stroke: C[i % 3], "stroke-opacity": ".65", "stroke-width": "1.4" }))
+  const nodeEls = G.map((g) => {
+    const n = document.createElementNS(NS, "g"), r = R - 6
+    n.innerHTML = `<circle r="${R}" fill="#151515" stroke="#2c2c2c"/><image href="${esc(g.src)}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="xMidYMid meet" clip-path="url(#nc)"${g.white ? ' filter="url(#nw)"' : ""}/>`
+    gNodes.append(n); return n
+  })
+  const hub = document.createElementNS(NS, "g")
+  hub.innerHTML = `<circle class="hubglow" r="90" fill="url(#glow)"/><circle r="58" fill="#000" stroke="#262626"/><image href="assets/marks/devsa-alt-logo.svg" x="-40" y="-30" width="80" height="60"/>`
+  hub.setAttribute("transform", `translate(${CX} ${CY})`); svg.append(hub); host.append(svg)
+  const glow = hub.querySelector(".hubglow")
+  const pulses = Array.from({ length: 9 }, (_, k) => { const c = document.createElementNS(NS, "circle"); c.setAttribute("r", "2.6"); gPulse.append(c); return { el: c, to: (k * 7) % N, t0: -k * .45, dur: 2.2 + (k % 3) * .4 } })
+  const pos = base.map((p) => [...p])
+  function frame(ms) {
+    requestAnimationFrame(frame)
+    if (!slide.classList.contains("on") && pos.drawn) return   // only animate while it's on screen
+    pos.drawn = true
+    const t = ms / 1000
+    for (let i = 0; i < N; i++) {
+      pos[i][0] = base[i][0] + Math.sin(t * .42 + i * 1.7) * 4.2; pos[i][1] = base[i][1] + Math.cos(t * .35 + i * 2.1) * 4.2
+      nodeEls[i].setAttribute("transform", `translate(${pos[i][0].toFixed(2)} ${pos[i][1].toFixed(2)})`)
+      const h = hubEls[i]; h.setAttribute("x1", CX); h.setAttribute("y1", CY); h.setAttribute("x2", pos[i][0].toFixed(2)); h.setAttribute("y2", pos[i][1].toFixed(2))
+    }
+    LINKS.forEach(([a, b], k) => { const l = linkEls[k]; l.setAttribute("x1", pos[a][0]); l.setAttribute("y1", pos[a][1]); l.setAttribute("x2", pos[b][0]); l.setAttribute("y2", pos[b][1]) })
+    for (const p of pulses) {
+      let u = (t - p.t0) / p.dur
+      if (u >= 1) { p.t0 = t; p.to = Math.floor(Math.random() * N); u = 0 }
+      if (u < 0) { p.el.setAttribute("opacity", 0); continue }
+      const e = 1 - Math.pow(1 - u, 2)
+      p.el.setAttribute("cx", CX + (pos[p.to][0] - CX) * e); p.el.setAttribute("cy", CY + (pos[p.to][1] - CY) * e)
+      p.el.setAttribute("fill", C[p.to % 3]); p.el.setAttribute("opacity", (Math.sin(u * Math.PI) * .95).toFixed(3))
+    }
+    glow.setAttribute("r", (86 + Math.sin(t * 1.3) * 10).toFixed(1))
+  }
+  requestAnimationFrame(frame)
+})()
+// December as a calendar list: the date, the group's logo, the event and who runs it, the time. (Venues are a click away
+// on devsa.community, which the slide names.) "when" reads like "Tue Dec 1 · 6 PM".
+{ const sp = CONFIG.speaker
+  if (sp.talk) $("#spTalk").innerHTML = esc(sp.talk) + (sp.talkMute ? ' <span class="mute">' + esc(sp.talkMute) + "</span>" : "")
+  if (sp.name) $("#spName").textContent = sp.name
+  if (sp.title) $("#spTitle").textContent = sp.title }
+
+// ---------- AI April's topographic ground: contour lines of a smooth field (marching squares), seeded ----------
+;(function topo() {
+  const c = document.getElementById("aiaTopo"); if (!c) return
+  const g = c.getContext("2d"), W = c.width, H = c.height, step = 6, k = .9   // k: the field's scale, so a disc shows a few terraces
+  const f = (x, y) => { x *= k; y *= k; return Math.sin(x * .0042 + 1.3) * 1.1 + Math.sin(y * .0051 - .4) * .9 + Math.sin((x + y) * .0031 + 2.1) * .8
+    + Math.sin((x - y * 1.3) * .0067) * .55 + Math.sin(Math.hypot(x - 520, y - 380) * .011) * .6 }
+  const cols = Math.ceil(W / step) + 1, rows = Math.ceil(H / step) + 1, v = new Float32Array(cols * rows)
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) v[j * cols + i] = f(i * step, j * step)
+  function iso(level) {
+    g.beginPath()
+    for (let j = 0; j < rows - 1; j++) for (let i = 0; i < cols - 1; i++) {
+      const a = v[j * cols + i], b = v[j * cols + i + 1], cc = v[(j + 1) * cols + i + 1], d = v[(j + 1) * cols + i]
+      const x = i * step, y = j * step, pts = []
+      if ((a < level) !== (b < level)) pts.push([x + step * (level - a) / (b - a), y])
+      if ((b < level) !== (cc < level)) pts.push([x + step, y + step * (level - b) / (cc - b)])
+      if ((d < level) !== (cc < level)) pts.push([x + step * (level - d) / (cc - d), y + step])
+      if ((a < level) !== (d < level)) pts.push([x, y + step * (level - a) / (d - a)])
+      if (pts.length >= 2) { g.moveTo(pts[0][0], pts[0][1]); g.lineTo(pts[1][0], pts[1][1]); if (pts.length === 4) { g.moveTo(pts[2][0], pts[2][1]); g.lineTo(pts[3][0], pts[3][1]) } }
+    }
+  }
+  g.lineCap = "round"
+  for (let L = -3.8; L <= 3.8; L += .26) {
+    g.save(); g.translate(3, 4); g.strokeStyle = "rgba(40,20,90,.3)"; g.lineWidth = 3; iso(L); g.stroke(); g.restore()   // the shadow side of each terrace
+    g.strokeStyle = "rgba(255,255,255,.28)"; g.lineWidth = 1.8; iso(L); g.stroke()                                       // its lit edge
+  }
+})()
+
+// ---------- fit the 1920x1080 stage to the screen ----------
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080)
+  stage.style.transform = `translate(${-960 * s}px,${-540 * s}px) scale(${s})`
+}
+addEventListener("resize", fit); fit()
+
+// A slide's loop plays only while it's on screen.
+const playVideos = (s, on) => $$("video", s).forEach((v) => { if (on) { v.currentTime = 0; v.play().catch(() => {}) } else v.pause() })
+
+let idx = -1
+function go(n) {
+  n = Math.max(0, Math.min(slides.length - 1, n))
+  if (n === idx) return
+  if (slides[idx]) playVideos(slides[idx], false)
+  slides.forEach((s, k) => s.classList.toggle("on", k === n))
+  idx = n
+  const s = slides[n]
+  playVideos(s, true)
+  $("#mark").style.opacity = s.dataset.mark === "off" ? 0 : 1
+  $("#stripe").style.opacity = s.dataset.stripe === "off" ? 0 : 1
+  $("#hud").textContent = `${n + 1} / ${slides.length}`
+  window.history.replaceState(null, "", location.pathname + location.search + "#" + n)
+}
+const next = () => go(idx + 1), back = () => go(idx - 1)
+addEventListener("keydown", (e) => {
+  const k = e.key
+  if (["ArrowRight", " ", "PageDown", "Enter", "ArrowDown"].includes(k)) { e.preventDefault(); next() }
+  else if (["ArrowLeft", "PageUp", "Backspace", "ArrowUp"].includes(k)) { e.preventDefault(); back() }
+  else if (k === "f" || k === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}) }
+  else if (k === "Home") go(0)
+})
+// Click the left third of the screen to go back, anywhere else to go forward.
+stage.addEventListener("click", (e) => (e.clientX < innerWidth / 3 ? back() : next()))
+let idleT; const wake = () => { document.body.classList.remove("idle"); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add("idle"), 2000) }
+addEventListener("mousemove", wake); wake()
+
+const start = parseInt(location.hash.slice(1), 10)
+go(Number.isFinite(start) ? start : 0)
+</script>
+</body>
+</html>

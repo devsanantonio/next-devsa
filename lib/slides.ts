@@ -32,6 +32,16 @@ export interface Deck {
 
 export const DECKS: Deck[] = [
   {
+    slug: "devsa-tv-ep2-jan2027",
+    title: "DEVSA TV · Episode 2",
+    summary:
+      "DEVSA's January episode: DEVSA in its own words, DreamWeek San Antonio's 15th and DreamTech, where DEVSA is a community partner, and a featured talk.",
+    date: "2027-01-01",
+    where: "TVSA studios",
+    slides: 10,
+    eventUrl: "/tv",
+  },
+  {
     slug: "devsa-tv-ep1-nov18",
     title: "DEVSA TV · Episode 1",
     summary:
