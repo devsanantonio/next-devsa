@@ -1,0 +1,290 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!--
+  DEVSA sponsor packet, draft for board review (Nov 2026). 16:9, 1920x1080 pages, rendered to
+  PNGs by shot.cjs. Facts from DEVSA's records (memory: calendar-history-luma, sastw-2026-devsa-results,
+  devsa-funding-priorities). Prices are the researched draft, not yet board-approved. The 700
+  first-timers figure is SASTW's: confirm with them before this goes to a sponsor. No sponsor
+  amounts or SASTW financials appear here, by design.
+-->
+<style>
+  @font-face { font-family: G; src: url(../../lib/og-fonts/Geist-Regular.ttf); font-weight: 400 }
+  @font-face { font-family: G; src: url(../../lib/og-fonts/Geist-Medium.ttf); font-weight: 500 }
+  @font-face { font-family: G; src: url(../../lib/og-fonts/Geist-Bold.ttf); font-weight: 700 }
+  @font-face { font-family: G; src: url(../../lib/og-fonts/Geist-Black.ttf); font-weight: 900 }
+  @font-face { font-family: M; src: url(../../lib/og-fonts/GeistMono-Medium.ttf); font-weight: 500 }
+  * { box-sizing: border-box; margin: 0; padding: 0 }
+  :root { --teal: #00b2a9; --pink: #ef426f; --orange: #ff8200; --amber: #ffcf6a; --ink: #0a0a0a }
+  body { background: #222; font-family: G, sans-serif; color: #fff }
+  .slide { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--ink); margin: 0 auto 40px; padding: 110px 120px }
+  .slide.light { background: #fff; color: #111827 }
+  .grid-bg { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.07) 1.4px, transparent 1.5px); background-size: 26px 26px; pointer-events: none }
+  .glow-a { position: absolute; inset: 0; background: radial-gradient(circle at 88% 8%, rgba(239,66,111,.18), transparent 45%), radial-gradient(circle at 6% 96%, rgba(0,178,169,.16), transparent 45%); pointer-events: none }
+  .glow-b { position: absolute; inset: 0; background: radial-gradient(circle at 10% 8%, rgba(0,178,169,.18), transparent 45%), radial-gradient(circle at 92% 92%, rgba(255,130,0,.14), transparent 45%); pointer-events: none }
+  .rel { position: relative }
+  .bars { display: flex; gap: 10px } .bars i { display: block; width: 72px; height: 9px }
+  .bars i:nth-child(1) { background: var(--teal) } .bars i:nth-child(2) { background: var(--pink) } .bars i:nth-child(3) { background: var(--orange) }
+  .eyebrow { font-size: 24px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-top: 26px }
+  .light .eyebrow { color: #6b7280 }
+  h1, h2 { font-weight: 900; letter-spacing: -.025em; line-height: .95 }
+  h2 { font-size: 96px; margin-top: 22px }
+  h2 em, h1 em { font-style: italic; font-weight: 400; color: rgba(255,255,255,.5) }
+  .light h2 em { color: #6b7280 }
+  .lead { font-size: 36px; font-weight: 400; line-height: 1.4; color: rgba(255,255,255,.75); max-width: 1180px; margin-top: 36px }
+  .lead b { color: #fff; font-weight: 600 }
+  .light .lead { color: #4b5563 } .light .lead b { color: #111827 }
+  .foot { position: absolute; left: 120px; right: 120px; bottom: 56px; display: flex; justify-content: space-between; align-items: center; font-family: M; font-size: 20px; letter-spacing: .12em; color: rgba(255,255,255,.5) }
+  .light .foot { color: #6b7280 }
+  .foot .bars i { width: 46px; height: 6px }
+  .foot > span:only-child { margin-left: auto }
+  .draft { color: var(--amber) }
+  .light .draft { color: #b45309 }
+</style>
+</head>
+<body>
+
+<!-- 1. cover -->
+<section class="slide" id="s1">
+  <div style="position:absolute;inset:0;background:url(../../public/hero/sastw-room-full.webp) center/cover;opacity:.35"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,10,.96) 40%,rgba(10,10,10,.55))"></div><div class="grid-bg"></div>
+  <div class="rel" style="display:flex;flex-direction:column;height:100%;justify-content:center">
+    <img src="../../public/branding/devsa-logo.svg" style="width:220px" alt="">
+    <h1 style="font-size:150px;margin-top:70px">Sponsor <em>the</em> Bridge.</h1>
+    <p class="lead" style="font-size:44px;margin-top:40px">The bridge to San Antonio&rsquo;s <b>learners and builders.</b></p>
+    <p class="eyebrow" style="margin-top:60px">2027 sponsorship · four conferences, one a quarter</p>
+  </div>
+  <div class="foot"><div class="bars"><i></i><i></i><i></i></div><span>devsa.community</span></div>
+</section>
+
+<!-- 2. the bridge and who you reach -->
+<section class="slide" id="s2">
+  <div class="glow-b"></div><div class="grid-bg"></div>
+  <div class="rel" style="display:grid;grid-template-columns:1fr 760px;gap:70px;align-items:center;height:100%">
+    <div>
+      <div class="bars"><i></i><i></i><i></i></div>
+      <p class="eyebrow">Who you reach</p>
+      <h2>The Other <em>Altitude.</em></h2>
+      <blockquote style="margin-top:34px;border-left:6px solid var(--pink);padding-left:28px;font-size:30px;line-height:1.4;color:#fff;font-style:italic">&ldquo;People new to the city or working outside established circles may find it harder to identify the right contacts.&rdquo;<span style="display:block;margin-top:10px;font-style:normal;font-size:20px;color:rgba(255,255,255,.6)">2026 San Antonio State of Innovation, Innovation SATX Consortium</span></blockquote>
+      <p class="lead" style="font-size:30px;margin-top:30px">DEVSA is the 501(c)(3) bridge between San Antonio&rsquo;s tech groups: <b>one shared calendar and one public directory</b>, free to every group. You already know the directors and executives. This is <b>the people doing the work.</b></p>
+      <div style="position:relative;margin-top:48px;padding-left:56px;display:grid;gap:30px">
+        <span style="position:absolute;left:12px;top:10px;bottom:10px;width:6px;border-radius:3px;background:linear-gradient(180deg,var(--teal),var(--pink),var(--orange))"></span>
+        <div style="position:relative"><span style="position:absolute;left:-56px;top:4px;width:30px;height:30px;border-radius:50%;background:var(--teal);border:6px solid var(--ink)"></span><p style="font-size:34px;font-weight:700">Learners</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:4px">Students and people new to the city, finding their way in</p></div>
+        <div style="position:relative"><span style="position:absolute;left:-56px;top:4px;width:30px;height:30px;border-radius:50%;background:var(--pink);border:6px solid var(--ink)"></span><p style="font-size:34px;font-weight:700">Organizers</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:4px">The people who run 25 tech groups, from Python to AI and security</p></div>
+        <div style="position:relative"><span style="position:absolute;left:-56px;top:4px;width:30px;height:30px;border-radius:50%;background:var(--orange);border:6px solid var(--ink)"></span><p style="font-size:34px;font-weight:700">Builders</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:4px">The engineers, analysts and designers who fill those rooms every week</p></div>
+      </div>
+    </div>
+    <img src="assets/network.png" style="width:760px" alt="">
+  </div>
+  <div class="foot"><span>devsa.community</span></div>
+</section>
+
+<!-- 4. the record -->
+<section class="slide" id="s3">
+  <div class="glow-b"></div><div class="grid-bg"></div>
+  <div class="rel">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">The record · our 2026 baseline</p>
+    <h2>Two and a Half Years <em>of</em> Rooms.</h2>
+    <p class="lead" style="font-size:28px;margin-top:22px">The first time DEVSA has measured its own work. Each year&rsquo;s packet tracks it from here.</p>
+    <div style="position:relative;margin-top:50px;display:grid;grid-template-columns:repeat(4,1fr);gap:40px">
+      <span style="position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))"></span>
+      <div style="position:relative;padding-top:52px"><span style="position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--teal);border:6px solid var(--ink)"></span><p style="font-size:52px;font-weight:900">Apr 2024</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:8px">DEVSA&rsquo;s first event, with about ten community groups on the calendar</p></div>
+      <div style="position:relative;padding-top:52px"><span style="position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--pink);border:6px solid var(--ink)"></span><p style="font-size:52px;font-weight:900">2024</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:8px">214 events on the shared calendar</p></div>
+      <div style="position:relative;padding-top:52px"><span style="position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--pink);border:6px solid var(--ink)"></span><p style="font-size:52px;font-weight:900">2025</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:8px">204 events on the shared calendar</p></div>
+      <div style="position:relative;padding-top:52px"><span style="position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--orange);border:6px solid var(--ink)"></span><p style="font-size:52px;font-weight:900">2026</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:8px">190+ so far, 25 groups, on devsa.community</p></div>
+    </div>
+    <div style="margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:40px">
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:120px;font-weight:900;letter-spacing:-.04em;line-height:1">600+</p><p style="font-size:26px;font-weight:700;margin-top:14px">events since 2024</p></div>
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:120px;font-weight:900;letter-spacing:-.04em;line-height:1">39</p><p style="font-size:26px;font-weight:700;margin-top:14px">of them DEVSA&rsquo;s own</p></div>
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:120px;font-weight:900;letter-spacing:-.04em;line-height:1">25</p><p style="font-size:26px;font-weight:700;margin-top:14px">community groups <span style="color:var(--teal)">&uarr; from about ten</span></p></div>
+      
+    </div>
+  
+    <div style="margin-top:28px;display:flex;align-items:center;gap:0;border:1px solid rgba(255,255,255,.14);border-radius:20px;background:rgba(255,255,255,.03);padding:20px 30px">
+      <p style="font-family:M;font-size:17px;letter-spacing:.18em;color:rgba(255,255,255,.6);margin-right:28px;white-space:nowrap">DEVSA&rsquo;S CHANNELS</p>
+            <p style="flex:1;font-size:22px;color:rgba(255,255,255,.75);border-left:1px solid rgba(255,255,255,.14);padding-left:24px;white-space:nowrap"><b style="font-size:40px;font-weight:900;color:#fff;letter-spacing:-.02em">896</b> on Discord</p>
+      <p style="flex:1;font-size:22px;color:rgba(255,255,255,.75);border-left:1px solid rgba(255,255,255,.14);padding-left:24px;white-space:nowrap"><b style="font-size:40px;font-weight:900;color:#fff;letter-spacing:-.02em">993</b> on Instagram</p>
+      <p style="flex:1;font-size:22px;color:rgba(255,255,255,.75);border-left:1px solid rgba(255,255,255,.14);padding-left:24px;white-space:nowrap"><b style="font-size:40px;font-weight:900;color:#fff;letter-spacing:-.02em">734</b> on LinkedIn</p>
+      <p style="flex:1.2;font-size:19px;line-height:1.35;color:rgba(255,255,255,.7);border-left:1px solid rgba(255,255,255,.14);padding-left:24px"><b style="color:#fff">DEVSA TV</b> on public access, from Dec 2026</p>
+    </div>
+  </div>
+  <div class="foot"><span>How we counted: Luma 2024–25, devsa.community 2026 · all figures as of Nov 10, 2026</span></div>
+</section>
+
+<!-- 5. proven at SASTW -->
+<section class="slide" id="s4">
+  <div style="position:absolute;inset:0;background:url(../../public/hero/sastw-stage-wide.webp) center/cover;opacity:.28"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,10,.97) 35%,rgba(10,10,10,.75))"></div>
+  <div class="rel">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">Proven at SA Startup + Tech Week 2026</p>
+    <h2>DEVSA Ran <em>the</em> Tech Track.</h2>
+    <p class="lead" style="font-size:28px;margin-top:22px">The newcomers the region&rsquo;s own report says struggle to find their way in, in the room.</p>
+    <div style="margin-top:44px;display:grid;grid-template-columns:auto 1fr;gap:50px;align-items:baseline;border-top:1px solid rgba(255,255,255,.15);padding-top:34px">
+      <p style="font-size:180px;font-weight:900;letter-spacing:-.04em;line-height:1;color:var(--amber)">723<span style="font-size:44px;color:rgba(255,255,255,.7);letter-spacing:0;margin-left:16px">of 1,137</span></p>
+      <p style="font-size:44px;font-weight:700;line-height:1.25;max-width:760px">registrants came for the first time, in the week&rsquo;s eleventh year</p>
+    </div>
+    <div style="margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:50px">
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:96px;font-weight:900;line-height:1">12</p><p style="font-size:28px;font-weight:700;margin-top:12px">events at the Rand</p><p style="font-size:22px;color:rgba(255,255,255,.6);margin-top:8px">PySanAntonio II, Access Granted, The Model and nine community groups</p></div>
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:96px;font-weight:900;line-height:1">1</p><p style="font-size:28px;font-weight:700;margin-top:12px">computer drive at the Central Library</p><p style="font-size:22px;color:rgba(255,255,255,.6);margin-top:8px">Give-a-LOT, with learnOPENtech and LaunchSA</p></div>
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:24px"><p style="font-size:96px;font-weight:900;line-height:1">7</p><p style="font-size:28px;font-weight:700;margin-top:12px">speakers at Texas Public Radio</p><p style="font-size:22px;color:rgba(255,255,255,.6);margin-top:8px">sent by DEVSA to the week&rsquo;s anchor venue</p></div>
+    </div>
+  </div>
+  
+</section>
+
+<!-- 4b. the stack, and who has already built with it -->
+<section class="slide" id="s5">
+  <div class="glow-b"></div><div class="grid-bg"></div>
+  <div class="rel" style="height:100%;display:flex;flex-direction:column">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">Who you reach, by stack</p>
+    <h2 style="font-size:76px;margin-top:14px">Builders Who Ship <em>With</em> Your Tools.</h2>
+    <div style="margin-top:52px;display:grid;grid-template-columns:1fr 760px;gap:56px">
+      <div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 30px"><div style="border-top:3px solid var(--pink);padding-top:12px"><p style="font-size:26px;font-weight:900">AI &amp; agents</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">Alamo City AI · AITX · Alamo Agents</p></div><div style="border-top:3px solid var(--teal);padding-top:12px"><p style="font-size:26px;font-weight:900">Python</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">Alamo Python</p></div><div style="border-top:3px solid var(--orange);padding-top:12px"><p style="font-size:26px;font-weight:900">Cloud</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">AWS User Group · Google Developer Group</p></div><div style="border-top:3px solid var(--teal);padding-top:12px"><p style="font-size:26px;font-weight:900">.NET</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">.NET User Group</p></div><div style="border-top:3px solid var(--orange);padding-top:12px"><p style="font-size:26px;font-weight:900">Linux &amp; open source</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">Linux San Antonio · Red Hat User Group</p></div><div style="border-top:3px solid var(--pink);padding-top:12px"><p style="font-size:26px;font-weight:900">Security</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">DEF CON Group SATX · OWASP San Antonio · UTSA CyberJedis · Alamo City Locksport</p></div><div style="border-top:3px solid var(--teal);padding-top:12px"><p style="font-size:26px;font-weight:900">Data</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">Datanauts · Alamo Regional Data Alliance</p></div><div style="border-top:3px solid var(--orange);padding-top:12px"><p style="font-size:26px;font-weight:900">Game dev</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">Unreal Engine SA · Alamo City Unity · Greater Gaming Society</p></div><div style="border-top:3px solid var(--pink);padding-top:12px"><p style="font-size:26px;font-weight:900">UX &amp; design</p><p style="font-size:18px;line-height:1.4;color:rgba(255,255,255,.65);margin-top:6px">UXSA</p></div></div>
+        <p style="font-size:24px;line-height:1.5;color:rgba(255,255,255,.72);margin-top:48px;max-width:900px">Twenty-five groups, one calendar, including <b style="color:#fff">Alamo Agents</b>, San Antonio&rsquo;s agent builders, meeting monthly. San Antonio is the seventh-largest city in the US and one of its largest cybersecurity and military hubs. <b style="color:#fff">DEVSA is how you reach its developers.</b></p>
+      </div>
+      <div>
+        <p style="font-family:M;font-size:16px;letter-spacing:.18em;color:rgba(255,255,255,.6)">ALREADY BUILT WITH DEVSA</p>
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px"><div style="border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;background:#0d0d0d"><div style="height:240px;background:url(../../public/hero/shebuilds.webp) center/cover"></div><div style="padding:20px 24px 22px"><p style="font-family:M;font-size:15px;letter-spacing:.14em;color:var(--amber)">MAR 8, 2026 · WITH LOVABLE</p><p style="font-size:30px;font-weight:900;margin-top:6px">SheBuilds</p><p style="font-size:19px;line-height:1.45;color:rgba(255,255,255,.72);margin-top:8px">Lovable started it worldwide. Anthropic and Stripe put credits in builders&rsquo; hands. DEVSA brought San Antonio&rsquo;s builders, and they shipped.</p></div></div><div style="border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;background:#0d0d0d"><div style="position:relative;height:240px;background:url(assets/zero-to-agent-room.jpg) 40% 50%/cover"></div><div style="padding:20px 24px 22px"><p style="font-family:M;font-size:15px;letter-spacing:.14em;color:var(--amber)">APR 25, 2026 · VERCEL GLOBAL BUILD WEEK</p><p style="font-size:30px;font-weight:900;margin-top:6px">Zero to Agent</p><p style="font-size:19px;line-height:1.45;color:rgba(255,255,255,.72);margin-top:8px">DEVSA was the official San Antonio community partner: builders shipped AI agents with the Vercel AI SDK, v0 and AI Gateway.</p></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. the conferences -->
+<section class="slide" id="s6">
+  <div class="glow-a"></div><div class="grid-bg"></div>
+  <div class="rel">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">What you can put your name on</p>
+    <h2>Four Conferences, <em>One a Quarter.</em></h2>
+    <div style="margin-top:50px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px">
+      <div style="border:1px solid #262626;border-radius:24px;overflow:hidden;background:#0a0a0a"><div style="height:330px;background:#0a0a0a url(assets/more-human-poster.webp) center/cover no-repeat"></div><img src="assets/mark-4.png" style="display:block;height:46px;margin:22px 28px 0" alt=""><span style="display:inline-block;margin:14px 0 0 28px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);font-family:M;font-size:16px;letter-spacing:.08em;color:#fff">Q1 · FEB 2027</span><br><span style="display:inline-block;margin:10px 28px 0;padding:6px 14px;border-radius:999px;background:rgba(255,207,106,.14);border:1px solid rgba(255,207,106,.5);font-family:M;font-size:16px;letter-spacing:.08em;color:var(--amber)">AT CAPACITY · 80 SEATS</span><p style="padding:12px 28px 26px;font-size:23px;line-height:1.45;color:rgba(255,255,255,.72)">AI for developers and engineers building agents.</p></div>
+      <div style="border:1px solid #262626;border-radius:24px;overflow:hidden;background:#0a0a0a"><div style="position:relative;height:330px;background:#0a0a0a url(assets/mark-1.png) center/62% auto no-repeat"><svg viewBox="0 0 24 24" style="position:absolute;left:52px;top:50px;width:46px;height:46px;transform:rotate(-12deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#c4b5fd"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:300px;top:40px;width:38px;height:38px;transform:rotate(10deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#ffffff"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:318px;top:150px;width:50px;height:54px;transform:rotate(-6deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#c4b5fd"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:40px;top:232px;width:40px;height:40px;transform:rotate(8deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#ffffff"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:150px;top:262px;width:48px;height:48px;transform:rotate(-4deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#c4b5fd"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:318px;top:262px;width:34px;height:34px;transform:rotate(14deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#ffffff"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:205px;top:30px;width:30px;height:30px;transform:rotate(4deg);filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))" fill="#c4b5fd"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg></div><img src="assets/mark-1.png" style="display:block;height:46px;margin:22px 28px 0" alt=""><span style="display:inline-block;margin:14px 0 0 28px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);font-family:M;font-size:16px;letter-spacing:.08em;color:#fff">Q2 · MAY 2027</span><br><span style="display:inline-block;margin:10px 28px 0;padding:6px 14px;border-radius:999px;background:rgba(255,207,106,.14);border:1px solid rgba(255,207,106,.5);font-family:M;font-size:16px;letter-spacing:.08em;color:var(--amber)">AT CAPACITY · 80 SEATS</span><p style="padding:12px 28px 26px;font-size:23px;line-height:1.45;color:rgba(255,255,255,.72)">AI for creators, creatives, founders and builders.</p></div>
+      <div style="border:1px solid #262626;border-radius:24px;overflow:hidden;background:#0a0a0a"><div style="height:330px;background:#0a0a0a url(assets/padlock-loop-poster.webp) center/cover no-repeat"></div><img src="assets/mark-2.png" style="display:block;height:46px;margin:22px 28px 0" alt=""><span style="display:inline-block;margin:14px 0 0 28px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);font-family:M;font-size:16px;letter-spacing:.08em;color:#fff">Q3 · AUG 2027</span><br><span style="display:inline-block;margin:10px 28px 0;padding:6px 14px;border-radius:999px;background:rgba(255,207,106,.14);border:1px solid rgba(255,207,106,.5);font-family:M;font-size:16px;letter-spacing:.08em;color:var(--amber)">AT CAPACITY · 80 SEATS</span><p style="padding:12px 28px 26px;font-size:23px;line-height:1.45;color:rgba(255,255,255,.72)">Security, hands on: the room where people take technology apart.</p></div>
+      <div style="border:1px solid #262626;border-radius:24px;overflow:hidden;background:#0a0a0a"><div style="height:330px;background:#0a0a0a url(assets/mascot-video-poster.webp) center/cover no-repeat"></div><img src="assets/mark-3.png" style="display:block;height:46px;margin:22px 28px 0" alt=""><span style="display:inline-block;margin:14px 0 0 28px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);font-family:M;font-size:16px;letter-spacing:.08em;color:#fff">Q4 · SEPT&ndash;OCT 2027</span><br><span style="display:inline-block;margin:10px 28px 0;padding:6px 14px;border-radius:999px;background:rgba(255,207,106,.14);border:1px solid rgba(255,207,106,.5);font-family:M;font-size:16px;letter-spacing:.08em;color:var(--amber)">AT CAPACITY · 80 SEATS</span><p style="padding:12px 28px 26px;font-size:23px;line-height:1.45;color:rgba(255,255,255,.72)">The city&rsquo;s Python conference, back for year three.</p></div>
+    </div>
+    <p class="lead" style="margin-top:34px;font-size:34px;max-width:1500px">Every one so far filled Geekdom&rsquo;s 80 seats. <b>Put your name on the next one.</b></p>
+  </div>
+  
+</section>
+
+<!-- 7. levels -->
+<section class="slide" id="s7">
+  <div class="glow-a"></div><div class="grid-bg"></div>
+  <div class="rel" style="height:100%;display:flex;flex-direction:column">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">Sponsorship levels</p>
+    <h2 style="font-size:72px;margin-top:14px">Put Your Name <em>on the</em> Bridge.</h2>
+    <div style="flex:1;margin-top:30px;margin-bottom:50px;display:grid;gap:20px;grid-template-columns:1.15fr 1fr 1fr;grid-template-rows:1fr 1fr;grid-template-areas:'f c b' 'f k s'">
+      <div style="grid-area:f;position:relative;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:#0d0d0d">
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden"><img src="assets/network.png" style="position:absolute;inset:-6% -4%;width:108%;height:112%;object-fit:contain"></div>
+        <div style="padding:16px 24px 18px;border-top:4px solid var(--teal)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><p style="font-size:26px;font-weight:900;white-space:nowrap">Founding sponsor</p><p style="font-size:34px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">$25,000<span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.6)"> / year</span></p></div>
+          <p style="font-size:17px;line-height:1.35;color:var(--amber);margin-top:4px">Named across devsa.community · up to 6</p>
+        </div>
+      </div>
+      <div style="grid-area:c;position:relative;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:#0d0d0d">
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden"><div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#000"><div style="position:relative;overflow:hidden;background:#000 url(assets/more-human-poster.webp) 47% 20%/auto 100% no-repeat"><span style="position:absolute;left:10px;bottom:10px;font-family:M;font-size:14px;letter-spacing:.1em;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.25)">Q1 · FEB</span></div><div style="position:relative;overflow:hidden;background:#0a0a0a"><div style="position:absolute;inset:0;background:url(assets/mark-1.png) center 42%/86% auto no-repeat"></div><svg viewBox="0 0 24 24" style="position:absolute;left:12%;top:10%;width:22px" fill="#c4b5fd"><path fill-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:62%;top:16%;width:18px" fill="#fff"><path fill-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><svg viewBox="0 0 24 24" style="position:absolute;left:70%;top:62%;width:20px" fill="#c4b5fd"><path fill-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></svg><span style="position:absolute;left:10px;bottom:10px;font-family:M;font-size:14px;letter-spacing:.1em;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.25)">Q2 · MAY</span></div><div style="position:relative;overflow:hidden;background:#000 url(assets/padlock-loop-poster.webp) 97% 40%/auto 96% no-repeat"><span style="position:absolute;left:10px;bottom:10px;font-family:M;font-size:14px;letter-spacing:.1em;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.25)">Q3 · AUG</span></div><div style="position:relative;overflow:hidden;background:url(assets/mascot-video-poster.webp) center 15%/cover"><span style="position:absolute;left:10px;bottom:10px;font-family:M;font-size:14px;letter-spacing:.1em;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.25)">Q4 · SEPT</span></div></div></div>
+        <div style="padding:16px 24px 18px;border-top:4px solid var(--pink)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><p style="font-size:26px;font-weight:900;white-space:nowrap">A conference</p><p style="font-size:34px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">$15,000<span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.6)"> each</span></p></div>
+          <p style="font-size:17px;line-height:1.35;color:var(--amber);margin-top:4px">&ldquo;Presented by&rdquo; your name · venues like Stable Hall · 4 a year</p>
+        </div>
+      </div>
+      <div style="grid-area:b;position:relative;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:#0d0d0d">
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden"><div style="position:absolute;inset:0;background:url(assets/sastw-workshop.webp) center/cover"></div><div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent 60%)"></div><p style="position:absolute;left:22px;bottom:14px;font-family:M;font-size:22px;color:#fff">&gt; build_night<span style="color:var(--teal)">_</span></p></div>
+        <div style="padding:16px 24px 18px;border-top:4px solid var(--teal)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><p style="font-size:26px;font-weight:900;white-space:nowrap">A build night</p><p style="font-size:34px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">$7,500<span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.6)"> each</span></p></div>
+          <p style="font-size:17px;line-height:1.35;color:var(--amber);margin-top:4px">In person or live on Discord · or co-host with up to 3 at $3,500</p>
+        </div>
+      </div>
+      <div style="grid-area:k;position:relative;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:#0d0d0d">
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden"><img src="assets/calendar-widget.png" style="position:absolute;left:50%;top:18px;width:62%;transform:translateX(-50%) rotate(-3deg);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.6)"></div>
+        <div style="padding:16px 24px 18px;border-top:4px solid var(--orange)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><p style="font-size:26px;font-weight:900;white-space:nowrap">The calendar</p><p style="font-size:34px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">$10,000<span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.6)"> / year</span></p></div>
+          <p style="font-size:17px;line-height:1.35;color:var(--amber);margin-top:4px">&ldquo;Supported by&rdquo; your name, every page · exclusive</p>
+        </div>
+      </div>
+      <div style="grid-area:s;position:relative;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:#0d0d0d">
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden"><div style="position:absolute;inset:0"><img src="assets/sticker-hello.png" style="position:absolute;left:12%;top:16%;width:42%;transform:rotate(-7deg);filter:drop-shadow(0 10px 20px rgba(0,0,0,.6))"><img src="assets/sticker-love.png" style="position:absolute;right:10%;top:20%;width:34%;transform:rotate(6deg);filter:drop-shadow(0 10px 20px rgba(0,0,0,.6))"></div></div>
+        <div style="padding:16px 24px 18px;border-top:4px solid var(--teal)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><p style="font-size:26px;font-weight:900;white-space:nowrap">Supporter</p><p style="font-size:34px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">$2,500<span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.6)"> / year</span></p></div>
+          <p style="font-size:17px;line-height:1.35;color:var(--amber);margin-top:4px">Named among DEVSA&rsquo;s supporters · open</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</section>
+
+<!-- 8. what's included -->
+<section class="slide" id="s8">
+  <div class="glow-b"></div><div class="grid-bg"></div>
+  <div class="rel" style="height:100%;display:flex;flex-direction:column">
+    <div class="bars"><i></i><i></i><i></i></div>
+    <p class="eyebrow">What&rsquo;s included</p>
+    <h2 style="font-size:64px;margin-top:12px">What <em>Your Name</em> Goes On.</h2>
+    <div style="margin-top:26px;display:grid;grid-template-columns:repeat(5,1fr);gap:16px">
+      <div style="border:1px solid rgba(255,255,255,.12);border-top:6px solid var(--teal);border-radius:22px;background:rgba(13,13,13,.85);padding:18px 20px 6px">
+        <p style="font-size:27px;font-weight:900;margin-bottom:8px">Founding</p>
+        <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Name credit</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Named across devsa.community</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Channels</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Thanked on DEVSA&rsquo;s socials, all year</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Stage time</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Remarks at one conference</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Table</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Table at every conference</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Seats</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">10 reserved seats</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Report</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Quarterly report</p></div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.12);border-top:6px solid var(--pink);border-radius:22px;background:rgba(13,13,13,.85);padding:18px 20px 6px">
+        <p style="font-size:27px;font-weight:900;margin-bottom:8px">Conference</p>
+        <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Name credit</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">&ldquo;Presented by&rdquo;, one conference</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Channels</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Thanked on DEVSA&rsquo;s socials, around the event</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Stage time</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">5-min opening</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Table</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Table at that conference</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Seats</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">6 reserved seats</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Report</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Report after the event</p></div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.12);border-top:6px solid var(--teal);border-radius:22px;background:rgba(13,13,13,.85);padding:18px 20px 6px">
+        <p style="font-size:27px;font-weight:900;margin-bottom:8px">Build night</p>
+        <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Name credit</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">&ldquo;Presented by&rdquo;, or co-hosted with up to 3</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Channels</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Thanked on DEVSA&rsquo;s socials, around the event</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Stage time</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">You lead or co-lead the session</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Hands-on</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Your tools and credits in every builder&rsquo;s hands</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Your team</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Your team in the room</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Report</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Report after the event</p></div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.12);border-top:6px solid var(--orange);border-radius:22px;background:rgba(13,13,13,.85);padding:18px 20px 6px">
+        <p style="font-size:27px;font-weight:900;margin-bottom:8px">Calendar</p>
+        <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Name credit</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">&ldquo;Supported by&rdquo;, every calendar page</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Channels</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Thanked monthly on DEVSA&rsquo;s socials</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Stage time</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:rgba(255,255,255,.35)">&mdash;</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Table</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Table at one conference</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Seats</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">4 reserved seats</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Report</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Yearly report</p></div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.12);border-top:6px solid var(--teal);border-radius:22px;background:rgba(13,13,13,.85);padding:18px 20px 6px">
+        <p style="font-size:27px;font-weight:900;margin-bottom:8px">Supporter</p>
+        <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Name credit</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Named among supporters</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Channels</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Thanked once on DEVSA&rsquo;s socials</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Stage time</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:rgba(255,255,255,.35)">&mdash;</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Table</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:rgba(255,255,255,.35)">&mdash;</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Seats</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">2 reserved seats</p></div><div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.1)"><p style="font-family:M;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)">Report</p><p style="font-size:18px;line-height:1.28;margin-top:3px;color:#fff">Yearly thank-you</p></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;align-items:center;gap:30px;border-radius:22px;padding:18px 30px;background:linear-gradient(90deg,rgba(239,66,111,.22),rgba(239,66,111,.06));border:1px solid rgba(239,66,111,.45)">
+      <p style="font-size:44px;font-weight:900;letter-spacing:-.02em;white-space:nowrap">Attendee lists: <span style="color:var(--pink)">never.</span></p>
+      <p style="font-size:24px;line-height:1.4;color:rgba(255,255,255,.8)">No sponsorship includes attendee contact details. You meet builders face to face, and anyone who wants to hear from you signs up through your own link. <b style="color:#fff">That trust is what keeps the rooms full.</b></p>
+    </div>
+  </div>
+  
+</section>
+
+<!-- 9. where it goes, and who to talk to -->
+<section class="slide" id="s9">
+  <div class="glow-a"></div><div class="grid-bg"></div>
+  <div class="rel" style="display:grid;grid-template-columns:1fr 620px;gap:90px;height:100%;align-items:center">
+    <div>
+      <div class="bars"><i></i><i></i><i></i></div>
+      <p class="eyebrow">Where your support goes</p>
+      <h2>Keeping <em>the</em> Bridge Open.</h2>
+      <div style="margin-top:46px">
+        <div style="border-top:1px solid rgba(255,255,255,.15);padding:24px 0"><div><p style="font-size:36px;font-weight:700">A full-time director, and a team</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:6px">The people behind DEVSA&rsquo;s channels: the calendar, Discord, DEVSA TV and the socials that speak to San Antonio&rsquo;s learners and builders.</p></div></div>
+        <div style="border-top:1px solid rgba(255,255,255,.15);padding:24px 0"><div><p style="font-size:36px;font-weight:700">Bigger rooms for the conferences</p><p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:6px">Every DEVSA conference has filled Geekdom&rsquo;s 80 seats. Venues like Stable Hall make room for everyone who wants in.</p></div></div>
+        
+      </div>
+    </div>
+    <div style="border:1px solid rgba(255,255,255,.15);border-radius:28px;padding:56px;background:rgba(255,255,255,.03)">
+      <img src="../../public/branding/devsa-logo.svg" style="width:130px" alt="">
+      <p style="font-size:64px;font-weight:900;line-height:1;margin-top:44px;letter-spacing:-.02em">Let&rsquo;s build it together.</p>
+      <p style="font-size:34px;font-weight:700;margin-top:44px">Jesse Hernandez</p>
+      <p style="font-size:24px;color:rgba(255,255,255,.7);margin-top:6px">Founder, DEVSA</p>
+      <p style="font-size:24px;margin-top:22px;font-family:M">jesse@devsanantonio.com</p>
+      <p style="font-size:24px;margin-top:6px;font-family:M">devsa.community</p>
+      <p style="font-size:22px;font-weight:700;color:var(--amber);margin-top:30px;padding-top:24px;border-top:1px solid rgba(255,255,255,.14)">Commit by January 15, 2027 for a full year of recognition.</p>
+      <p style="font-size:19px;line-height:1.45;color:rgba(255,255,255,.65);margin-top:14px">Invoiced by DEVSA, a 501(c)(3) nonprofit. Written acknowledgment provided for your records.</p>
+    </div>
+  </div>
+  <div class="foot"><div class="bars"><i></i><i></i><i></i></div><span>DEVSA is a 501(c)(3) · EIN 99-2066455</span></div>
+</section>
+
+</body>
+</html>
