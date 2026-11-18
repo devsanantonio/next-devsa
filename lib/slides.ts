@@ -70,10 +70,10 @@ export const DECKS: Deck[] = [
     slug: "devsa-tv-ep1-nov18",
     title: "DEVSA TV · Episode 1",
     summary:
-      "DEVSA's first time on TV: DEVSA in its own words, its four conferences, ACM UTSA's RowdyHacks and RowdyCyberCon, Patrick Robinson on what a software factory is, and December on the calendar.",
+      "DEVSA's first time on TV: DEVSA in its own words, its four conferences, ACM UTSA's RowdyHacks, Patrick Robinson on what a software factory is, and December on the calendar.",
     date: "2026-11-18",
     where: "TVSA studios",
-    slides: 18,
+    slides: 17,
     eventUrl: "/tv",
   },
   {
