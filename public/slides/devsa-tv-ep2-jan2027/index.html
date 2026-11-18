@@ -310,6 +310,9 @@ body:not(.idle) #hud{opacity:1}
 .ask .side div{padding:30px 36px;border-radius:20px;border:1px solid var(--line);background:var(--card)}
 .ask .side p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
 .ask .side b{color:#fff;font-weight:700}
+.ask .side .ch{display:flex;align-items:center;gap:14px}
+.ask .side .ch img{width:36px;height:36px}
+.ask .side .ch img:last-of-type{margin-right:6px}
 .follow{display:flex;align-items:center;gap:22px;margin-top:40px}
 .follow img{width:36px;height:36px;opacity:.85}
 .follow span{margin-left:12px;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
@@ -416,21 +419,23 @@ body:not(.idle) #hud{opacity:1}
   <!-- 01 · The channel: DEVSA is the one to follow, wherever someone already is. The website leads, as the source
        of truth, because not everyone uses the others. Handles from components/footer.tsx; icons from simple-icons. -->
   <section class="slide">
-    <!-- left: the claim, then the website as its answer (start here); right: the socials, for those already there -->
-    <div class="does-copy" style="--c:var(--orange);width:760px;top:320px">
-      <h2 class="h2 in" style="--i:1;line-height:1">One channel<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">to follow.</span></h2>
-      <div class="chan-web in" style="--i:2"><span class="k">Start here</span><b>devsa.community</b><span class="d">Every event and every group, always current</span></div>
+    <!-- The close's form: the claim, then the website as the big card, the other channels as the small ones -->
+    <img class="stk in" src="assets/stickers/hello-2027.webp" alt="hello, 2027" style="--i:3;right:150px;top:50px;width:300px;transform:rotate(6deg)">
+    <div class="pad" style="top:250px">
+      <h2 class="h2 in" style="--i:1;font-size:80px;line-height:1">One channel<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">to follow.</span></h2>
       <!-- Speaker note (said, not shown): it starts on the web, because not everyone is on social media. If you are,
            DEVSA is the one to follow. It connects you to the whole community. -->
-    </div>
-    <div class="chan in" style="--i:3">
-      <ul>
-        <li><img src="assets/channels/discord.svg" alt=""><b>Discord</b><span>devsa.community/discord</span></li>
-        <li><img src="assets/channels/instagram.svg" alt=""><b>Instagram</b><span>@devsatx</span></li>
-        <li><img src="assets/channels/linkedin.svg" alt=""><b>LinkedIn</b><span>/company/devsa</span></li>
-        <li><img src="assets/channels/x.svg" alt=""><b>X</b><span>@devsatx</span></li>
-        <li><img src="assets/channels/youtube.svg" alt=""><b>YouTube</b><span>@devsatx</span></li>
-      </ul>
+      <div class="ask in" style="--i:2">
+        <div class="lead">
+          <span class="k">Start here</span>
+          <b>devsa.community</b>
+          <p>Every event and every group, always current.</p>
+        </div>
+        <div class="side">
+          <div><span class="k">Join the chat</span><p class="ch"><img src="assets/channels/discord.svg" alt="">Discord: <b>devsa.community/discord</b></p></div>
+          <div><span class="k" style="color:var(--pink)">Follow along</span><p class="ch"><img src="assets/channels/instagram.svg" alt=""><img src="assets/channels/x.svg" alt=""><img src="assets/channels/youtube.svg" alt=""><b>@devsatx</b></p><p class="ch"><img src="assets/channels/linkedin.svg" alt="">LinkedIn: <b>/company/devsa</b></p></div>
+        </div>
+      </div>
     </div>
   </section>
 
