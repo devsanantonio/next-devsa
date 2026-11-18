@@ -110,32 +110,49 @@ body:not(.idle) #hud{opacity:1}
 .op-meta{position:absolute;left:124px;top:116px;font-family:"Geist Mono",monospace;font-weight:500;font-size:42px;line-height:1.32;text-transform:uppercase;letter-spacing:.02em}
 .op-meta .pixel{text-transform:none;line-height:1.1;margin-bottom:18px}
 .op-meta .dim{color:rgba(255,255,255,.55)}
+.op-meta .newyear{font-weight:700;color:#ffd343;letter-spacing:.08em;margin:-6px 0 14px}
 .op-mark{position:absolute;left:124px;bottom:120px;width:250px}
 /* the four things, a page each: words left, the real thing right */
 .does-copy{position:absolute;left:140px;top:250px;width:700px}
-.does-copy .h2{font-size:100px;margin-top:30px}
-.does-copy .lede{margin-top:44px;font-size:38px}
+.does-copy .h2{font-size:80px;margin-top:0}
+.does-copy .lede{margin-top:36px;font-size:34px}
 .does-copy .url{margin-top:44px;font-family:"Geist Mono",monospace;font-weight:700;font-size:32px;letter-spacing:.02em;color:var(--c,var(--teal))}
-.shot{position:absolute;left:920px;top:150px;width:880px;border-radius:18px;overflow:hidden;border:1px solid #2c2c2c;background:#fff;box-shadow:0 40px 90px rgba(0,0,0,.6)}
-.shot .bar{display:flex;align-items:center;gap:10px;height:46px;padding:0 18px;background:#161616;border-bottom:1px solid #2c2c2c}
-.shot .bar i{width:13px;height:13px;border-radius:50%;background:#3a3a3a}
-.shot .bar span{margin-left:14px;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.6)}
-.shot img{display:block;width:100%}
-.chan{position:absolute;left:940px;top:170px;width:860px}
-.chan .web{display:flex;align-items:center;gap:40px;padding:40px 44px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
-.chan .web img{width:150px;flex:none}
-.chan .web .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
-.chan .web b{display:block;margin-top:10px;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
-.chan .web .d{display:block;margin-top:14px;font-size:28px;color:rgba(255,255,255,.72)}
-.chan ul{list-style:none;margin-top:22px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
-.chan li{display:flex;align-items:center;gap:28px;padding:22px 40px}
+/* the directory: every group by its logo */
+.dir-grid{position:absolute;right:120px;top:50%;transform:translateY(-50%);width:880px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:18px}
+.slide.on .dir-grid{transform:translateY(-50%)}
+.dir-grid div{aspect-ratio:1;border-radius:50%;background:#111;border:1px solid #262626;display:grid;place-items:center}
+.dir-grid img{width:70%;height:70%;object-fit:contain}
+.dir-grid .white img{filter:brightness(0) invert(1)}
+/* the calendar: a month, with each group on its day */
+.cal{position:absolute;right:120px;top:50%;transform:translateY(-50%);width:880px;padding:34px 36px 38px;border:1px solid var(--line);border-radius:22px;background:var(--card)}
+.slide.on .cal{transform:translateY(-50%)}
+.cal-title{font-size:40px;font-weight:900;letter-spacing:-.01em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-top:22px}
+.cal-grid .dow{font-family:"Geist Mono",monospace;font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.55);text-align:center;padding-bottom:6px}
+.cal-grid .d{position:relative;aspect-ratio:1;border-radius:12px;background:#0d0d0d;border:1px solid #222}
+.cal-grid .d span{position:absolute;left:10px;top:7px;font-family:"Geist Mono",monospace;font-size:20px;color:rgba(255,255,255,.55)}
+.cal-grid .d.has{background:#171717;border-color:var(--c)}
+.cal-grid .d.has span{color:#fff}
+.cal-grid .d img{position:absolute;left:50%;top:56%;width:58%;height:58%;transform:translate(-50%,-50%);object-fit:contain}
+.chan{position:absolute;left:1000px;top:290px;width:800px}
+.chan-web{margin-top:56px;padding:34px 40px;border-radius:20px;border:2px solid var(--teal);background:#0d1716}
+.chan-web .k{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.chan-web b{display:block;margin-top:10px;font-size:60px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.chan-web .d{display:block;margin-top:12px;font-size:28px;color:rgba(255,255,255,.72)}
+.chan ul{list-style:none;margin-top:0;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.chan li{display:flex;align-items:center;gap:28px;padding:29px 40px}
 .chan li + li{border-top:1px solid var(--line)}
 .chan li img{width:44px;height:44px}
 .chan li b{font-size:38px;font-weight:900;letter-spacing:-.01em}
 .chan li span{margin-left:auto;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
-.chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:110px;padding-top:40px;border-top:2px solid #262626}
+.cal-grid .d{aspect-ratio:1.3}
+.cal-grid .d.dw{border:2px solid #ffd02a;background:rgba(255,208,42,.1)}
+.cal-grid .d.dw span{color:#ffd02a}
+.cal-key{display:flex;align-items:center;gap:14px;margin-top:20px;font-family:"Geist Mono",monospace;font-size:22px;color:rgba(255,255,255,.72)}
+.cal-key i{width:22px;height:22px;border-radius:6px;border:2px solid #ffd02a;background:rgba(255,208,42,.1)}
+.chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:90px;padding-top:40px;border-top:2px solid #262626}
 .chapters span{display:block;font-family:"Geist Mono",monospace;font-size:28px;color:var(--c)}
-.chapters b{display:block;margin-top:12px;font-size:56px;font-weight:900;letter-spacing:-.015em}
+.chapters b{display:block;margin-top:12px;font-size:44px;font-weight:900;letter-spacing:-.015em}
 .stk{position:absolute;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6))}
 .pixel{font-family:"Geist Pixel",monospace;font-size:72px;color:#fff;letter-spacing:.04em}
 
@@ -148,7 +165,7 @@ body:not(.idle) #hud{opacity:1}
 
 /* how it started */
 .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;position:relative;margin-top:60px;padding-top:50px}
-.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;margin-top:50px;padding-top:36px;border-top:2px solid #262626}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:50px;margin-top:64px;padding-top:44px;border-top:2px solid #262626}
 .figs b{display:block;font-size:84px;font-weight:900;letter-spacing:-.03em;line-height:1}
 .figs span{display:block;margin-top:10px;font-size:32px;color:rgba(255,255,255,.7)}
 /* the community network, slide 2 */
@@ -157,7 +174,7 @@ body:not(.idle) #hud{opacity:1}
 .timeline::before{content:"";position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))}
 .timeline div{position:relative}
 .timeline div::before{content:"";position:absolute;left:0;top:-50px;width:32px;height:32px;border-radius:50%;background:#000;border:7px solid var(--c)}
-.timeline b{display:block;font-size:64px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.timeline b{display:block;font-family:"Geist Mono",monospace;font-size:34px;font-weight:700;letter-spacing:.02em;line-height:1;color:var(--c)}
 .timeline span{display:block;margin-top:16px;font-size:32px;line-height:1.3;color:rgba(255,255,255,.78)}
 
 /* the four conferences, as a bill */
@@ -219,7 +236,7 @@ body:not(.idle) #hud{opacity:1}
 .dw-art{position:absolute;right:120px;top:250px;width:620px}
 /* DreamWeek's chevrons alone (assets/dreamweek/chevrons.png: its 15-years art with the white 15 and lettering taken out) */
 .dw-chev{position:absolute;right:150px;top:260px;width:520px;height:553px;background:url(assets/dreamweek/chevrons.png) center/contain no-repeat}
-.dw-quote{margin-top:44px;font-size:52px;font-weight:500;line-height:1.25;color:#fff;max-width:1250px}
+.dw-quote{margin-top:36px;font-size:40px;font-weight:500;line-height:1.25;color:#fff;max-width:1250px}
 .dw-partner{display:flex;align-items:center;gap:34px;margin-top:70px;padding:34px 40px;border-radius:20px;border:2px solid rgba(255,208,42,.55);background:rgba(255,255,255,.04);max-width:1120px}
 .dw-partner img{width:150px;flex:none}
 .dw-partner p{font-size:36px;line-height:1.3;color:rgba(255,255,255,.88)}
@@ -356,14 +373,13 @@ body:not(.idle) #hud{opacity:1}
 <div id="stage">
   <img id="mark" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
 
-  <!-- 0 · Opener: the DEVSA TV ship-style card (~/Downloads/devsa-tv-graphics/ship-style): a pyramid of pixel windows,
-       each the DEVSA mark in pixels, built row by row with the top one lit in the brand colors last. -->
+  <!-- 0 · Opener, the New Year edition: a pixel 2026 builds, flips to 2027 in gold, and pixel fireworks burst above
+       it (the script's newYear). The pyramid of windows was episode 1's alone. -->
   <section class="slide" data-mark="off" id="opener">
     <canvas class="pyr" id="pyr" width="1920" height="1080"></canvas>
     <div class="op-meta">
       <p class="pixel in" style="--i:0;font-size:104px">Episode 02</p>
-      <p class="in" style="--i:1">San Antonio&rsquo;s learners &amp; builders</p>
-      <p class="in dim" style="--i:2">Public access TV &middot; 01.2027</p>
+      <p class="in newyear" style="--i:1">&#10022; New Year edition</p>
     </div>
     <img class="op-mark in" style="--i:3" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
   </section>
@@ -374,59 +390,76 @@ body:not(.idle) #hud{opacity:1}
   <section class="slide">
     <!-- the site's caption (components/hero-bridge.tsx): an attendee at PySanAntonio working at a laptop covered in Python community stickers -->
     <div class="media" style="width:50%"><img src="assets/photos/builder-stickers.webp" alt="An attendee at PySanAntonio working at a laptop covered in Python community stickers" style="object-position:50% 45%;opacity:.85"></div>
-    <div class="pad fg" style="top:250px;right:auto;width:820px">
+    <div class="pad fg" style="top:290px;right:auto;width:760px">
       <p class="eyebrow in" style="--i:0">San Antonio</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">Has never lacked people who build things. <span class="mute">What it lacked was anything that connected them.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Has never lacked people who build things.<span class="mute" style="display:block;margin-top:40px;font-size:54px;line-height:1.15">What it lacked was anything that connected them.</span></h2>
     </div>
   </section>
 
-  <!-- 2 · How it started (the About page's facts): the origin comes before what DEVSA is, so the gap leads into who answered it -->
-  <section class="slide">
-    <div class="pad" style="top:225px">
-      <p class="eyebrow in" style="--i:0">How it started</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:96px">A Discord server, <span class="mute">then a 501(c)(3).</span></h2>
-      <div class="timeline in" style="--i:2">
-        <div style="--c:var(--teal)"><b>Sept 2023</b><span>Started as a Discord server</span></div>
-        <div style="--c:var(--pink)"><b>Mar 2024</b><span>A 501(c)(3), run by a volunteer board</span></div>
-        <div style="--c:var(--orange)"><b>Apr 2024</b><span>The first event, about ten groups on the calendar</span></div>
-        <div style="--c:var(--teal)"><b>Nov 2026</b><span>27 groups in the directory</span></div>
-      </div>
-      <!-- the calendar's record: Luma for 2024 and 2025, devsa.community for 2026 (lib/calendar-record.ts), as of Nov 15 -->
-      <div class="figs in" style="--i:3">
-        <div><b>214</b><span>events in 2024</span></div>
-        <div><b>204</b><span>in 2025</span></div>
-        <div><b>190+</b><span>in 2026</span></div>
-        <div><b>600+</b><span>since 2024</span></div>
-      </div>
-    </div>
-  </section>
 
   <!-- 3 · What DEVSA is -->
   <!-- the community network from the roundtable deck (and components/community-network.tsx): every group in the
        directory, each linked to DEVSA. After slide 1's builder on her own, this is what connects them. -->
   <section class="slide" id="netSlide">
     <div class="netbox in" style="--i:2" aria-hidden="true"><div id="net"></div></div>
-    <div class="pad" style="top:270px;right:auto;width:820px">
+    <div class="pad" style="top:330px;right:auto;width:760px">
       <p class="eyebrow in" style="--i:0">This is DEVSA</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:94px">Community infrastructure <span class="mute">for San Antonio&rsquo;s learners and builders.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Community infrastructure<span class="mute" style="display:block;margin-top:40px;font-size:54px;line-height:1.15">for San Antonio&rsquo;s learners and builders.</span></h2>
     </div>
   </section>
 
 
 
 
-  <!-- What DEVSA does: a title card, then a page each (the rooms are the bill that follows) -->
+  <!-- What DEVSA does, a page each, straight from Community infrastructure: the channel, the directory, the calendar,
+       brought over from episode 1. -->
+  <!-- 01 · The channel: DEVSA is the one to follow, wherever someone already is. The website leads, as the source
+       of truth, because not everyone uses the others. Handles from components/footer.tsx; icons from simple-icons. -->
   <section class="slide">
-    <img class="stk in" src="assets/stickers/hello.webp" alt="" style="--i:2;right:130px;top:56px;width:440px;transform:rotate(-6deg)">
-    <div class="pad" style="top:300px">
-      <p class="eyebrow in" style="--i:0">What DEVSA does</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:136px">Find your people. <span class="mute">Build your future.</span></h2>
-      <div class="chapters in" style="--i:3">
-        <div style="--c:var(--teal)"><span>01</span><b>The calendar</b></div>
-        <div style="--c:var(--pink)"><span>02</span><b>The directory</b></div>
-        <div style="--c:var(--orange)"><span>03</span><b>The channel</b></div>
-        <div style="--c:var(--teal)"><span>04</span><b>The rooms</b></div>
-      </div>
+    <!-- left: the claim, then the website as its answer (start here); right: the socials, for those already there -->
+    <div class="does-copy" style="--c:var(--orange);width:760px;top:320px">
+      <h2 class="h2 in" style="--i:1;line-height:1">One channel<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">to follow.</span></h2>
+      <div class="chan-web in" style="--i:2"><span class="k">Start here</span><b>devsa.community</b><span class="d">Every event and every group, always current</span></div>
+      <!-- Speaker note (said, not shown): it starts on the web, because not everyone is on social media. If you are,
+           DEVSA is the one to follow. It connects you to the whole community. -->
+    </div>
+    <div class="chan in" style="--i:3">
+      <ul>
+        <li><img src="assets/channels/discord.svg" alt=""><b>Discord</b><span>devsa.community/discord</span></li>
+        <li><img src="assets/channels/instagram.svg" alt=""><b>Instagram</b><span>@devsatx</span></li>
+        <li><img src="assets/channels/linkedin.svg" alt=""><b>LinkedIn</b><span>/company/devsa</span></li>
+        <li><img src="assets/channels/x.svg" alt=""><b>X</b><span>@devsatx</span></li>
+        <li><img src="assets/channels/youtube.svg" alt=""><b>YouTube</b><span>@devsatx</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 02 · The directory: Building Together's grid, the community groups' rows only (the partner rows below carry
+       logos, TVSA's among them, that aren't cleared for TV) -->
+  <section class="slide">
+    <div class="does-copy" style="--c:var(--pink)">
+      <h2 class="h2 in" style="--i:1">Every group, <span class="mute">in one place.</span></h2>
+      <!-- Building Together's own line -->
+      <p class="lede in" style="--i:2">Open any logo for what they do, when they meet, and how to join.</p>
+      <p class="url in" style="--i:3">devsa.community/buildingtogether</p>
+    </div>
+    <!-- every group in the directory, by its logo (CONFIG.wall), large enough to read on TV -->
+    <div class="dir-grid in" id="dirGrid" style="--i:2" aria-label="The community groups in DEVSA's directory"></div>
+  </section>
+
+  <!-- 03 · The calendar: January 2027, with DreamWeek's Jan 15-31 marked; each group's logo on its day as they post
+       (CONFIG.month). As of Nov 17 nothing for January is on devsa.community/events yet. -->
+  <section class="slide">
+    <div class="does-copy" style="--c:var(--teal)">
+      <h2 class="h2 in" style="--i:1">Every group. <span class="mute">One calendar.</span></h2>
+      <!-- the calendar page's own line -->
+      <p class="lede in" style="--i:2">Python, Linux, .NET, AI, game dev, design, data, security, cloud. All 28 groups publish here.</p>
+      <p class="url in" style="--i:3">devsa.community/events</p>
+    </div>
+    <div class="cal in" style="--i:2" aria-label="January 2027 on DEVSA's community calendar">
+      <p class="cal-title">January 2027</p>
+      <div class="cal-grid" id="calGrid"></div>
+      <p class="cal-key"><i></i>DreamWeek San Antonio, January 15&ndash;31</p>
     </div>
   </section>
 
@@ -439,8 +472,8 @@ body:not(.idle) #hud{opacity:1}
     <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
     <div class="dw-copy">
       <p class="dw-eye in" style="--i:0">January 15&ndash;31, 2027 &middot; #Connections</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:110px">DreamWeek <span class="mute">San Antonio.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:40px">Seventeen days of forums, performances, screenings, service days and shared tables, hosted by the people and organizations of San Antonio.</p>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">DreamWeek<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">San Antonio.</span></h2>
+      <p class="lede in" style="--i:2;margin-top:36px;font-size:34px">Seventeen days of forums, performances, screenings, service days and shared tables, hosted by the people and organizations of San Antonio.</p>
       <div class="dw-stats in" style="--i:3"><span><b>15</b> years</span><span><b>17</b> days</span><span><b>15</b> categories</span></div>
     </div>
     <img class="dw-art in" style="--i:2" src="assets/dreamweek/15-years.png" alt="DreamWeek: 15 years of connecting">
@@ -453,7 +486,7 @@ body:not(.idle) #hud{opacity:1}
     <div class="dw-chev in" style="--i:1" aria-hidden="true"></div>
     <div class="dw-copy" style="width:1180px">
       <p class="dw-eye in" style="--i:0">DreamWeek 2027 &middot; Empower</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:150px">DreamTech.</h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:100px">DreamTech.</h2>
       <p class="dw-quote in" style="--i:2">&ldquo;Technology, media, AI, cybersecurity, digital culture, innovation, and access.&rdquo;</p>
       <p class="in" style="--i:2;margin-top:14px;font-size:26px;color:rgba(255,255,255,.6)">How DreamWeek describes the category</p>
       <div class="dw-partner in" style="--i:3">
@@ -468,7 +501,7 @@ body:not(.idle) #hud{opacity:1}
     <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
     <div class="dw-copy" style="width:1640px">
       <p class="dw-eye in" style="--i:0">Be part of the 15th</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">Find your seat <span class="mute">at DreamWeek.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Find your seat<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">at DreamWeek.</span></h2>
       <div class="dw-ways in" style="--i:2">
         <div><b>Go</b><p>Seventeen days of events across the city, January 15&ndash;31. Follow DreamTech, or wander into a new category.</p></div>
         <div><b>Subscribe</b><p>A morning digest of the categories you pick, every day of the summit.</p></div>
@@ -480,25 +513,37 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- ===================== Featured talk ===================== -->
 
-  <!-- The speaker's name, title and talk come from CONFIG.speaker in the script below; until they're set the
-       slide says the talk is to be announced. -->
+  <!-- The featured talk: Daniel Ward, Software Consultant at Lean TECHniques. Up for a few seconds before he
+       switches to his own laptop, so it is one glance: the talk, his name and role, nothing else. -->
   <section class="slide" id="talkSlide">
-    <canvas class="pyr" id="pyr2" width="1920" height="1080"></canvas>
-    <div class="pad" style="top:250px;right:auto;width:800px">
+    <div class="pad" style="top:300px;right:auto;width:1200px">
       <p class="eyebrow in" style="--i:0">Featured talk</p>
-      <h2 class="h2 in" id="spTalk" style="--i:1;margin-top:30px;font-size:110px">Talk title <span class="mute">to come.</span></h2>
-      <p class="in" id="spName" style="--i:2;margin-top:64px;font-size:60px;font-weight:900;letter-spacing:-.02em">Speaker</p>
-      <p class="lede in" id="spTitle" style="--i:3;margin-top:8px">&nbsp;</p>
+      <h2 class="h2 in" id="spTalk" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Talk title<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">to come.</span></h2>
+      <p class="in" id="spName" style="--i:2;margin-top:64px;font-size:50px;font-weight:900;letter-spacing:-.02em">Speaker</p>
+      <p class="lede in" id="spTitle" style="--i:3;margin-top:10px;font-size:34px">&nbsp;</p>
+    </div>
+
+  </section>
+
+  <!-- ===================== Your January ===================== -->
+
+  <!-- The same close as episode 1: the rooms the audience can walk into this month, from the calendar (CONFIG.january). -->
+  <section class="slide">
+    <div class="pad" style="top:190px">
+      <p class="eyebrow in" style="--i:0">On the community calendar</p>
+      <h2 class="h2 in" style="--i:1;margin-top:28px;font-size:80px">Your January, <span class="mute">on the calendar.</span></h2>
+      <div class="dec in" id="dec" style="--i:2"></div>
+      <p class="url in" style="--i:3;margin-top:36px">Every event, and how to RSVP: <b style="color:#fff">devsa.community</b></p>
     </div>
   </section>
 
   <!-- ===================== Close ===================== -->
 
   <section class="slide">
-    <img class="stk in" src="assets/stickers/love.webp" alt="I love SATX" style="--i:3;right:150px;top:70px;width:380px;transform:rotate(6deg)">
+    <img class="stk in" src="assets/stickers/newyear.webp" alt="Happy New Year 2027" style="--i:3;right:140px;top:60px;width:400px;transform:rotate(5deg)">
     <div class="pad" style="top:180px">
       <p class="eyebrow in" style="--i:0">Thanks for watching &middot; <b>see you in February</b></p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:104px">Find your people. <span class="mute">Build your future.</span></h2>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Find your people.<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">Build your future.</span></h2>
       <!-- The asks, in DEVSA's order: the calendar first, then (for organizers) getting on it, then support. Social is the
            small print, as on the channel page: the website leads. No channel or station named until TVSA's wording is confirmed. -->
       <div class="ask in" style="--i:2">
@@ -528,8 +573,17 @@ const CONFIG = {
   // (checked November 15, in San Antonio time). For the rest, add the event once the group posts it;
   // until then the card says it's coming to the calendar, rather than inventing a date.
   // The featured speaker: fill these in once confirmed. Blank leaves "to come" on the slide.
-  speaker: { name: "", title: "", talk: "", talkMute: "" },   // talk: the bold part; talkMute: the light italic end
+  speaker: { name: "Daniel Ward", title: "Software Consultant · Lean TECHniques", talk: "Making AI adoption stick:", talkMute: "from experiment to everyday." },   // talk: the bold part; talkMute: the light italic end
   // The groups wall: the directory's groups with a logo in assets/wall (November 15; ACM TAMUSA has no file yet).
+  // Your January: the month's events in date order, from devsa.community/events (San Antonio time). logo: a file in
+  // assets/wall, or a path under assets/. No group had posted January dates as of Nov 17: add them before taping.
+  january: [
+    { group: "15th edition &middot; DEVSA is a DreamTech community partner", logo: "dreamweek/chevrons.png", title: "DreamWeek San Antonio", when: "Fri Jan 15 · Jan 15–31" },
+  ],
+  // January 2027 on the calendar slide: day -> the group's logo in assets/wall (g0 DEF CON ... see the wall below),
+  // from devsa.community/events. Nothing for January was posted as of Nov 17: fill in before taping.
+  // span: DreamWeek's days, marked on the month.
+  month: { year: 2027, month: 0, days: {}, span: [15, 31] },
   wall: ["g0.png", "g1.png", "g2.png", "g3.png", "g4.png", "g5.png", "g6.png", "g7.png", "g8.png", "g9.png", "g10.png", "g11.png", "g12.png",
     "g13.png", "g14.png", "g15.png:white", "g16.png", "g17-2026.png", "g18.png", "g19.png", "g21.png", "g22.png", "g23.png", "g24.png", "g25.svg", "aws-sbg-wgu.png"],
 }
@@ -539,32 +593,95 @@ const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [..
 const stage = $("#stage"), slides = $$(".slide")
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])
 
-if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
-// ---------- the opener's pyramid (ship-style): pixel windows, the DEVSA mark in each, the top one lit last ----------
-;for (const [cid, sid] of [["pyr", "opener"], ["pyr2", "talkSlide"]]) (function pyramid() {
-  const c = $("#" + cid), sl = $("#" + sid); if (!c) return
-  const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200"
-  function win(x, y, px, lit, a) {
-    const W = 22, H = 18
-    const frame = lit ? "#eeeeee" : "#3a3a3a", body = lit ? "#111" : "#161616", face = lit ? "#eeeeee" : "#9a9a9a"
-    const tabs = lit ? [TEAL, PINK, ORANGE] : ["#555", "#555", "#555"]
-    const P = (col, cx, cy, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x + cx * px, y + cy * px, w * px, h * px) }
-    g.globalAlpha = a
-    P(frame, 1, 0, W - 2, H); P(frame, 0, 1, W, H - 2); P(body, 1, 4, W - 2, H - 5)
-    P(tabs[0], 1, 1, 6, 2); P(tabs[1], 8, 1, 6, 2); P(tabs[2], 15, 1, 6, 2)
-    for (const [cx, cy] of [[4, 6], [5, 7], [6, 8], [7, 9], [6, 10], [5, 11], [4, 12]]) P(face, cx, cy, 2, 1)
-    P(face, 11, 12, 7, 1); g.globalAlpha = 1
+if ($("#dirGrid")) $("#dirGrid").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+if ($("#calGrid")) {
+  const { year, month, days, span } = CONFIG.month, C = ["#00b2a9", "#ef426f", "#ff8200"]
+  const first = new Date(year, month, 1).getDay(), n = new Date(year, month + 1, 0).getDate()
+  let h = ["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="dow">${d}</div>`).join("")
+  for (let i = 0; i < first; i++) h += "<div></div>"
+  let k = 0
+  for (let d = 1; d <= n; d++) {
+    const logo = days[d], dw = span && d >= span[0] && d <= span[1] ? " dw" : ""
+    h += logo ? `<div class="d has${dw}" style="--c:${C[k++ % 3]}"><span>${d}</span><img src="assets/wall/${esc(logo)}" alt=""></div>` : `<div class="d${dw}"><span>${d}</span></div>`
   }
-  const px = 9, w = 22 * px, h = 18 * px, gap = 24, cx = 1360, top = 170, wins = []
-  for (let r = 3; r >= 0; r--) { const n = r + 1, rowW = n * w + (n - 1) * gap; for (let i = 0; i < n; i++) wins.push([Math.round(cx - rowW / 2 + i * (w + gap)), top + r * (h + gap), r === 0]) }
-  let t0 = null
+  $("#calGrid").innerHTML = h
+}
+// Your January as a calendar list: the date, the group's logo, the event and who runs it, the time.
+// "when" reads like "Tue Jan 5 · 6 PM". A logo with a "/" is a path under assets/; otherwise a file in assets/wall.
+if ($("#dec")) $("#dec").innerHTML = CONFIG.january.map((e) => {
+  const [d, t = ""] = (e.when || "").split(" · "), [dow = "", ...md] = d.split(" ")
+  const src = e.logo.includes("/") ? "assets/" + e.logo : "assets/wall/" + e.logo
+  return `<div class="row"><span class="dt"><b>${esc(md.join(" "))}</b><i>${esc(dow)}</i></span><img src="${esc(src)}" alt=""><span class="de"><b>${esc(e.title)}</b><i>${e.group}</i></span><span class="tm">${esc(t)}</span></div>`
+}).join("")
+if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
+// ---------- the opener, for the new year: a pixel 2026 builds, its last digit flips to 7, and pixel fireworks
+// burst above it in the brand colors and gold. Loops while the opener is on screen. (The pyramid of windows was
+// episode 1's alone; each episode's opener is its own.) ----------
+;(function newYear() {
+  const c = $("#pyr"), sl = $("#opener"); if (!c) return
+  const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200", GOLD = "#ffd343"
+  const COLORS = [TEAL, PINK, ORANGE, GOLD]
+  const FONT = {
+    0: ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+    2: ["01110", "10001", "00001", "00110", "01000", "10000", "11111"],
+    6: ["00110", "01000", "10000", "11110", "10001", "10001", "01110"],
+    7: ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+  }
+  const CELL = 34, INSET = 3, cx = 1380, base = 860
+  const width = (4 * 5 + 3 * 1) * CELL, x0 = cx - width / 2, y0 = base - 7 * CELL
+  const FLIP = 2100
+  function digit(d, i, col, t) {
+    const rows = FONT[d], dx = x0 + i * 6 * CELL
+    rows.forEach((row, ry) => [...row].forEach((ch, rx) => {
+      if (ch !== "1") return
+      // each cell fades in on its own beat, left to right
+      const k = Math.max(0, Math.min(1, (t - (i * 5 + rx) * 38 - ry * 18) / 260))
+      if (k <= 0) return
+      g.globalAlpha = k; g.fillStyle = col
+      g.fillRect(dx + rx * CELL + INSET, y0 + ry * CELL + INSET, CELL - 2 * INSET, CELL - 2 * INSET)
+    }))
+    g.globalAlpha = 1
+  }
+  // a firework: a pixel rocket rises from behind the year, then bursts into 20 rays of pixel sparks
+  const BURSTS = [[1260, 330, 0], [1680, 300, 1], [1460, 220, 3], [1300, 450, 2], [1600, 440, 0], [1400, 330, 1]]
+  const CYCLE = 5600, RISE = 650, LIFE = 1500, SP = 10
+  const snap = (v) => Math.round(v / SP) * SP
+  function firework(bx, by, col, t) {
+    if (t < 0) return
+    if (t < RISE) {
+      const k = t / RISE, y = y0 - 10 + (by - y0 + 10) * (1 - (1 - k) * (1 - k))
+      g.fillStyle = "#fff"; g.fillRect(snap(bx), snap(y), SP, SP)
+      g.globalAlpha = .5; g.fillStyle = col; g.fillRect(snap(bx), snap(y) + SP * 2, SP, SP); g.globalAlpha = 1
+      return
+    }
+    const b = t - RISE; if (b > LIFE) return
+    const k = b / LIFE, R = 130 * (1 - (1 - k) * (1 - k) * (1 - k)), drop = 60 * k * k
+    g.globalAlpha = 1 - k * k
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2
+      for (const f of [1, .72, .46]) {
+        g.fillStyle = f === .46 ? "#fff" : col
+        g.fillRect(snap(bx + Math.cos(a) * R * f), snap(by + Math.sin(a) * R * f + drop * f), SP, SP)
+      }
+    }
+    if (b < 140) { g.fillStyle = "#fff"; g.fillRect(snap(bx) - SP, snap(by) - SP, SP * 3, SP * 3) }
+    g.globalAlpha = 1
+  }
+  let t0 = null, raf = 0
   function draw(ms) {
     if (t0 === null) t0 = ms
     const t = ms - t0; g.clearRect(0, 0, 1920, 1080)
-    wins.forEach(([x, y, lit], k) => { const a = Math.max(0, Math.min(1, (t - 400 - k * 110 - (lit ? 350 : 0)) / 300)); if (a > 0) win(x, y, px, lit, a) })
-    if (t < 400 + wins.length * 110 + 700) requestAnimationFrame(draw)
+    if (t > FLIP) {
+      const ft = (t - FLIP) % CYCLE
+      BURSTS.forEach(([bx, by, ci], i) => firework(bx, by, COLORS[ci], ft - i * 780))
+    }
+    digit(2, 0, "#eeeeee", t); digit(0, 1, "#eeeeee", t); digit(2, 2, "#eeeeee", t)
+    // 2026 until the flip; then a white flash, and the 7 in gold
+    if (t < FLIP) digit(6, 3, "#5a5a5a", t)
+    else digit(7, 3, t - FLIP < 180 ? "#ffffff" : GOLD, 1e9)
+    if (sl.classList.contains("on")) raf = requestAnimationFrame(draw)
   }
-  const start = () => { t0 = null; requestAnimationFrame(draw) }
+  const start = () => { cancelAnimationFrame(raf); t0 = null; raf = requestAnimationFrame(draw) }
   new MutationObserver(() => { if (sl.classList.contains("on")) start() }).observe(sl, { attributes: true, attributeFilter: ["class"] })
   if (sl.classList.contains("on")) start()
 })()
@@ -629,7 +746,7 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
 // December as a calendar list: the date, the group's logo, the event and who runs it, the time. (Venues are a click away
 // on devsa.community, which the slide names.) "when" reads like "Tue Dec 1 · 6 PM".
 { const sp = CONFIG.speaker
-  if (sp.talk) $("#spTalk").innerHTML = esc(sp.talk) + (sp.talkMute ? ' <span class="mute">' + esc(sp.talkMute) + "</span>" : "")
+  if (sp.talk) $("#spTalk").innerHTML = esc(sp.talk) + (sp.talkMute ? '<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">' + esc(sp.talkMute) + "</span>" : "")
   if (sp.name) $("#spName").textContent = sp.name
   if (sp.title) $("#spTitle").textContent = sp.title }
 

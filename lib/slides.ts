@@ -38,7 +38,7 @@ export const DECKS: Deck[] = [
       "DEVSA's January episode: DEVSA in its own words, DreamWeek San Antonio's 15th and DreamTech, where DEVSA is a community partner, and a featured talk.",
     date: "2027-01-01",
     where: "TVSA studios",
-    slides: 10,
+    slides: 12,
     eventUrl: "/tv",
   },
   {
@@ -48,7 +48,7 @@ export const DECKS: Deck[] = [
       "DEVSA's first time on TV: DEVSA in its own words, its four conferences, ACM UTSA's RowdyHacks and RowdyCyberCon, Patrick Robinson on what a software factory is, and December on the calendar.",
     date: "2026-11-18",
     where: "TVSA studios",
-    slides: 19,
+    slides: 18,
     eventUrl: "/tv",
   },
   {
