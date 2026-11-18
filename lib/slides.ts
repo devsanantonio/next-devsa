@@ -63,7 +63,7 @@ export const DECKS: Deck[] = [
       "DEVSA's January episode: DEVSA in its own words, DreamWeek San Antonio's 15th and DreamTech, where DEVSA is a community partner, and a featured talk.",
     date: "2027-01-01",
     where: "TVSA studios",
-    slides: 12,
+    slides: 11,
     eventUrl: "/tv",
   },
   {

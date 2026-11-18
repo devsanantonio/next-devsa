@@ -146,6 +146,7 @@ body:not(.idle) #hud{opacity:1}
 .chan li b{font-size:38px;font-weight:900;letter-spacing:-.01em}
 .chan li span{margin-left:auto;font-family:"Geist Mono",monospace;font-size:28px;color:rgba(255,255,255,.72)}
 .cal-grid .d{aspect-ratio:1.3}
+.cal-grid .d img{top:62%;width:66%;height:50%}
 .cal-grid .d.dw{border:2px solid #ffd02a;background:rgba(255,208,42,.1)}
 .cal-grid .d.dw span{color:#ffd02a}
 .cal-key{display:flex;align-items:center;gap:14px;margin-top:20px;font-family:"Geist Mono",monospace;font-size:22px;color:rgba(255,255,255,.72)}
@@ -170,7 +171,7 @@ body:not(.idle) #hud{opacity:1}
 .figs span{display:block;margin-top:10px;font-size:32px;color:rgba(255,255,255,.7)}
 /* the community network, slide 2 */
 .netbox{position:absolute;left:880px;top:135px;width:1060px;height:795px}
-#net,#net svg{display:block;width:100%;height:100%;overflow:visible}
+#net,#net svg,#dwNet,#dwNet svg{display:block;width:100%;height:100%;overflow:visible}
 .timeline::before{content:"";position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--pink),var(--orange))}
 .timeline div{position:relative}
 .timeline div::before{content:"";position:absolute;left:0;top:-50px;width:32px;height:32px;border-radius:50%;background:#000;border:7px solid var(--c)}
@@ -237,7 +238,7 @@ body:not(.idle) #hud{opacity:1}
 /* DreamWeek's chevrons alone (assets/dreamweek/chevrons.png: its 15-years art with the white 15 and lettering taken out) */
 .dw-chev{position:absolute;right:150px;top:260px;width:520px;height:553px;background:url(assets/dreamweek/chevrons.png) center/contain no-repeat}
 .dw-quote{margin-top:36px;font-size:40px;font-weight:500;line-height:1.25;color:#fff;max-width:1250px}
-.dw-partner{display:flex;align-items:center;gap:34px;margin-top:70px;padding:34px 40px;border-radius:20px;border:2px solid rgba(255,208,42,.55);background:rgba(255,255,255,.04);max-width:1120px}
+.dw-partner{display:flex;align-items:center;gap:34px;margin-top:44px;padding:34px 40px;border-radius:20px;border:2px solid rgba(255,208,42,.55);background:rgba(255,255,255,.04);max-width:1120px}
 .dw-partner img{width:150px;flex:none}
 .dw-partner p{font-size:36px;line-height:1.3;color:rgba(255,255,255,.88)}
 .dw-partner span{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:#ffd02a;margin-bottom:8px}
@@ -246,6 +247,11 @@ body:not(.idle) #hud{opacity:1}
 .dw-ways b{display:block;font-size:44px;font-weight:900;color:#fff}
 .dw-ways div:nth-child(1) b{color:#ff6a5c}.dw-ways div:nth-child(2) b{color:#4fb4f0}.dw-ways div:nth-child(3) b{color:#ffd02a}
 .dw-ways p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
+.dw-strip{display:flex;align-items:center;gap:28px;margin-top:56px;padding-top:40px;border-top:2px solid rgba(255,255,255,.14)}
+.dw-strip img{width:96px;flex:none}
+.dw-strip p{font-size:30px;line-height:1.3;color:rgba(255,255,255,.82);text-wrap:balance}
+.dw-strip span{display:block;font-family:"Geist Mono",monospace;font-weight:700;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:#ffd02a;margin-bottom:6px}
+.dw-site{margin-top:40px;font-family:"Geist Mono",monospace;font-weight:700;font-size:40px;letter-spacing:.02em;color:#ffd02a}
 .dw-url{display:flex;align-items:center;gap:30px;margin-top:56px}
 .dw-url .qr{width:150px;height:150px;background:#fff;padding:10px;border-radius:12px}
 .dw-url .qr img{width:100%;height:100%;display:block}
@@ -298,6 +304,8 @@ body:not(.idle) #hud{opacity:1}
 .dec .de b{display:block;font-size:38px;font-weight:900;letter-spacing:-.015em;line-height:1.1}
 .dec .de i{display:block;margin-top:6px;font-style:normal;font-size:26px;color:rgba(255,255,255,.65)}
 .dec .de{min-width:0}
+.dec-roomy{margin-top:60px}
+.dec-roomy .row{padding:28px 0}
 .dec .tm{font-family:"Geist Mono",monospace;font-weight:700;font-size:30px;color:#fff}
 
 /* the close */
@@ -470,50 +478,40 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- ===================== DreamWeek 2027 ===================== -->
 
-  <!-- DreamWeek in its own words and art (dreamweek.org, Nov 16): the 15th anniversary, Jan 15–31, 2027,
-       #CONNECTIONS, 17 days and 15 categories, hosted by the people and organizations of San Antonio.
-       The 15-years art and the reversed logo are DreamWeek's, from the roundtable deck. -->
+  <!-- DreamWeek, then DreamTech, held while the DreamWeek guest talks (up to 5 minutes), as episode 1 spotlights a
+       group and then its event. DreamWeek's own words and art (dreamweek.org, Nov 16): the 15th anniversary,
+       Jan 15-31, 2027, #CONNECTIONS. The 15-years art and the reversed logo are DreamWeek's, from the roundtable deck;
+       the art holds in the same place across both slides. -->
   <section class="slide dwk" data-mark="off">
     <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
-    <div class="dw-copy">
+    <div class="dw-copy" style="top:270px;width:860px">
       <p class="dw-eye in" style="--i:0">January 15&ndash;31, 2027 &middot; #Connections</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">DreamWeek<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">San Antonio.</span></h2>
-      <p class="lede in" style="--i:2;margin-top:36px;font-size:34px">Seventeen days of forums, performances, screenings, service days and shared tables, hosted by the people and organizations of San Antonio.</p>
-      <div class="dw-stats in" style="--i:3"><span><b>15</b> years</span><span><b>17</b> days</span><span><b>15</b> categories</span></div>
+      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">DreamWeek</h2>
+      <!-- DreamWeek's own description (dreamweek.org) -->
+      <p class="lede in" style="--i:2;margin-top:40px;font-size:34px;line-height:1.4">Seventeen days of forums, performances, screenings, service days and shared tables, hosted by the people and organizations of San Antonio.</p>
+      <!-- DEVSA's part, as a quiet strip rather than a card -->
+      <div class="dw-strip in" style="--i:3">
+        <img src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
+        <p><span>Community partner</span>Connecting San Antonio&rsquo;s learners and builders to DreamTech.</p>
+      </div>
     </div>
-    <img class="dw-art in" style="--i:2" src="assets/dreamweek/15-years.png" alt="DreamWeek: 15 years of connecting">
+    <img class="dw-art in" style="--i:2;top:50%;width:760px;transform:translateY(-50%)" src="assets/dreamweek/15-years.png" alt="DreamWeek: 15 years of connecting">
   </section>
 
-  <!-- DreamTech, and DEVSA's part in it: a community partner helping DreamWeek activate the category (the
-       roundtable deck's framing). DreamTech sits under Empower; the line is how DreamWeek describes it. -->
-  <section class="slide dwk" data-mark="off">
+  <!-- DreamTech, and DEVSA's part in it: a community partner helping DreamWeek activate the category (the roundtable
+       deck's framing). DreamTech sits under Empower; the quote is how DreamWeek describes it. -->
+  <section class="slide dwk" data-mark="off" id="dwTech">
     <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
-    <div class="dw-chev in" style="--i:1" aria-hidden="true"></div>
-    <div class="dw-copy" style="width:1180px">
+    <div class="dw-copy" style="width:860px;top:350px">
       <p class="dw-eye in" style="--i:0">DreamWeek 2027 &middot; Empower</p>
       <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:100px">DreamTech.</h2>
       <p class="dw-quote in" style="--i:2">&ldquo;Technology, media, AI, cybersecurity, digital culture, innovation, and access.&rdquo;</p>
-      <p class="in" style="--i:2;margin-top:14px;font-size:26px;color:rgba(255,255,255,.6)">How DreamWeek describes the category</p>
-      <div class="dw-partner in" style="--i:3">
-        <img src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
-        <p><span>Community partner</span>DEVSA is helping the DreamWeek team activate DreamTech, with San Antonio&rsquo;s tech community groups.</p>
-      </div>
+      <p class="dw-site in" style="--i:4">dreamweek.org</p>
     </div>
-  </section>
-
-  <!-- How to take part, from dreamweek.org's own ways in; the QR goes to dreamweek.org. -->
-  <section class="slide dwk" data-mark="off">
-    <img class="dw-logo in" style="--i:0" src="assets/dreamweek/logo-reverse.png" alt="DreamWeek San Antonio">
-    <div class="dw-copy" style="width:1640px">
-      <p class="dw-eye in" style="--i:0">Be part of the 15th</p>
-      <h2 class="h2 in" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Find your seat<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">at DreamWeek.</span></h2>
-      <div class="dw-ways in" style="--i:2">
-        <div><b>Go</b><p>Seventeen days of events across the city, January 15&ndash;31. Follow DreamTech, or wander into a new category.</p></div>
-        <div><b>Subscribe</b><p>A morning digest of the categories you pick, every day of the summit.</p></div>
-        <div><b>Volunteer</b><p>Greet guests, run check-in, keep 17 days moving.</p></div>
-      </div>
-      <div class="dw-url in" style="--i:3"><div class="qr"><img src="assets/dreamweek/qr.svg" alt=""></div><span>dreamweek.org</span></div>
-    </div>
+    <!-- slide 2's community network, in DreamWeek's colours: every group in DEVSA's directory, linked to DEVSA. With
+         slide 6's line (connecting San Antonio's learners and builders to DreamTech) it reads as the community DEVSA brings,
+         not as a list of groups confirmed for DreamTech. -->
+    <div class="netbox in" style="--i:2;left:auto;right:10px;top:150px;width:960px;height:720px" aria-hidden="true"><div id="dwNet"></div></div>
   </section>
 
   <!-- ===================== Featured talk ===================== -->
@@ -521,6 +519,8 @@ body:not(.idle) #hud{opacity:1}
   <!-- The featured talk: Daniel Ward, Software Consultant at Lean TECHniques. Up for a few seconds before he
        switches to his own laptop, so it is one glance: the talk, his name and role, nothing else. -->
   <section class="slide" id="talkSlide">
+    <!-- NEW YEAR · 2027 · NEW BUILDS: the new year's talk, on putting AI to work, as a new build -->
+    <img class="stk in" src="assets/stickers/new-year-new-builds.webp" alt="New year, new builds, 2027" style="--i:3;right:190px;top:300px;width:480px;transform:rotate(-6deg)">
     <div class="pad" style="top:300px;right:auto;width:1200px">
       <p class="eyebrow in" style="--i:0">Featured talk</p>
       <h2 class="h2 in" id="spTalk" style="--i:1;margin-top:30px;font-size:80px;line-height:1">Talk title<span class="mute" style="display:block;margin-top:24px;font-size:54px;line-height:1.15">to come.</span></h2>
@@ -534,11 +534,15 @@ body:not(.idle) #hud{opacity:1}
 
   <!-- The same close as episode 1: the rooms the audience can walk into this month, from the calendar (CONFIG.january). -->
   <section class="slide">
-    <div class="pad" style="top:190px">
+    <!-- CHEERS: the month's rooms are get-togethers -->
+    <img class="stk in" src="assets/stickers/cheers.webp" alt="Cheers" style="--i:3;right:160px;top:50px;width:260px;transform:rotate(6deg)">
+    <!-- the host says it: check the calendar for updates, and any of DEVSA's channels for news -->
+    <div class="pad" style="top:230px">
       <p class="eyebrow in" style="--i:0">On the community calendar</p>
       <h2 class="h2 in" style="--i:1;margin-top:28px;font-size:80px">Your January, <span class="mute">on the calendar.</span></h2>
-      <div class="dec in" id="dec" style="--i:2"></div>
-      <p class="url in" style="--i:3;margin-top:36px">Every event, and how to RSVP: <b style="color:#fff">devsa.community</b></p>
+      <div class="dec dec-roomy in" id="dec" style="--i:2"></div>
+      <!-- the segue to the close, which shows devsa.community and every channel -->
+      <p class="url in" style="--i:3;margin-top:48px">For updates: <b style="color:#fff">the calendar, and every DEVSA channel.</b></p>
     </div>
   </section>
 
@@ -583,12 +587,18 @@ const CONFIG = {
   // Your January: the month's events in date order, from devsa.community/events (San Antonio time). logo: a file in
   // assets/wall, or a path under assets/. No group had posted January dates as of Nov 17: add them before taping.
   january: [
+    // Geeks&& and ATC per Jesse, Nov 17: same venue and time as their last events on the calendar (Geeks&&Drinks,
+    // Tue 6 PM, Idle Beer Hall & Brewery; Byte Night, Fri 6 PM, Zelifcam). Not yet posted on devsa.community.
+    { group: "Geeks && {...}", logo: "g12.png", title: "Geeks&&Drinks", when: "Tue Jan 5 · 6 PM", where: "Idle Beer Hall & Brewery" },
+    { group: "Alamo Tech Collective", logo: "g4.png", title: "Byte Night", when: "Fri Jan 8 · 6 PM", where: "Zelifcam" },
     { group: "15th edition &middot; DEVSA is a DreamTech community partner", logo: "dreamweek/chevrons.png", title: "DreamWeek San Antonio", when: "Fri Jan 15 · Jan 15–31" },
   ],
   // January 2027 on the calendar slide: day -> the group's logo in assets/wall (g0 DEF CON ... see the wall below),
   // from devsa.community/events. Nothing for January was posted as of Nov 17: fill in before taping.
   // span: DreamWeek's days, marked on the month.
-  month: { year: 2027, month: 0, days: {}, span: [15, 31] },
+  // Jan 5 Geeks && (g12), Jan 8 Alamo Tech Collective (g4), Jan 9 .NET User Group (g10), per Jesse Nov 17;
+  // the 15th carries DreamWeek's mark, as the first day of its span. A logo with a "/" is a path under assets/.
+  month: { year: 2027, month: 0, days: { 5: "g12.png", 8: "g4.png", 9: "g10.png", 15: "dreamweek/chevrons.png" }, span: [15, 31] },
   wall: ["g0.png", "g1.png", "g2.png", "g3.png", "g4.png", "g5.png", "g6.png", "g7.png", "g8.png", "g9.png", "g10.png", "g11.png", "g12.png",
     "g13.png", "g14.png", "g15.png:white", "g16.png", "g17-2026.png", "g18.png", "g19.png", "g21.png", "g22.png", "g23.png", "g24.png", "g25.svg", "aws-sbg-wgu.png"],
 }
@@ -607,7 +617,7 @@ if ($("#calGrid")) {
   let k = 0
   for (let d = 1; d <= n; d++) {
     const logo = days[d], dw = span && d >= span[0] && d <= span[1] ? " dw" : ""
-    h += logo ? `<div class="d has${dw}" style="--c:${C[k++ % 3]}"><span>${d}</span><img src="assets/wall/${esc(logo)}" alt=""></div>` : `<div class="d${dw}"><span>${d}</span></div>`
+    h += logo ? `<div class="d has${dw}" style="--c:${C[k++ % 3]}"><span>${d}</span><img src="${logo.includes("/") ? "assets/" + esc(logo) : "assets/wall/" + esc(logo)}" alt=""></div>` : `<div class="d${dw}"><span>${d}</span></div>`
   }
   $("#calGrid").innerHTML = h
 }
@@ -691,10 +701,10 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
   if (sl.classList.contains("on")) start()
 })()
 // ---------- the community network (the roundtable deck's geometry): CONFIG.wall's groups, each linked to DEVSA ----------
-;(function network() {
-  const host = $("#net"), slide = $("#netSlide"); if (!host) return
+function network(hostSel, slideSel, C, GLOW, P) {
+  const host = $(hostSel), slide = $(slideSel); if (!host) return
   const G = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return { src: "assets/wall/" + f, white: flag === "white" } })
-  const VW = 640, VH = 480, CX = VW / 2, CY = VH / 2, R = 23, N = G.length, C = ["#00b2a9", "#ef426f", "#ff8200"], NS = "http://www.w3.org/2000/svg"
+  const VW = 640, VH = 480, CX = VW / 2, CY = VH / 2, R = 23, N = G.length, NS = "http://www.w3.org/2000/svg"
   const inner = Math.min(N, Math.max(3, Math.round(N * .36)))
   const base = G.map((_, i) => {
     const isI = i < inner, cnt = isI ? inner : N - inner, k = isI ? i : i - inner
@@ -706,9 +716,9 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
   for (let i = 0; i < inner && inner + i * 2 < N; i++) LINKS.push([i, inner + Math.round((i / inner) * (N - inner))])
   for (let i = inner; i + 1 < N; i += 3) LINKS.push([i, i + 1])
   const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${VW} ${VH}`)
-  svg.innerHTML = `<defs><clipPath id="nc"><circle r="${R - 5}"/></clipPath>
-    <filter id="nw"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
-    <radialGradient id="glow"><stop offset="0" stop-color="#ef426f" stop-opacity=".35"/><stop offset="1" stop-color="#ef426f" stop-opacity="0"/></radialGradient></defs>`
+  svg.innerHTML = `<defs><clipPath id="${P}c"><circle r="${R - 5}"/></clipPath>
+    <filter id="${P}w"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
+    <radialGradient id="${P}g"><stop offset="0" stop-color="${GLOW}" stop-opacity=".35"/><stop offset="1" stop-color="${GLOW}" stop-opacity="0"/></radialGradient></defs>`
   const mk = () => { const g = document.createElementNS(NS, "g"); svg.append(g); return g }
   const gLinks = mk(), gHub = mk(), gPulse = mk(), gNodes = mk()
   const line = (g, attrs) => { const l = document.createElementNS(NS, "line"); for (const k in attrs) l.setAttribute(k, attrs[k]); g.append(l); return l }
@@ -716,11 +726,11 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
   const hubEls = G.map((_, i) => line(gHub, { stroke: C[i % 3], "stroke-opacity": ".65", "stroke-width": "1.4" }))
   const nodeEls = G.map((g) => {
     const n = document.createElementNS(NS, "g"), r = R - 6
-    n.innerHTML = `<circle r="${R}" fill="#151515" stroke="#2c2c2c"/><image href="${esc(g.src)}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="xMidYMid meet" clip-path="url(#nc)"${g.white ? ' filter="url(#nw)"' : ""}/>`
+    n.innerHTML = `<circle r="${R}" fill="#151515" stroke="#2c2c2c"/><image href="${esc(g.src)}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="xMidYMid meet" clip-path="url(#${P}c)"${g.white ? ` filter="url(#${P}w)"` : ""}/>`
     gNodes.append(n); return n
   })
   const hub = document.createElementNS(NS, "g")
-  hub.innerHTML = `<circle class="hubglow" r="90" fill="url(#glow)"/><circle r="58" fill="#000" stroke="#262626"/><image href="assets/marks/devsa-alt-logo.svg" x="-40" y="-30" width="80" height="60"/>`
+  hub.innerHTML = `<circle class="hubglow" r="90" fill="url(#${P}g)"/><circle r="58" fill="#000" stroke="#262626"/><image href="assets/marks/devsa-alt-logo.svg" x="-40" y="-30" width="80" height="60"/>`
   hub.setAttribute("transform", `translate(${CX} ${CY})`); svg.append(hub); host.append(svg)
   const glow = hub.querySelector(".hubglow")
   const pulses = Array.from({ length: 9 }, (_, k) => { const c = document.createElementNS(NS, "circle"); c.setAttribute("r", "2.6"); gPulse.append(c); return { el: c, to: (k * 7) % N, t0: -k * .45, dur: 2.2 + (k % 3) * .4 } })
@@ -747,7 +757,10 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
     glow.setAttribute("r", (86 + Math.sin(t * 1.3) * 10).toFixed(1))
   }
   requestAnimationFrame(frame)
-})()
+}
+network("#net", "#netSlide", ["#00b2a9", "#ef426f", "#ff8200"], "#ef426f", "n")
+// DreamTech's slide: the same network in DreamWeek's red, blue and yellow
+network("#dwNet", "#dwTech", ["#ee3e2f", "#0a7fc2", "#ffd02a"], "#0a7fc2", "d")
 // December as a calendar list: the date, the group's logo, the event and who runs it, the time. (Venues are a click away
 // on devsa.community, which the slide names.) "when" reads like "Tue Dec 1 · 6 PM".
 { const sp = CONFIG.speaker
