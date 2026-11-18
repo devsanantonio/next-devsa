@@ -1,15 +1,14 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="robots" content="noindex">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEVSA desk, Christmas</title>
-<!-- DEVSA TV episode 1 (December 2026, the Holiday edition): the TVSA studio desk monitor.
-     The alt logo centred at 40% of the width (unaltered; drawn at 90% so its white doesn't bloom on camera; the snow
-     passes behind it, never through it), with the deck's pixel snowflakes falling in three clear sizes, mostly white,
-     the coloured ones always among the large, and plus-shaped star dots twinkling between them.
-     Built for camera scale: on the desk the monitor is about 1/6 of its pixels in the broadcast frame, so the smallest
-     piece is 6 px per flake pixel (a 42 px flake) and the star dots are 12 px units.
-     ?bg=0a0a0a tries a near-black ground (default pure black). Loops every 12.8 s. Served at devsa.community/slides/<this folder> (unlisted in lib/slides.ts). The video exports and their
-     export.cjs live with the source in ~/Downloads/devsa-tvsa-desk-ep1 and -ep2. -->
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEVSA desk, Christmas tree</title>
+<!-- DEVSA TV episode 1 (December 2026, the Holiday edition): the TVSA studio desk monitor, tree version.
+     The opener's tree, built for camera scale: pixel windows in brighter evergreen, their tabs as lights twinkling in
+     the tab colours and gold, a gold pixel star, a trunk. The top window is the DEVSA mark in pixels: the three tabs in
+     teal, pink and orange over a dark window with >SA and the cursor bar (the DEVSA window sticker's drawing).
+     The deck's pixel snow falls in three sizes behind the tree, mostly white, the coloured ones among the large.
+     ?bg=0a0a0a tries a near-black ground (default pure black). Loops every 12.8 s. Served at devsa.community/slides/desk-ep1 (unlisted in lib/slides.ts). The video exports and their
+     export.cjs live with the source in ~/Downloads/devsa-tvsa-desk-ep1. -->
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
 canvas{display:block;width:100vw;height:100vh;object-fit:contain}
@@ -19,46 +18,82 @@ canvas{display:block;width:100vw;height:100vh;object-fit:contain}
 <script>
 const W = 1920, H = 1080, g = document.getElementById("c").getContext("2d")
 const BG = "#" + ((new URLSearchParams(location.search).get("bg") || "000000").replace(/[^0-9a-f]/gi, "").slice(0, 6) || "000000")
-const COLORS = ["#00b2a9", "#ef426f", "#ff8200"]
-const LOOP = 12800
-const LOGO = new Image(); LOGO.src = "devsa-alt-logo.svg"
-const LW = 768, LH = LW * 551.77 / 735.7, LX = (W - LW) / 2, LY = (H - LH) / 2
+const TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200", GOLD = "#ffd343", COLORS = [TEAL, PINK, ORANGE]
+const LIGHTS = [TEAL, PINK, ORANGE, GOLD]
+const LOOP = 12800, TAU = Math.PI * 2
 
-// the deck's pixel snowflake, in three sizes
+// ---- the tree: 1 + 2 + 3 + 4 windows, each 22 x 18 pixels ----
+const PX = 10, WW = 22 * PX, WH = 18 * PX, GAP = 24, CX = W / 2, TOP = 150
+const WINS = []
+for (let r = 0; r < 4; r++) { const n = r + 1, rowW = n * WW + (n - 1) * GAP; for (let i = 0; i < n; i++) WINS.push([Math.round(CX - rowW / 2 + i * (WW + GAP)), TOP + r * (WH + GAP), r === 0]) }
+
+function cell(x, y, col, cx, cy, w = 1, h = 1) { g.fillStyle = col; g.fillRect(x + cx * PX, y + cy * PX, w * PX, h * PX) }
+
+// an evergreen window: frame, dark body, a >_ face, three tabs as lights
+function evergreen(x, y, k, t) {
+  const FRAME = "#34b56c", BODY = "#0d2418", FACE = "#9fe0b8"
+  cell(x, y, FRAME, 1, 0, 20, 18); cell(x, y, FRAME, 0, 1, 22, 16); cell(x, y, BODY, 1, 4, 20, 13)
+  for (let j = 0; j < 3; j++) {
+    const on = Math.sin(TAU * (t / LOOP) * 3 + k * 1.7 + j * 2.3) > -0.3
+    cell(x, y, on ? LIGHTS[(k * 3 + j) % 4] : "#1d4a31", 1 + j * 7, 1, 6, 2)
+  }
+  for (const [cx, cy] of [[4, 7], [5, 8], [6, 9], [7, 10], [6, 11], [5, 12], [4, 13]]) cell(x, y, FACE, cx, cy, 2, 1)
+  cell(x, y, FACE, 11, 13, 7, 1)
+}
+
+// the top window: the DEVSA mark in pixels
+function devsa(x, y) {
+  const INK = "#eeeeee"
+  cell(x, y, INK, 1, 0, 20, 18); cell(x, y, INK, 0, 1, 22, 16); cell(x, y, "#111", 1, 4, 20, 13)
+  cell(x, y, TEAL, 1, 1, 6, 2); cell(x, y, PINK, 8, 1, 6, 2); cell(x, y, ORANGE, 15, 1, 6, 2)
+  for (const [cx, cy] of [[3, 7], [4, 8], [5, 9], [6, 10], [5, 11], [4, 12], [3, 13]]) cell(x, y, INK, cx, cy, 2, 1)
+  const S = [".###", "#...", ".##.", "...#", "###."], A = [".##.", "#..#", "####", "#..#", "#..#"]
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) {
+    if (S[r][c] === "#") cell(x, y, INK, 10 + c, 7 + r)
+    if (A[r][c] === "#") cell(x, y, INK, 15 + c, 7 + r)
+  }
+  cell(x, y, INK, 10, 13, 9, 2)
+}
+
+const STAR = ["...#...", "...#...", "#######", ".#####.", "..###..", ".##.##.", "#.....#"]
+function star(t) {
+  const s = 14, x0 = CX - 3.5 * s, y0 = TOP - 8 * s
+  g.fillStyle = Math.sin(TAU * (t / LOOP) * 4) > -0.5 ? GOLD : "#e0a800"
+  STAR.forEach((row, ry) => [...row].forEach((ch, rx) => { if (ch === "#") g.fillRect(x0 + rx * s, y0 + ry * s, s, s) }))
+}
+function trunk() {
+  const yb = TOP + 4 * (WH + GAP) - GAP + 2 * PX, tw = 10 * PX, th = 8 * PX
+  g.fillStyle = "#6b4528"; g.fillRect(CX - tw / 2, yb, tw, th)
+  g.fillStyle = "#4a2f1a"; g.fillRect(CX - tw / 2 + 2 * PX, yb, PX, th); g.fillRect(CX + PX, yb + 2 * PX, PX, th - 2 * PX)
+}
+
+// ---- the deck's pixel snow, three sizes ----
 const FLAKE = ["...#...", "#..#..#", ".#.#.#.", "..###..", "#######", "..###..", ".#.#.#.", "#..#..#", "...#..."]
 let r = 7; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647
 const SIZES = [{ px: 6, n: 10, laps: 2, a: .7 }, { px: 9, n: 8, laps: 2, a: .85 }, { px: 12, n: 8, laps: 1, a: 1 }]
 const FLAKES = []
 SIZES.forEach((s) => { for (let i = 0; i < s.n; i++) FLAKES.push({ ...s, x: rnd() * W, ph: rnd(), sway: 24 + rnd() * 36, col: "#fff" }) })
-// the coloured flakes: four of the large ones, one per tab colour plus teal again
 FLAKES.filter((f) => f.px === 12).slice(0, 4).forEach((f, i) => { f.col = COLORS[i % 3] })
 function flake(f, t) {
-  // each flake crosses the screen once or twice per loop, so the loop is seamless
   const k = ((t / LOOP) * f.laps + f.ph) % 1, h = 9 * f.px
-  const y = -h + k * (H + 2 * h), x = f.x + Math.sin((t / LOOP) * Math.PI * 2 * f.laps + f.ph * 6) * f.sway
+  const y = -h + k * (H + 2 * h), x = f.x + Math.sin((t / LOOP) * TAU * f.laps + f.ph * 6) * f.sway
   g.globalAlpha = f.a; g.fillStyle = f.col
   FLAKE.forEach((row, ry) => [...row].forEach((c, rx) => { if (c === "#") g.fillRect(Math.round(x + rx * f.px), Math.round(y + ry * f.px), f.px, f.px) }))
-  g.globalAlpha = 1
-}
-// star dots: a plus of 12 px pixels in the tab colours, twinkling in place
-const DOTS = Array.from({ length: 12 }, (_, i) => [80 + rnd() * (W - 160), 70 + rnd() * (H - 140), COLORS[i % 3], rnd() * Math.PI * 2])
-function dot([x, y, col, ph], t) {
-  const k = .5 + .5 * Math.sin((t / LOOP) * Math.PI * 4 + ph); if (k < .2) return
-  const s = 12, X = Math.round(x / s) * s, Y = Math.round(y / s) * s
-  g.globalAlpha = .35 + .65 * k; g.fillStyle = col
-  g.fillRect(X, Y, s, s); g.fillRect(X - s, Y, s, s); g.fillRect(X + s, Y, s, s); g.fillRect(X, Y - s, s, s); g.fillRect(X, Y + s, s, s)
   g.globalAlpha = 1
 }
 
 function draw(t) {
   g.fillStyle = BG; g.fillRect(0, 0, W, H)
-  DOTS.forEach((d) => dot(d, t))
-  FLAKES.forEach((f) => flake(f, t))
-  g.fillStyle = BG; g.fillRect(LX - 28, LY - 28, LW + 56, LH + 56)   // the snow passes behind the logo, never through it
-  g.globalAlpha = .9; g.drawImage(LOGO, LX, LY, LW, LH); g.globalAlpha = 1
+  FLAKES.forEach((f) => flake(f, t))          // the snow falls behind the tree
+  // the tree's silhouette, so the snow passes behind it rather than through the gaps between its windows
+  g.fillStyle = BG
+  for (let r = 0; r < 4; r++) { const n = r + 1, rowW = n * WW + (n - 1) * GAP; g.fillRect(CX - rowW / 2 - 16, TOP + r * (WH + GAP) - 16, rowW + 32, WH + GAP + 16) }
+  trunk()
+  WINS.forEach(([x, y, top], k) => top ? devsa(x, y) : evergreen(x, y, k, t))
+  star(t)
 }
 window.draw = draw
-window.ready = new Promise((res) => { if (LOGO.complete) res(); else LOGO.onload = res })
-window.ready.then(() => { if (!/export/.test(location.search)) { const t0 = performance.now(); const tick = (ms) => { draw(ms - t0); requestAnimationFrame(tick) }; requestAnimationFrame(tick) } else draw(0) })
+window.ready = Promise.resolve()
+if (!/export/.test(location.search)) { const t0 = performance.now(); const tick = (ms) => { draw(ms - t0); requestAnimationFrame(tick) }; requestAnimationFrame(tick) } else draw(0)
 </script>
 </body></html>

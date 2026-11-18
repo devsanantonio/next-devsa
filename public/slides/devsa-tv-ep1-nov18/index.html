@@ -343,8 +343,6 @@ body:not(.idle) #hud{opacity:1}
     <div class="op-meta">
       <p class="pixel in" style="--i:0;font-size:104px">Episode 01</p>
       <p class="in holiday" style="--i:1">&#10052; Holiday edition</p>
-      <p class="in" style="--i:1">San Antonio&rsquo;s learners &amp; builders</p>
-      <p class="in dim" style="--i:2">Public access TV &middot; 12.2026</p>
     </div>
     <img class="op-mark in" style="--i:3" src="assets/marks/devsa-alt-logo.svg" alt="DEVSA">
   </section>
@@ -660,7 +658,7 @@ if ($("#calGrid")) {
 if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] = w.split(":"); return `<div class="${flag || ""}"><img src="assets/wall/${esc(f)}" alt=""></div>` }).join("")
 // ---------- the opener's tree: the pyramid of pixel windows, dressed for the holidays. Evergreen frames, the
 // windows' three tabs as lights twinkling in the brand colors and gold, a pixel star on top and a trunk below.
-// The top window stays the lit DEVSA window. It builds once, then twinkles while the opener is on screen. ----------
+// The top window is the DEVSA mark in pixels (>SA), matching the studio desk's tree. It builds once, then twinkles while the opener is on screen. ----------
 ;(function tree() {
   const c = $("#pyr"), sl = $("#opener"); if (!c) return
   const g = c.getContext("2d"), TEAL = "#00b2a9", PINK = "#ef426f", ORANGE = "#ff8200", GOLD = "#ffd343"
@@ -669,7 +667,7 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
   for (let r = 3; r >= 0; r--) { const n = r + 1, rowW = n * w + (n - 1) * gap; for (let i = 0; i < n; i++) wins.push([Math.round(cx - rowW / 2 + i * (w + gap)), top + r * (h + gap), r === 0]) }
   function win(x, y, lit, a, t, k) {
     const W = 22, H = 18
-    const frame = lit ? "#eeeeee" : "#1f6b45", body = lit ? "#111" : "#0c1a12", face = lit ? "#eeeeee" : "#7fb894"
+    const frame = lit ? "#eeeeee" : "#34b56c", body = lit ? "#111" : "#0d2418", face = lit ? "#eeeeee" : "#9fe0b8"   // the desk tree's greens
     const P = (col, qx, qy, ww = 1, hh = 1) => { g.fillStyle = col; g.fillRect(x + qx * px, y + qy * px, ww * px, hh * px) }
     g.globalAlpha = a
     P(frame, 1, 0, W - 2, H); P(frame, 0, 1, W, H - 2); P(body, 1, 4, W - 2, H - 5)
@@ -677,10 +675,19 @@ if ($("#wall")) $("#wall").innerHTML = CONFIG.wall.map((w) => { const [f, flag] 
       // each tab is a light: its own color, on or dim on its own slow beat
       const col = lit ? [TEAL, PINK, ORANGE][j] : LIGHTS[(k * 3 + j) % 4]
       const on = lit || Math.sin(t / 520 + k * 1.7 + j * 2.3) > -0.35
-      P(on ? col : "#2a3a30", 1 + j * 7, 1, 6, 2)
+      P(on ? col : "#1d4a31", 1 + j * 7, 1, 6, 2)
     }
-    for (const [qx, qy] of [[4, 6], [5, 7], [6, 8], [7, 9], [6, 10], [5, 11], [4, 12]]) P(face, qx, qy, 2, 1)
-    P(face, 11, 12, 7, 1); g.globalAlpha = 1
+    if (lit) {
+      // the top window is the DEVSA mark in pixels, >SA and the cursor bar, as on the studio desk's tree
+      for (const [qx, qy] of [[3, 7], [4, 8], [5, 9], [6, 10], [5, 11], [4, 12], [3, 13]]) P(face, qx, qy, 2, 1)
+      const S = [".###", "#...", ".##.", "...#", "###."], A = [".##.", "#..#", "####", "#..#", "#..#"]
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) { if (S[r][c] === "#") P(face, 10 + c, 7 + r); if (A[r][c] === "#") P(face, 15 + c, 7 + r) }
+      P(face, 10, 13, 9, 2)
+    } else {
+      for (const [qx, qy] of [[4, 6], [5, 7], [6, 8], [7, 9], [6, 10], [5, 11], [4, 12]]) P(face, qx, qy, 2, 1)
+      P(face, 11, 12, 7, 1)
+    }
+    g.globalAlpha = 1
   }
   const STAR = ["...#...", "...#...", "#######", ".#####.", "..###..", ".##.##.", "#.....#"]
   function star(a, t) {
