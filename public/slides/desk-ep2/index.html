@@ -1,14 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="robots" content="noindex">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEVSA desk, New Year</title>
-<!-- DEVSA TV episode 2 (January 2027, the New Year edition): the TVSA studio desk monitor. The pair to episode 1's
-     snow desk: the alt logo centred at 40% of the width (unaltered; drawn at 90% so its white doesn't bloom; the
-     fireworks pass behind it, never through it), with pixel fireworks bursting all around it in the tab colours and
-     gold. Built for camera scale (the monitor is about 1/6 of its pixels on air): 18 px sparks, 12 rays, two sizes;
-     bursts overlap so two or three are always going, and each leaves embers drifting down, so no frame is empty.
-     ?bg=0a0a0a tries a near-black ground (default pure black). Loops every 6.4 s. Served at devsa.community/slides/<this folder> (unlisted in lib/slides.ts). The video exports and their
-     export.cjs live with the source in ~/Downloads/devsa-tvsa-desk-ep1 and -ep2. -->
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEVSA desk, New Year (pixel)</title>
+<!-- DEVSA TV episode 2 (January 2027, the New Year edition): the TVSA studio desk monitor, pixel version. DEVSA's
+     alt logo redrawn in pixels, all white, as it reads on black: three tab bars over >SA and the cursor bar, its
+     black body dropping out. Monochrome on purpose, so the pixel fireworks and the confetti carry the colour; the
+     pixel language pairs it with episode 1's tree. Confetti drifts down the way episode 1's snow does, so no frame
+     is still. ?bg=0a0a0a tries a near-black ground. Loops every 12.8 s. Served at devsa.community/slides/desk-ep2 (unlisted in lib/slides.ts). The video exports and their
+     export.cjs live with the source in ~/Downloads/devsa-tvsa-desk-ep2. -->
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
 canvas{display:block;width:100vw;height:100vh;object-fit:contain}
@@ -19,16 +18,16 @@ canvas{display:block;width:100vw;height:100vh;object-fit:contain}
 const W = 1920, H = 1080, g = document.getElementById("c").getContext("2d")
 const BG = "#" + ((new URLSearchParams(location.search).get("bg") || "000000").replace(/[^0-9a-f]/gi, "").slice(0, 6) || "000000")
 const COLORS = ["#00b2a9", "#ef426f", "#ff8200", "#ffd343"]
-const LOOP = 6400
-const LOGO = new Image(); LOGO.src = "devsa-alt-logo.svg"
-const LW = 768, LH = LW * 551.77 / 735.7, LX = (W - LW) / 2, LY = (H - LH) / 2
+const LOOP = 12800, BURST_LOOP = 6400
+// the alt logo in pixels, 23 x 15 cells
+const PX = 34, LW = 23 * PX, LH = 15 * PX, LX = Math.round((W - LW) / 2), LY = Math.round((H - LH) / 2)
 
 // [x, y, colour, size]: around the logo; big and small alternate
 const BURSTS = [[300, 250, 0, 1], [1620, 290, 1, 0], [330, 640, 2, 0], [1600, 650, 3, 1], [960, 120, 1, 0], [270, 930, 3, 0], [1680, 930, 0, 1], [960, 990, 2, 0]]
-const RISE = 600, LIFE = 1700, EMBER = 1800, SP = 18, RAYS = 12, GAP = LOOP / BURSTS.length
+const RISE = 600, LIFE = 1700, EMBER = 1800, SP = 18, RAYS = 12, GAP = BURST_LOOP / BURSTS.length
 const snap = (v) => Math.round(v / SP) * SP
 function firework(bx, by, col, big, t) {
-  t = ((t % LOOP) + LOOP) % LOOP          // seamless: a burst that runs past the loop's end wraps to its start
+  t = ((t % BURST_LOOP) + BURST_LOOP) % BURST_LOOP   // seamless: a burst past the cycle's end wraps to its start
   if (t < RISE) {
     const k = t / RISE, y = H + 20 + (by - H - 20) * (1 - (1 - k) * (1 - k))
     g.fillStyle = "#fff"; g.fillRect(snap(bx), snap(y), SP, SP)
@@ -62,14 +61,36 @@ function firework(bx, by, col, big, t) {
   g.globalAlpha = 1
 }
 
+// the alt logo in pixels: three white tab bars (outer top corners rounded off), then >SA and the cursor bar, all white
+function altLogo() {
+  const INK = "#e6e6e6", P = (cx, cy, w = 1, h = 1) => { g.fillStyle = INK; g.fillRect(LX + cx * PX, LY + cy * PX, w * PX, h * PX) }
+  P(1, 0, 6, 1); P(0, 1, 7, 2); P(8, 0, 7, 3); P(16, 0, 6, 1); P(16, 1, 7, 2)
+  for (const [cx, cy] of [[3, 5], [4, 6], [5, 7], [6, 8], [5, 9], [4, 10], [3, 11]]) P(cx, cy, 2, 1)
+  const S_ = [".###", "#...", ".##.", "...#", "###."], A_ = [".##.", "#..#", "####", "#..#", "#..#"]
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) { if (S_[r][c] === "#") P(11 + c, 5 + r); if (A_[r][c] === "#") P(16 + c, 5 + r) }
+  P(11, 11, 9, 2)
+}
+// a colour toward white by k (0..1)
+function mix(hex, k) { const n = parseInt(hex.slice(1), 16), r = n >> 16, gg = (n >> 8) & 255, b = n & 255, f = (v) => Math.round(v + (255 - v) * k); return `rgb(${f(r)},${f(gg)},${f(b)})` }
+
+// pixel confetti: squares in the tab colours and gold, drifting down and tumbling (their width flickers), seamless
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+const CONF = Array.from({ length: 34 }, (_, i) => ({ x: rnd() * W, ph: rnd(), s: [20, 26, 32][i % 3], laps: i % 3 === 2 ? 1 : 2, col: COLORS[i % 4], sway: 20 + rnd() * 40, spin: 1 + Math.floor(rnd() * 3) }))
+function confetti(c, t) {
+  const k = ((t / LOOP) * c.laps + c.ph) % 1, y = -c.s + k * (H + 2 * c.s), x = c.x + Math.sin((t / LOOP) * Math.PI * 2 * c.laps + c.ph * 6) * c.sway
+  const w = c.s * (.35 + .65 * Math.abs(Math.cos((t / LOOP) * Math.PI * 2 * c.spin * 4 + c.ph * 9)))
+  g.globalAlpha = .85; g.fillStyle = c.col; g.fillRect(Math.round(x - w / 2), Math.round(y), Math.round(w), c.s); g.globalAlpha = 1
+}
+
 function draw(t) {
   g.fillStyle = BG; g.fillRect(0, 0, W, H)
+  CONF.forEach((c) => confetti(c, t))
   BURSTS.forEach(([x, y, c, big], i) => firework(x, y, COLORS[c], big, t - i * GAP))
-  g.fillStyle = BG; g.fillRect(LX - 28, LY - 28, LW + 56, LH + 56)   // fireworks pass behind the logo, never through it
-  g.globalAlpha = .9; g.drawImage(LOGO, LX, LY, LW, LH); g.globalAlpha = 1
+  g.fillStyle = BG; g.fillRect(LX - 28, LY - 28, LW + 56, LH + 56)   // confetti and fireworks pass behind the window
+  altLogo()
 }
 window.draw = draw
-window.ready = new Promise((res) => { if (LOGO.complete) res(); else LOGO.onload = res })
+window.ready = Promise.resolve()
 window.ready.then(() => { if (!/export/.test(location.search)) { const t0 = performance.now(); const tick = (ms) => { draw(ms - t0); requestAnimationFrame(tick) }; requestAnimationFrame(tick) } else draw(0) })
 </script>
 </body></html>

@@ -50,7 +50,7 @@ export const DECKS: Deck[] = [
   {
     slug: "desk-ep2",
     title: "DEVSA TV desk · Episode 2",
-    summary: "The TVSA studio desk monitor for the New Year edition: the alt logo with pixel fireworks. Open full screen and leave it.",
+    summary: "The TVSA studio desk monitor for the New Year edition: the alt logo in pixels, with pixel fireworks and confetti. Open full screen and leave it.",
     date: "2027-01-01",
     where: "TVSA studios",
     slides: 1,
