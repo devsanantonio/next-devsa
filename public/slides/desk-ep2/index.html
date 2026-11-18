@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>DEVSA desk, New Year</title>
+<!-- DEVSA TV episode 2 (January 2027, the New Year edition): the TVSA studio desk monitor. The pair to episode 1's
+     snow desk: the alt logo centred at 40% of the width (unaltered; drawn at 90% so its white doesn't bloom; the
+     fireworks pass behind it, never through it), with pixel fireworks bursting all around it in the tab colours and
+     gold. Built for camera scale (the monitor is about 1/6 of its pixels on air): 18 px sparks, 12 rays, two sizes;
+     bursts overlap so two or three are always going, and each leaves embers drifting down, so no frame is empty.
+     ?bg=0a0a0a tries a near-black ground (default pure black). Loops every 6.4 s. Served at devsa.community/slides/<this folder> (unlisted in lib/slides.ts). The video exports and their
+     export.cjs live with the source in ~/Downloads/devsa-tvsa-desk-ep1 and -ep2. -->
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh;object-fit:contain}
+</style></head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const W = 1920, H = 1080, g = document.getElementById("c").getContext("2d")
+const BG = "#" + ((new URLSearchParams(location.search).get("bg") || "000000").replace(/[^0-9a-f]/gi, "").slice(0, 6) || "000000")
+const COLORS = ["#00b2a9", "#ef426f", "#ff8200", "#ffd343"]
+const LOOP = 6400
+const LOGO = new Image(); LOGO.src = "devsa-alt-logo.svg"
+const LW = 768, LH = LW * 551.77 / 735.7, LX = (W - LW) / 2, LY = (H - LH) / 2
+
+// [x, y, colour, size]: around the logo; big and small alternate
+const BURSTS = [[300, 250, 0, 1], [1620, 290, 1, 0], [330, 640, 2, 0], [1600, 650, 3, 1], [960, 120, 1, 0], [270, 930, 3, 0], [1680, 930, 0, 1], [960, 990, 2, 0]]
+const RISE = 600, LIFE = 1700, EMBER = 1800, SP = 18, RAYS = 12, GAP = LOOP / BURSTS.length
+const snap = (v) => Math.round(v / SP) * SP
+function firework(bx, by, col, big, t) {
+  t = ((t % LOOP) + LOOP) % LOOP          // seamless: a burst that runs past the loop's end wraps to its start
+  if (t < RISE) {
+    const k = t / RISE, y = H + 20 + (by - H - 20) * (1 - (1 - k) * (1 - k))
+    g.fillStyle = "#fff"; g.fillRect(snap(bx), snap(y), SP, SP)
+    g.globalAlpha = .5; g.fillStyle = col; g.fillRect(snap(bx), snap(y) + SP * 2, SP, SP); g.globalAlpha = 1
+    return
+  }
+  const b = t - RISE, R0 = big ? 200 : 140
+  if (b < LIFE) {
+    const k = b / LIFE, R = R0 * (1 - (1 - k) ** 3), drop = 50 * k * k
+    g.globalAlpha = 1 - .6 * k * k
+    for (let i = 0; i < RAYS; i++) {
+      const a = (i / RAYS) * Math.PI * 2
+      for (const f of [1, .78, .56]) {          // three sparks along each ray, so a burst reads as rays at camera scale
+        g.fillStyle = f === .56 ? "#fff" : col
+        g.fillRect(snap(bx + Math.cos(a) * R * f), snap(by + Math.sin(a) * R * f + drop * f), SP, SP)
+      }
+    }
+    if (b < 160) { g.fillStyle = "#fff"; g.fillRect(snap(bx) - SP, snap(by) - SP, SP * 3, SP * 3) }
+    g.globalAlpha = 1
+    return
+  }
+  // embers: the outer sparks drift down slowly and fade, so the screen is never empty between bursts
+  const e = b - LIFE; if (e > EMBER) return
+  const k = e / EMBER
+  g.globalAlpha = .4 * (1 - k)
+  g.fillStyle = col
+  for (let i = 0; i < RAYS; i += 2) {
+    const a = (i / RAYS) * Math.PI * 2
+    g.fillRect(snap(bx + Math.cos(a) * R0), snap(by + Math.sin(a) * R0 + 50 + 140 * k), SP, SP)
+  }
+  g.globalAlpha = 1
+}
+
+function draw(t) {
+  g.fillStyle = BG; g.fillRect(0, 0, W, H)
+  BURSTS.forEach(([x, y, c, big], i) => firework(x, y, COLORS[c], big, t - i * GAP))
+  g.fillStyle = BG; g.fillRect(LX - 28, LY - 28, LW + 56, LH + 56)   // fireworks pass behind the logo, never through it
+  g.globalAlpha = .9; g.drawImage(LOGO, LX, LY, LW, LH); g.globalAlpha = 1
+}
+window.draw = draw
+window.ready = new Promise((res) => { if (LOGO.complete) res(); else LOGO.onload = res })
+window.ready.then(() => { if (!/export/.test(location.search)) { const t0 = performance.now(); const tick = (ms) => { draw(ms - t0); requestAnimationFrame(tick) }; requestAnimationFrame(tick) } else draw(0) })
+</script>
+</body></html>

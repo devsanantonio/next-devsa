@@ -28,9 +28,34 @@ export interface Deck {
   eventUrl?: string
   /** Keys worth knowing beyond arrows and F, shown on the card. */
   keys?: string
+  /**
+   * Served at /slides/<slug> but left off the /slides list: a page made for one
+   * screen, not a deck to present (no cover needed). The DEVSA TV desk loops are
+   * these, so the TVSA crew can open a URL on the studio desk's TV instead of
+   * carrying files.
+   */
+  unlisted?: boolean
 }
 
 export const DECKS: Deck[] = [
+  {
+    slug: "desk-ep1",
+    title: "DEVSA TV desk · Episode 1",
+    summary: "The TVSA studio desk monitor for the Holiday edition: the alt logo with pixel snow. Open full screen and leave it.",
+    date: "2026-11-18",
+    where: "TVSA studios",
+    slides: 1,
+    unlisted: true,
+  },
+  {
+    slug: "desk-ep2",
+    title: "DEVSA TV desk · Episode 2",
+    summary: "The TVSA studio desk monitor for the New Year edition: the alt logo with pixel fireworks. Open full screen and leave it.",
+    date: "2027-01-01",
+    where: "TVSA studios",
+    slides: 1,
+    unlisted: true,
+  },
   {
     slug: "devsa-tv-ep2-jan2027",
     title: "DEVSA TV · Episode 2",
@@ -64,5 +89,5 @@ export const DECKS: Deck[] = [
 ]
 
 export function sortedDecks(): Deck[] {
-  return [...DECKS].sort((a, b) => b.date.localeCompare(a.date))
+  return DECKS.filter((d) => !d.unlisted).sort((a, b) => b.date.localeCompare(a.date))
 }
