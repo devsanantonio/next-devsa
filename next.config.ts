@@ -98,6 +98,10 @@ const nextConfig: NextConfig = {
       // on the donation form, the nearest thing to what a shopper came to do.
       { source: "/shop", destination: "/buildingtogether#donate", permanent: true },
       { source: "/shop/:path*", destination: "/buildingtogether#donate", permanent: true },
+      // The short link said on air and shown on DEVSA TV's end card, since
+      // /buildingtogether#donate can't be read off a TV. Not permanent, so a
+      // /donate page could replace it later without browsers holding the hop.
+      { source: "/donate", destination: "/buildingtogether#donate", permanent: false },
       // The Get Involved form's short link, on every spotlight end card and the
       // YouTube channel. It was a page that called permanentRedirect(), which
       // fires after streaming has begun and so lands as a client-side

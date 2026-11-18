@@ -273,6 +273,7 @@ body:not(.idle) #hud{opacity:1}
 .ask .side div{padding:30px 36px;border-radius:20px;border:1px solid var(--line);background:var(--card)}
 .ask .side p{margin-top:12px;font-size:29px;line-height:1.35;color:rgba(255,255,255,.75)}
 .ask .side b{color:#fff;font-weight:700}
+.ask .side .go{margin-top:10px;font-family:"Geist Mono",monospace;font-weight:700;font-size:28px;letter-spacing:.01em;color:var(--teal)}
 .ask .side .ch{display:flex;align-items:center;gap:14px}
 .ask .side .ch img{width:36px;height:36px}
 .ask .side .ch img:last-of-type{margin-right:6px}
@@ -607,8 +608,8 @@ body:not(.idle) #hud{opacity:1}
           <p>Subscribe to the community calendar: every group&rsquo;s meetups, in one place.</p>
         </div>
         <div class="side">
-          <div><span class="k">Run a group?</span><p>Put your events on the calendar. Sign in at <b>devsa.community</b></p></div>
-          <div><span class="k" style="color:var(--pink)">Support DEVSA</span><p>A 501(c)(3), run by a volunteer board. <b>Donate at devsa.community</b></p></div>
+          <div><span class="k">Run a group?</span><p>Put your events on the calendar.</p><p class="go">devsa.community/signin</p></div>
+          <div><span class="k" style="color:var(--pink)">Support DEVSA</span><p>A 501(c)(3), run by a volunteer board.</p><p class="go" style="color:var(--pink)">devsa.community/donate</p></div>
         </div>
       </div>
       <p class="follow in" style="--i:3"><img src="assets/channels/discord.svg" alt=""><img src="assets/channels/instagram.svg" alt=""><img src="assets/channels/linkedin.svg" alt=""><img src="assets/channels/x.svg" alt=""><img src="assets/channels/youtube.svg" alt=""><span>@devsatx &middot; devsa.community/discord</span></p>
